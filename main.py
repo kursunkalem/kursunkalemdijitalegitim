@@ -75,20 +75,20 @@ def soru_word_yap(soru_metni):
 
 # --- ARAYÜZ BAŞLIĞI ---
 st.title(
-    "✏️ Kurşun Kalem Dijital Eğitim - Dijital Soru ve Video Ders Platformu"
+    "✏️ Kurşun Kalem Dijital Eğitim - Konu & Dosya Bazlı İçerik Yönetim Paneli"
 )
 st.markdown(
-    "LGS standartlarına uygun sorular üretin, referans belgelerinizi yönetin"
-    " ve ders videolarını canlı olarak izleyip yapay zekâyla analiz edin."
+    "LGS standartlarına uygun sorular üretin, ünite/konu bazlı dosyalarınızı"
+    " yönetin ve ders videolarınızı yükleyerek yapay zekâyla analiz edin."
 )
 
 # --- SEKMELER ---
 tab1, tab2, tab3, tab4 = st.tabs(
     [
         "📝 Soru Üretim Modülü",
-        "📂 Kazanım & Referans Yönetimi",
+        "📂 Konu & Dosya Yönetimi",
         "📊 Soru Havuzu Analizi",
-        "🎥 Video Kütüphanesi ve Oynatıcı",
+        "🎥 Dosya ve Video Analiz Paneli",
     ]
 )
 
@@ -154,11 +154,29 @@ with tab1:
           st.error(f"Soru üretilirken hata oluştu: {e}")
 
 with tab2:
-  st.header("📂 Kazanım & Referans Dosya Yönetimi")
+  st.header("📂 Konu & Dosya Bazlı İçerik Yönetimi")
+  st.markdown(
+      "Ders materyallerini ünite ve konulara göre ayırarak sisteme yükleyin"
+      " ve metin içeriklerini inceleyin."
+  )
+
+  secilen_unite = st.selectbox(
+      "Ünite / Kategori Seçin:",
+      [
+          "1. Ünite: Fiilimsiler",
+          "2. Ünite: Cümlenin Ögeleri",
+          "3. Ünite: Metin Türleri ve Söz Sanatları",
+          "4. Ünite: Paragraf Stratejileri",
+          "Diğer / Genel Konu Anlatımları",
+      ],
+  )
+
   yuklenen_dosya = st.file_uploader(
-      "Harici Soru veya Ders Notu Yükle (PDF, DOCX, TXT)",
+      f"'{secilen_unite}' için Ders Notu / Konu Anlatım Dosyası Yükle (PDF, DOCX,"
+      " TXT)",
       type=["pdf", "docx", "txt"],
   )
+
   if yuklenen_dosya is not None:
     uzanti = yuklenen_dosya.name.split(".")[-1].lower()
     metin_icerik = (
@@ -170,13 +188,20 @@ with tab2:
             else yuklenen_dosya.read().decode("utf-8")
         )
     )
+
+    st.success(
+        f"'{yuklenen_dosya.name}' dosyası başarıyla okundu ve kategoriye"
+        " bağlandı!"
+    )
     st.text_area(
-        "Belge İçeriği Önizlemesi:", value=metin_icerik[:3000], height=200
+        "Yüklenen Belge İçeriği Önizlemesi:",
+        value=metin_icerik[:3000],
+        height=200,
     )
 
-    if st.button("Belgeyi Analiz Et"):
+    if st.button("Bu Dosyayı Yapay Zekâ ile Analiz Et ve Kazanım Çıkar"):
       with st.spinner("Analiz ediliyor..."):
-        p = "Bu dokümanı incele, LGS Türkçe müfredatı bağlamında ana kazanımları çıkar."
+        p = f"Bu dokümanı {secilen_unite} başlığı altında incele, LGS Türkçe müfredatına uygun ana kazanımları ve önemli noktaları çıkar."
         resp = client.models.generate_content(
             model="gemini-3.8-flash",
             contents=[p, metin_icerik[:3000]],
@@ -203,116 +228,76 @@ with tab3:
     st.warning("Henüz havuzda referans soru bulunmuyor.")
 
 with tab4:
-  st.header("🎥 Video Kütüphanesi ve Canlı Oynatıcı")
+  st.header("🎥 Konu & Ders Videosu Analiz Paneli")
   st.markdown(
-      "İster sitede sabit yer alan marşları doğrudan dinleyin, ister"
-      " bilgisayarınızdan kendi videonuzu yükleyip yapay zekâya analiz"
-      " ettirin."
+      "Bilgisayarınızdaki ders videolarını (MP4, MOV, AVI) yükleyerek hem"
+      " oynatın hem de yapay zekâ ile döküm veya soru üretimi gerçekleştirin."
   )
 
-  video_secimi = st.radio(
-      "Video Modu:",
+  video_kategori = st.selectbox(
+      "Videonun Ait Olduğu Ünite / Konu:",
       [
-          "📺 Sitedeki Sabit Arşiv (Marşlar)",
-          "💻 Bilgisayarımdan Video Yükle ve İzle",
+          "1. Ünite: Fiilimsiler",
+          "2. Ünite: Cümlenin Ögeleri",
+          "3. Ünite: Metin Türleri ve Söz Sanatları",
+          "4. Ünite: Paragraf Stratejileri",
+          "Genel Ders Videoları",
       ],
   )
 
-  if video_secimi == "📺 Sitedeki Sabit Arşiv (Marşlar)":
-    secilen_mars = st.selectbox(
-        "Marş Seçin:", ["🇹🇷 İstiklal Marşı", "🎵 İleri Marşı"]
-    )
+  uploaded_video = st.file_uploader(
+      "Ders Videosu Seçin (MP4, MOV, AVI)", type=["mp4", "mov", "avi"]
+  )
 
-    col_y1, col_y2 = st.columns([1.2, 1])
-    with col_y1:
-      st.subheader(f"▶️ Oynatılıyor: {secilen_mars}")
+  if uploaded_video is not None:
+    col_video, col_panel = st.columns([1.2, 1])
 
-      # YouTube kısıtlamalarına takılmamak için doğrudan güvenli ve açık ses/video akış kaynakları kullanılmıştır
-      if "İstiklal Marşı" in secilen_mars:
-        st.audio(
-            "https://upload.wikimedia.org/wikipedia/commons/b/b4/Istiklal_Mars%C4%B1_instrumental.ogg"
-        )
-        st.caption(
-            "🇹🇷 İstiklal Marşı (Orkestra / Enstrümantal Resmi Ses Kaydı)"
-        )
-      else:
-        st.audio(
-            "https://upload.wikimedia.org/wikipedia/commons/1/1b/Ankara_Mar%C5%9F%C4%B1.ogg"
-        )
-        st.caption("🎵 İleri Marşı (Coşkulu Nota Kaydı)")
+    with col_video:
+      st.subheader(f"▶️ Oynatıcı ({video_kategori})")
+      st.video(uploaded_video)
 
-    with col_y2:
-      st.subheader("⚙️ Bilgi")
-      st.info(
-          "Bu ses oynatıcı altyapısı, YouTube'un dış site oynatma"
-          " kısıtlamalarını tamamen ortadan kaldırarak marşların web"
-          " sitenizde anında ve sorunsuz çalmasını sağlar."
+    with col_panel:
+      st.subheader("⚙️ Yapay Zekâ Analiz İşlemleri")
+      islem_turu = st.selectbox(
+          "İşlem Seçin:",
+          [
+              "Ders Özeti ve Ana Başlıklar",
+              "Videodan Beceri Temelli Soru Üret",
+              "Video Konuşma Dökümü (Transkript)",
+          ],
       )
 
-  else:
-    uploaded_video = st.file_uploader(
-        "Bilgisayardan Ders Videosu Seç (MP4, MOV, AVI)",
-        type=["mp4", "mov", "avi"],
-    )
+      if st.button("Video Analizini Başlat", type="primary"):
+        with st.spinner("Video işleniyor ve analiz ediliyor..."):
+          try:
+            with tempfile.NamedTemporaryFile(
+                delete=False, suffix=".mp4"
+            ) as tmp_file:
+              uploaded_video.seek(0)
+              tmp_file.write(uploaded_video.read())
+              tmp_file_path = tmp_file.name
 
-    if uploaded_video is not None:
-      col_video, col_panel = st.columns([1.2, 1])
+            video_file = client.files.upload(file=tmp_file_path)
 
-      with col_video:
-        st.subheader("▶️ Sitedeki Canlı Oynatıcı")
-        st.video(uploaded_video)
+            if islem_turu == "Ders Özeti ve Ana Başlıklar":
+              video_prompt = f"Bu ders videosunu '{video_kategori}' bağlamında analiz et. Öğrenciler için maddeler halinde detaylı bir ders özeti çıkar."
+            elif islem_turu == "Videodan Beceri Temelli Soru Üret":
+              video_prompt = f"Bu ders videosundaki konuya dayanarak '{video_kategori}' için LGS formatında beceri temelli sorular ve cevap anahtarı hazarla."
+            else:
+              video_prompt = "Bu videodaki konuşmaları kronolojik sırayla metin dökümü (transkript) haline getir."
 
-      with col_panel:
-        st.subheader("⚙️ Yapay Zekâ Analiz Paneli")
-        islem_turu = st.selectbox(
-            "İşlem Seçin:",
-            [
-                "Ders Özeti ve Ana Başlıklar",
-                "Videodan Beceri Temelli Soru Üret",
-                "Video Konuşma Dökümü (Transkript)",
-            ],
-        )
+            response = client.models.generate_content(
+                model="gemini-3.8-flash",
+                contents=[video_file, video_prompt],
+                config=types.GenerateContentConfig(
+                    temperature=0.3, max_output_tokens=2048
+                ),
+            )
 
-        if st.button("Analizi Başlat", type="primary"):
-          with st.spinner("Video işleniyor ve analiz ediliyor..."):
-            try:
-              with tempfile.NamedTemporaryFile(
-                  delete=False, suffix=".mp4"
-              ) as tmp_file:
-                uploaded_video.seek(0)
-                tmp_file.write(uploaded_video.read())
-                tmp_file_path = tmp_file.name
+            st.success("Analiz tamamlandı!")
+            st.markdown(response.text)
 
-              video_file = client.files.upload(file=tmp_file_path)
+            os.unlink(tmp_file_path)
 
-              if islem_turu == "Ders Özeti ve Ana Başlıklar":
-                video_prompt = (
-                    "Bu ders videosunu analiz et. Öğrenciler için maddeler halinde"
-                    " detaylı bir ders özeti çıkar."
-                )
-              elif islem_turu == "Videodan Beceri Temelli Soru Üret":
-                video_prompt = (
-                    "Bu ders videosundaki konuya dayanarak LGS formatında"
-                    " beceri temelli sorular ve cevap anahtarı hazarla."
-                )
-              else:
-                video_prompt = (
-                    "Bu videodaki konuşmaları kronolojik sırayla metin"
-                    " dökümü (transkript) haline getir."
-                )
-
-              response = client.models.generate_content(
-                  model="gemini-3.8-flash",
-                  contents=[video_file, video_prompt],
-                  config=types.GenerateContentConfig(
-                      temperature=0.3, max_output_tokens=2048
-                  ),
-              )
-
-              st.success("Analiz tamamlandı!")
-              st.markdown(response.text)
-
-              os.unlink(tmp_file_path)
-
-            except Exception as e:
-              st.error(f"Hata oluştu: {e}")
+          except Exception as e:
+            st.error(f"Hata oluştu: {e}")
