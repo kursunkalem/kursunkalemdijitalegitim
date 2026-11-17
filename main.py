@@ -222,24 +222,28 @@ with tab4:
     secilen_youtube_ders = st.selectbox(
         "Sitedeki Ders Listesinden Seçin:",
         [
-            "Örnek Ders 1: Paragraf Stratejileri",
-            "Örnek Ders 2: Fiilimsiler Konu Anlatımı",
+            "🇹🇷 İstiklal Marşı",
+            "🎵 İleri Marşı",
+            "Örnek Ders: Paragraf Stratejileri",
         ],
     )
 
     col_y1, col_y2 = st.columns([1.2, 1])
     with col_y1:
       st.subheader(f"▶️ Oynatılıyor: {secilen_youtube_ders}")
-      if "Paragraf" in secilen_youtube_ders:
-        st.video("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+      if "İstiklal Marşı" in secilen_youtube_ders:
+        st.video("https://www.youtube.com/watch?v=k8vW6i6t6dc")
+      elif "İleri Marşı" in secilen_youtube_ders:
+        # İleri Marşı YouTube bağlantısı
+        st.video("https://www.youtube.com/watch?v=17qO7O4gQ8Q")
       else:
         st.video("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 
     with col_y2:
       st.subheader("⚙️ Bilgi")
       st.info(
-          "Bu bölüm sitede sabit yer alan dersler içindir. Kendi YouTube"
-          " linklerinizi yukarıdaki koda ekleyerek çoğaltabilirsiniz."
+          "Bu bölümde dilediğiniz marş veya ders videolarının YouTube"
+          " bağlantılarını kolayca yönetebilirsiniz."
       )
 
   else:
