@@ -79,7 +79,8 @@ st.title(
 )
 st.markdown(
     "LGS standartlarına uygun sorular üretin, referans belgelerinizi yönetin"
-    " ve sitede doğrudan yer alan ders videolarını izleyip analiz edin."
+    " ve hem hazır ders videolarınızı hem de kendi videolarınızı sitede canlı"
+    " izleyip analiz edin."
 )
 
 # --- SEKMELER ---
@@ -88,7 +89,7 @@ tab1, tab2, tab3, tab4 = st.tabs(
         "📝 Soru Üretim Modülü",
         "📂 Kazanım & Referans Yönetimi",
         "📊 Soru Havuzu Analizi",
-        "🎥 Sitedeki Ders Videoları ve Eğitimler",
+        "🎥 Video Kütüphanesi ve Oynatıcı",
     ]
 )
 
@@ -200,52 +201,51 @@ with tab3:
     st.warning("Referans soru dosyası bulunamadı.")
 
 with tab4:
-  st.header("🎥 Sitedeki Ders Videoları ve Eğitim Kütüphanesi")
+  st.header("🎥 Video Kütüphanesi ve Canlı Oynatıcı")
   st.markdown(
-      "Aşağıdaki menüden sitede yer alan hazır ders videolarını seçerek doğrudan"
-      " izleyebilir ya da kendi ders videonuzu yükleyip yapay zekâya"
-      " inceletebilirsiniz."
+      "İster sitede sabit yer alan YouTube ders videolarını seçerek izleyin, ister"
+      " bilgisayarınızdan kendi videonuzu yükleyip yapay zekâya analiz"
+      " ettirin."
   )
 
-  # Video Kaynağı Seçimi (Sitede Sabit mi, Yoksa Kullanıcı mı Yükleyecek?)
-  video_kaynagi = st.radio(
-      "Video Kaynağı Seçin:",
+  # İki yöntem için seçim alanı
+  video_secimi = st.radio(
+      "Video Modu:",
       [
-          "📺 Sitedeki Hazır Örnek Ders Videoları (YouTube / Web)",
-          "💻 Bilgisayarımdan Ders Videosu Yükle",
+          "📺 Sitedeki Sabit Ders Videoları (YouTube)",
+          "💻 Bilgisayarımdan Video Yükle ve İzle",
       ],
   )
 
-  if video_kaynagi == "📺 Sitedeki Hazır Örnek Ders Videoları (YouTube / Web)":
-    # Sitede doğrudan yer alan örnek videolar (Buraya kendi YouTube ders video linklerini ekleyebilirsin)
-    secilen_ders = st.selectbox(
-        "Ders Listesinden Seçim Yapın:",
+  if video_secimi == "📺 Sitedeki Sabit Ders Videoları (YouTube)":
+    # Sitede sabit durmasını istediğin YouTube dersleri
+    secilen_youtube_ders = st.selectbox(
+        "Sitedeki Ders Listesinden Seçin:",
         [
-            "Türkçe - LGS Paragraf Stratejileri (Örnek Ders 1)",
-            "Türkçe - Fiilimsiler Konu Anlatımı (Örnek Ders 2)",
+            "Örnek Ders 1: Paragraf Stratejileri",
+            "Örnek Ders 2: Fiilimsiler Konu Anlatımı",
         ],
     )
 
-    col_v, col_p = st.columns([1.2, 1])
-    with col_v:
-      st.subheader(f"▶️ Oynatılıyor: {secilen_ders}")
-      # Sitede doğrudan gömülü yer alan YouTube örnek video oynatıcısı
-      if "Paragraf" in secilen_ders:
-        st.video("https://www.youtube.com/watch?v=dQw4w9WgXcQ")  # Örnek link
+    col_y1, col_y2 = st.columns([1.2, 1])
+    with col_y1:
+      st.subheader(f"▶️ Oynatılıyor: {secilen_youtube_ders}")
+      # Buraya kendi YouTube linklerini tırnak içine yazabilirsin
+      if "Paragraf" in secilen_youtube_ders:
+        st.video("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
       else:
-        st.video("https://www.youtube.com/watch?v=dQw4w9WgXcQ")  # Örnek link
+        st.video("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
 
-    with col_p:
-      st.subheader("⚙️ Ders İçeriği İşlemleri")
-      if st.button("Bu Ders İçin Soru Üret", type="primary"):
-        st.info(
-            "Seçilen ders videosunun içeriğine dayalı LGS soruları yapay zekâ"
-            " tarafından hazırlanıyor..."
-        )
-        # Buraya video içeriğiyle ilgili prompt eklenebilir
+    with col_y2:
+      st.subheader("⚙️ Bilgi")
+      st.info(
+          "Bu bölüm sitede sabit yer alan dersler içindir. Kendi yükleyeceğiniz"
+          " videoları yapay zekâ analizine sokmak için diğer modu"
+          " seçebilirsiniz."
+      )
 
   else:
-    # Kullanıcının kendi yükleyip sitede oynatacağı alan
+    # Bilgisayardan dosya seçip yükleme ve canlı izleme/analiz modu
     uploaded_video = st.file_uploader(
         "Bilgisayardan Ders Videosu Seç (MP4, MOV, AVI)",
         type=["mp4", "mov", "avi"],
@@ -255,7 +255,7 @@ with tab4:
       col_video, col_panel = st.columns([1.2, 1])
 
       with col_video:
-        st.subheader("▶️ Sitedeki Oynatıcı")
+        st.subheader("▶️ Sitedeki Canlı Oynatıcı")
         st.video(uploaded_video)
 
       with col_panel:
