@@ -37,7 +37,7 @@ def pdf_oku(dosya):
 
 def docx_oku(dosya):
   doc = Document(dosya)
-  metin = "\n".join([p.text for p in doc.paragraphs])
+  metin = "\n".join([p.text for p.text in doc.paragraphs])
   return metin
 
 
@@ -73,37 +73,86 @@ def soru_word_yap(soru_metni):
   return f
 
 
+# --- SINIF VE KONU YAPISI ---
+SINIF_KONTENJLARI = {
+    "5. Sınıf Türkçe": [
+        "Sözcükte Anlam (Gerçek, Mecaz, Terim)",
+        "Cümlede Anlam (Öznellik, Nesnellik, Neden-Sonuç)",
+        "Parçada Anlam (Ana Düşünce, Konu, Başlık)",
+        "Metin Türleri (Hikaye, Masal, Fabl)",
+        "Yazım Kuralları ve Noktalama İşaretleri",
+    ],
+    "6. Sınıf Türkçe": [
+        "Sözcükte Anlam (Eş, Zıt, Yakın Anlamlılar, Deyimler)",
+        "Cümlede Anlam (Amaç-Sonuç, Koşul-Sonuç)",
+        "Parçada Anlam (Ana Duygu, Düşünceyi Geliştirme Yolları)",
+        "İsimler (Adlar) ve Tamlamalar",
+        "Zamirler (Adıllar) ve Ek Fiil",
+    ],
+    "7. Sınıf Türkçe": [
+        "Söz Sanatları (Kişileştirme, Benzetme, Abartma, Konuşturma)",
+        "Fiiller (Kip, Kişi, Anlam Kayması)",
+        "Fiilimsiler (İsim-Fiil, Sıfat-Fiil, Zarf-Fiil)",
+        "Cümlenin Ögeleri (Özne, Nesne, Dolaylı Tümleç, Yüklem)",
+        "Anlatım Bozuklukları (Anlamsal Bozukluklar)",
+    ],
+    "8. Sınıf Türkçe (LGS Hazırlık)": [
+        "Fiilimsiler ve Cümlenin Ögeleri (İleri Düzey)",
+        "Cümle Vurgusu ve Çatı Özellikleri",
+        "Metin Türleri ve Düşünceyi Geliştirme Yolları",
+        "Sözel Mantık ve Muhakeme Becerileri",
+        "Grafik, Tablo ve Görsel Okuma Yorumlama",
+        "Paragraf Stratejileri (Ana Düşünce, Yardımcı Düşünce, Akışı Bozan)",
+    ],
+}
+
 # --- ARAYÜZ BAŞLIĞI ---
 st.title(
-    "✏️ Kurşun Kalem Dijital Eğitim - Konu & Dosya Bazlı İçerik Yönetim Paneli"
+    "✏️ Kurşun Kalem Dijital Eğitim - Sınıf Bazlı Soru ve İçerik Yönetim Sistemi"
 )
 st.markdown(
-    "LGS standartlarına uygun sorular üretin, ünite/konu bazlı dosyalarınızı"
-    " yönetin ve ders videolarınızı yükleyerek yapay zekâyla analiz edin."
+    "5, 6, 7 ve 8. Sınıf müfredatına uygun olarak konularınızı yönetin,"
+    " sorular üretin ve ders videolarınızı analiz edin."
 )
 
 # --- SEKMELER ---
 tab1, tab2, tab3, tab4 = st.tabs(
     [
-        "📝 Soru Üretim Modülü",
-        "📂 Konu & Dosya Yönetimi",
+        "📝 Sınıf & LGS Soru Üretici",
+        "📂 Sınıf & Konu Dosya Yönetimi",
         "📊 Soru Havuzu Analizi",
-        "🎥 Dosya ve Video Analiz Paneli",
+        "🎥 Sınıf Bazlı Video Analiz Paneli",
     ]
 )
 
 with tab1:
-  st.header("Beceri Temelli Soru Üretici (LGS Standartları)")
-  kazanim_input = st.text_area(
-      "Kazanım veya Konu İçeriğini Girin:",
-      placeholder="Örn: Metnin ana düşüncesini ve yardımcı düşüncelerini ayırt eder.",
-      height=100,
+  st.header("Beceri Temelli Sınıf & LGS Soru Üretici")
+
+  col_s1, col_s2 = st.columns(2)
+  with col_s1:
+    secilen_sinif_s = st.selectbox(
+        "Hedef Sınıf Seviyesi:", list(SINIF_KONTENJLARI.keys()), key="soru_sinif"
+    )
+  with col_s2:
+    secilen_konu_s = st.selectbox(
+        "İlgili Konu / Kazanım:",
+        SINIF_KONTENJLARI[secilen_sinif_s],
+        key="soru_konu",
+    )
+
+  ek_detay = st.text_area(
+      "Özel İstem / Ek Açıklama (İsteğe Bağlı):",
+      placeholder=(
+          "Örn: Sadece uzun paragraflı yeni nesil soru olsun veya şu kuralı"
+          " vurgula."
+      ),
+      height=70,
   )
 
   col1, col2, col3 = st.columns(3)
   with col1:
     zorluk_derecesi = st.selectbox(
-        "Zorluk Seviyesi", ["Beceri Temelli (LGS)", "Zor", "Orta"]
+        "Zorluk Seviyesi", ["Beceri Temelli (Yeni Nesil)", "Zor", "Orta"]
     )
   with col2:
     soru_sayisi = st.number_input(
@@ -116,188 +165,15 @@ with tab1:
     )
 
   if st.button("Soruları Üret", type="primary"):
-    if not kazanim_input or len(kazanim_input.strip()) < 2:
-      st.warning("Lütfen geçerli bir kazanım veya konu içeriği girin.")
-    else:
-      with st.spinner("Yapay zekâ soruları hazırlıyor, lütfen bekleyin..."):
-        try:
-          prompt = f"""
-                    Sen uzman bir Türkçe eğitimcisi ve LGS soru hazırlama komisyonu başkanısın.
-                    Aşağıdaki kriterlere tam uygun olacak şekilde soru/sorular hazarla:
-                    - Kazanım/İçerik: {kazanim_input}
-                    - Zorluk: {zorluk_derecesi}
-                    - Soru Sayısı: {soru_sayisi}
-                    - Soru Tipi: {soru_turu}
-                    - LGS formatına uygun, öğrencinin okuduğunu anlama ve yorumlama becerilerini ölçen nitelikli öncüller kullan.
-                    - Cevap anahtarını ve detaylı açıklamasını mutlaka ekle.
-                    """
-          response = client.models.generate_content(
-              model="gemini-3.8-flash",
-              contents=prompt,
-              config=types.GenerateContentConfig(
-                  temperature=0.4, max_output_tokens=2048
-              ),
-          )
-          st.success("Sorular başarıyla üretildi!")
-          st.markdown(response.text)
-
-          word_dosyasi = soru_word_yap(response.text)
-          st.download_button(
-              label="📥 Soruları Word (DOCX) Olarak İndir",
-              data=word_dosyasi,
-              file_name="kursunkalem_lgs_sorulari.docx",
-              mime=(
-                  "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-              ),
-          )
-        except Exception as e:
-          st.error(f"Soru üretilirken hata oluştu: {e}")
-
-with tab2:
-  st.header("📂 Konu & Dosya Bazlı İçerik Yönetimi")
-  st.markdown(
-      "Ders materyallerini ünite ve konulara göre ayırarak sisteme yükleyin"
-      " ve metin içeriklerini inceleyin."
-  )
-
-  secilen_unite = st.selectbox(
-      "Ünite / Kategori Seçin:",
-      [
-          "1. Ünite: Fiilimsiler",
-          "2. Ünite: Cümlenin Ögeleri",
-          "3. Ünite: Metin Türleri ve Söz Sanatları",
-          "4. Ünite: Paragraf Stratejileri",
-          "Diğer / Genel Konu Anlatımları",
-      ],
-  )
-
-  yuklenen_dosya = st.file_uploader(
-      f"'{secilen_unite}' için Ders Notu / Konu Anlatım Dosyası Yükle (PDF, DOCX,"
-      " TXT)",
-      type=["pdf", "docx", "txt"],
-  )
-
-  if yuklenen_dosya is not None:
-    uzanti = yuklenen_dosya.name.split(".")[-1].lower()
-    metin_icerik = (
-        pdf_oku(yuklenen_dosya)
-        if uzanti == "pdf"
-        else (
-            docx_oku(yuklenen_dosya)
-            if uzanti == "docx"
-            else yuklenen_dosya.read().decode("utf-8")
-        )
-    )
-
-    st.success(
-        f"'{yuklenen_dosya.name}' dosyası başarıyla okundu ve kategoriye"
-        " bağlandı!"
-    )
-    st.text_area(
-        "Yüklenen Belge İçeriği Önizlemesi:",
-        value=metin_icerik[:3000],
-        height=200,
-    )
-
-    if st.button("Bu Dosyayı Yapay Zekâ ile Analiz Et ve Kazanım Çıkar"):
-      with st.spinner("Analiz ediliyor..."):
-        p = f"Bu dokümanı {secilen_unite} başlığı altında incele, LGS Türkçe müfredatına uygun ana kazanımları ve önemli noktaları çıkar."
-        resp = client.models.generate_content(
-            model="gemini-3.8-flash",
-            contents=[p, metin_icerik[:3000]],
-            config=types.GenerateContentConfig(
-                temperature=0.3, max_output_tokens=1500
-            ),
-        )
-        st.markdown(resp.text)
-
-with tab3:
-  st.header("📊 Soru Havuzu Analiz Paneli")
-  if referanslar_data:
-    st.success(f"Sistemde toplam **{len(referanslar_data)}** referans soru aktif.")
-    for i, soru in enumerate(referanslar_data):
-      with st.expander(
-          f"📌 Soru {i+1} | Branş: {soru.get('brans', 'Belirtilmemiş')} | Sınıf:"
-          f" {soru.get('sinif', 'Belirtilmemiş')}"
-      ):
-        st.markdown(f"**Kazanım:** {soru.get('kazanim', 'Belirtilmemiş')}")
-        st.markdown("---")
-        st.markdown("**Soru Metni / Bağlam:**")
-        st.info(soru.get("baglam_metni", "Metin bulunamadı."))
-  else:
-    st.warning("Henüz havuzda referans soru bulunmuyor.")
-
-with tab4:
-  st.header("🎥 Konu & Ders Videosu Analiz Paneli")
-  st.markdown(
-      "Bilgisayarınızdaki ders videolarını (MP4, MOV, AVI) yükleyerek hem"
-      " oynatın hem de yapay zekâ ile döküm veya soru üretimi gerçekleştirin."
-  )
-
-  video_kategori = st.selectbox(
-      "Videonun Ait Olduğu Ünite / Konu:",
-      [
-          "1. Ünite: Fiilimsiler",
-          "2. Ünite: Cümlenin Ögeleri",
-          "3. Ünite: Metin Türleri ve Söz Sanatları",
-          "4. Ünite: Paragraf Stratejileri",
-          "Genel Ders Videoları",
-      ],
-  )
-
-  uploaded_video = st.file_uploader(
-      "Ders Videosu Seçin (MP4, MOV, AVI)", type=["mp4", "mov", "avi"]
-  )
-
-  if uploaded_video is not None:
-    col_video, col_panel = st.columns([1.2, 1])
-
-    with col_video:
-      st.subheader(f"▶️ Oynatıcı ({video_kategori})")
-      st.video(uploaded_video)
-
-    with col_panel:
-      st.subheader("⚙️ Yapay Zekâ Analiz İşlemleri")
-      islem_turu = st.selectbox(
-          "İşlem Seçin:",
-          [
-              "Ders Özeti ve Ana Başlıklar",
-              "Videodan Beceri Temelli Soru Üret",
-              "Video Konuşma Dökümü (Transkript)",
-          ],
-      )
-
-      if st.button("Video Analizini Başlat", type="primary"):
-        with st.spinner("Video işleniyor ve analiz ediliyor..."):
-          try:
-            with tempfile.NamedTemporaryFile(
-                delete=False, suffix=".mp4"
-            ) as tmp_file:
-              uploaded_video.seek(0)
-              tmp_file.write(uploaded_video.read())
-              tmp_file_path = tmp_file.name
-
-            video_file = client.files.upload(file=tmp_file_path)
-
-            if islem_turu == "Ders Özeti ve Ana Başlıklar":
-              video_prompt = f"Bu ders videosunu '{video_kategori}' bağlamında analiz et. Öğrenciler için maddeler halinde detaylı bir ders özeti çıkar."
-            elif islem_turu == "Videodan Beceri Temelli Soru Üret":
-              video_prompt = f"Bu ders videosundaki konuya dayanarak '{video_kategori}' için LGS formatında beceri temelli sorular ve cevap anahtarı hazarla."
-            else:
-              video_prompt = "Bu videodaki konuşmaları kronolojik sırayla metin dökümü (transkript) haline getir."
-
-            response = client.models.generate_content(
-                model="gemini-3.8-flash",
-                contents=[video_file, video_prompt],
-                config=types.GenerateContentConfig(
-                    temperature=0.3, max_output_tokens=2048
-                ),
-            )
-
-            st.success("Analiz tamamlandı!")
-            st.markdown(response.text)
-
-            os.unlink(tmp_file_path)
-
-          except Exception as e:
-            st.error(f"Hata oluştu: {e}")
+    with st.spinner("Yapay zekâ soruları hazırlıyor, lütfen bekleyin..."):
+      try:
+        prompt = f"""
+                  Sen uzman bir Türkçe eğitimcisi ve soru hazırlama komisyonu başkanısın.
+                  Aşağıdaki kriterlere tam uygun olacak şekilde soru/sorular hazarla:
+                  - Sınıf Düzeyi: {secilen_sinif_s}
+                  - Konu / Kazanım: {secilen_konu_s}
+                  - Ek Açıklama: {ek_detay}
+                  - Zorluk: {zorluk_derecesi}
+                  - Soru Sayısı: {soru_sayisi}
+                  - Soru Tipi: {soru_turu}
+                  - MEB kazanımlarına ve LGS/okul sınavı mantığına tam uygun, öğrencinin okuduğunu anlama ve yorumlama becerilerini ölçen
