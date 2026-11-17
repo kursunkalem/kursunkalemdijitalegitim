@@ -37,7 +37,7 @@ def pdf_oku(dosya):
 
 def docx_oku(dosya):
   doc = Document(dosya)
-  metin = "\n".join([p.text for p.text in doc.paragraphs])
+  metin = "\n".join([p.text for p in doc.paragraphs])
   return metin
 
 
@@ -112,7 +112,7 @@ st.title(
 )
 st.markdown(
     "5, 6, 7 ve 8. Sınıf müfredatına uygun olarak konularınızı yönetin,"
-    " sorular üretin ve ders videolarınızı analiz edin."
+    " sorular üretin ve ders video/ses dosyalarınızı analiz edin."
 )
 
 # --- SEKMELER ---
@@ -121,7 +121,7 @@ tab1, tab2, tab3, tab4 = st.tabs(
         "📝 Sınıf & LGS Soru Üretici",
         "📂 Sınıf & Konu Dosya Yönetimi",
         "📊 Soru Havuzu Analizi",
-        "🎥 Sınıf Bazlı Video Analiz Paneli",
+        "🎥 Sınıf Bazlı Medya (Video/Ses) Analiz Paneli",
     ]
 )
 
@@ -272,79 +272,14 @@ with tab3:
     st.warning("Henüz havuzda referans soru bulunmuyor.")
 
 with tab4:
-  st.header("🎥 Sınıf ve Konu Bazlı Video Analiz Paneli")
+  st.header("🎥 Sınıf ve Konu Bazlı Medya (Video / Ses) Analiz Paneli")
   st.markdown(
-      "Bilgisayarınızdaki ders videosunu (MP4, MOV, AVI) yükleyin; sınıf ve"
-      " konuyu seçerek yapay zekâya analiz ettirin."
+      "Bilgisayarınızdaki ders videosunu veya ses kaydını (MP4, MOV, AVI, MP3,"
+      " WAV, M4A) yükleyin; sınıf ve konuyu seçerek yapay zekâya analiz"
+      " ettirin."
   )
 
   col_v1, col_v2 = st.columns(2)
   with col_v1:
     video_sinif = st.selectbox(
-        "Videonun Ait Olduğu Sınıf:",
-        list(SINIF_KONTENJLARI.keys()),
-        key="video_sinif",
-    )
-  with col_v2:
-    video_konu = st.selectbox(
-        "Videonun Ait Olduğu Konu:",
-        SINIF_KONTENJLARI[video_sinif],
-        key="video_konu",
-    )
-
-  uploaded_video = st.file_uploader(
-      "Ders Videosu Seçin (MP4, MOV, AVI)", type=["mp4", "mov", "avi"]
-  )
-
-  if uploaded_video is not None:
-    col_video, col_panel = st.columns([1.2, 1])
-
-    with col_video:
-      st.subheader(f"▶️ Oynatıcı ({video_sinif})")
-      st.video(uploaded_video)
-
-    with col_panel:
-      st.subheader("⚙️ Yapay Zekâ Analiz İşlemleri")
-      islem_turu = st.selectbox(
-          "İşlem Seçin:",
-          [
-              "Ders Özeti ve Ana Başlıklar",
-              "Videodan Beceri Temelli Soru Üret",
-              "Video Konuşma Dökümü (Transkript)",
-          ],
-      )
-
-      if st.button("Video Analizini Başlat", type="primary"):
-        with st.spinner("Video işleniyor ve analiz ediliyor..."):
-          try:
-            with tempfile.NamedTemporaryFile(
-                delete=False, suffix=".mp4"
-            ) as tmp_file:
-              uploaded_video.seek(0)
-              tmp_file.write(uploaded_video.read())
-              tmp_file_path = tmp_file.name
-
-            video_file = client.files.upload(file=tmp_file_path)
-
-            if islem_turu == "Ders Özeti ve Ana Başlıklar":
-              video_prompt = f"Bu ders videosunu {video_sinif} seviyesi '{video_konu}' konusu bağlamında analiz et. Öğrenciler için maddeler halinde detaylı bir ders özeti çıkar."
-            elif islem_turu == "Videodan Beceri Temelli Soru Üret":
-              video_prompt = f"Bu ders videosundaki konuya dayanarak {video_sinif} - '{video_konu}' için uygun formatta beceri temelli sorular ve cevap anahtarı hazarla."
-            else:
-              video_prompt = "Bu videodaki konuşmaları kronolojik sırayla metin dökümü (transkript) haline getir."
-
-            response = client.models.generate_content(
-                model="gemini-3.8-flash",
-                contents=[video_file, video_prompt],
-                config=types.GenerateContentConfig(
-                    temperature=0.3, max_output_tokens=2048
-                ),
-            )
-
-            st.success("Analiz tamamlandı!")
-            st.markdown(response.text)
-
-            os.unlink(tmp_file_path)
-
-          except Exception as e:
-            st.error(f"Hata oluştu: {e}")
+        "Medya Dosyasının Ait Olduğu Sınıf:",
