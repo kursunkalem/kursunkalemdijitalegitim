@@ -63,6 +63,28 @@ def arsivi_kaydet(arsiv_verisi):
 arsiv = arsivi_yukle()
 
 
+@st.cache_data
+def verileri_yukle():
+  kazanimlar = []
+  referanslar = []
+  try:
+    if os.path.exists("kazanimlar.json"):
+      with open("kazanimlar.json", "r", encoding="utf-8") as f:
+        kazanimlar = json.load(f)
+  except Exception:
+    pass
+  try:
+    if os.path.exists("referans_sorular.json"):
+      with open("referans_sorular.json", "r", encoding="utf-8") as f:
+        referanslar = json.load(f)
+  except Exception:
+    pass
+  return kazanimlar, referanslar
+
+
+kazanimlar_data, referanslar_data = verileri_yukle()
+
+
 def soru_word_yap(soru_metni):
   doc = Document()
   doc.add_heading("Kurşun Kalem Dijital Eğitim - Soru Çıktısı", level=1)
