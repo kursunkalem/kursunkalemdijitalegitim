@@ -1,542 +1,386 @@
-from io import BytesIO
 import json
 import os
-import tempfile
-from docx import Document
-from docx.shared import Inches, Pt, RGBColor
-from google import genai
-from google.genai import types
-from pypdf import PdfReader
 import streamlit as st
+from google import genai
 
 # --- SAYFA YAPILANDIRMASI ---
 st.set_page_config(
     page_title="Kurşun Kalem Dijital Eğitim", page_icon="✏️", layout="wide"
 )
 
-# --- GEMINI CLIENT BAĞLANTISI ---
-try:
-  api_key = st.secrets["API_KEY"]
-  client = genai.Client(api_key=api_key)
-except Exception as e:
-  st.error(
-      "API Anahtarı bulunamadı! Lütfen Streamlit Cloud Secrets ayarlarından"
-      " 'API_KEY' tanımladığınızdan emin olun."
-  )
-  st.stop()
+# --- KLASÖR VE DOSYA YOLLARI ---
+DATA_DIR = "veri"
+MEDIA_DIR = "media_arsivi"
+os.makedirs(DATA_DIR, exist_ok=True)
+os.makedirs(MEDIA_DIR, exist_ok=True)
+
+SINIF_KONULARI_DOSYA = os.path.join(DATA_DIR, "sinif_konulari.json")
+DERS_ARSIVI_DOSYA = os.path.join(DATA_DIR, "ders_arsivi.json")
 
 
-# --- YARDIMCI FONKSİYONLAR ---
-def pdf_oku(dosya):
-  reader = PdfReader(dosya)
-  metin = ""
-  for sayfa in reader.pages:
-    metin += sayfa.extract_text() or ""
-  return metin
+# --- VARSAYILAN VERİLER ---
+def varsayilan_konulari_yukle():
+  return {
+      "5. Sınıf Türkçe": [
+          "Sözcükte Anlam (Gerçek, Mecaz, Terim)",
+          "Sözcükler Arası Anlam İlişkileri",
+          "Deyimler ve Atasözleri",
+          "Cümlede Anlam",
+          "Metnin Anlamı ve Yorumu",
+      ],
+      "6. Sınıf Türkçe": [
+          "Sözcükte ve Söz Öbeklerinde Anlam",
+          "Cümlede Anlam İlişkileri",
+          "Parçada Anlam ve Yapı",
+          "Metin Türleri",
+          "Yazım Kuralları ve Noktalama",
+      ],
+      "7. Sınıf Türkçe": [
+          "Sözcükte Anlam ve Çok Boyutlu Yorum",
+          "Cümlede Düşünceyi Geliştirme Yolları",
+          "Fiilimsiler",
+          "Anlatım Bozuklukları",
+          "Grafik, Tablo ve Görsel Okuma",
+      ],
+      "8. Sınıf Türkçe (LGS)": [
+          "Sözel Mantık ve Muhakeme",
+          "Görsel, Grafik ve Tablo Yorumlama",
+          "Fiil Çatısı ve Cümle Ögeleri",
+          "Metinler Arası Karşılaştırma",
+          "Yazım Kuralları ve Noktalama İşaretleri (LGS Odaklı)",
+      ],
+  }
 
 
-def docx_oku(dosya):
-  doc = Document(dosya)
-  metin = "\n".join([p.text for p in doc.paragraphs])
-  return metin
-
-
-# --- KALICI DİSK KLASÖRÜ VE ARŞİV YÖNETİMİ ---
-ARSIV_DOSYASI = "ders_arsivi.json"
-KONULAR_DOSYASI = "sinif_konulari.json"
-MEDYA_KLASORU = "media_arsivi"
-
-if not os.path.exists(MEDYA_KLASORU):
-  os.makedirs(MEDYA_KLASORU)
-
-
-def arsivi_yukle():
-  if os.path.exists(ARSIV_DOSYASI):
+# --- JSON YÖNETİM FONKSİYONLARI ---
+def veri_yukle(dosya_yolu, varsayilan_fonk):
+  if os.path.exists(dosya_yolu):
     try:
-      with open(ARSIV_DOSYASI, "r", encoding="utf-8") as f:
+      with open(dosya_yolu, "r", encoding="utf-8") as f:
         return json.load(f)
-    except Exception:
-      return {}
-  return {}
+    except:
+      return varsayilan_fonk()
+  else:
+    veri = varsayilan_fonk()
+    veri_kaydet(dosya_yolu, veri)
+    return veri
 
 
-def arsivi_kaydet(arsiv_verisi):
-  with open(ARSIV_DOSYASI, "w", encoding="utf-8") as f:
-    json.dump(arsiv_verisi, f, ensure_ascii=False, indent=4)
+def veri_kaydet(dosya_yolu, veri):
+  with open(dosya_yolu, "w", encoding="utf-8") as f:
+    json.dump(veri, f, ensure_ascii=False, indent=4)
 
 
-arsiv = arsivi_yukle()
-
-# --- VARSAYILAN SINIF VE KONULAR ---
-VARSAYILAN_KONTENJAMLAR = {
-    "5. Sınıf Türkçe": [
-        "Sözcükte Anlam (Gerçek, Mecaz, Terim)",
-        "Cümlede Anlam (Öznellik, Nesnellik, Neden-Sonuç)",
-        "Parçada Anlam (Ana Düşünce, Konu, Başlık)",
-        "Metin Türleri (Hikaye, Masal, Fabl)",
-        "Yazım Kuralları ve Noktalama İşaretleri",
-    ],
-    "6. Sınıf Türkçe": [
-        "Sözcükte Anlam (Eş, Zıt, Yakın Anlamlılar, Deyimler)",
-        "Cümlede Anlam (Amaç-Sonuç, Koşul-Sonuç)",
-        "Parçada Anlam (Ana Duygu, Düşünceyi Geliştirme Yolları)",
-        "İsimler (Adlar) ve Tamlamalar",
-        "Zamirler (Adıllar) ve Ek Fiil",
-    ],
-    "7. Sınıf Türkçe": [
-        "Söz Sanatları (Kişileştirme, Benzetme, Abartma, Konuşturma)",
-        "Fiiller (Kip, Kişi, Anlam Kayması)",
-        "Fiilimsiler (İsim-Fiil, Sıfat-Fiil, Zarf-Fiil)",
-        "Cümlenin Ögeleri (Özne, Nesne, Dolaylı Tümleç, Yüklem)",
-        "Anlatım Bozuklukları (Anlamsal Bozukluklar)",
-    ],
-    "8. Sınıf Türkçe (LGS Hazırlık)": [
-        "Fiilimsiler ve Cümlenin Ögeleri (İleri Düzey)",
-        "Cümle Vurgusu ve Çatı Özellikleri",
-        "Metin Türleri ve Düşünceyi Geliştirme Yolları",
-        "Sözel Mantık ve Muhakeme Becerileri",
-        "Grafik, Tablo ve Görsel Okuma Yorumlama",
-        "Paragraf Stratejileri (Ana Düşünce, Yardımcı Düşünce, Akışı Bozan)",
-    ],
-}
-
-
-def konuları_yukle():
-  if os.path.exists(KONULAR_DOSYASI):
-    try:
-      with open(KONULAR_DOSYASI, "r", encoding="utf-8") as f:
-        return json.load(f)
-    except Exception:
-      return VARSAYILAN_KONTENJAMLAR
-  return VARSAYILAN_KONTENJAMLAR
-
-
-def konuları_kaydet(konu_verisi):
-  with open(KONULAR_DOSYASI, "w", encoding="utf-8") as f:
-    json.dump(konu_verisi, f, ensure_ascii=False, indent=4)
-
-
-SINIF_KONTENJLARI = konuları_yukle()
-
-
-@st.cache_data
-def verileri_yukle():
-  referanslar = []
-  try:
-    if os.path.exists("referans_sorular.json"):
-      with open("referans_sorular.json", "r", encoding="utf-8") as f:
-        referanslar = json.load(f)
-  except Exception:
-    pass
-  return referanslar
-
-
-referanslar_data = verileri_yukle()
-
-
-def soru_word_yap(soru_metni):
-  doc = Document()
-  doc.add_heading("Kurşun Kalem Dijital Eğitim - Soru Çıktısı", level=1)
-  doc.add_paragraph(soru_metni)
-  f = BytesIO()
-  doc.save(f)
-  f.seek(0)
-  return f
-
-
-# --- ARAYÜZ BAŞLIĞI ---
-st.title(
-    "✏️ Kurşun Kalem Dijital Eğitim - Sınıf ve Konu Arşiv Yönetim Sistemi"
+# Verileri başlat
+sinif_konulari = veri_yukle(SINIF_KONULARI_DOSYA, varsayilan_konulari_yukle)
+ders_arsivi = veri_yukle(
+    DERS_ARSIVI_DOSYA, lambda: {"dokumanlar": [], "medyalar": []}
 )
+
+# --- BAŞLIK VE AÇIKLAMA ---
 st.markdown(
+    "# ✏️ Kurşun Kalem Dijital Eğitim - Sınıf ve Konu Arşiv Yönetim Sistemi"
+)
+st.write(
     "Sınıf/konu yönetimi yapın, soru üretin ve doküman/medyalarınızı konuya"
     " özel saklayın."
 )
 
-# --- SEKMELER ---
-tab0, tab1, tab2, tab3, tab4 = st.tabs(
-    [
-        "⚙️ Sınıf & Konu Yönetimi",
-        "📝 Sınıf & LGS Soru Üretici",
-        "📂 Konu Bazlı Dosya Arşivi",
-        "📊 Soru Havuzu Analizi",
-        "🎥 Konu Bazlı Medya (Ses/Video) Arşivi ve Analiz",
-    ]
-)
+# --- SEKME YAPISI (Fiyatlandırma Sekmesi Eklendi) ---
+sekme1, sekme2, sekme3, sekme4, sekme5, sekme6 = st.tabs([
+    "⚙️ Sınıf & Konu Yönetimi",
+    "📝 Sınıf & LGS Soru Üretici",
+    "📁 Konu Bazlı Dosya Arşivi",
+    "📊 Soru Havuzu Analizi",
+    "🎬 Konu Bazlı Medya Arşivi",
+    "💎 Abonelik & Fiyatlandırma",
+])
 
-with tab0:
-  st.header("⚙️ Sınıf ve Konu Başlıklarını Düzenle")
-  st.markdown(
-      "Buradan dilediğiniz sınıfa yeni konular ekleyebilir veya mevcut konuları"
-      " silebilirsiniz."
+# ==========================================
+# 1. SEKME: SINIF & KONU YÖNETİMİ
+# ==========================================
+with sekme1:
+  st.subheader("📚 Sınıf Seviyeleri ve Konu / Kazanım Yönetimi")
+  st.write(
+      "Mevcut sınıflara yeni konular ekleyebilir veya yeni sınıf seviyesi"
+      " tanımlayabilirsiniz."
   )
 
-  secilen_yonetim_sinif = st.selectbox(
-      "Düzenlenecek Sınıfı Seçin:",
-      list(SINIF_KONTENJLARI.keys()),
-      key="ayar_sinif",
-  )
+  col1, col2 = st.columns(2)
 
-  st.subheader(f"Mevcut Konular ({secilen_yonetim_sinif})")
-  mevcut_konular = SINIF_KONTENJLARI[secilen_yonetim_sinif]
-
-  for idx, konu in enumerate(mevcut_konular):
-    col_k1, col_k2 = st.columns([5, 1])
-    with col_k1:
-      st.text(f"• {konu}")
-    with col_k2:
-      if st.button("Sil", key=f"sil_konu_{secilen_yonetim_sinif}_{idx}"):
-        SINIF_KONTENJLARI[secilen_yonetim_sinif].pop(idx)
-        konuları_kaydet(SINIF_KONTENJLARI)
-        st.success("Konu silindi! Sayfayı yenileyebilirsiniz.")
+  with col1:
+    st.markdown("### Yeni Sınıf Ekle")
+    yeni_sinif_adi = st.text_input(
+        "Sınıf Adı (Örn: hazırlık veya 4. Sınıf Türkçe)"
+    )
+    if st.button("Sınıfı Ekle"):
+      if yeni_sinif_adi and yeni_sinif_adi not in sinif_konulari:
+        sinif_konulari[yeni_sinif_adi] = []
+        veri_kaydet(SINIF_KONULARI_DOSYA, sinif_konulari)
+        st.success(f"'{yeni_sinif_adi}' başarıyla eklendi!")
         st.rerun()
+      elif yeni_sinif_adi in sinif_konulari:
+        st.warning("Bu sınıf zaten mevcut.")
+
+  with col2:
+    st.markdown("### Mevcut Sınıfa Konu Ekle")
+    secilen_sinif_ekle = st.selectbox(
+        "Sınıf Seçin", list(sinif_konulari.keys()), key="sinif_sec_ekle"
+    )
+    yeni_konu_adi = st.text_input("Konu / Kazanım Adı")
+    if st.button("Konuyu Ekle"):
+      if yeni_konu_adi:
+        if yeni_konu_adi not in sinif_konulari[secilen_sinif_ekle]:
+          sinif_konulari[secilen_sinif_ekle].append(yeni_konu_adi)
+          veri_kaydet(SINIF_KONULARI_DOSYA, sinif_konulari)
+          st.success(f"'{yeni_konu_adi}' konuya eklendi!")
+          st.rerun()
+        else:
+          st.warning("Bu konu bu sınıfta zaten var.")
 
   st.divider()
-  st.subheader("➕ Yeni Konu Ekle")
-  yeni_konu_adi = st.text_input("Eklenecek Konu / Kazanım Adı:")
-  if st.button("Konuyu Ekle", type="primary"):
-    if yeni_konu_adi.strip():
-      if yeni_konu_adi not in SINIF_KONTENJLARI[secilen_yonetim_sinif]:
-        SINIF_KONTENJLARI[secilen_yonetim_sinif].append(yeni_konu_adi.strip())
-        konuları_kaydet(SINIF_KONTENJLARI)
-        st.success(
-            f"'{yeni_konu_adi}' başarıyla {secilen_yonetim_sinif} listesine"
-            " eklendi!"
-        )
-        st.rerun()
+  st.markdown("### 📋 Mevcut Sınıf ve Konu Listesi")
+  for sinif, konular in sinif_konulari.items():
+    with st.expander(f"📌 {sinif} ({len(konular)} Konu)"):
+      if konular:
+        for idx, konu in enumerate(konular):
+          col_a, col_b = st.columns([0.85, 0.15])
+          col_a.write(f"- {konu}")
+          if col_b.button(
+              "Sil", key=f"sil_{sinif}_{idx}", type="secondary"
+          ):
+            sinif_konulari[sinif].pop(idx)
+            veri_kaydet(SINIF_KONULARI_DOSYA, sinif_konulari)
+            st.rerun()
       else:
-        st.warning("Bu konu zaten listede mevcut.")
-    else:
-      st.error("Lütfen geçerli bir konu adı girin.")
+        st.info("Bu sınıfa ait henüz konu eklenmemiş.")
 
-with tab1:
-  st.header("Beceri Temelli Sınıf & LGS Soru Üretici")
+# ==========================================
+# 2. SEKME: SORU ÜRETİCİ (GEMINI API)
+# ==========================================
+with sekme2:
+  st.subheader("Beceri Temelli Sınıf & LGS Soru Üretici")
+
+  api_key = st.secrets.get("GEMINI_API_KEY") or os.environ.get("GEMINI_API_KEY")
 
   col_s1, col_s2 = st.columns(2)
   with col_s1:
-    secilen_sinif_s = st.selectbox(
-        "Hedef Sınıf Seviyesi:", list(SINIF_KONTENJLARI.keys()), key="soru_sinif"
+    hedef_sinif = st.selectbox(
+        "Hedef Sınıf Seviyesi:",
+        list(sinif_konulari.keys()),
+        key="soru_hedef_sinif",
     )
   with col_s2:
-    konu_listesi_s = SINIF_KONTENJLARI.get(secilen_sinif_s, ["Genel"])
-    secilen_konu_s = st.selectbox(
-        "İlgili Konu / Kazanım:", konu_listesi_s, key="soru_konu"
+    konu_listesi = (
+        sinif_konulari.get(hedef_sinif, ["Genel"])
+        if sinif_konulari.get(hedef_sinif)
+        else ["Genel"]
+    )
+    ilgili_konu = st.selectbox(
+        "İlgili Konu / Kazanım:", konu_listesi, key="soru_ilgili_konu"
     )
 
-  ek_detay = st.text_area(
+  ozel_istem = st.text_area(
       "Özel İstem / Ek Açıklama (İsteğe Bağlı):",
-      placeholder=(
-          "Örn: Sadece uzun paragraflı yeni nesil soru olsun veya şu kuralı"
-          " vurgula."
-      ),
-      height=70,
+      placeholder="Örn: Öncüllü, grafik yorumlamaya dayalı, çeldiricisi güçlü...",
   )
 
-  col1, col2, col3 = st.columns(3)
-  with col1:
-    zorluk_derecesi = st.selectbox(
-        "Zorluk Seviyesi", ["Beceri Temelli (Yeni Nesil)", "Zor", "Orta"]
+  col_z1, col_z2, col_z3 = st.columns(3)
+  with col_z1:
+    zorluk = st.selectbox(
+        "Zorluk Seviyesi",
+        ["Beceri Temelli (Yeni Nesil)", "Orta / MEB Tarzı", "Güçlük / Seçici"],
     )
-  with col2:
+  with col_z2:
     soru_sayisi = st.number_input(
         "Üretilecek Soru Sayısı", min_value=1, max_value=5, value=1
     )
-  with col3:
-    soru_turu = st.selectbox(
-        "Soru Tipi",
-        ["Çoktan Seçmeli (4 Şıklı)", "Açık Uçlu", "Metne Dayalı Yorum"],
+  with col_z3:
+    soru_tipi = st.selectbox(
+        "Soru Tipi", ["Çoktan Seçmeli (4 Şıkkı)", "Açık Uçlu / Cevap Anahtarlı"]
     )
 
   if st.button("Soruları Üret", type="primary"):
-    with st.spinner("Yapay zekâ soruları hazırlıyor, lütfen bekleyin..."):
+    if not api_key:
+      st.error(
+          "⚠️ GEMINI_API_KEY bulunamadı! Lütfen Streamlit secrets veya çevre"
+          " değişkenlerine ekleyin."
+      )
+    else:
       try:
-        prompt = f"""
-                  Sen uzman bir Türkçe eğitimcisi ve soru hazırlama komisyonu başkanısın.
-                  Aşağıdaki kriterlere tam uygun olacak şekilde soru/sorular hazarla:
-                  - Sınıf Düzeyi: {secilen_sinif_s}
-                  - Konu / Kazanım: {secilen_konu_s}
-                  - Ek Açıklama: {ek_detay}
-                  - Zorluk: {zorluk_derecesi}
-                  - Soru Sayısı: {soru_sayisi}
-                  - Soru Tipi: {soru_turu}
-                  - MEB kazanımlarına ve LGS/okul sınavı mantığına tam uygun, öğrencinin okuduğunu anlama ve yorumlama becerilerini ölçen nitelikli öncüller kullan.
-                  - Cevap anahtarını ve detaylı açıklamasını mutlaka ekle.
-                  """
-        response = client.models.generate_content(
-            model="gemini-3.8-flash",
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                temperature=0.4, max_output_tokens=2048
-            ),
+        client = genai.Client(api_key=api_key)
+        prompt = (
+            f"Sen uzman bir Türkçe eğitimi ve LGS soru yazarısın. Aşağıdaki"
+            f" kriterlere uygun {soru_sayisi} adet {zorluk} seviyesinde"
+            f" {soru_tipi} üret.\n"
+            f"- Sınıf Seviyesi: {hedef_sinif}\n"
+            f"- Konu / Kazanım: {ilgili_konu}\n"
+            f"- Ek Açıklama: {ozel_istem}\n\n"
+            "Lütfen soruları MEB beceri temelli LGS formatına uygun olarak"
+            " öncüllü, metinli ve net çeldiricilerle hazırla. Cevap anahtarını"
+            " ve çözüm açıklamasını da ekle."
         )
-        st.success("Sorular başarıyla üretildi!")
-        st.markdown(response.text)
 
-        word_dosyasi = soru_word_yap(response.text)
-        st.download_button(
-            label="📥 Soruları Word (DOCX) Olarak İndir",
-            data=word_dosyasi,
-            file_name=f"kursunkalem_{secilen_sinif_s.split('.')[0]}_sinif_sorulari.docx",
-            mime=(
-                "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            ),
-        )
+        with st.spinner("Yapay zekâ soruları hazırlıyor..."):
+          response = client.models.generate_content(
+              model="gemini-2.5-flash",
+              contents=prompt,
+          )
+          st.markdown("### 📄 Üretilen Soru Çıktısı")
+          st.markdown(response.text)
       except Exception as e:
         st.error(f"Soru üretilirken hata oluştu: {e}")
 
-with tab2:
-  st.header("📂 Konu Bazlı Dosya Arşivi")
-  st.markdown(
-      "Önce sınıf ve konuyu seçin. Yüklediğiniz dokümanlar yalnızca o seçtiğiniz"
-      " konunun altında kalıcı olarak görünecektir."
-  )
+# ==========================================
+# 3. SEKME: KONU BAZLI DOSYA ARŞİVİ
+# ==========================================
+with sekme3:
+  st.subheader("📁 Konu Bazlı Doküman Arşivi (PDF, DOCX, TXT)")
 
-  col_d1, col_d2 = st.columns(2)
-  with col_d1:
-    yonetim_sinif = st.selectbox(
-        "Sınıf Seçin:", list(SINIF_KONTENJLARI.keys()), key="yonetim_sinif"
+  with st.form("dosya_yukleme_formu", clear_on_submit=True):
+    f_sinif = st.selectbox(
+        "Sınıf Seçin", list(sinif_konulari.keys()), key="dosya_sinif"
     )
-  with col_d2:
-    konu_listesi_d = SINIF_KONTENJLARI.get(yonetim_sinif, ["Genel"])
-    yonetim_konu = st.selectbox(
-        "Konu Seçin:", konu_listesi_d, key="yonetim_konu"
-    )
-
-  with st.expander(
-      "➕ Bu Konuya Yeni Doküman / Ders Notu Yükle", expanded=False
-  ):
+    f_konu_list = sinif_konulari.get(f_sinif, ["Genel"])
+    f_konu = st.selectbox("Konu Seçin", f_konu_list, key="dosya_konu")
     yuklenen_dosya = st.file_uploader(
-        "Dosya Seç (PDF, DOCX, TXT)",
-        type=["pdf", "docx", "txt"],
-        key="file_uploader_tab2",
+        "Doküman Yükle (PDF, DOCX, TXT)", type=["pdf", "docx", "txt"]
     )
+    dosya_kaydet_btn = st.form_submit_button("Arşive Kaydet")
 
-    if yuklenen_dosya is not None:
-      uzanti = yuklenen_dosya.name.split(".")[-1].lower()
-      metin_icerik = (
-          pdf_oku(yuklenen_dosya)
-          if uzanti == "pdf"
-          else (
-              docx_oku(yuklenen_dosya)
-              if uzanti == "docx"
-              else yuklenen_dosya.read().decode("utf-8")
-          )
-      )
+    if dosya_kaydet_btn and yuklenen_dosya:
+      dosya_yolu = os.path.join(MEDIA_DIR, yuklenen_dosya.name)
+      with open(dosya_yolu, "wb") as f:
+        f.write(yuklenen_dosya.getbuffer())
 
-      if yonetim_sinif not in arsiv:
-        arsiv[yonetim_sinif] = {}
-      if yonetim_konu not in arsiv[yonetim_sinif]:
-        arsiv[yonetim_sinif][yonetim_konu] = {"dokumanlar": [], "medyalar": []}
-
-      mevcut_dosyalar = [
-          d["ad"] for d in arsiv[yonetim_sinif][yonetim_konu]["dokumanlar"]
-      ]
-      if yuklenen_dosya.name not in mevcut_dosyalar:
-        arsiv[yonetim_sinif][yonetim_konu]["dokumanlar"].append(
-            {"ad": yuklenen_dosya.name, "icerik": metin_icerik}
-        )
-        arsivi_kaydet(arsiv)
-        st.success(
-            f"'{yuklenen_dosya.name}' başarıyla {yonetim_sinif} ->"
-            f" '{yonetim_konu}' arşivine kaydedildi!"
-        )
+      ders_arsivi["dokumanlar"].append({
+          "sinif": f_sinif,
+          "konu": f_konu,
+          "dosya_adi": yuklenen_dosya.name,
+          "yol": dosya_yolu,
+      })
+      veri_kaydet(DERS_ARSIVI_DOSYA, ders_arsivi)
+      st.success(f"'{yuklenen_dosya.name}' başarıyla arşive eklendi!")
 
   st.divider()
-  st.subheader(
-      f"📚 {yonetim_sinif} / {yonetim_konu} Arşivindeki Dokümanlar"
-  )
-
-  konu_dokumanlari = (
-      arsiv.get(yonetim_sinif, {}).get(yonetim_konu, {}).get("dokumanlar", [])
-  )
-  if konu_dokumanlari:
-    for idx, doc in enumerate(konu_dokumanlari):
-      with st.expander(f"📄 {doc['ad']}", expanded=False):
-        st.text_area(
-            "İçerik Önizlemesi:",
-            value=doc.get("icerik", "")[:3000],
-            height=150,
-            key=f"doc_preview_{idx}",
-        )
-        if st.button(
-            "Bu Dokümanı Yapay Zekâ ile Analiz Et", key=f"analiz_doc_{idx}"
-        ):
-          with st.spinner("Analiz ediliyor..."):
-            p = f"Bu dokümanı {yonetim_sinif} seviyesindeki '{yonetim_konu}' başlığı altında incele, temel kazanımları özetle."
-            resp = client.models.generate_content(
-                model="gemini-3.8-flash",
-                contents=[p, doc.get("icerik", "")[:3000]],
-                config=types.GenerateContentConfig(
-                    temperature=0.3, max_output_tokens=1500
-                ),
-            )
-            st.markdown(resp.text)
+  st.markdown("### 🗂️ Arşivdeki Dokümanlar")
+  if ders_arsivi["dokumanlar"]:
+    for idx, doc in enumerate(ders_arsivi["dokumanlar"]):
+      col1, col2, col3 = st.columns([2, 2, 1])
+      col1.write(f"**{doc['sinif']}** / {doc['konu']}")
+      col2.write(f"📄 {doc['dosya_adi']}")
+      if col3.button("Sil", key=f"doc_sil_{idx}"):
+        ders_arsivi["dokumanlar"].pop(idx)
+        veri_kaydet(DERS_ARSIVI_DOSYA, ders_arsivi)
+        st.rerun()
   else:
-    st.info(
-        f"'{yonetim_konu}' başlığı altında henüz kayıtlı bir doküman"
-        " bulunmuyor."
+    st.info("Henüz yüklenmiş bir doküman bulunmuyor.")
+
+# ==========================================
+# 4. SEKME: SORU HAVUZU ANALİZİ
+# ==========================================
+with sekme4:
+  st.subheader("📊 Soru Havuzu Analizi ve İstatistikler")
+  toplam_sinif = len(sinif_konulari)
+  toplam_konu = sum(len(k) for k in sinif_konulari.values())
+  toplam_dokuman = len(ders_arsivi["dokumanlar"])
+  toplam_medya = len(ders_arsivi["medyalar"])
+
+  col1, col2, col3, col4 = st.columns(4)
+  col1.metric("Toplam Sınıf Seviyesi", toplam_sinif)
+  col2.metric("Toplam Konu / Kazanım", toplam_konu)
+  col3.metric("Arşivlenen Doküman", toplam_dokuman)
+  col4.metric("Arşivlenen Medya", toplam_medya)
+
+  st.info("Sistemdeki toplam veri ve içerik dağılımını buradan takip edebilirsiniz.")
+
+# ==========================================
+# 5. SEKME: KONU BAZLI MEDYA ARŞİVİ
+# ==========================================
+with sekme5:
+  st.subheader("🎬 Konu Bazlı Medya Arşivi (Video / Ses ve Analiz)")
+
+  with st.form("medya_yukleme_formu", clear_on_submit=True):
+    m_sinif = st.selectbox(
+        "Sınıf Seçin", list(sinif_konulari.keys()), key="medya_sinif"
     )
-
-with tab3:
-  st.header("📊 Soru Havuzu Analiz Paneli")
-  if referanslar_data:
-    st.success(f"Sistemde toplam **{len(referanslar_data)}** referans soru aktif.")
-    for i, soru in enumerate(referanslar_data):
-      with st.expander(
-          f"📌 Soru {i+1} | Branş: {soru.get('brans', 'Belirtilmemiş')} | Sınıf:"
-          f" {soru.get('sinif', 'Belirtilmemiş')}"
-      ):
-        st.markdown(f"**Kazanım:** {soru.get('kazanim', 'Belirtilmemiş')}")
-        st.markdown("---")
-        st.markdown("**Soru Metni / Bağlam:**")
-        st.info(soru.get("baglam_metni", "Metin bulunamadı."))
-  else:
-    st.warning("Henüz havuzda referans soru bulunmuyor.")
-
-with tab4:
-  st.header("🎥 Konu Bazlı Medya (Ses / Video) Arşivi ve Analiz")
-  st.markdown(
-      "Önce sınıf ve konuyu seçin. Yüklediğiniz medya dosyaları kalıcı olarak"
-      " diske kaydedilir ve yalnızca o konuyu seçtiğinizde görünür."
-  )
-
-  col_v1, col_v2 = st.columns(2)
-  with col_v1:
-    video_sinif = st.selectbox(
-        "Sınıf Seçin:", list(SINIF_KONTENJLARI.keys()), key="video_sinif"
-    )
-  with col_v2:
-    konu_listesi_v = SINIF_KONTENJLARI.get(video_sinif, ["Genel"])
-    video_konu = st.selectbox("Konu Seçin:", konu_listesi_v, key="video_konu")
-
-  with st.expander(
-      "➕ Bu Konuya Yeni Medya Dosyası (Video / Ses) Yükle", expanded=False
-  ):
-    uploaded_media = st.file_uploader(
-        "Medya Dosyası Seç (MP4, MOV, AVI, MP3, WAV, M4A)",
+    m_konu_list = sinif_konulari.get(m_sinif, ["Genel"])
+    m_konu = st.selectbox("Konu Seçin", m_konu_list, key="medya_konu")
+    yuklenen_medya = st.file_uploader(
+        "Medya Yükle (MP4, MOV, AVI, MP3, WAV, M4A)",
         type=["mp4", "mov", "avi", "mp3", "wav", "m4a"],
-        key="media_uploader_tab4",
     )
+    medya_kaydet_btn = st.form_submit_button("Medya Arşivine Kaydet")
 
-    if uploaded_media is not None:
-      dosya_uzanti = uploaded_media.name.split(".")[-1].lower()
-      kalici_dosya_adi = f"{os.urandom(4).hex()}_{uploaded_media.name}"
-      kalici_dosya_yolu = os.path.join(MEDYA_KLASORU, kalici_dosya_adi)
+    if medya_kaydet_btn and yuklenen_medya:
+      medya_yolu = os.path.join(MEDIA_DIR, yuklenen_medya.name)
+      with open(medya_yolu, "wb") as f:
+        f.write(yuklenen_medya.getbuffer())
 
-      with open(kalici_dosya_yolu, "wb") as f:
-        uploaded_media.seek(0)
-        f.write(uploaded_media.read())
-
-      try:
-        media_file = client.files.upload(file=kalici_dosya_yolu)
-
-        if video_sinif not in arsiv:
-          arsiv[video_sinif] = {}
-        if video_konu not in arsiv[video_sinif]:
-          arsiv[video_sinif][video_konu] = {"dokumanlar": [], "medyalar": []}
-
-        arsiv[video_sinif][video_konu]["medyalar"].append(
-            {
-                "ad": uploaded_media.name,
-                "uzanti": dosya_uzanti,
-                "yerel_yol": kalici_dosya_yolu,
-                "gemini_file_name": media_file.name,
-            }
-        )
-        arsivi_kaydet(arsiv)
-        st.success(
-            f"'{uploaded_media.name}' başarıyla {video_sinif} -> '{video_konu}'"
-            " arşivine kalıcı olarak kaydedildi!"
-        )
-      except Exception as e:
-        st.error(f"Medya yüklenirken hata oluştu: {e}")
+      ders_arsivi["medyalar"].append({
+          "sinif": m_sinif,
+          "konu": m_konu,
+          "dosya_adi": yuklenen_medya.name,
+          "yol": medya_yolu,
+      })
+      veri_kaydet(DERS_ARSIVI_DOSYA, ders_arsivi)
+      st.success(f"'{yuklenen_medya.name}' medya arşive eklendi!")
 
   st.divider()
-  st.subheader(f"🎬 {video_sinif} / {video_konu} Arşivindeki Medyalar")
-
-  konu_medyalari = (
-      arsiv.get(video_sinif, {}).get(video_konu, {}).get("medyalar", [])
-  )
-  if konu_medyalari:
-    for idx, medya in enumerate(konu_medyalari):
-      yerel_yol = medya.get("yerel_yol")
-      medya_adi = medya.get("ad", "İsimsiz Medya")
-      medya_uzanti = medya.get("uzanti", "mp4")
-
-      with st.expander(f"🎵 / 🎥 {medya_adi}", expanded=True):
-        col_m1, col_m2 = st.columns([1.2, 1])
-
-        with col_m1:
-          st.subheader("▶️ Oynatıcı")
-          if yerel_yol and os.path.exists(yerel_yol):
-            if medya_uzanti in ["mp3", "wav", "m4a"]:
-              st.audio(yerel_yol)
-            else:
-              st.video(yerel_yol)
-          else:
-            st.warning(
-                "Kayıtlı dosya diske erişilemedi veya eski formatta. Bu medyayı"
-                " silip tekrar yükleyebilirsiniz."
-            )
-
-        with col_m2:
-          st.subheader("⚙️ Yapay Zekâ Analiz İşlemleri")
-          islem_turu = st.selectbox(
-              "İşlem Seçin:",
-              [
-                  "Ders Özeti ve Ana Başlıklar",
-                  "İçerikten Beceri Temelli Soru Üret",
-                  "Konuşma Dökümü (Transkript)",
-              ],
-              key=f"islem_{idx}",
-          )
-
-          if st.button(
-              "Arşivdeki Medyayı Analiz Et", key=f"btn_analiz_{idx}"
-          ):
-            with st.spinner("Yapay zekâ arşivdeki dosyayı inceliyor..."):
-              try:
-                gemini_file_name = medya.get("gemini_file_name")
-                gemini_f = None
-                if gemini_file_name:
-                  try:
-                    gemini_f = client.files.get(name=gemini_file_name)
-                  except Exception:
-                    pass
-
-                if not gemini_f and yerel_yol and os.path.exists(yerel_yol):
-                  gemini_f = client.files.upload(file=yerel_yol)
-                  medya["gemini_file_name"] = gemini_f.name
-                  arsivi_kaydet(arsiv)
-
-                if not gemini_f:
-                  st.error(
-                      "Analiz edilecek geçerli bir dosya veya Gemini referansı"
-                      " bulunamadı."
-                  )
-                  continue
-
-                if islem_turu == "Ders Özeti ve Ana Başlıklar":
-                  media_prompt = f"Bu ders kaydını/videosunu {video_sinif} seviyesi '{video_konu}' konusu bağlamında analiz et. Öğrenciler için maddeler halinde detaylı bir ders özeti çıkar."
-                elif islem_turu == "İçerikten Beceri Temelli Soru Üret":
-                  media_prompt = f"Bu medya içeriğindeki konuya dayanarak {video_sinif} - '{video_konu}' için uygun formatta beceri temelli sorular ve cevap anahtarı hazarla."
-                else:
-                  media_prompt = "Bu ses/video kaydındaki konuşmaları kronolojik sırayla metin dökümü (transkript) haline getir."
-
-                response = client.models.generate_content(
-                    model="gemini-3.8-flash",
-                    contents=[gemini_f, media_prompt],
-                    config=types.GenerateContentConfig(
-                        temperature=0.3, max_output_tokens=2048
-                    ),
-                )
-
-                st.success("Analiz tamamlandı!")
-                st.markdown(response.text)
-              except Exception as e:
-                st.error(f"Analiz sırasında hata oluştu: {e}")
+  st.markdown("### 🎦 Arşivdeki Medya Dosyaları")
+  if ders_arsivi["medyalar"]:
+    for idx, med in enumerate(ders_arsivi["medyalar"]):
+      col1, col2, col3 = st.columns([2, 2, 1])
+      col1.write(f"**{med['sinif']}** / {med['konu']}")
+      col2.write(f"🎥 {med['dosya_adi']}")
+      if col3.button("Sil", key=f"med_sil_{idx}"):
+        ders_arsivi["medyalar"].pop(idx)
+        veri_kaydet(DERS_ARSIVI_DOSYA, ders_arsivi)
+        st.rerun()
   else:
-    st.info(
-        f"'{video_konu}' başlığı altında henüz kayıtlı bir ses/video medya"
-        " dosyası bulunmuyor."
+    st.info("Henüz yüklenmiş bir medya dosyası bulunmuyor.")
+
+# ==========================================
+# 6. SEKME: ABONELİK & FİYATLANDIRMA (YENİ)
+# ==========================================
+with sekme6:
+  st.subheader("💎 Kurşun Kalem Dijital - Pro Paketler ve Abonelik")
+  st.write(
+      "Öğretmenler, özel ders verenler ve eğitim kurumları için hazırlanan"
+      " avantajlı paketlerimizle tanışın."
+  )
+
+  col_p1, col_p2 = st.columns(2)
+
+  with col_p1:
+    st.markdown("### 📌 Bireysel Standart Paket")
+    st.markdown("### **199 TL / Ay**")
+    st.markdown(
+        "- Ayda **300 Adet** Beceri Temelli Soru Üretimi\n- 5., 6., 7. ve 8."
+        " Sınıf Müfredat Tam Erişim\n- PDF Çıktı Desteği\n- Standart AI Yanıt"
+        " Hızı"
     )
+    # Stripe ödeme linkini buraya ekleyebilirsin
+    st.link_button(
+        "Standart Paketi Seç",
+        "https://buy.stripe.com/buraya_standart_linkin_gelecek",
+    )
+
+  with col_p2:
+    st.markdown("### 🚀 Pro / Zümre Paketi")
+    st.markdown("### **599 TL / Ay**")
+    st.markdown(
+        "- **Sınırsız Soru Üretimi**\n- Sınırsız Konu ve Kazanım Ekleme\n-"
+        " Gelişmiş Doküman ve Medya Arşivi\n- Öncelikli ve Hızlı AI Yanıt Süresi"
+    )
+    # Stripe pro ödeme linkini buraya ekleyebilirsin
+    st.link_button(
+        "Pro Paketi Seç", "https://buy.stripe.com/buraya_pro_linkin_gelecek"
+    )
+
+  st.divider()
+  st.info(
+      "💡 **Not:** Satın alma işlemi sonrasında üyeliğinizin anında aktif"
+      " edilmesi için ödeme dekontunuzu veya kayıt e-postanızı sistem"
+      " yöneticisine iletebilirsiniz."
+  )
