@@ -73,10 +73,18 @@ def soru_word_yap(soru_metni):
   return f
 
 
-# --- ARAYÜZ BAŞLIĞI ---
-st.title(
-    "✏️ Kurşun Kalem Dijital Eğitim - Dijital Soru ve Video Ders Platformu"
+# --- ARAYÜZ BAŞLIĞI VE KAYAN YAZI (MARQUEE) ---
+st.markdown(
+    """
+    <div style="background-color: #f0f2f6; padding: 10px; border-radius: 8px; margin-bottom: 20px;">
+        <marquee behavior="scroll" direction="left" scrollamount="5" style="font-size: 24px; font-weight: bold; color: #b22222;">
+            ✏️ Kurşun Kalem Dijital Eğitim - Dijital Soru ve Video Ders Platformuna Hoş Geldiniz! 🚀 LGS Standartlarında Profesyonel Soru Üretimi ve Akıllı Video Analizi 📚
+        </marquee>
+    </div>
+    """,
+    unsafe_allow_html=True,
 )
+
 st.markdown(
     "LGS standartlarına uygun sorular üretin, referans belgelerinizi yönetin"
     " ve ders videolarını canlı olarak izleyip yapay zekâyla analiz edin."
@@ -116,11 +124,8 @@ with tab1:
     )
 
   if st.button("Soruları Üret", type="primary"):
-    if not kazanim_input or len(kazanim_input.strip()) < 3:
-      st.warning(
-          "Lütfen soru üretimi için daha detaylı bir kazanım veya konu"
-          " içeriği girin."
-      )
+    if not kazanim_input or len(kazanim_input.strip()) < 2:
+      st.warning("Lütfen geçerli bir kazanım veya konu içeriği girin.")
     else:
       with st.spinner("Yapay zekâ soruları hazırlıyor, lütfen bekleyin..."):
         try:
@@ -135,7 +140,7 @@ with tab1:
                     - Cevap anahtarını ve detaylı açıklamasını mutlaka ekle.
                     """
           response = client.models.generate_content(
-              model="gemini-2.5-flash",
+              model="gemini-3.8-flash",
               contents=prompt,
               config=types.GenerateContentConfig(
                   temperature=0.4, max_output_tokens=2048
@@ -181,7 +186,7 @@ with tab2:
       with st.spinner("Analiz ediliyor..."):
         p = "Bu dokümanı incele, LGS Türkçe müfredatı bağlamında ana kazanımları çıkar."
         resp = client.models.generate_content(
-            model="gemini-2.5-flash",
+            model="gemini-3.8-flash",
             contents=[p, metin_icerik[:3000]],
             config=types.GenerateContentConfig(
                 temperature=0.3, max_output_tokens=1500
@@ -278,29 +283,4 @@ with tab4:
                     "Bu ders videosunu analiz et. Öğrenciler için maddeler halinde"
                     " detaylı bir ders özeti çıkar."
                 )
-              elif islem_turu == "Videodan Beceri Temelli Soru Üret":
-                video_prompt = (
-                    "Bu ders videosundaki konuya dayanarak LGS formatında"
-                    " beceri temelli sorular ve cevap anahtarı hazarla."
-                )
-              else:
-                video_prompt = (
-                    "Bu videodaki konuşmaları kronolojik sırayla metin"
-                    " dökümü (transkript) haline getir."
-                )
-
-              response = client.models.generate_content(
-                  model="gemini-2.5-flash",
-                  contents=[video_file, video_prompt],
-                  config=types.GenerateContentConfig(
-                      temperature=0.3, max_output_tokens=2048
-                  ),
-              )
-
-              st.success("Analiz tamamlandı!")
-              st.markdown(response.text)
-
-              os.unlink(tmp_file_path)
-
-            except Exception as e:
-              st.error(f"Hata oluştu: {e}")
+              elif islem_turu == "Videodan Beceri Temelli Soru Üret
