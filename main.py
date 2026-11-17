@@ -26,40 +26,6 @@ except Exception as e:
   st.stop()
 
 
-# --- GÜVENLİ MODEL ÇAĞIRMA (503 Hatasına Karşı Otomatik Yedekli) ---
-def ai_icerik_uret(prompt_metni, dosya_nesnesi=None):
-  # Denenecek modeller sırası (Yoğunluk anında diğeri devreye girer)
-  modeller = ["gemini-3.8-flash", "gemini-2.5-flash", "gemini-1.5-flash"]
-
-  for model_adi in modeller:
-    try:
-      if dosya_nesnesi:
-        response = client.models.generate_content(
-            model=model_adi,
-            contents=[dosya_nesnesi, prompt_metni],
-            config=types.GenerateContentConfig(
-                temperature=0.4, max_output_tokens=2048
-            ),
-        )
-      else:
-        response = client.models.generate_content(
-            model=model_adi,
-            contents=prompt_metni,
-            config=types.GenerateContentConfig(
-                temperature=0.4, max_output_tokens=2048
-            ),
-        )
-      return response.text
-    except Exception as e:
-      # Eğer 503 veya başka bir hata alırsak döngü bir sonraki modeli dener
-      continue
-
-  raise Exception(
-      "Sunucularda aşırı yoğunluk var (503). Lütfen birkaç saniye sonra"
-      " tekrar deneyin."
-  )
-
-
 # --- YARDIMCI FONKSİYONLAR ---
 def pdf_oku(dosya):
   reader = PdfReader(dosya)
@@ -113,8 +79,7 @@ st.title(
 )
 st.markdown(
     "LGS standartlarına uygun sorular üretin, referans belgelerinizi yönetin"
-    " ve hem hazır ders videolarınızı hem de kendi videolarınızı sitede canlı"
-    " izleyip analiz edin."
+    " ve ders videolarını canlı olarak izleyip yapay zekâyla analiz edin."
 )
 
 # --- SEKMELER ---
@@ -150,32 +115,36 @@ with tab1:
         ["Çoktan Seçmeli (4 Şıklı)", "Açık Uçlu", "Metne Dayalı Yorum"],
     )
 
-  referanslar_str = (
-      json.dumps(referanslar_data[:3], ensure_ascii=False, indent=2)
-      if referanslar_data
-      else ""
-  )
-
   if st.button("Soruları Üret", type="primary"):
-    if not kazanim_input:
-      st.warning("Lütfen bir kazanım veya konu içeriği girin.")
+    if not kazanim_input or len(kazanim_input.strip()) < 3:
+      st.warning(
+          "Lütfen soru üretimi için daha detaylı bir kazanım veya konu"
+          " içeriği girin."
+      )
     else:
       with st.spinner("Yapay zekâ soruları hazırlıyor, lütfen bekleyin..."):
         try:
           prompt = f"""
                     Sen uzman bir Türkçe eğitimcisi ve LGS soru hazırlama komisyonu başkanısın.
-                    Kriterler:
+                    Aşağıdaki kriterlere tam uygun olacak şekilde soru/sorular hazarla:
                     - Kazanım/İçerik: {kazanim_input}
                     - Zorluk: {zorluk_derecesi}
                     - Soru Sayısı: {soru_sayisi}
                     - Soru Tipi: {soru_turu}
-                    - LGS formatına uygun, analitik becerileri ölçen nitelikli öncüller ve detaylı cevap anahtarı ekle.
+                    - LGS formatına uygun, öğrencinin okuduğunu anlama ve yorumlama becerilerini ölçen nitelikli öncüller kullan.
+                    - Cevap anahtarını ve detaylı açıklamasını mutlaka ekle.
                     """
-          yanit_metni = ai_icerik_uret(prompt)
+          response = client.models.generate_content(
+              model="gemini-2.5-flash",
+              contents=prompt,
+              config=types.GenerateContentConfig(
+                  temperature=0.4, max_output_tokens=2048
+              ),
+          )
           st.success("Sorular başarıyla üretildi!")
-          st.markdown(yanit_metni)
+          st.markdown(response.text)
 
-          word_dosyasi = soru_word_yap(yanit_metni)
+          word_dosyasi = soru_word_yap(response.text)
           st.download_button(
               label="📥 Soruları Word (DOCX) Olarak İndir",
               data=word_dosyasi,
@@ -185,7 +154,7 @@ with tab1:
               ),
           )
         except Exception as e:
-          st.error(f"Hata oluştu: {e}")
+          st.error(f"Soru üretilirken hata oluştu: {e}")
 
 with tab2:
   st.header("📂 Kazanım & Referans Dosya Yönetimi")
@@ -211,8 +180,14 @@ with tab2:
     if st.button("Belgeyi Analiz Et"):
       with st.spinner("Analiz ediliyor..."):
         p = "Bu dokümanı incele, LGS Türkçe müfredatı bağlamında ana kazanımları çıkar."
-        resp_metin = ai_icerik_uret(p + "\n\n" + metin_icerik[:3000])
-        st.markdown(resp_metin)
+        resp = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=[p, metin_icerik[:3000]],
+            config=types.GenerateContentConfig(
+                temperature=0.3, max_output_tokens=1500
+            ),
+        )
+        st.markdown(resp.text)
 
 with tab3:
   st.header("📊 Soru Havuzu Analiz Paneli")
@@ -314,11 +289,16 @@ with tab4:
                     " dökümü (transkript) haline getir."
                 )
 
-              # Video analizinde de yedekli fonksiyonu kullanıyoruz
-              yanit_metni = ai_icerik_uret(video_prompt, video_file)
+              response = client.models.generate_content(
+                  model="gemini-2.5-flash",
+                  contents=[video_file, video_prompt],
+                  config=types.GenerateContentConfig(
+                      temperature=0.3, max_output_tokens=2048
+                  ),
+              )
 
               st.success("Analiz tamamlandı!")
-              st.markdown(yanit_metni)
+              st.markdown(response.text)
 
               os.unlink(tmp_file_path)
 
