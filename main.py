@@ -190,8 +190,6 @@ with tab3:
   st.header("📊 Soru Havuzu Analiz Paneli")
   if referanslar_data:
     st.success(f"Sistemde toplam **{len(referanslar_data)}** referans soru aktif.")
-
-    # Ham JSON görüntüsü yerine şık kartlar ve düzenli paneller
     for i, soru in enumerate(referanslar_data):
       with st.expander(
           f"📌 Soru {i+1} | Branş: {soru.get('brans', 'Belirtilmemiş')} | Sınıf:"
@@ -200,13 +198,9 @@ with tab3:
         st.markdown(f"**Kazanım:** {soru.get('kazanim', 'Belirtilmemiş')}")
         st.markdown("---")
         st.markdown("**Soru Metni / Bağlam:**")
-        # Metin çok uzunsa okunabilir bir kutu içinde gösteriyoruz
         st.info(soru.get("baglam_metni", "Metin bulunamadı."))
   else:
-    st.warning(
-        "Henüz havuzda referans soru bulunmuyor. (referans_sorular.json dosyası"
-        " eklenebilir)"
-    )
+    st.warning("Henüz havuzda referans soru bulunmuyor.")
 
 with tab4:
   st.header("🎥 Video Kütüphanesi ve Canlı Oynatıcı")
@@ -244,8 +238,8 @@ with tab4:
     with col_y2:
       st.subheader("⚙️ Bilgi")
       st.info(
-          "Bu bölüm sitede sabit yer alan dersler içindir. Kendi yükleyeceğiniz"
-          " videoları analiz ettirmek için diğer modu seçebilirsiniz."
+          "Bu bölüm sitede sabit yer alan dersler içindir. Kendi YouTube"
+          " linklerinizi yukarıdaki koda ekleyerek çoğaltabilirsiniz."
       )
 
   else:
