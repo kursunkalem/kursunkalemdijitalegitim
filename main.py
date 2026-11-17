@@ -283,4 +283,29 @@ with tab4:
                     "Bu ders videosunu analiz et. Öğrenciler için maddeler halinde"
                     " detaylı bir ders özeti çıkar."
                 )
-              elif islem_turu == "Videodan Beceri Temelli Soru Üret
+              elif islem_turu == "Videodan Beceri Temelli Soru Üret":
+                video_prompt = (
+                    "Bu ders videosundaki konuya dayanarak LGS formatında"
+                    " beceri temelli sorular ve cevap anahtarı hazarla."
+                )
+              else:
+                video_prompt = (
+                    "Bu videodaki konuşmaları kronolojik sırayla metin"
+                    " dökümü (transkript) haline getir."
+                )
+
+              response = client.models.generate_content(
+                  model="gemini-3.8-flash",
+                  contents=[video_file, video_prompt],
+                  config=types.GenerateContentConfig(
+                      temperature=0.3, max_output_tokens=2048
+                  ),
+              )
+
+              st.success("Analiz tamamlandı!")
+              st.markdown(response.text)
+
+              os.unlink(tmp_file_path)
+
+            except Exception as e:
+              st.error(f"Hata oluştu: {e}")
