@@ -26,6 +26,40 @@ except Exception as e:
   st.stop()
 
 
+# --- GÜVENLİ MODEL ÇAĞIRMA (503 Hatasına Karşı Otomatik Yedekli) ---
+def ai_icerik_uret(prompt_metni, dosya_nesnesi=None):
+  # Denenecek modeller sırası (Yoğunluk anında diğeri devreye girer)
+  modeller = ["gemini-3.8-flash", "gemini-2.5-flash", "gemini-1.5-flash"]
+
+  for model_adi in modeller:
+    try:
+      if dosya_nesnesi:
+        response = client.models.generate_content(
+            model=model_adi,
+            contents=[dosya_nesnesi, prompt_metni],
+            config=types.GenerateContentConfig(
+                temperature=0.4, max_output_tokens=2048
+            ),
+        )
+      else:
+        response = client.models.generate_content(
+            model=model_adi,
+            contents=prompt_metni,
+            config=types.GenerateContentConfig(
+                temperature=0.4, max_output_tokens=2048
+            ),
+        )
+      return response.text
+    except Exception as e:
+      # Eğer 503 veya başka bir hata alırsak döngü bir sonraki modeli dener
+      continue
+
+  raise Exception(
+      "Sunucularda aşırı yoğunluk var (503). Lütfen birkaç saniye sonra"
+      " tekrar deneyin."
+  )
+
+
 # --- YARDIMCI FONKSİYONLAR ---
 def pdf_oku(dosya):
   reader = PdfReader(dosya)
@@ -137,17 +171,11 @@ with tab1:
                     - Soru Tipi: {soru_turu}
                     - LGS formatına uygun, analitik becerileri ölçen nitelikli öncüller ve detaylı cevap anahtarı ekle.
                     """
-          response = client.models.generate_content(
-              model="gemini-3.8-flash",
-              contents=prompt,
-              config=types.GenerateContentConfig(
-                  temperature=0.4, max_output_tokens=2048
-              ),
-          )
+          yanit_metni = ai_icerik_uret(prompt)
           st.success("Sorular başarıyla üretildi!")
-          st.markdown(response.text)
+          st.markdown(yanit_metni)
 
-          word_dosyasi = soru_word_yap(response.text)
+          word_dosyasi = soru_word_yap(yanit_metni)
           st.download_button(
               label="📥 Soruları Word (DOCX) Olarak İndir",
               data=word_dosyasi,
@@ -183,14 +211,8 @@ with tab2:
     if st.button("Belgeyi Analiz Et"):
       with st.spinner("Analiz ediliyor..."):
         p = "Bu dokümanı incele, LGS Türkçe müfredatı bağlamında ana kazanımları çıkar."
-        resp = client.models.generate_content(
-            model="gemini-3.8-flash",
-            contents=[p, metin_icerik[:3000]],
-            config=types.GenerateContentConfig(
-                temperature=0.3, max_output_tokens=1500
-            ),
-        )
-        st.markdown(resp.text)
+        resp_metin = ai_icerik_uret(p + "\n\n" + metin_icerik[:3000])
+        st.markdown(resp_metin)
 
 with tab3:
   st.header("📊 Soru Havuzu Analiz Paneli")
@@ -208,7 +230,6 @@ with tab4:
       " ettirin."
   )
 
-  # İki yöntem için seçim alanı
   video_secimi = st.radio(
       "Video Modu:",
       [
@@ -218,7 +239,6 @@ with tab4:
   )
 
   if video_secimi == "📺 Sitedeki Sabit Ders Videoları (YouTube)":
-    # Sitede sabit durmasını istediğin YouTube dersleri
     secilen_youtube_ders = st.selectbox(
         "Sitedeki Ders Listesinden Seçin:",
         [
@@ -230,7 +250,6 @@ with tab4:
     col_y1, col_y2 = st.columns([1.2, 1])
     with col_y1:
       st.subheader(f"▶️ Oynatılıyor: {secilen_youtube_ders}")
-      # Buraya kendi YouTube linklerini tırnak içine yazabilirsin
       if "Paragraf" in secilen_youtube_ders:
         st.video("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
       else:
@@ -240,12 +259,10 @@ with tab4:
       st.subheader("⚙️ Bilgi")
       st.info(
           "Bu bölüm sitede sabit yer alan dersler içindir. Kendi yükleyeceğiniz"
-          " videoları yapay zekâ analizine sokmak için diğer modu"
-          " seçebilirsiniz."
+          " videoları analiz ettirmek için diğer modu seçebilirsiniz."
       )
 
   else:
-    # Bilgisayardan dosya seçip yükleme ve canlı izleme/analiz modu
     uploaded_video = st.file_uploader(
         "Bilgisayardan Ders Videosu Seç (MP4, MOV, AVI)",
         type=["mp4", "mov", "avi"],
@@ -297,16 +314,11 @@ with tab4:
                     " dökümü (transkript) haline getir."
                 )
 
-              response = client.models.generate_content(
-                  model="gemini-3.8-flash",
-                  contents=[video_file, video_prompt],
-                  config=types.GenerateContentConfig(
-                      temperature=0.3, max_output_tokens=2048
-                  ),
-              )
+              # Video analizinde de yedekli fonksiyonu kullanıyoruz
+              yanit_metni = ai_icerik_uret(video_prompt, video_file)
 
               st.success("Analiz tamamlandı!")
-              st.markdown(response.text)
+              st.markdown(yanit_metni)
 
               os.unlink(tmp_file_path)
 
