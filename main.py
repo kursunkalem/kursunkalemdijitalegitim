@@ -43,6 +43,7 @@ def docx_oku(dosya):
 
 # --- KALICI DİSK KLASÖRÜ VE ARŞİV YÖNETİMİ ---
 ARSIV_DOSYASI = "ders_arsivi.json"
+KONULAR_DOSYASI = "sinif_konulari.json"
 MEDYA_KLASORU = "media_arsivi"
 
 if not os.path.exists(MEDYA_KLASORU):
@@ -66,41 +67,8 @@ def arsivi_kaydet(arsiv_verisi):
 
 arsiv = arsivi_yukle()
 
-
-@st.cache_data
-def verileri_yukle():
-  kazanimlar = []
-  referanslar = []
-  try:
-    if os.path.exists("kazanimlar.json"):
-      with open("kazanimlar.json", "r", encoding="utf-8") as f:
-        kazanimlar = json.load(f)
-  except Exception:
-    pass
-  try:
-    if os.path.exists("referans_sorular.json"):
-      with open("referans_sorular.json", "r", encoding="utf-8") as f:
-        referanslar = json.load(f)
-  except Exception:
-    pass
-  return kazanimlar, referanslar
-
-
-kazanimlar_data, referanslar_data = verileri_yukle()
-
-
-def soru_word_yap(soru_metni):
-  doc = Document()
-  doc.add_heading("Kurşun Kalem Dijital Eğitim - Soru Çıktısı", level=1)
-  doc.add_paragraph(soru_metni)
-  f = BytesIO()
-  doc.save(f)
-  f.seek(0)
-  return f
-
-
-# --- SINIF VE KONU YAPISI ---
-SINIF_KONTENJLARI = {
+# --- VARSAYILAN SINIF VE KONULAR ---
+VARSAYILAN_KONTENJAMLAR = {
     "5. Sınıf Türkçe": [
         "Sözcükte Anlam (Gerçek, Mecaz, Terim)",
         "Cümlede Anlam (Öznellik, Nesnellik, Neden-Sonuç)",
@@ -132,24 +100,114 @@ SINIF_KONTENJLARI = {
     ],
 }
 
+
+def konuları_yukle():
+  if os.path.exists(KONULAR_DOSYASI):
+    try:
+      with open(KONULAR_DOSYASI, "r", encoding="utf-8") as f:
+        return json.load(f)
+    except Exception:
+      return VARSAYILAN_KONTENJAMLAR
+  return VARSAYILAN_KONTENJAMLAR
+
+
+def konuları_kaydet(konu_verisi):
+  with open(KONULAR_DOSYASI, "w", encoding="utf-8") as f:
+    json.dump(konu_verisi, f, ensure_ascii=False, indent=4)
+
+
+SINIF_KONTENJLARI = konuları_yukle()
+
+
+@st.cache_data
+def verileri_yukle():
+  referanslar = []
+  try:
+    if os.path.exists("referans_sorular.json"):
+      with open("referans_sorular.json", "r", encoding="utf-8") as f:
+        referanslar = json.load(f)
+  except Exception:
+    pass
+  return referanslar
+
+
+referanslar_data = verileri_yukle()
+
+
+def soru_word_yap(soru_metni):
+  doc = Document()
+  doc.add_heading("Kurşun Kalem Dijital Eğitim - Soru Çıktısı", level=1)
+  doc.add_paragraph(soru_metni)
+  f = BytesIO()
+  doc.save(f)
+  f.seek(0)
+  return f
+
+
 # --- ARAYÜZ BAŞLIĞI ---
 st.title(
     "✏️ Kurşun Kalem Dijital Eğitim - Sınıf ve Konu Arşiv Yönetim Sistemi"
 )
 st.markdown(
-    "Sınıf ve konu seçerek ders notlarınızı, ses/video kayıtlarınızı kalıcı"
-    " olarak saklayın ve ilgili konuyu açtığınızda görüntüleyin."
+    "Sınıf/konu yönetimi yapın, soru üretin ve doküman/medyalarınızı konuya"
+    " özel saklayın."
 )
 
 # --- SEKMELER ---
-tab1, tab2, tab3, tab4 = st.tabs(
+tab0, tab1, tab2, tab3, tab4 = st.tabs(
     [
+        "⚙️ Sınıf & Konu Yönetimi",
         "📝 Sınıf & LGS Soru Üretici",
         "📂 Konu Bazlı Dosya Arşivi",
         "📊 Soru Havuzu Analizi",
         "🎥 Konu Bazlı Medya (Ses/Video) Arşivi ve Analiz",
     ]
 )
+
+with tab0:
+  st.header("⚙️ Sınıf ve Konu Başlıklarını Düzenle")
+  st.markdown(
+      "Buradan dilediğiniz sınıfa yeni konular ekleyebilir veya mevcut konuları"
+      " silebilirsiniz."
+  )
+
+  secilen_yonetim_sinif = st.selectbox(
+      "Düzenlenecek Sınıfı Seçin:",
+      list(SINIF_KONTENJLARI.keys()),
+      key="ayar_sinif",
+  )
+
+  st.subheader(f"Mevcut Konular ({secilen_yonetim_sinif})")
+  mevcut_konular = SINIF_KONTENJLARI[secilen_yonetim_sinif]
+
+  for idx, konu in enumerate(mevcut_konular):
+    col_k1, col_k2 = st.columns([5, 1])
+    with col_k1:
+      st.text(f"• {konu}")
+    with col_k2:
+      if st.button("Sil", key=f"sil_konu_{secilen_yonetim_sinif}_{idx}"):
+        SINIF_KONTENJLARI[secilen_yonetim_sinif].pop(idx)
+        konuları_kaydet(SINIF_KONTENJLARI)
+        st.success("Konu silindi! Sayfayı yenileyebilirsiniz.")
+        st.rerun()
+
+  st.divider()
+  st.subheader("➕ Yeni Konu Ekle")
+  yeni_konu_adi = st.text_input("Eklenecek Konu / Kazanım Adı:")
+  if st.button("Konuyu Ekle", type="primary"):
+    if yeni_konu_adi.strip():
+      if yeni_konu_adi not in SINIF_KONTENJLARI[secilen_yonetim_sinif]:
+        SINIF_KONTENJLARI[secilen_yonetim_sinif].append(yeni_konu_adi.strip())
+        konuları_kaydet(SINIF_KONTENJLARI)
+        st.success(
+            f"'{yeni_konu_adi}' başarıyla {secilen_yonetim_sinif} listesine"
+            " eklendi!"
+        )
+        st.rerun()
+      else:
+        st.warning("Bu konu zaten listede mevcut.")
+    else:
+      st.error("Lütfen geçerli bir konu adı girin.")
 
 with tab1:
   st.header("Beceri Temelli Sınıf & LGS Soru Üretici")
@@ -160,10 +218,9 @@ with tab1:
         "Hedef Sınıf Seviyesi:", list(SINIF_KONTENJLARI.keys()), key="soru_sinif"
     )
   with col_s2:
+    konu_listesi_s = SINIF_KONTENJLARI.get(secilen_sinif_s, ["Genel"])
     secilen_konu_s = st.selectbox(
-        "İlgili Konu / Kazanım:",
-        SINIF_KONTENJLARI[secilen_sinif_s],
-        key="soru_konu",
+        "İlgili Konu / Kazanım:", konu_listesi_s, key="soru_konu"
     )
 
   ek_detay = st.text_area(
@@ -240,8 +297,9 @@ with tab2:
         "Sınıf Seçin:", list(SINIF_KONTENJLARI.keys()), key="yonetim_sinif"
     )
   with col_d2:
+    konu_listesi_d = SINIF_KONTENJLARI.get(yonetim_sinif, ["Genel"])
     yonetim_konu = st.selectbox(
-        "Konu Seçin:", SINIF_KONTENJLARI[yonetim_sinif], key="yonetim_konu"
+        "Konu Seçin:", konu_listesi_d, key="yonetim_konu"
     )
 
   with st.expander(
@@ -348,9 +406,8 @@ with tab4:
         "Sınıf Seçin:", list(SINIF_KONTENJLARI.keys()), key="video_sinif"
     )
   with col_v2:
-    video_konu = st.selectbox(
-        "Konu Seçin:", SINIF_KONTENJLARI[video_sinif], key="video_konu"
-    )
+    konu_listesi_v = SINIF_KONTENJLARI.get(video_sinif, ["Genel"])
+    video_konu = st.selectbox("Konu Seçin:", konu_listesi_v, key="video_konu")
 
   with st.expander(
       "➕ Bu Konuya Yeni Medya Dosyası (Video / Ses) Yükle", expanded=False
