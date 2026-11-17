@@ -41,8 +41,12 @@ def docx_oku(dosya):
   return metin
 
 
-# --- KALICI ARŞİV (JSON) YÖNETİMİ ---
+# --- KALICI DİSK KLASÖRÜ VE ARŞİV YÖNETİMİ ---
 ARSIV_DOSYASI = "ders_arsivi.json"
+MEDYA_KLASORU = "media_arsivi"
+
+if not os.path.exists(MEDYA_KLASORU):
+  os.makedirs(MEDYA_KLASORU)
 
 
 def arsivi_yukle():
@@ -227,7 +231,7 @@ with tab2:
   st.header("📂 Konu Bazlı Dosya Arşivi")
   st.markdown(
       "Önce sınıf ve konuyu seçin. Yüklediğiniz dokümanlar yalnızca o seçtiğiniz"
-      " konunun altında görünecektir."
+      " konunun altında kalıcı olarak görünecektir."
   )
 
   col_d1, col_d2 = st.columns(2)
@@ -276,7 +280,7 @@ with tab2:
         arsivi_kaydet(arsiv)
         st.success(
             f"'{yuklenen_dosya.name}' başarıyla {yonetim_sinif} ->"
-            f" '{yonetim_konu}' arşivine eklendi!"
+            f" '{yonetim_konu}' arşivine kaydedildi!"
         )
 
   st.divider()
@@ -334,8 +338,8 @@ with tab3:
 with tab4:
   st.header("🎥 Konu Bazlı Medya (Ses / Video) Arşivi ve Analiz")
   st.markdown(
-      "Önce sınıf ve konuyu seçin. Yüklediğiniz medya dosyaları yalnızca o"
-      " seçtiğiniz konunun altında görünecektir."
+      "Önce sınıf ve konuyu seçin. Yüklediğiniz medya dosyaları kalıcı olarak"
+      " diske kaydedilir ve yalnızca o konuyu seçtiğinizde görünür."
   )
 
   col_v1, col_v2 = st.columns(2)
@@ -359,43 +363,38 @@ with tab4:
 
     if uploaded_media is not None:
       dosya_uzanti = uploaded_media.name.split(".")[-1].lower()
+      kalici_dosya_adi = f"{os.urandom(4).hex()}_{uploaded_media.name}"
+      kalici_dosya_yolu = os.path.join(MEDYA_KLASORU, kalici_dosya_adi)
 
-      with tempfile.NamedTemporaryFile(
-          delete=False, suffix=f".{dosya_uzanti}"
-      ) as tmp_file:
+      # Dosyayı yerel disk klasörüne kalıcı olarak kaydediyoruz
+      with open(kalici_dosya_yolu, "wb") as f:
         uploaded_media.seek(0)
-        tmp_file.write(uploaded_media.read())
-        tmp_file_path = tmp_file.name
+        f.write(uploaded_media.read())
 
       try:
-        media_file = client.files.upload(file=tmp_file_path)
+        # Gemini'ye analiz için yüklüyoruz
+        media_file = client.files.upload(file=kalici_dosya_yolu)
 
         if video_sinif not in arsiv:
           arsiv[video_sinif] = {}
         if video_konu not in arsiv[video_sinif]:
           arsiv[video_sinif][video_konu] = {"dokumanlar": [], "medyalar": []}
 
-        uploaded_media.seek(0)
-        media_bytes = uploaded_media.read()
-
         arsiv[video_sinif][video_konu]["medyalar"].append(
             {
                 "ad": uploaded_media.name,
                 "uzanti": dosya_uzanti,
-                "veri": list(media_bytes),
+                "yerel_yol": kalici_dosya_yolu,
                 "gemini_file_name": media_file.name,
             }
         )
         arsivi_kaydet(arsiv)
         st.success(
             f"'{uploaded_media.name}' başarıyla {video_sinif} -> '{video_konu}'"
-            " arşivine eklendi!"
+            " arşivine kalıcı olarak kaydedildi!"
         )
       except Exception as e:
         st.error(f"Medya yüklenirken hata oluştu: {e}")
-      finally:
-        if os.path.exists(tmp_file_path):
-          os.unlink(tmp_file_path)
 
   st.divider()
   st.subheader(f"🎬 {video_sinif} / {video_konu} Arşivindeki Medyalar")
@@ -410,11 +409,13 @@ with tab4:
 
         with col_m1:
           st.subheader("▶️ Oynatıcı")
-          media_data_bytes = bytes(medya["veri"])
-          if medya["uzanti"] in ["mp3", "wav", "m4a"]:
-            st.audio(media_data_bytes)
+          if os.path.exists(medya["yerel_yol"]):
+            if medya["uzanti"] in ["mp3", "wav", "m4a"]:
+              st.audio(medya["yerel_yol"])
+            else:
+              st.video(medya["yerel_yol"])
           else:
-            st.video(media_data_bytes)
+            st.error("Kayıtlı medya dosyası diskte bulunamadı.")
 
         with col_m2:
           st.subheader("⚙️ Yapay Zekâ Analiz İşlemleri")
@@ -433,7 +434,13 @@ with tab4:
           ):
             with st.spinner("Yapay zekâ arşivdeki dosyayı inceliyor..."):
               try:
-                gemini_f = client.files.get(name=medya["gemini_file_name"])
+                # Gemini dosya referansı kontrolü, yoksa diskten tekrar yükle
+                try:
+                  gemini_f = client.files.get(name=medya["gemini_file_name"])
+                except Exception:
+                  gemini_f = client.files.upload(file=medya["yerel_yol"])
+                  medya["gemini_file_name"] = gemini_f.name
+                  arsivi_kaydet(arsiv)
 
                 if islem_turu == "Ders Özeti ve Ana Başlıklar":
                   media_prompt = f"Bu ders kaydını/videosunu {video_sinif} seviyesi '{video_konu}' konusu bağlamında analiz et. Öğrenciler için maddeler halinde detaylı bir ders özeti çıkar."
@@ -453,10 +460,7 @@ with tab4:
                 st.success("Analiz tamamlandı!")
                 st.markdown(response.text)
               except Exception as e:
-                st.error(
-                    f"Analiz sırasında hata oluştu (Dosya süresi dolmuş olabilir,"
-                    f" yeniden yükleyebilirsiniz): {e}"
-                )
+                st.error(f"Analiz sırasında hata oluştu: {e}")
   else:
     st.info(
         f"'{video_konu}' başlığı altında henüz kayıtlı bir ses/video medya"
