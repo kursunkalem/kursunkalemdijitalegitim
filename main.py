@@ -232,9 +232,8 @@ with tab4:
     with col_y1:
       st.subheader(f"▶️ Oynatılıyor: {secilen_youtube_ders}")
       if "İstiklal Marşı" in secilen_youtube_ders:
-        st.video("https://www.youtube.com/watch?v=k8vW6i6t6dc")
+        st.video("https://www.youtube.com/watch?v=Z18d42o1f-A")
       elif "İleri Marşı" in secilen_youtube_ders:
-        # İleri Marşı YouTube bağlantısı
         st.video("https://www.youtube.com/watch?v=17qO7O4gQ8Q")
       else:
         st.video("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
