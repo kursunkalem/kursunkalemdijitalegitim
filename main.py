@@ -296,7 +296,7 @@ with tab2:
       with st.expander(f"📄 {doc['ad']}", expanded=False):
         st.text_area(
             "İçerik Önizlemesi:",
-            value=doc["icerik"][:3000],
+            value=doc.get("icerik", "")[:3000],
             height=150,
             key=f"doc_preview_{idx}",
         )
@@ -307,7 +307,7 @@ with tab2:
             p = f"Bu dokümanı {yonetim_sinif} seviyesindeki '{yonetim_konu}' başlığı altında incele, temel kazanımları özetle."
             resp = client.models.generate_content(
                 model="gemini-3.8-flash",
-                contents=[p, doc["icerik"][:3000]],
+                contents=[p, doc.get("icerik", "")[:3000]],
                 config=types.GenerateContentConfig(
                     temperature=0.3, max_output_tokens=1500
                 ),
@@ -366,13 +366,11 @@ with tab4:
       kalici_dosya_adi = f"{os.urandom(4).hex()}_{uploaded_media.name}"
       kalici_dosya_yolu = os.path.join(MEDYA_KLASORU, kalici_dosya_adi)
 
-      # Dosyayı yerel disk klasörüne kalıcı olarak kaydediyoruz
       with open(kalici_dosya_yolu, "wb") as f:
         uploaded_media.seek(0)
         f.write(uploaded_media.read())
 
       try:
-        # Gemini'ye analiz için yüklüyoruz
         media_file = client.files.upload(file=kalici_dosya_yolu)
 
         if video_sinif not in arsiv:
@@ -404,18 +402,25 @@ with tab4:
   )
   if konu_medyalari:
     for idx, medya in enumerate(konu_medyalari):
-      with st.expander(f"🎵 / 🎥 {medya['ad']}", expanded=True):
+      yerel_yol = medya.get("yerel_yol")
+      medya_adi = medya.get("ad", "İsimsiz Medya")
+      medya_uzanti = medya.get("uzanti", "mp4")
+
+      with st.expander(f"🎵 / 🎥 {medya_adi}", expanded=True):
         col_m1, col_m2 = st.columns([1.2, 1])
 
         with col_m1:
           st.subheader("▶️ Oynatıcı")
-          if os.path.exists(medya["yerel_yol"]):
-            if medya["uzanti"] in ["mp3", "wav", "m4a"]:
-              st.audio(medya["yerel_yol"])
+          if yerel_yol and os.path.exists(yerel_yol):
+            if medya_uzanti in ["mp3", "wav", "m4a"]:
+              st.audio(yerel_yol)
             else:
-              st.video(medya["yerel_yol"])
+              st.video(yerel_yol)
           else:
-            st.error("Kayıtlı medya dosyası diskte bulunamadı.")
+            st.warning(
+                "Kayıtlı dosya diske erişilemedi veya eski formatta. Bu medyayı"
+                " silip tekrar yükleyebilirsiniz."
+            )
 
         with col_m2:
           st.subheader("⚙️ Yapay Zekâ Analiz İşlemleri")
@@ -434,13 +439,25 @@ with tab4:
           ):
             with st.spinner("Yapay zekâ arşivdeki dosyayı inceliyor..."):
               try:
-                # Gemini dosya referansı kontrolü, yoksa diskten tekrar yükle
-                try:
-                  gemini_f = client.files.get(name=medya["gemini_file_name"])
-                except Exception:
-                  gemini_f = client.files.upload(file=medya["yerel_yol"])
+                gemini_file_name = medya.get("gemini_file_name")
+                gemini_f = None
+                if gemini_file_name:
+                  try:
+                    gemini_f = client.files.get(name=gemini_file_name)
+                  except Exception:
+                    pass
+
+                if not gemini_f and yerel_yol and os.path.exists(yerel_yol):
+                  gemini_f = client.files.upload(file=yerel_yol)
                   medya["gemini_file_name"] = gemini_f.name
                   arsivi_kaydet(arsiv)
+
+                if not gemini_f:
+                  st.error(
+                      "Analiz edilecek geçerli bir dosya veya Gemini referansı"
+                      " bulunamadı."
+                  )
+                  continue
 
                 if islem_turu == "Ders Özeti ve Ana Başlıklar":
                   media_prompt = f"Bu ders kaydını/videosunu {video_sinif} seviyesi '{video_konu}' konusu bağlamında analiz et. Öğrenciler için maddeler halinde detaylı bir ders özeti çıkar."
