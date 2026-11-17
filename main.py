@@ -176,4 +176,175 @@ with tab1:
                   - Zorluk: {zorluk_derecesi}
                   - Soru Sayısı: {soru_sayisi}
                   - Soru Tipi: {soru_turu}
-                  - MEB kazanımlarına ve LGS/okul sınavı mantığına tam uygun, öğrencinin okuduğunu anlama ve yorumlama becerilerini ölçen
+                  - MEB kazanımlarına ve LGS/okul sınavı mantığına tam uygun, öğrencinin okuduğunu anlama ve yorumlama becerilerini ölçen nitelikli öncüller kullan.
+                  - Cevap anahtarını ve detaylı açıklamasını mutlaka ekle.
+                  """
+        response = client.models.generate_content(
+            model="gemini-3.8-flash",
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                temperature=0.4, max_output_tokens=2048
+            ),
+        )
+        st.success("Sorular başarıyla üretildi!")
+        st.markdown(response.text)
+
+        word_dosyasi = soru_word_yap(response.text)
+        st.download_button(
+            label="📥 Soruları Word (DOCX) Olarak İndir",
+            data=word_dosyasi,
+            file_name=f"kursunkalem_{secilen_sinif_s.split('.')[0]}_sinif_sorulari.docx",
+            mime=(
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            ),
+        )
+      except Exception as e:
+        st.error(f"Soru üretilirken hata oluştu: {e}")
+
+with tab2:
+  st.header("📂 Sınıf ve Konu Bazlı Dosya Yönetimi")
+  st.markdown(
+      "Ders notlarınızı veya test dokümanlarınızı sınıf ve ünite konularına göre"
+      " sisteme yükleyin."
+  )
+
+  col_d1, col_d2 = st.columns(2)
+  with col_d1:
+    yonetim_sinif = st.selectbox(
+        "Sınıf Seçin:", list(SINIF_KONTENJLARI.keys()), key="yonetim_sinif"
+    )
+  with col_d2:
+    yonetim_konu = st.selectbox(
+        "Konu Seçin:", SINIF_KONTENJLARI[yonetim_sinif], key="yonetim_konu"
+    )
+
+  yuklenen_dosya = st.file_uploader(
+      f"'{yonetim_konu}' için Ders Notu / Doküman Yükle (PDF, DOCX, TXT)",
+      type=["pdf", "docx", "txt"],
+  )
+
+  if yuklenen_dosya is not None:
+    uzanti = yuklenen_dosya.name.split(".")[-1].lower()
+    metin_icerik = (
+        pdf_oku(yuklenen_dosya)
+        if uzanti == "pdf"
+        else (
+            docx_oku(yuklenen_dosya)
+            if uzanti == "docx"
+            else yuklenen_dosya.read().decode("utf-8")
+        )
+    )
+
+    st.success(
+        f"'{yuklenen_dosya.name}' dosyası başarıyla okunarak {yonetim_sinif} -"
+        f" '{yonetim_konu}' başlığına bağlandı!"
+    )
+    st.text_area(
+        "Belge İçeriği Önizlemesi:", value=metin_icerik[:3000], height=200
+    )
+
+    if st.button("Belgeyi Yapay Zekâ ile Analiz Et"):
+      with st.spinner("Analiz ediliyor..."):
+        p = f"Bu dokümanı {yonetim_sinif} seviyesindeki '{yonetim_konu}' başlığı altında incele, temel kazanımları ve önemli bilgileri özetle."
+        resp = client.models.generate_content(
+            model="gemini-3.8-flash",
+            contents=[p, metin_icerik[:3000]],
+            config=types.GenerateContentConfig(
+                temperature=0.3, max_output_tokens=1500
+            ),
+        )
+        st.markdown(resp.text)
+
+with tab3:
+  st.header("📊 Soru Havuzu Analiz Paneli")
+  if referanslar_data:
+    st.success(f"Sistemde toplam **{len(referanslar_data)}** referans soru aktif.")
+    for i, soru in enumerate(referanslar_data):
+      with st.expander(
+          f"📌 Soru {i+1} | Branş: {soru.get('brans', 'Belirtilmemiş')} | Sınıf:"
+          f" {soru.get('sinif', 'Belirtilmemiş')}"
+      ):
+        st.markdown(f"**Kazanım:** {soru.get('kazanim', 'Belirtilmemiş')}")
+        st.markdown("---")
+        st.markdown("**Soru Metni / Bağlam:**")
+        st.info(soru.get("baglam_metni", "Metin bulunamadı."))
+  else:
+    st.warning("Henüz havuzda referans soru bulunmuyor.")
+
+with tab4:
+  st.header("🎥 Sınıf ve Konu Bazlı Video Analiz Paneli")
+  st.markdown(
+      "Bilgisayarınızdaki ders videosunu (MP4, MOV, AVI) yükleyin; sınıf ve"
+      " konuyu seçerek yapay zekâya analiz ettirin."
+  )
+
+  col_v1, col_v2 = st.columns(2)
+  with col_v1:
+    video_sinif = st.selectbox(
+        "Videonun Ait Olduğu Sınıf:",
+        list(SINIF_KONTENJLARI.keys()),
+        key="video_sinif",
+    )
+  with col_v2:
+    video_konu = st.selectbox(
+        "Videonun Ait Olduğu Konu:",
+        SINIF_KONTENJLARI[video_sinif],
+        key="video_konu",
+    )
+
+  uploaded_video = st.file_uploader(
+      "Ders Videosu Seçin (MP4, MOV, AVI)", type=["mp4", "mov", "avi"]
+  )
+
+  if uploaded_video is not None:
+    col_video, col_panel = st.columns([1.2, 1])
+
+    with col_video:
+      st.subheader(f"▶️ Oynatıcı ({video_sinif})")
+      st.video(uploaded_video)
+
+    with col_panel:
+      st.subheader("⚙️ Yapay Zekâ Analiz İşlemleri")
+      islem_turu = st.selectbox(
+          "İşlem Seçin:",
+          [
+              "Ders Özeti ve Ana Başlıklar",
+              "Videodan Beceri Temelli Soru Üret",
+              "Video Konuşma Dökümü (Transkript)",
+          ],
+      )
+
+      if st.button("Video Analizini Başlat", type="primary"):
+        with st.spinner("Video işleniyor ve analiz ediliyor..."):
+          try:
+            with tempfile.NamedTemporaryFile(
+                delete=False, suffix=".mp4"
+            ) as tmp_file:
+              uploaded_video.seek(0)
+              tmp_file.write(uploaded_video.read())
+              tmp_file_path = tmp_file.name
+
+            video_file = client.files.upload(file=tmp_file_path)
+
+            if islem_turu == "Ders Özeti ve Ana Başlıklar":
+              video_prompt = f"Bu ders videosunu {video_sinif} seviyesi '{video_konu}' konusu bağlamında analiz et. Öğrenciler için maddeler halinde detaylı bir ders özeti çıkar."
+            elif islem_turu == "Videodan Beceri Temelli Soru Üret":
+              video_prompt = f"Bu ders videosundaki konuya dayanarak {video_sinif} - '{video_konu}' için uygun formatta beceri temelli sorular ve cevap anahtarı hazarla."
+            else:
+              video_prompt = "Bu videodaki konuşmaları kronolojik sırayla metin dökümü (transkript) haline getir."
+
+            response = client.models.generate_content(
+                model="gemini-3.8-flash",
+                contents=[video_file, video_prompt],
+                config=types.GenerateContentConfig(
+                    temperature=0.3, max_output_tokens=2048
+                ),
+            )
+
+            st.success("Analiz tamamlandı!")
+            st.markdown(response.text)
+
+            os.unlink(tmp_file_path)
+
+          except Exception as e:
+            st.error(f"Hata oluştu: {e}")
