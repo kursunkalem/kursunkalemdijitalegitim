@@ -9,7 +9,7 @@ from google.genai import types
 from pypdf import PdfReader
 import streamlit as st
 
-# Sayfa Yapılandırması
+# --- SAYFA YAPILANDIRMASI ---
 st.set_page_config(
     page_title="Kurşun Kalem Dijital Eğitim", page_icon="✏️", layout="wide"
 )
@@ -25,41 +25,129 @@ except Exception as e:
   )
   st.stop()
 
-# --- ARAYÜZ ---
-st.title("✏️ Kurşun Kalem Dijital Eğitim")
-st.markdown("LGS standartlarına uygun beceri temelli sorular ve video analiz paneli.")
 
-# Sekmeler (Sade ve Net Yapı)
-tab1, tab2 = st.tabs(["📝 Soru Üretim Modülü", "🎥 Ders Videosu İzleme ve Analiz"])
+# --- YARDIMCI FONKSİYONLAR (Dosya ve Belge İşlemleri) ---
+def pdf_oku(dosya):
+  reader = PdfReader(dosya)
+  metin = ""
+  for sayfa in reader.pages:
+    metin += sayfa.extract_text() or ""
+  return metin
+
+
+def docx_oku(dosya):
+  doc = Document(dosya)
+  metin = "\n".join([p.text for p in doc.paragraphs])
+  return metin
+
+
+@st.cache_data
+def verileri_yukle():
+  kazanimlar = []
+  referanslar = []
+  try:
+    if os.path.exists("kazanimlar.json"):
+      with open("kazanimlar.json", "r", encoding="utf-8") as f:
+        kazanimlar = json.load(f)
+  except Exception:
+    pass
+
+  try:
+    if os.path.exists("referans_sorular.json"):
+      with open("referans_sorular.json", "r", encoding="utf-8") as f:
+        referanslar = json.load(f)
+  except Exception:
+    pass
+
+  return kazanimlar, referanslar
+
+
+kazanimlar_data, referanslar_data = verileri_yukle()
+
+
+def soru_word_yap(soru_metni):
+  doc = Document()
+  doc.add_heading("Kurşun Kalem Dijital Eğitim - Soru Çıktısı", level=1)
+  doc.add_paragraph(soru_metni)
+  f = BytesIO()
+  doc.save(f)
+  f.seek(0)
+  return f
+
+
+# --- ARAYÜZ BAŞLIĞI ---
+st.title("✏️ Kurşun Kalem Dijital Eğitim - Profesyonel Soru ve Video Paneli")
+st.markdown(
+    "LGS standartlarına uygun beceri temelli sorular üretin, referans"
+    " belgelerinizi yönetin, sorularınızı Word olarak indirin ve ders"
+    " videolarını canlı olarak izleyip yapay zekâyla analiz edin."
+)
+
+# --- TÜM SEKMELER BİR ARADA ---
+tab1, tab2, tab3, tab4 = st.tabs(
+    [
+        "📝 Soru Üretim Modülü",
+        "📂 Kazanım & Referans Yönetimi",
+        "📊 Soru Havuzu Analizi",
+        "🎥 Ders Videosu İzleme ve Analiz",
+    ]
+)
 
 with tab1:
-  st.header("Beceri Temelli Soru Üretici")
+  st.header("Beceri Temelli Soru Üretici (LGS Standartları)")
 
   kazanim_input = st.text_area(
       "Kazanım veya Konu İçeriğini Girin:",
       placeholder="Örn: Metnin ana düşüncesini ve yardımcı düşüncelerini ayırt eder.",
+      height=100,
   )
 
-  col1, col2 = st.columns(2)
+  col1, col2, col3 = st.columns(3)
   with col1:
     zorluk_derecesi = st.selectbox(
-        "Zorluk Seviyesi", ["Orta", "Zor", "Beceri Temelli (LGS)"]
+        "Zorluk Seviyesi", ["Beceri Temelli (LGS)", "Zor", "Orta"]
     )
   with col2:
     soru_sayisi = st.number_input(
         "Üretilecek Soru Sayısı", min_value=1, max_value=5, value=1
     )
+  with col3:
+    soru_turu = st.selectbox(
+        "Soru Tipi",
+        ["Çoktan Seçmeli (4 Şıklı)", "Açık Uçlu", "Metne Dayalı Yorum"],
+    )
+
+  referanslar_str = (
+      json.dumps(referanslar_data[:3], ensure_ascii=False, indent=2)
+      if referanslar_data
+      else ""
+  )
 
   if st.button("Soruları Üret", type="primary"):
     if not kazanim_input:
       st.warning("Lütfen bir kazanım veya konu içeriği girin.")
     else:
-      with st.spinner("Sorular hazırlanıyor, lütfen bekleyin..."):
+      with st.spinner(
+          "Yapay zekâ LGS formatında beceri temelli soruları hazırlıyor, lütfen"
+          " bekleyin..."
+      ):
         try:
           prompt = f"""
-                    Aşağıdaki kazanım doğrultusunda {zorluk_derecesi} seviyesinde {soru_sayisi} adet LGS formatında beceri temelli Türkçe sorusu hazarla. Cevap anahtarını da ekle.
-                    Kazanım/İçerik: {kazanim_input}
+                    Sen uzman bir Türkçe eğitimcisi ve LGS soru hazırlama komisyonu başkanısın.
+                    Aşağıdaki kriterlere tam uygun olacak şekilde soru/sorular hazarla.
+                    
+                    Kriterler:
+                    - Kazanım/İçerik: {kazanim_input}
+                    - Zorluk: {zorluk_derecesi}
+                    - Soru Sayısı: {soru_sayisi}
+                    - Soru Tipi: {soru_turu}
+                    - LGS formatına uygun, öğrencinin okuduğunu anlama, yorumlama ve analitik becerilerini ölçen öncüller kullan.
+                    - Cevap anahtarını ve detaylı açıklamasını mutlaka ekle.
+                    
+                    Referans Örnekler:
+                    {referanslar_str[:3000]}
                     """
+
           response = client.models.generate_content(
               model="gemini-3.8-flash",
               contents=prompt,
@@ -68,16 +156,82 @@ with tab1:
                   max_output_tokens=2048,
               ),
           )
+
           st.success("Sorular başarıyla üretildi!")
           st.markdown(response.text)
+
+          word_dosyasi = soru_word_yap(response.text)
+          st.download_button(
+              label="📥 Soruları Word (DOCX) Olarak İndir",
+              data=word_dosyasi,
+              file_name="kursunkalem_lgs_sorulari.docx",
+              mime=(
+                  "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+              ),
+          )
+
         except Exception as e:
-          st.error(f"Soru üretilirken bir hata oluştu: {e}")
+          st.error(f"Soru üretilirken hata oluştu: {e}")
 
 with tab2:
+  st.header("📂 Kazanım & Referans Dosya Yönetimi")
+  st.markdown(
+      "Sisteme yüklediğiniz kazanım ve referans dosyalarını inceleyin, harici"
+      " PDF/Word ders notu veya soru belgesi yükleyerek yapay zekâya analiz"
+      " ettirin."
+  )
+
+  st.info(
+      f"Mevcut Kazanım Kaydı: {len(kazanimlar_data)} | Referans Soru Sayısı:"
+      f" {len(referanslar_data)}"
+  )
+
+  yuklenen_dosya = st.file_uploader(
+      "Harici Soru veya Ders Notu Yükle (PDF, DOCX, TXT)",
+      type=["pdf", "docx", "txt"],
+  )
+
+  if yuklenen_dosya is not None:
+    uzanti = yuklenen_dosya.name.split(".")[-1].lower()
+    metin_icerik = (
+        pdf_oku(yuklenen_dosya)
+        if uzanti == "pdf"
+        else (
+            docx_oku(yuklenen_dosya)
+            if uzanti == "docx"
+            else yuklenen_dosya.read().decode("utf-8")
+        )
+    )
+
+    st.text_area(
+        "Belge İçeriği Önizlemesi:", value=metin_icerik[:3000], height=200
+    )
+
+    if st.button("Belgeyi Analiz Et ve Kazanım Çıkar"):
+      with st.spinner("Belge taranıyor..."):
+        p = "Bu dokümanı incele, LGS Türkçe müfredatı bağlamında ana kazanımları ve soru potansiyeli yüksek yerleri çıkar."
+        resp = client.models.generate_content(
+            model="gemini-3.8-flash",
+            contents=[p, metin_icerik[:3000]],
+            config=types.GenerateContentConfig(
+                temperature=0.3, max_output_tokens=1500
+            ),
+        )
+        st.markdown(resp.text)
+
+with tab3:
+  st.header("📊 Soru Havuzu Analiz Paneli")
+  if referanslar_data:
+    st.write(f"Toplam {len(referanslar_data)} adet referans soru aktif.")
+    st.json(referanslar_data[:2])
+  else:
+    st.warning("Henüz referans soru dosyası bulunamadı.")
+
+with tab4:
   st.header("🎥 Ders Videosu İzleme ve Yapay Zekâ Analizi")
   st.markdown(
-      "Bilgisayarından bir ders videosu yükleyerek uygulamada canlı olarak"
-      " izleyebilir ve yapay zekâya analiz ettirebilirsin."
+      "Bilgisayarınızdan ders videosu yükleyerek solda videoyu canlı olarak"
+      " izleyebilir, sağdaki panelden özet, transkript veya soru ürettirebilirsiniz."
   )
 
   uploaded_video = st.file_uploader(
@@ -85,7 +239,6 @@ with tab2:
   )
 
   if uploaded_video is not None:
-    # Yan yana düzen: Sol tarafta video oynatıcı, sağ tarafta analiz paneli
     col_video, col_panel = st.columns([1.2, 1])
 
     with col_video:
@@ -95,7 +248,7 @@ with tab2:
     with col_panel:
       st.subheader("⚙️ Yapay Zekâ İşlemleri")
       islem_turu = st.selectbox(
-          "Yapılacak İşlem",
+          "İşlem Seçin:",
           [
               "Ders Özeti ve Ana Başlıklar",
               "Videodan Beceri Temelli Soru Üret",
@@ -135,8 +288,7 @@ with tab2:
                 model="gemini-3.8-flash",
                 contents=[video_file, video_prompt],
                 config=types.GenerateContentConfig(
-                    temperature=0.3,
-                    max_output_tokens=2048,
+                    temperature=0.3, max_output_tokens=2048
                 ),
             )
 
@@ -146,4 +298,4 @@ with tab2:
             os.unlink(tmp_file_path)
 
           except Exception as e:
-            st.error(f"İşlem sırasında hata oluştu: {e}")
+            st.error(f"Hata oluştu: {e}")
