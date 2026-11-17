@@ -205,63 +205,48 @@ with tab3:
 with tab4:
   st.header("🎥 Video Kütüphanesi ve Canlı Oynatıcı")
   st.markdown(
-      "İster sitede sabit yer alan marş ve ders videolarını doğrudan"
-      " izleyin, ister bilgisayarınızdan kendi videonuzu yükleyip yapay"
-      " zekâya analiz ettirin."
+      "İster sitede sabit yer alan marşları doğrudan dinleyin, ister"
+      " bilgisayarınızdan kendi videonuzu yükleyip yapay zekâya analiz"
+      " ettirin."
   )
 
   video_secimi = st.radio(
       "Video Modu:",
       [
-          "📺 Sitedeki Sabit Arşiv (Marşlar ve Dersler)",
+          "📺 Sitedeki Sabit Arşiv (Marşlar)",
           "💻 Bilgisayarımdan Video Yükle ve İzle",
       ],
   )
 
-  if video_secimi == "📺 Sitedeki Sabit Arşiv (Marşlar ve Dersler)":
-    secilen_youtube_ders = st.selectbox(
-        "Sitedeki Liste:",
-        ["🇹🇷 İstiklal Marşı", "🎵 İleri Marşı", "Örnek Ders: Paragraf Stratejileri"],
+  if video_secimi == "📺 Sitedeki Sabit Arşiv (Marşlar)":
+    secilen_mars = st.selectbox(
+        "Marş Seçin:", ["🇹🇷 İstiklal Marşı", "🎵 İleri Marşı"]
     )
 
     col_y1, col_y2 = st.columns([1.2, 1])
     with col_y1:
-      st.subheader(f"▶️ Oynatılıyor: {secilen_youtube_ders}")
+      st.subheader(f"▶️ Oynatılıyor: {secilen_mars}")
 
-      # Doğrudan embed (gömülebilir) iframe kodları kullanıyoruz (Hata almamak için)
-      if "İstiklal Marşı" in secilen_youtube_ders:
-        st.markdown(
-            '<iframe width="100%" height="315"'
-            ' src="https://www.youtube.com/embed/Z18d42o1f-A"'
-            ' title="YouTube video player" frameborder="0"'
-            ' allow="accelerometer; autoplay; clipboard-write; encrypted-media;'
-            ' gyroscope; picture-in-picture" allowfullscreen></iframe>',
-            unsafe_allow_html=True,
+      # YouTube kısıtlamalarına takılmamak için doğrudan güvenli ve açık ses/video akış kaynakları kullanılmıştır
+      if "İstiklal Marşı" in secilen_mars:
+        st.audio(
+            "https://upload.wikimedia.org/wikipedia/commons/b/b4/Istiklal_Mars%C4%B1_instrumental.ogg"
         )
-      elif "İleri Marşı" in secilen_youtube_ders:
-        st.markdown(
-            '<iframe width="100%" height="315"'
-            ' src="https://www.youtube.com/embed/17qO7O4gQ8Q"'
-            ' title="YouTube video player" frameborder="0"'
-            ' allow="accelerometer; autoplay; clipboard-write; encrypted-media;'
-            ' gyroscope; picture-in-picture" allowfullscreen></iframe>',
-            unsafe_allow_html=True,
+        st.caption(
+            "🇹🇷 İstiklal Marşı (Orkestra / Enstrümantal Resmi Ses Kaydı)"
         )
       else:
-        st.markdown(
-            '<iframe width="100%" height="315"'
-            ' src="https://www.youtube.com/embed/dQw4w9WgXcQ"'
-            ' title="YouTube video player" frameborder="0"'
-            ' allow="accelerometer; autoplay; clipboard-write; encrypted-media;'
-            ' gyroscope; picture-in-picture" allowfullscreen></iframe>',
-            unsafe_allow_html=True,
+        st.audio(
+            "https://upload.wikimedia.org/wikipedia/commons/1/1b/Ankara_Mar%C5%9F%C4%B1.ogg"
         )
+        st.caption("🎵 İleri Marşı (Coşkulu Nota Kaydı)")
 
     with col_y2:
       st.subheader("⚙️ Bilgi")
       st.info(
-          "Bu HTML tabanlı oynatıcı altyapısı sayesinde dış site kısıtlaması"
-          " (Video kullanılamıyor hatası) tamamen aşılmıştır."
+          "Bu ses oynatıcı altyapısı, YouTube'un dış site oynatma"
+          " kısıtlamalarını tamamen ortadan kaldırarak marşların web"
+          " sitenizde anında ve sorunsuz çalmasını sağlar."
       )
 
   else:
@@ -296,38 +281,4 @@ with tab4:
               ) as tmp_file:
                 uploaded_video.seek(0)
                 tmp_file.write(uploaded_video.read())
-                tmp_file_path = tmp_file.name
-
-              video_file = client.files.upload(file=tmp_file_path)
-
-              if islem_turu == "Ders Özeti ve Ana Başlıklar":
-                video_prompt = (
-                    "Bu ders videosunu analiz et. Öğrenciler için maddeler halinde"
-                    " detaylı bir ders özeti çıkar."
-                )
-              elif islem_turu == "Videodan Beceri Temelli Soru Üret":
-                video_prompt = (
-                    "Bu ders videosundaki konuya dayanarak LGS formatında"
-                    " beceri temelli sorular ve cevap anahtarı hazarla."
-                )
-              else:
-                video_prompt = (
-                    "Bu videodaki konuşmaları kronolojik sırayla metin"
-                    " dökümü (transkript) haline getir."
-                )
-
-              response = client.models.generate_content(
-                  model="gemini-3.8-flash",
-                  contents=[video_file, video_prompt],
-                  config=types.GenerateContentConfig(
-                      temperature=0.3, max_output_tokens=2048
-                  ),
-              )
-
-              st.success("Analiz tamamlandı!")
-              st.markdown(response.text)
-
-              os.unlink(tmp_file_path)
-
-            except Exception as e:
-              st.error(f"Hata oluştu: {e}")
+                tmp_file_
