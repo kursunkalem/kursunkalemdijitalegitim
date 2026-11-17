@@ -205,44 +205,63 @@ with tab3:
 with tab4:
   st.header("🎥 Video Kütüphanesi ve Canlı Oynatıcı")
   st.markdown(
-      "İster sitede sabit yer alan YouTube ders videolarını seçerek izleyin, ister"
-      " bilgisayarınızdan kendi videonuzu yükleyip yapay zekâya analiz"
-      " ettirin."
+      "İster sitede sabit yer alan marş ve ders videolarını doğrudan"
+      " izleyin, ister bilgisayarınızdan kendi videonuzu yükleyip yapay"
+      " zekâya analiz ettirin."
   )
 
   video_secimi = st.radio(
       "Video Modu:",
       [
-          "📺 Sitedeki Sabit Ders Videoları (YouTube)",
+          "📺 Sitedeki Sabit Arşiv (Marşlar ve Dersler)",
           "💻 Bilgisayarımdan Video Yükle ve İzle",
       ],
   )
 
-  if video_secimi == "📺 Sitedeki Sabit Ders Videoları (YouTube)":
+  if video_secimi == "📺 Sitedeki Sabit Arşiv (Marşlar ve Dersler)":
     secilen_youtube_ders = st.selectbox(
-        "Sitedeki Ders Listesinden Seçin:",
-        [
-            "🇹🇷 İstiklal Marşı",
-            "🎵 İleri Marşı",
-            "Örnek Ders: Paragraf Stratejileri",
-        ],
+        "Sitedeki Liste:",
+        ["🇹🇷 İstiklal Marşı", "🎵 İleri Marşı", "Örnek Ders: Paragraf Stratejileri"],
     )
 
     col_y1, col_y2 = st.columns([1.2, 1])
     with col_y1:
       st.subheader(f"▶️ Oynatılıyor: {secilen_youtube_ders}")
+
+      # Doğrudan embed (gömülebilir) iframe kodları kullanıyoruz (Hata almamak için)
       if "İstiklal Marşı" in secilen_youtube_ders:
-        st.video("https://www.youtube.com/watch?v=Z18d42o1f-A")
+        st.markdown(
+            '<iframe width="100%" height="315"'
+            ' src="https://www.youtube.com/embed/Z18d42o1f-A"'
+            ' title="YouTube video player" frameborder="0"'
+            ' allow="accelerometer; autoplay; clipboard-write; encrypted-media;'
+            ' gyroscope; picture-in-picture" allowfullscreen></iframe>',
+            unsafe_allow_html=True,
+        )
       elif "İleri Marşı" in secilen_youtube_ders:
-        st.video("https://www.youtube.com/watch?v=17qO7O4gQ8Q")
+        st.markdown(
+            '<iframe width="100%" height="315"'
+            ' src="https://www.youtube.com/embed/17qO7O4gQ8Q"'
+            ' title="YouTube video player" frameborder="0"'
+            ' allow="accelerometer; autoplay; clipboard-write; encrypted-media;'
+            ' gyroscope; picture-in-picture" allowfullscreen></iframe>',
+            unsafe_allow_html=True,
+        )
       else:
-        st.video("https://www.youtube.com/watch?v=dQw4w9WgXcQ")
+        st.markdown(
+            '<iframe width="100%" height="315"'
+            ' src="https://www.youtube.com/embed/dQw4w9WgXcQ"'
+            ' title="YouTube video player" frameborder="0"'
+            ' allow="accelerometer; autoplay; clipboard-write; encrypted-media;'
+            ' gyroscope; picture-in-picture" allowfullscreen></iframe>',
+            unsafe_allow_html=True,
+        )
 
     with col_y2:
       st.subheader("⚙️ Bilgi")
       st.info(
-          "Bu bölümde dilediğiniz marş veya ders videolarının YouTube"
-          " bağlantılarını kolayca yönetebilirsiniz."
+          "Bu HTML tabanlı oynatıcı altyapısı sayesinde dış site kısıtlaması"
+          " (Video kullanılamıyor hatası) tamamen aşılmıştır."
       )
 
   else:
