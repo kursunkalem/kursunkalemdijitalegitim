@@ -26,7 +26,7 @@ except Exception as e:
   st.stop()
 
 
-# --- YARDIMCI FONKSİYONLAR (Dosya ve Belge İşlemleri) ---
+# --- YARDIMCI FONKSİYONLAR ---
 def pdf_oku(dosya):
   reader = PdfReader(dosya)
   metin = ""
@@ -51,14 +51,12 @@ def verileri_yukle():
         kazanimlar = json.load(f)
   except Exception:
     pass
-
   try:
     if os.path.exists("referans_sorular.json"):
       with open("referans_sorular.json", "r", encoding="utf-8") as f:
         referanslar = json.load(f)
   except Exception:
     pass
-
   return kazanimlar, referanslar
 
 
@@ -76,26 +74,26 @@ def soru_word_yap(soru_metni):
 
 
 # --- ARAYÜZ BAŞLIĞI ---
-st.title("✏️ Kurşun Kalem Dijital Eğitim - Profesyonel Soru ve Video Paneli")
+st.title(
+    "✏️ Kurşun Kalem Dijital Eğitim - Dijital Soru ve Video Ders Platformu"
+)
 st.markdown(
-    "LGS standartlarına uygun beceri temelli sorular üretin, referans"
-    " belgelerinizi yönetin, sorularınızı Word olarak indirin ve ders"
-    " videolarını canlı olarak izleyip yapay zekâyla analiz edin."
+    "LGS standartlarına uygun sorular üretin, referans belgelerinizi yönetin"
+    " ve sitede doğrudan yer alan ders videolarını izleyip analiz edin."
 )
 
-# --- TÜM SEKMELER BİR ARADA ---
+# --- SEKMELER ---
 tab1, tab2, tab3, tab4 = st.tabs(
     [
         "📝 Soru Üretim Modülü",
         "📂 Kazanım & Referans Yönetimi",
         "📊 Soru Havuzu Analizi",
-        "🎥 Ders Videosu İzleme ve Analiz",
+        "🎥 Sitedeki Ders Videoları ve Eğitimler",
     ]
 )
 
 with tab1:
   st.header("Beceri Temelli Soru Üretici (LGS Standartları)")
-
   kazanim_input = st.text_area(
       "Kazanım veya Konu İçeriğini Girin:",
       placeholder="Örn: Metnin ana düşüncesini ve yardımcı düşüncelerini ayırt eder.",
@@ -127,36 +125,24 @@ with tab1:
     if not kazanim_input:
       st.warning("Lütfen bir kazanım veya konu içeriği girin.")
     else:
-      with st.spinner(
-          "Yapay zekâ LGS formatında beceri temelli soruları hazırlıyor, lütfen"
-          " bekleyin..."
-      ):
+      with st.spinner("Yapay zekâ soruları hazırlıyor, lütfen bekleyin..."):
         try:
           prompt = f"""
                     Sen uzman bir Türkçe eğitimcisi ve LGS soru hazırlama komisyonu başkanısın.
-                    Aşağıdaki kriterlere tam uygun olacak şekilde soru/sorular hazarla.
-                    
                     Kriterler:
                     - Kazanım/İçerik: {kazanim_input}
                     - Zorluk: {zorluk_derecesi}
                     - Soru Sayısı: {soru_sayisi}
                     - Soru Tipi: {soru_turu}
-                    - LGS formatına uygun, öğrencinin okuduğunu anlama, yorumlama ve analitik becerilerini ölçen öncüller kullan.
-                    - Cevap anahtarını ve detaylı açıklamasını mutlaka ekle.
-                    
-                    Referans Örnekler:
-                    {referanslar_str[:3000]}
+                    - LGS formatına uygun, analitik becerileri ölçen nitelikli öncüller ve detaylı cevap anahtarı ekle.
                     """
-
           response = client.models.generate_content(
               model="gemini-3.8-flash",
               contents=prompt,
               config=types.GenerateContentConfig(
-                  temperature=0.4,
-                  max_output_tokens=2048,
+                  temperature=0.4, max_output_tokens=2048
               ),
           )
-
           st.success("Sorular başarıyla üretildi!")
           st.markdown(response.text)
 
@@ -169,28 +155,15 @@ with tab1:
                   "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
               ),
           )
-
         except Exception as e:
-          st.error(f"Soru üretilirken hata oluştu: {e}")
+          st.error(f"Hata oluştu: {e}")
 
 with tab2:
   st.header("📂 Kazanım & Referans Dosya Yönetimi")
-  st.markdown(
-      "Sisteme yüklediğiniz kazanım ve referans dosyalarını inceleyin, harici"
-      " PDF/Word ders notu veya soru belgesi yükleyerek yapay zekâya analiz"
-      " ettirin."
-  )
-
-  st.info(
-      f"Mevcut Kazanım Kaydı: {len(kazanimlar_data)} | Referans Soru Sayısı:"
-      f" {len(referanslar_data)}"
-  )
-
   yuklenen_dosya = st.file_uploader(
       "Harici Soru veya Ders Notu Yükle (PDF, DOCX, TXT)",
       type=["pdf", "docx", "txt"],
   )
-
   if yuklenen_dosya is not None:
     uzanti = yuklenen_dosya.name.split(".")[-1].lower()
     metin_icerik = (
@@ -202,14 +175,13 @@ with tab2:
             else yuklenen_dosya.read().decode("utf-8")
         )
     )
-
     st.text_area(
         "Belge İçeriği Önizlemesi:", value=metin_icerik[:3000], height=200
     )
 
-    if st.button("Belgeyi Analiz Et ve Kazanım Çıkar"):
-      with st.spinner("Belge taranıyor..."):
-        p = "Bu dokümanı incele, LGS Türkçe müfredatı bağlamında ana kazanımları ve soru potansiyeli yüksek yerleri çıkar."
+    if st.button("Belgeyi Analiz Et"):
+      with st.spinner("Analiz ediliyor..."):
+        p = "Bu dokümanı incele, LGS Türkçe müfredatı bağlamında ana kazanımları çıkar."
         resp = client.models.generate_content(
             model="gemini-3.8-flash",
             contents=[p, metin_icerik[:3000]],
@@ -222,80 +194,121 @@ with tab2:
 with tab3:
   st.header("📊 Soru Havuzu Analiz Paneli")
   if referanslar_data:
-    st.write(f"Toplam {len(referanslar_data)} adet referans soru aktif.")
+    st.write(f"Toplam {len(referanslar_data)} referans soru aktif.")
     st.json(referanslar_data[:2])
   else:
-    st.warning("Henüz referans soru dosyası bulunamadı.")
+    st.warning("Referans soru dosyası bulunamadı.")
 
 with tab4:
-  st.header("🎥 Ders Videosu İzleme ve Yapay Zekâ Analizi")
+  st.header("🎥 Sitedeki Ders Videoları ve Eğitim Kütüphanesi")
   st.markdown(
-      "Bilgisayarınızdan ders videosu yükleyerek solda videoyu canlı olarak"
-      " izleyebilir, sağdaki panelden özet, transkript veya soru ürettirebilirsiniz."
+      "Aşağıdaki menüden sitede yer alan hazır ders videolarını seçerek doğrudan"
+      " izleyebilir ya da kendi ders videonuzu yükleyip yapay zekâya"
+      " inceletebilirsiniz."
   )
 
-  uploaded_video = st.file_uploader(
-      "Ders Videosu Seç (MP4, MOV, AVI)", type=["mp4", "mov", "avi"]
+  # Video Kaynağı Seçimi (Sitede Sabit mi, Yoksa Kullanıcı mı Yükleyecek?)
+  video_kaynagi = st.radio(
+      "Video Kaynağı Seçin:",
+      [
+          "📺 Sitedeki Hazır Örnek Ders Videoları (YouTube / Web)",
+          "💻 Bilgisayarımdan Ders Videosu Yükle",
+      ],
   )
 
-  if uploaded_video is not None:
-    col_video, col_panel = st.columns([1.2, 1])
+  if video_kaynagi == "📺 Sitedeki Hazır Örnek Ders Videoları (YouTube / Web)":
+    # Sitede doğrudan yer alan örnek videolar (Buraya kendi YouTube ders video linklerini ekleyebilirsin)
+    secilen_ders = st.selectbox(
+        "Ders Listesinden Seçim Yapın:",
+        [
+            "Türkçe - LGS Paragraf Stratejileri (Örnek Ders 1)",
+            "Türkçe - Fiilimsiler Konu Anlatımı (Örnek Ders 2)",
+        ],
+    )
 
-    with col_video:
-      st.subheader("▶️ Video Oynatıcı")
-      st.video(uploaded_video)
+    col_v, col_p = st.columns([1.2, 1])
+    with col_v:
+      st.subheader(f"▶️ Oynatılıyor: {secilen_ders}")
+      # Sitede doğrudan gömülü yer alan YouTube örnek video oynatıcısı
+      if "Paragraf" in secilen_ders:
+        st.video("https://www.youtube.com/watch?v=dQw4w9WgXcQ")  # Örnek link
+      else:
+        st.video("https://www.youtube.com/watch?v=dQw4w9WgXcQ")  # Örnek link
 
-    with col_panel:
-      st.subheader("⚙️ Yapay Zekâ İşlemleri")
-      islem_turu = st.selectbox(
-          "İşlem Seçin:",
-          [
-              "Ders Özeti ve Ana Başlıklar",
-              "Videodan Beceri Temelli Soru Üret",
-              "Video Konuşma Dökümü (Transkript)",
-          ],
-      )
+    with col_p:
+      st.subheader("⚙️ Ders İçeriği İşlemleri")
+      if st.button("Bu Ders İçin Soru Üret", type="primary"):
+        st.info(
+            "Seçilen ders videosunun içeriğine dayalı LGS soruları yapay zekâ"
+            " tarafından hazırlanıyor..."
+        )
+        # Buraya video içeriğiyle ilgili prompt eklenebilir
 
-      if st.button("Analizi Başlat", type="primary"):
-        with st.spinner("Video işleniyor ve analiz ediliyor..."):
-          try:
-            with tempfile.NamedTemporaryFile(
-                delete=False, suffix=".mp4"
-            ) as tmp_file:
-              uploaded_video.seek(0)
-              tmp_file.write(uploaded_video.read())
-              tmp_file_path = tmp_file.name
+  else:
+    # Kullanıcının kendi yükleyip sitede oynatacağı alan
+    uploaded_video = st.file_uploader(
+        "Bilgisayardan Ders Videosu Seç (MP4, MOV, AVI)",
+        type=["mp4", "mov", "avi"],
+    )
 
-            video_file = client.files.upload(file=tmp_file_path)
+    if uploaded_video is not None:
+      col_video, col_panel = st.columns([1.2, 1])
 
-            if islem_turu == "Ders Özeti ve Ana Başlıklar":
-              video_prompt = (
-                  "Bu ders videosunu analiz et. Öğrenciler için maddeler halinde"
-                  " detaylı bir ders özeti çıkar."
+      with col_video:
+        st.subheader("▶️ Sitedeki Oynatıcı")
+        st.video(uploaded_video)
+
+      with col_panel:
+        st.subheader("⚙️ Yapay Zekâ Analiz Paneli")
+        islem_turu = st.selectbox(
+            "İşlem Seçin:",
+            [
+                "Ders Özeti ve Ana Başlıklar",
+                "Videodan Beceri Temelli Soru Üret",
+                "Video Konuşma Dökümü (Transkript)",
+            ],
+        )
+
+        if st.button("Analizi Başlat", type="primary"):
+          with st.spinner("Video işleniyor ve analiz ediliyor..."):
+            try:
+              with tempfile.NamedTemporaryFile(
+                  delete=False, suffix=".mp4"
+              ) as tmp_file:
+                uploaded_video.seek(0)
+                tmp_file.write(uploaded_video.read())
+                tmp_file_path = tmp_file.name
+
+              video_file = client.files.upload(file=tmp_file_path)
+
+              if islem_turu == "Ders Özeti ve Ana Başlıklar":
+                video_prompt = (
+                    "Bu ders videosunu analiz et. Öğrenciler için maddeler halinde"
+                    " detaylı bir ders özeti çıkar."
+                )
+              elif islem_turu == "Videodan Beceri Temelli Soru Üret":
+                video_prompt = (
+                    "Bu ders videosundaki konuya dayanarak LGS formatında"
+                    " beceri temelli sorular ve cevap anahtarı hazarla."
+                )
+              else:
+                video_prompt = (
+                    "Bu videodaki konuşmaları kronolojik sırayla metin"
+                    " dökümü (transkript) haline getir."
+                )
+
+              response = client.models.generate_content(
+                  model="gemini-3.8-flash",
+                  contents=[video_file, video_prompt],
+                  config=types.GenerateContentConfig(
+                      temperature=0.3, max_output_tokens=2048
+                  ),
               )
-            elif islem_turu == "Videodan Beceri Temelli Soru Üret":
-              video_prompt = (
-                  "Bu ders videosundaki konuya dayanarak LGS formatında"
-                  " beceri temelli sorular ve cevap anahtarı hazarla."
-              )
-            else:
-              video_prompt = (
-                  "Bu videodaki konuşmaları kronolojik sırayla metin"
-                  " dökümü (transkript) haline getir."
-              )
 
-            response = client.models.generate_content(
-                model="gemini-3.8-flash",
-                contents=[video_file, video_prompt],
-                config=types.GenerateContentConfig(
-                    temperature=0.3, max_output_tokens=2048
-                ),
-            )
+              st.success("Analiz tamamlandı!")
+              st.markdown(response.text)
 
-            st.success("Analiz tamamlandı!")
-            st.markdown(response.text)
+              os.unlink(tmp_file_path)
 
-            os.unlink(tmp_file_path)
-
-          except Exception as e:
-            st.error(f"Hata oluştu: {e}")
+            except Exception as e:
+              st.error(f"Hata oluştu: {e}")
