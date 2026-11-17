@@ -41,26 +41,26 @@ def docx_oku(dosya):
   return metin
 
 
-@st.cache_data
-def verileri_yukle():
-  kazanimlar = []
-  referanslar = []
-  try:
-    if os.path.exists("kazanimlar.json"):
-      with open("kazanimlar.json", "r", encoding="utf-8") as f:
-        kazanimlar = json.load(f)
-  except Exception:
-    pass
-  try:
-    if os.path.exists("referans_sorular.json"):
-      with open("referans_sorular.json", "r", encoding="utf-8") as f:
-        referanslar = json.load(f)
-  except Exception:
-    pass
-  return kazanimlar, referanslar
+# --- KALICI ARŞİV (JSON) YÖNETİMİ ---
+ARSIV_DOSYASI = "ders_arsivi.json"
 
 
-kazanimlar_data, referanslar_data = verileri_yukle()
+def arsivi_yukle():
+  if os.path.exists(ARSIV_DOSYASI):
+    try:
+      with open(ARSIV_DOSYASI, "r", encoding="utf-8") as f:
+        return json.load(f)
+    except Exception:
+      return {}
+  return {}
+
+
+def arsivi_kaydet(arsiv_verisi):
+  with open(ARSIV_DOSYASI, "w", encoding="utf-8") as f:
+    json.dump(arsiv_verisi, f, ensure_ascii=False, indent=4)
+
+
+arsiv = arsivi_yukle()
 
 
 def soru_word_yap(soru_metni):
@@ -108,20 +108,20 @@ SINIF_KONTENJLARI = {
 
 # --- ARAYÜZ BAŞLIĞI ---
 st.title(
-    "✏️ Kurşun Kalem Dijital Eğitim - Sınıf Bazlı Soru ve İçerik Yönetim Sistemi"
+    "✏️ Kurşun Kalem Dijital Eğitim - Sınıf ve Konu Arşiv Yönetim Sistemi"
 )
 st.markdown(
-    "5, 6, 7 ve 8. Sınıf müfredatına uygun olarak konularınızı yönetin,"
-    " sorular üretin ve ders video/ses dosyalarınızı analiz edin."
+    "Sınıf ve konu seçerek ders notlarınızı, ses/video kayıtlarınızı kalıcı"
+    " olarak saklayın ve ilgili konuyu açtığınızda görüntüleyin."
 )
 
 # --- SEKMELER ---
 tab1, tab2, tab3, tab4 = st.tabs(
     [
         "📝 Sınıf & LGS Soru Üretici",
-        "📂 Sınıf & Konu Dosya Yönetimi",
+        "📂 Konu Bazlı Dosya Arşivi",
         "📊 Soru Havuzu Analizi",
-        "🎥 Sınıf Bazlı Medya (Video/Ses) Analiz Paneli",
+        "🎥 Konu Bazlı Medya (Ses/Video) Arşivi ve Analiz",
     ]
 )
 
@@ -202,10 +202,10 @@ with tab1:
         st.error(f"Soru üretilirken hata oluştu: {e}")
 
 with tab2:
-  st.header("📂 Sınıf ve Konu Bazlı Dosya Yönetimi")
+  st.header("📂 Konu Bazlı Dosya Arşivi")
   st.markdown(
-      "Ders notlarınızı veya test dokümanlarınızı sınıf ve ünite konularına göre"
-      " sisteme yükleyin."
+      "Önce sınıf ve konuyu seçin. Yüklediğiniz dokümanlar yalnızca o seçtiğiniz"
+      " konunun altında görünecektir."
   )
 
   col_d1, col_d2 = st.columns(2)
@@ -218,42 +218,80 @@ with tab2:
         "Konu Seçin:", SINIF_KONTENJLARI[yonetim_sinif], key="yonetim_konu"
     )
 
-  yuklenen_dosya = st.file_uploader(
-      f"'{yonetim_konu}' için Ders Notu / Doküman Yükle (PDF, DOCX, TXT)",
-      type=["pdf", "docx", "txt"],
+  with st.expander(
+      "➕ Bu Konuya Yeni Doküman / Ders Notu Yükle", expanded=False
+  ):
+    yuklenen_dosya = st.file_uploader(
+        "Dosya Seç (PDF, DOCX, TXT)",
+        type=["pdf", "docx", "txt"],
+        key="file_uploader_tab2",
+    )
+
+    if yuklenen_dosya is not None:
+      uzanti = yuklenen_dosya.name.split(".")[-1].lower()
+      metin_icerik = (
+          pdf_oku(yuklenen_dosya)
+          if uzanti == "pdf"
+          else (
+              docx_oku(yuklenen_dosya)
+              if uzanti == "docx"
+              else yuklenen_dosya.read().decode("utf-8")
+          )
+      )
+
+      if yonetim_sinif not in arsiv:
+        arsiv[yonetim_sinif] = {}
+      if yonetim_konu not in arsiv[yonetim_sinif]:
+        arsiv[yonetim_sinif][yonetim_konu] = {"dokumanlar": [], "medyalar": []}
+
+      mevcut_dosyalar = [
+          d["ad"] for d in arsiv[yonetim_sinif][yonetim_konu]["dokumanlar"]
+      ]
+      if yuklenen_dosya.name not in mevcut_dosyalar:
+        arsiv[yonetim_sinif][yonetim_konu]["dokumanlar"].append(
+            {"ad": yuklenen_dosya.name, "icerik": metin_icerik}
+        )
+        arsivi_kaydet(arsiv)
+        st.success(
+            f"'{yuklenen_dosya.name}' başarıyla {yonetim_sinif} ->"
+            f" '{yonetim_konu}' arşivine eklendi!"
+        )
+
+  st.divider()
+  st.subheader(
+      f"📚 {yonetim_sinif} / {yonetim_konu} Arşivindeki Dokümanlar"
   )
 
-  if yuklenen_dosya is not None:
-    uzanti = yuklenen_dosya.name.split(".")[-1].lower()
-    metin_icerik = (
-        pdf_oku(yuklenen_dosya)
-        if uzanti == "pdf"
-        else (
-            docx_oku(yuklenen_dosya)
-            if uzanti == "docx"
-            else yuklenen_dosya.read().decode("utf-8")
+  konu_dokumanlari = (
+      arsiv.get(yonetim_sinif, {}).get(yonetim_konu, {}).get("dokumanlar", [])
+  )
+  if konu_dokumanlari:
+    for idx, doc in enumerate(konu_dokumanlari):
+      with st.expander(f"📄 {doc['ad']}", expanded=False):
+        st.text_area(
+            "İçerik Önizlemesi:",
+            value=doc["icerik"][:3000],
+            height=150,
+            key=f"doc_preview_{idx}",
         )
+        if st.button(
+            "Bu Dokümanı Yapay Zekâ ile Analiz Et", key=f"analiz_doc_{idx}"
+        ):
+          with st.spinner("Analiz ediliyor..."):
+            p = f"Bu dokümanı {yonetim_sinif} seviyesindeki '{yonetim_konu}' başlığı altında incele, temel kazanımları özetle."
+            resp = client.models.generate_content(
+                model="gemini-3.8-flash",
+                contents=[p, doc["icerik"][:3000]],
+                config=types.GenerateContentConfig(
+                    temperature=0.3, max_output_tokens=1500
+                ),
+            )
+            st.markdown(resp.text)
+  else:
+    st.info(
+        f"'{yonetim_konu}' başlığı altında henüz kayıtlı bir doküman"
+        " bulunmuyor."
     )
-
-    st.success(
-        f"'{yuklenen_dosya.name}' dosyası başarıyla okunarak {yonetim_sinif} -"
-        f" '{yonetim_konu}' başlığına bağlandı!"
-    )
-    st.text_area(
-        "Belge İçeriği Önizlemesi:", value=metin_icerik[:3000], height=200
-    )
-
-    if st.button("Belgeyi Yapay Zekâ ile Analiz Et"):
-      with st.spinner("Analiz ediliyor..."):
-        p = f"Bu dokümanı {yonetim_sinif} seviyesindeki '{yonetim_konu}' başlığı altında incele, temel kazanımları ve önemli bilgileri özetle."
-        resp = client.models.generate_content(
-            model="gemini-3.8-flash",
-            contents=[p, metin_icerik[:3000]],
-            config=types.GenerateContentConfig(
-                temperature=0.3, max_output_tokens=1500
-            ),
-        )
-        st.markdown(resp.text)
 
 with tab3:
   st.header("📊 Soru Havuzu Analiz Paneli")
@@ -272,85 +310,133 @@ with tab3:
     st.warning("Henüz havuzda referans soru bulunmuyor.")
 
 with tab4:
-  st.header("🎥 Sınıf ve Konu Bazlı Medya (Video / Ses) Analiz Paneli")
+  st.header("🎥 Konu Bazlı Medya (Ses / Video) Arşivi ve Analiz")
   st.markdown(
-      "Bilgisayarınızdaki ders videosunu veya ses kaydını (MP4, MOV, AVI, MP3,"
-      " WAV, M4A) yükleyin; sınıf ve konuyu seçerek yapay zekâya analiz"
-      " ettirin."
+      "Önce sınıf ve konuyu seçin. Yüklediğiniz medya dosyaları yalnızca o"
+      " seçtiğiniz konunun altında görünecektir."
   )
 
   col_v1, col_v2 = st.columns(2)
   with col_v1:
     video_sinif = st.selectbox(
-        "Medya Dosyasının Ait Olduğu Sınıf:",
-        list(SINIF_KONTENJLARI.keys()),
-        key="video_sinif",
+        "Sınıf Seçin:", list(SINIF_KONTENJLARI.keys()), key="video_sinif"
     )
   with col_v2:
     video_konu = st.selectbox(
-        "Medya Dosyasının Ait Olduğu Konu:",
-        SINIF_KONTENJLARI[video_sinif],
-        key="video_konu",
+        "Konu Seçin:", SINIF_KONTENJLARI[video_sinif], key="video_konu"
     )
 
-  uploaded_media = st.file_uploader(
-      "Medya Dosyası Seçin (Video veya MP3/Ses Dosyası)",
-      type=["mp4", "mov", "avi", "mp3", "wav", "m4a"],
+  with st.expander(
+      "➕ Bu Konuya Yeni Medya Dosyası (Video / Ses) Yükle", expanded=False
+  ):
+    uploaded_media = st.file_uploader(
+        "Medya Dosyası Seç (MP4, MOV, AVI, MP3, WAV, M4A)",
+        type=["mp4", "mov", "avi", "mp3", "wav", "m4a"],
+        key="media_uploader_tab4",
+    )
+
+    if uploaded_media is not None:
+      dosya_uzanti = uploaded_media.name.split(".")[-1].lower()
+
+      with tempfile.NamedTemporaryFile(
+          delete=False, suffix=f".{dosya_uzanti}"
+      ) as tmp_file:
+        uploaded_media.seek(0)
+        tmp_file.write(uploaded_media.read())
+        tmp_file_path = tmp_file.name
+
+      try:
+        media_file = client.files.upload(file=tmp_file_path)
+
+        if video_sinif not in arsiv:
+          arsiv[video_sinif] = {}
+        if video_konu not in arsiv[video_sinif]:
+          arsiv[video_sinif][video_konu] = {"dokumanlar": [], "medyalar": []}
+
+        uploaded_media.seek(0)
+        media_bytes = uploaded_media.read()
+
+        arsiv[video_sinif][video_konu]["medyalar"].append(
+            {
+                "ad": uploaded_media.name,
+                "uzanti": dosya_uzanti,
+                "veri": list(media_bytes),
+                "gemini_file_name": media_file.name,
+            }
+        )
+        arsivi_kaydet(arsiv)
+        st.success(
+            f"'{uploaded_media.name}' başarıyla {video_sinif} -> '{video_konu}'"
+            " arşivine eklendi!"
+        )
+      except Exception as e:
+        st.error(f"Medya yüklenirken hata oluştu: {e}")
+      finally:
+        if os.path.exists(tmp_file_path):
+          os.unlink(tmp_file_path)
+
+  st.divider()
+  st.subheader(f"🎬 {video_sinif} / {video_konu} Arşivindeki Medyalar")
+
+  konu_medyalari = (
+      arsiv.get(video_sinif, {}).get(video_konu, {}).get("medyalar", [])
   )
+  if konu_medyalari:
+    for idx, medya in enumerate(konu_medyalari):
+      with st.expander(f"🎵 / 🎥 {medya['ad']}", expanded=True):
+        col_m1, col_m2 = st.columns([1.2, 1])
 
-  if uploaded_media is not None:
-    dosya_uzanti = uploaded_media.name.split(".")[-1].lower()
-    col_media, col_panel = st.columns([1.2, 1])
+        with col_m1:
+          st.subheader("▶️ Oynatıcı")
+          media_data_bytes = bytes(medya["veri"])
+          if medya["uzanti"] in ["mp3", "wav", "m4a"]:
+            st.audio(media_data_bytes)
+          else:
+            st.video(media_data_bytes)
 
-    with col_media:
-      st.subheader(f"▶️ Oynatıcı ({video_sinif})")
-      if dosya_uzanti in ["mp3", "wav", "m4a"]:
-        st.audio(uploaded_media)
-      else:
-        st.video(uploaded_media)
+        with col_m2:
+          st.subheader("⚙️ Yapay Zekâ Analiz İşlemleri")
+          islem_turu = st.selectbox(
+              "İşlem Seçin:",
+              [
+                  "Ders Özeti ve Ana Başlıklar",
+                  "İçerikten Beceri Temelli Soru Üret",
+                  "Konuşma Dökümü (Transkript)",
+              ],
+              key=f"islem_{idx}",
+          )
 
-    with col_panel:
-      st.subheader("⚙️ Yapay Zekâ Analiz İşlemleri")
-      islem_turu = st.selectbox(
-          "İşlem Seçin:",
-          [
-              "Ders Özeti ve Ana Başlıklar",
-              "İçerikten Beceri Temelli Soru Üret",
-              "Konuşma Dökümü (Transkript)",
-          ],
-      )
+          if st.button(
+              "Arşivdeki Medyayı Analiz Et", key=f"btn_analiz_{idx}"
+          ):
+            with st.spinner("Yapay zekâ arşivdeki dosyayı inceliyor..."):
+              try:
+                gemini_f = client.files.get(name=medya["gemini_file_name"])
 
-      if st.button("Medya Analizini Başlat", type="primary"):
-        with st.spinner("Dosya işleniyor ve analiz ediliyor..."):
-          try:
-            with tempfile.NamedTemporaryFile(
-                delete=False, suffix=f".{dosya_uzanti}"
-            ) as tmp_file:
-              uploaded_media.seek(0)
-              tmp_file.write(uploaded_media.read())
-              tmp_file_path = tmp_file.name
+                if islem_turu == "Ders Özeti ve Ana Başlıklar":
+                  media_prompt = f"Bu ders kaydını/videosunu {video_sinif} seviyesi '{video_konu}' konusu bağlamında analiz et. Öğrenciler için maddeler halinde detaylı bir ders özeti çıkar."
+                elif islem_turu == "İçerikten Beceri Temelli Soru Üret":
+                  media_prompt = f"Bu medya içeriğindeki konuya dayanarak {video_sinif} - '{video_konu}' için uygun formatta beceri temelli sorular ve cevap anahtarı hazarla."
+                else:
+                  media_prompt = "Bu ses/video kaydındaki konuşmaları kronolojik sırayla metin dökümü (transkript) haline getir."
 
-            media_file = client.files.upload(file=tmp_file_path)
+                response = client.models.generate_content(
+                    model="gemini-3.8-flash",
+                    contents=[gemini_f, media_prompt],
+                    config=types.GenerateContentConfig(
+                        temperature=0.3, max_output_tokens=2048
+                    ),
+                )
 
-            if islem_turu == "Ders Özeti ve Ana Başlıklar":
-              media_prompt = f"Bu ders kaydını/videosunu {video_sinif} seviyesi '{video_konu}' konusu bağlamında analiz et. Öğrenciler için maddeler halinde detaylı bir ders özeti çıkar."
-            elif islem_turu == "İçerikten Beceri Temelli Soru Üret":
-              media_prompt = f"Bu medya içeriğindeki konuya dayanarak {video_sinif} - '{video_konu}' için uygun formatta beceri temelli sorular ve cevap anahtarı hazarla."
-            else:
-              media_prompt = "Bu ses/video kaydındaki konuşmaları kronolojik sırayla metin dökümü (transkript) haline getir."
-
-            response = client.models.generate_content(
-                model="gemini-3.8-flash",
-                contents=[media_file, media_prompt],
-                config=types.GenerateContentConfig(
-                    temperature=0.3, max_output_tokens=2048
-                ),
-            )
-
-            st.success("Analiz tamamlandı!")
-            st.markdown(response.text)
-
-            os.unlink(tmp_file_path)
-
-          except Exception as e:
-            st.error(f"Hata oluştu: {e}")
+                st.success("Analiz tamamlandı!")
+                st.markdown(response.text)
+              except Exception as e:
+                st.error(
+                    f"Analiz sırasında hata oluştu (Dosya süresi dolmuş olabilir,"
+                    f" yeniden yükleyebilirsiniz): {e}"
+                )
+  else:
+    st.info(
+        f"'{video_konu}' başlığı altında henüz kayıtlı bir ses/video medya"
+        " dosyası bulunmuyor."
+    )
