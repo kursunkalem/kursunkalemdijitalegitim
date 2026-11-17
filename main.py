@@ -283,3 +283,74 @@ with tab4:
   with col_v1:
     video_sinif = st.selectbox(
         "Medya Dosyasının Ait Olduğu Sınıf:",
+        list(SINIF_KONTENJLARI.keys()),
+        key="video_sinif",
+    )
+  with col_v2:
+    video_konu = st.selectbox(
+        "Medya Dosyasının Ait Olduğu Konu:",
+        SINIF_KONTENJLARI[video_sinif],
+        key="video_konu",
+    )
+
+  uploaded_media = st.file_uploader(
+      "Medya Dosyası Seçin (Video veya MP3/Ses Dosyası)",
+      type=["mp4", "mov", "avi", "mp3", "wav", "m4a"],
+  )
+
+  if uploaded_media is not None:
+    dosya_uzanti = uploaded_media.name.split(".")[-1].lower()
+    col_media, col_panel = st.columns([1.2, 1])
+
+    with col_media:
+      st.subheader(f"▶️ Oynatıcı ({video_sinif})")
+      if dosya_uzanti in ["mp3", "wav", "m4a"]:
+        st.audio(uploaded_media)
+      else:
+        st.video(uploaded_media)
+
+    with col_panel:
+      st.subheader("⚙️ Yapay Zekâ Analiz İşlemleri")
+      islem_turu = st.selectbox(
+          "İşlem Seçin:",
+          [
+              "Ders Özeti ve Ana Başlıklar",
+              "İçerikten Beceri Temelli Soru Üret",
+              "Konuşma Dökümü (Transkript)",
+          ],
+      )
+
+      if st.button("Medya Analizini Başlat", type="primary"):
+        with st.spinner("Dosya işleniyor ve analiz ediliyor..."):
+          try:
+            with tempfile.NamedTemporaryFile(
+                delete=False, suffix=f".{dosya_uzanti}"
+            ) as tmp_file:
+              uploaded_media.seek(0)
+              tmp_file.write(uploaded_media.read())
+              tmp_file_path = tmp_file.name
+
+            media_file = client.files.upload(file=tmp_file_path)
+
+            if islem_turu == "Ders Özeti ve Ana Başlıklar":
+              media_prompt = f"Bu ders kaydını/videosunu {video_sinif} seviyesi '{video_konu}' konusu bağlamında analiz et. Öğrenciler için maddeler halinde detaylı bir ders özeti çıkar."
+            elif islem_turu == "İçerikten Beceri Temelli Soru Üret":
+              media_prompt = f"Bu medya içeriğindeki konuya dayanarak {video_sinif} - '{video_konu}' için uygun formatta beceri temelli sorular ve cevap anahtarı hazarla."
+            else:
+              media_prompt = "Bu ses/video kaydındaki konuşmaları kronolojik sırayla metin dökümü (transkript) haline getir."
+
+            response = client.models.generate_content(
+                model="gemini-3.8-flash",
+                contents=[media_file, media_prompt],
+                config=types.GenerateContentConfig(
+                    temperature=0.3, max_output_tokens=2048
+                ),
+            )
+
+            st.success("Analiz tamamlandı!")
+            st.markdown(response.text)
+
+            os.unlink(tmp_file_path)
+
+          except Exception as e:
+            st.error(f"Hata oluştu: {e}")
