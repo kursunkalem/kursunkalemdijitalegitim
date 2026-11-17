@@ -189,10 +189,24 @@ with tab2:
 with tab3:
   st.header("📊 Soru Havuzu Analiz Paneli")
   if referanslar_data:
-    st.write(f"Toplam {len(referanslar_data)} referans soru aktif.")
-    st.json(referanslar_data[:2])
+    st.success(f"Sistemde toplam **{len(referanslar_data)}** referans soru aktif.")
+
+    # Ham JSON görüntüsü yerine şık kartlar ve düzenli paneller
+    for i, soru in enumerate(referanslar_data):
+      with st.expander(
+          f"📌 Soru {i+1} | Branş: {soru.get('brans', 'Belirtilmemiş')} | Sınıf:"
+          f" {soru.get('sinif', 'Belirtilmemiş')}"
+      ):
+        st.markdown(f"**Kazanım:** {soru.get('kazanim', 'Belirtilmemiş')}")
+        st.markdown("---")
+        st.markdown("**Soru Metni / Bağlam:**")
+        # Metin çok uzunsa okunabilir bir kutu içinde gösteriyoruz
+        st.info(soru.get("baglam_metni", "Metin bulunamadı."))
   else:
-    st.warning("Referans soru dosyası bulunamadı.")
+    st.warning(
+        "Henüz havuzda referans soru bulunmuyor. (referans_sorular.json dosyası"
+        " eklenebilir)"
+    )
 
 with tab4:
   st.header("🎥 Video Kütüphanesi ve Canlı Oynatıcı")
