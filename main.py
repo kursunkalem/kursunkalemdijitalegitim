@@ -1,8 +1,3 @@
-Eğitim paketlerini; içeriğinde tam dijital koçluk, video çözüm kütüphaneleri, canlı ders kampları ve kişiye özel yapay zeka analiz raporları barındıracak şekilde çok daha cazip ve zengin birer **"Premium Eğitim Ekosistemine"** dönüştürdüm.
-
-Aşağıdaki güncellenmiş ve zenginleştirilmiş tam kodunu doğrudan `main.py` dosyana kopyalayıp yapıştırarak çalıştırabilirsin:
-
-```python
 import os
 import json
 import sqlite3
@@ -974,5 +969,3 @@ else:
             st.write("1. Kesin bilgileri ele alın.\n2. Şema kurun.")
         with st.expander("📌 Paragraf Şifreleri"):
             st.write("1. Olumsuz soru köklerine dikkat edin.\n2. Son cümleye odaklanın.")
-
-```
