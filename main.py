@@ -58,20 +58,29 @@ def seed_initial_data():
     cursor = conn.cursor()
     cursor.execute("SELECT COUNT(*) FROM questions")
     if cursor.fetchone()[0] == 0:
-        sample_q = (
-            "LGS Türkçe", "8. Sınıf",
-            "Aşağıdaki cümlelerin hangisinde bir yazım yanlışı vardır?",
-            "A) Herkes bu konuda aynı fikirdeydi.",
-            "B) Yanlış anlamalara mahal vermemek için açık konuştu.",
-            "C) Türkçeyi korumak hepimizin görevidir.",
-            "D) Herhangi birşey olduğunda beni ararsın.",
-            "D",
-            "Çeldiriciye dikkat! 'Herhangi bir' ayrı yazılır ancak 'şey' kelimesi daima ayrı yazılır. Doğru kullanım 'herhangi bir şey' şeklinde olmalıdır."
-        )
-        cursor.execute("""
+        sample_questions = [
+            (
+                "LGS Türkçe", "8. Sınıf",
+                "Aşağıdaki cümlelerin hangisinde bir yazım yanlışı vardır?",
+                "A) Herkes bu konuda aynı fikirdeydi.",
+                "B) Yanlış anlamalara mahal vermemek için açık konuştu.",
+                "C) Türkçeyi korumak hepimizin görevidir.",
+                "D) Herhangi birşey olduğunda beni ararsın.",
+                "D",
+                "Çeldiriciye dikkat! 'Herhangi bir' ayrı yazılır ancak 'şey' kelimesi daima ayrı yazılır. Doğru kullanım 'herhangi bir şey' şeklinde olmalıdır."
+            ),
+            (
+                "LGS Türkçe", "8. Sınıf",
+                "Bir sinema salonunda A, B, C, D koltuklarına oturan 4 arkadaşın oturma düzeniyle ilgili bilinenler şunlardır: \n1. Cansu en kenardaki koltukta oturmaktadır.\n2. Ahmet, Burak'ın hemen solundadır.\nBuna göre kim kesinlikle C koltuğundadır?",
+                "A) Ahmet", "B) Burak", "C) Cansu", "D) Deniz",
+                "C",
+                "Sözel mantık kuralı gereği kesin olan öncüller yerleştirildiğinde Cansu'nun yeri netleşir."
+            )
+        ]
+        cursor.executemany("""
             INSERT INTO questions (subject, grade, question_text, option_a, option_b, option_c, option_d, correct_answer, explanation)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """, sample_q)
+        """, sample_questions)
         conn.commit()
     conn.close()
 
@@ -134,7 +143,7 @@ def create_double_column_docx(questions_list, test_title="LGS TÜRKÇE DENEME SI
         if idx > 1:
             current_target_p = current_target_p.insert_paragraph_after()
             
-        run_q = current_target_p.add_run(f"Soru {idx}:\n{q[3]}\n")
+        run_q = current_target_p.add_run(f"Soru {idx} [{q[1]} - {q[2]}]:\n{q[3]}\n")
         run_q.bold = True
         run_q.font.size = Pt(9.5)
         
@@ -151,17 +160,17 @@ def create_double_column_docx(questions_list, test_title="LGS TÜRKÇE DENEME SI
     doc.save(file_path)
     return file_path
 
-# --- KENAR ÇUBUĞU (NAVİGASYON VE CANLI SAYAÇLAR) ---
+# --- KENAR ÇUBUĞU (NAVİGASYON VE SAYAÇ) ---
 st.sidebar.title("✏️ Kurşun Kalem Eğitim")
 st.sidebar.caption("SaaS Ekosistem & Soru Fabrikası")
 
 menu = st.sidebar.selectbox(
     "Modül Seçin",
     [
-        "🏠 Ana Sayfa & Canlı Sayaçlar",
-        "👨‍🎓 Öğrenci Portalı & Koçluk",
-        "👪 Veli Takip Paneli",
-        "🏢 B2B Lisans & Kurum Yönetimi",
+        "🏠 Ana Sayfa & Geri Sayım",
+        "👨‍🎓 Öğrenci Portalı & Soru Çözümü",
+        "👪 Veli Takip & Performans",
+        "🏢 B2B Lisans & Kurum Paneli",
         "🤖 Yapay Zeka Soru Fabrikası",
         "📄 2 Sütunlu Word Test Üretici",
         "💎 Paketler & Abonelik (Freemium)"
@@ -169,16 +178,16 @@ menu = st.sidebar.selectbox(
 )
 
 st.sidebar.markdown("---")
-st.sidebar.info("🚀 **Sistem Durumu:** Aktif\n\n📌 **Aktif Paket:** Kurumsal & Bireysel Hibrit")
+st.sidebar.info("🚀 **Sistem Durumu:** Aktif\n\n📌 **Aktif Paket:** Kurumsal & Bireysel Hibrit\n\n🐱 **Maskotlar:** Gri Cafer & Beyaz Cevdet onayladı!")
 
-# --- ANA SAYFA & CANLI SAYAÇLAR ---
-if menu == "🏠 Ana Sayfa & Canlı Sayaçlar":
+# --- 1. ANA SAYFA & GERİ SAYIM ---
+if menu == "🏠 Ana Sayfa & Geri Sayım":
     st.title("📚 Kurşun Kalem Dijital Eğitim Platformuna Hoş Geldiniz")
     st.markdown("İlkokuldan YKS'ye uzanan, yapay zeka destekli Türkiye'nin en akıllı soru ve koçluk ekosistemi.")
     
     # --- LGS 2027 GERİ SAYIM SAYACI ---
-    st.markdown("### ⏳ 2027 LGS Sınavına Geri Sayım")
-    exam_date = datetime.datetime(2027, 6, 13, 9, 30, 0) # 13 Haziran 2027, Saat 09:30
+    st.markdown("### ⏳ 2027 LGS Sınavına Geri Sayım (13 Haziran 2027)")
+    exam_date = datetime.datetime(2027, 6, 13, 9, 30, 0)
     now = datetime.datetime.now()
     remaining = exam_date - now
     
@@ -193,11 +202,11 @@ if menu == "🏠 Ana Sayfa & Canlı Sayaçlar":
         c3.metric(label="⏱️ Dakika", value=f"{minutes} Dk")
         c4.metric(label="⚡ Saniye", value=f"{seconds} Sn")
     else:
-        st.success("🎉 LGS 2027 Sınavı Gerçekleşti! Tüm öğrencilere başarılar dileriz.")
+        st.success("🎉 LGS 2027 Sınavı Gerçekleşti!")
     
     st.markdown("---")
     
-    # Canlı Ekosistem Sayaçları (Metrikler)
+    # Canlı Sayaçlar
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         st.metric(label="Üretilen Soru Havuzu", value="142,500+", delta="+1,200 bugün")
@@ -209,58 +218,59 @@ if menu == "🏠 Ana Sayfa & Canlı Sayaçlar":
         st.metric(label="Çözülen Soru Sayısı", value="2.4 Milyon", delta="%98 Başarı")
         
     st.markdown("---")
-    st.subheader("💡 Neden Kurşun Kalem?")
+    st.subheader("💡 Platform Özellikleri")
     col_a, col_b, col_c = st.columns(3)
     with col_a:
         st.markdown("### 🎯 Soru Fabrikası")
-        st.write("MEB ve ÖSYM formatına birebir uygun, öğretmenlerin ve öğrencilerin saniyeler içinde nokta atışı testler üretebildiği yapay zeka motoru.")
+        st.write("MEB formatına uygun saniyeler içinde yeni nesil soru üretin ve veritabanına kaydedin.")
     with col_b:
-        st.markdown("### 🧠 Gelişmiş Koçluk")
-        st.write("Öğrencinin eksiklerini nokta atışı tespit eden, kişiye özel çalışma programları sunan akıllı rehberlik sistemi.")
+        st.markdown("### 📄 Profesyonel Word Çıktısı")
+        st.write("Soru havuzundaki soruları tek tıkla 2 sütunlu, yayıncı kalitesinde .docx test kağıtlarına dönüştürün.")
     with col_c:
-        st.markdown("### 📊 Veli & Kurum Takibi")
-        st.write("Öğrencinin her yanlışını analiz eden, veliye anlık rapor sunan ve öğretmenlere toplu sınıf yönetimi sağlayan tam entegre panel.")
+        st.markdown("### 📊 Veli & Kurum Paneli")
+        st.write("Öğrenci gelişimini takip edin, kurumsal lisanslarla okulları sisteme dahil edin.")
 
-# --- ÖĞRENCİ PORTALI & KOÇLUK ---
-elif menu == "👨‍🎓 Öğrenci Portalı & Koçluk":
-    st.title("👨‍🎓 Öğrenci Portalı & Yapay Zeka Koçu")
-    st.markdown("Bugün hangi dersteyiz? Eksiklerini kapatmak ve netlerini uçurmak için buradayız.")
+# --- 2. ÖĞRENCİ PORTALI & SORU ÇÖZÜMÜ ---
+elif menu == "👨‍🎓 Öğrenci Portalı & Soru Çözümü":
+    st.title("👨‍🎓 Öğrenci Portalı & Soru Çözüm Merkezi")
+    st.markdown("Veritabanındaki güncel soruları çözerek KKP puanları toplayın ve eksiklerinizi kapatın.")
     
-    tab1, tab2, tab3 = st.tabs(["📝 Günlük Görevler & Test", "🤖 Yapay Zeka Koçu", "🏆 KKP Oyunlaştırma & Puanlar"])
+    tab1, tab2 = st.tabs(["📝 Soru Bankası & Test Çöz", "🏆 KKP Oyunlaştırma & Rozetler"])
     
     with tab1:
-        st.subheader("Günlük Hedef Testi: LGS Türkçe - Sözel Mantık")
-        st.info("💡 **İpucu:** Öncülleri dikkatlice okuyup kesin olan bilgileri önce sabitleyin.")
+        conn = sqlite3.connect(DB_NAME)
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, subject, grade, question_text, option_a, option_b, option_c, option_d, correct_answer, explanation FROM questions")
+        questions = cursor.fetchall()
+        conn.close()
         
-        q_text = "Bir sinema salonunda A, B, C, D koltuklarına oturan 4 arkadaşın oturma düzeniyle ilgili bilinenler şunlardır...\nBuna göre kim kesinlikle C koltuğundadır?"
-        st.write(f"**Soru:** {q_text}")
-        
-        ans = st.radio("Seçiminizi yapın:", ["A) Ahmet", "B) Burak", "C) Cansu", "D) Deniz"])
-        if st.button("Cevabı Kontrol Et"):
-            if ans.startswith("C"):
-                st.success("🎉 Tebrikler, doğru cevap!")
-            else:
-                st.error("❌ Yanlış! Öncüllerdeki yerleşim kuralını tekrar inceleyin.")
+        if not questions:
+            st.warning("Soru havuzunda henüz soru yok. 'Yapay Zeka Soru Fabrikası' modülünden soru ekleyebilirsiniz.")
+        else:
+            selected_q = st.selectbox("Çözmek istediğiniz soruyu seçin:", questions, format_func=lambda x: f"[{x[1]}] {x[3][:50]}...")
+            if selected_q:
+                st.write(f"**Soru:** {selected_q[3]}")
+                user_choice = st.radio("Seçenekler:", [selected_q[4], selected_q[5], selected_q[6], selected_q[7]], key=f"q_{selected_q[0]}")
                 
+                if st.button("Cevabı Kontrol Et"):
+                    chosen_letter = user_choice.split(")")[0].strip()
+                    if chosen_letter == selected_q[8]:
+                        st.success("🎉 Tebrikler, doğru cevap!")
+                        st.info(f"**Çözüm Açıklaması:** {selected_q[9]}")
+                    else:
+                        st.error(f"❌ Yanlış! Doğru cevap: {selected_q[8]}")
+                        st.info(f"**Çözüm Açıklaması:** {selected_q[9]}")
+
     with tab2:
-        st.subheader("Yapay Zeka Koçuna Sor")
-        user_q = st.text_input("Takıldığın bir soru veya konu var mı? Yaz buraya anlatalım:")
-        if st.button("Koça Danış"):
-            if user_q:
-                st.info(f"🤖 **Koçun Cevabı:** '{user_q}' konusu için harika bir taktik: Adım adım ilerle, öncülleri asla göz ardı etme.")
-            else:
-                st.warning("Lütfen bir soru veya konu yazın.")
-                
-    with tab3:
-        st.subheader("🏆 Kurşun Kalem Puanı (KKP) ve Rozetler")
-        st.metric("Toplam Puanın (KKP)", "1,450 KKP", "Seviye: Altın Öğrenci 🥇")
+        st.subheader("🏆 Kurşun Kalem Puanı (KKP) ve Durumunuz")
+        st.metric("Toplam Puanınız", "1,450 KKP", "Seviye: Altın Öğrenci 🥇")
         st.progress(75)
         st.write("Sonraki seviyeye kalan soru hedefi: **50 soru**")
 
-# --- VELİ TAKİP PANELİ ---
-elif menu == "👪 Veli Takip Paneli":
+# --- 3. VELİ TAKİP & PERFORMANS ---
+elif menu == "👪 Veli Takip & Performans":
     st.title("👪 Veli Takip ve Performans Paneli")
-    st.markdown("Çocuğunuzun günlük çalışma saatlerini, test sonuçlarını ve eksik kazanımlarını anlık takip edin.")
+    st.markdown("Çocuğunuzun günlük çalışma saatlerini, test sonuçlarını ve kazanım eksiklerini anlık takip edin.")
     
     student_name = st.selectbox("Öğrenci Seçin", ["Ahmet Furkan Kurşun (8. Sınıf - LGS)"])
     
@@ -273,7 +283,7 @@ elif menu == "👪 Veli Takip Paneli":
         st.metric("Günlük Çalışma Süresi", "2 Saat 15 Dk", "Hedef: 2 Saat")
         
     st.markdown("---")
-    st.subheader("📊 Haftalık Kazanım Analizi (Zayıf / Güçlü Alanlar)")
+    st.subheader("📊 Haftalık Kazanım Analizi")
     st.write("✅ **Türkçe - Fiilimsiler:** %95 (Çok İyi)")
     st.write("⚠️ **Matematik - Kareköklü İfadeler:** %60 (Tekrar Edilmeli)")
     st.write("🚨 **Fen - Basit Makineler:** %45 (Acil Soru Çözümü Önerilir)")
@@ -281,8 +291,8 @@ elif menu == "👪 Veli Takip Paneli":
     if st.button("Veli Raporunu İndir"):
         st.success("Veli bilgilendirme raporu başarıyla hazırlandı.")
 
-# --- B2B LİSANS & KURUM YÖNETİMİ ---
-elif menu == "🏢 B2B Lisans & Kurum Yönetimi":
+# --- 4. B2B LİSANS & KURUM PANELİ ---
+elif menu == "🏢 B2B Lisans & Kurum Paneli":
     st.title("🏢 B2B Kurumsal Lisans & Okul Paneli")
     st.markdown("Dershaneler, özel okullar ve kurs merkezleri için toplu öğrenci ve öğretmen lisans yönetimi.")
     
@@ -295,15 +305,15 @@ elif menu == "🏢 B2B Lisans & Kurum Yönetimi":
         st.button("Lisans Paketini Güncelle")
         
     with col2:
-        st.subheader("Öğretmen Soru Fabrikası Erişimi")
-        st.write("Kurumunuza ait öğretmenler sisteme toplu soru yükleyebilir ve kendi kurum logolu 2 sütunlu testlerini anında indirebilir.")
-        if st.button("Kurum Öğretmenlerini Listele (5 Öğretmen Aktif)"):
+        st.subheader("Kurum Öğretmenleri")
+        st.write("Sisteme kayıtlı öğretmenler kendi adına soru üretebilir ve kurumsal test indirebilir.")
+        if st.button("Öğretmenleri Listele"):
             st.json(["Uğur Hoca (Matematik)", "Adil Hoca (Türkçe)", "Zeynep Hoca (Fen Bilimleri)"])
 
-# --- YAPAY ZEKA SORU FABRİKASI ---
+# --- 5. YAPAY ZEKA SORU FABRİKASI ---
 elif menu == "🤖 Yapay Zeka Soru Fabrikası":
     st.title("🤖 Yapay Zeka Soru Fabrikası")
-    st.markdown("MEB beceri temelli sınav formatına uygun, saniyeler içinde yeni nesil soru üretin.")
+    st.markdown("MEB beceri temelli sınav formatına uygun, saniyeler içinde yeni nesil soru üretin ve veritabanına ekleyin.")
     
     with st.form("question_factory_form"):
         subject = st.selectbox("Ders Seçimi", ["LGS Türkçe", "LGS Matematik", "LGS Fen Bilimleri", "YKS Türkçe", "YKS Matematik"])
@@ -316,19 +326,19 @@ elif menu == "🤖 Yapay Zeka Soru Fabrikası":
             conn = sqlite3.connect(DB_NAME)
             cursor = conn.cursor()
             for i in range(count):
-                q_text_sample = f"[{topic}] ile ilgili yapay zeka tarafından üretilen beceri temelli yeni nesil soru #{i+1}"
+                q_text_sample = f"[{topic}] ile ilgili sistemde üretilen beceri temelli yeni nesil soru #{i+1}"
                 cursor.execute("""
                     INSERT INTO questions (subject, grade, question_text, option_a, option_b, option_c, option_d, correct_answer, explanation)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (subject, grade, q_text_sample, "A) Seçenek 1", "B) Seçenek 2", "C) Seçenek 3", "D) Doğru Seçenek", "D", "Detaylı çözüm açıklaması burada yer alır."))
+                """, (subject, grade, q_text_sample, "A) Seçenek 1", "B) Seçenek 2", "C) Seçenek 3", "D) Doğru Seçenek", "D", "Detaylı çözüm açıklaması ve ipucu."))
             conn.commit()
             conn.close()
-            st.success(f"Başarıyla {count} adet soru üretildi ve veritabanına eklendi!")
+            st.success(f"Başarıyla {count} adet soru üretildi ve veritabanına kaydedildi!")
 
-# --- 2 SÜTUNLU WORD TEST ÜRETİCİ ---
+# --- 6. 2 SÜTUNLU WORD TEST ÜRETİCİ ---
 elif menu == "📄 2 Sütunlu Word Test Üretici":
     st.title("📄 2 Sütunlu Profesyonel Word (.docx) Test Üretici")
-    st.markdown("Yayıncı standartlarında, iki sütunlu, şık ve baskıya hazır test kağıtları oluşturun.")
+    st.markdown("Veritabanındaki soruları yayıncı standartlarında iki sütunlu şık test kağıtları olarak indirin.")
     
     conn = sqlite3.connect(DB_NAME)
     cursor = conn.cursor()
@@ -353,7 +363,7 @@ elif menu == "📄 2 Sütunlu Word Test Üretici":
                 )
             st.success("Test dosyası başarıyla hazırlandı!")
 
-# --- PAKETLER & ABONELİK (FREEMIUM) ---
+# --- 7. PAKETLER & ABONELİK (FREEMIUM) ---
 elif menu == "💎 Paketler & Abonelik (Freemium)":
     st.title("💎 Abonelik Paketleri ve Fiyatlandırma")
     st.markdown("İster bireysel öğrenci, ister kurum olun; size en uygun paketi seçin.")
@@ -371,7 +381,7 @@ elif menu == "💎 Paketler & Abonelik (Freemium)":
     with col2:
         st.markdown("### 🚀 Bireysel Pro (Öğrenci)")
         st.write("- Sınırsız Soru Fabrikası")
-        st.write("- Yapay Zeka Koçu (Sınırsız)")
+        st.write("- Sınırsız Test Çözümü")
         st.write("- Detaylı Veli Takip Raporu")
         st.write("- KKP Puan ve Rozetler")
         st.markdown("**299 TL / Ay**")
@@ -388,4 +398,4 @@ elif menu == "💎 Paketler & Abonelik (Freemium)":
 
 # --- ALT BİLGİ ---
 st.markdown("---")
-st.caption("© 2026 Kurşun Kalem Dijital Eğitim Teknolojileri | Tüm hakları saklıdır.")
+st.caption("© 2026 Kurşun Kalem Dijital Eğitim Teknolojileri | Tüm hakları saklıdır. Gri Cafer & Beyaz Cevdet onaylıdır 🐾")
