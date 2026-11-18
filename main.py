@@ -66,7 +66,7 @@ def seed_initial_data():
             "C) Türkçeyi korumak hepimizin görevidir.",
             "D) Herhangi birşey olduğunda beni ararsın.",
             "D",
-            "Dur! Çeldiriciye hemen atlama. 'Herhangi bir' ayrı yazılır ancak 'şey' daima ayrı yazılır. Dolayısıyla 'herhangi bir şey' şeklinde yazılması gerekirdi. Yanıt D seçeneğidir."
+            "Çeldiriciye dikkat! 'Herhangi bir' ayrı yazılır ancak 'şey' kelimesi daima ayrı yazılır. Doğru kullanım 'herhangi bir şey' şeklinde olmalıdır."
         )
         cursor.execute("""
             INSERT INTO questions (subject, grade, question_text, option_a, option_b, option_c, option_d, correct_answer, explanation)
@@ -169,7 +169,7 @@ menu = st.sidebar.selectbox(
 )
 
 st.sidebar.markdown("---")
-st.sidebar.info("🚀 **Sistem Durumu:** Aktif\n\n📌 **Aktif Paket:** Kurumsal & Bireysel Hibrit\n\n🐱 **Maskotlar:** Gri Cafer & Beyaz Cevdet onayladı!")
+st.sidebar.info("🚀 **Sistem Durumu:** Aktif\n\n📌 **Aktif Paket:** Kurumsal & Bireysel Hibrit")
 
 # --- ANA SAYFA & CANLI SAYAÇLAR ---
 if menu == "🏠 Ana Sayfa & Canlı Sayaçlar":
@@ -215,8 +215,8 @@ if menu == "🏠 Ana Sayfa & Canlı Sayaçlar":
         st.markdown("### 🎯 Soru Fabrikası")
         st.write("MEB ve ÖSYM formatına birebir uygun, öğretmenlerin ve öğrencilerin saniyeler içinde nokta atışı testler üretebildiği yapay zeka motoru.")
     with col_b:
-        st.markdown("### 🧠 Tonguç Ekolü Dil")
-        st.write("Kuru akademik dilden uzak; öğrencinin kafasındaki tuzağı çözen, samimi, rehberlik eden ve akılda kalıcı anlatım dili.")
+        st.markdown("### 🧠 Gelişmiş Koçluk")
+        st.write("Öğrencinin eksiklerini nokta atışı tespit eden, kişiye özel çalışma programları sunan akıllı rehberlik sistemi.")
     with col_c:
         st.markdown("### 📊 Veli & Kurum Takibi")
         st.write("Öğrencinin her yanlışını analiz eden, veliye anlık rapor sunan ve öğretmenlere toplu sınıf yönetimi sağlayan tam entegre panel.")
@@ -226,11 +226,11 @@ elif menu == "👨‍🎓 Öğrenci Portalı & Koçluk":
     st.title("👨‍🎓 Öğrenci Portalı & Yapay Zeka Koçu")
     st.markdown("Bugün hangi dersteyiz? Eksiklerini kapatmak ve netlerini uçurmak için buradayız.")
     
-    tab1, tab2, tab3 = st.tabs(["📝 Günlük Görevler & Test", "🤖 Yapay Zeka Koçu (Tonguç Dili)", "🏆 KKP Oyunlaştırma & Puanlar"])
+    tab1, tab2, tab3 = st.tabs(["📝 Günlük Görevler & Test", "🤖 Yapay Zeka Koçu", "🏆 KKP Oyunlaştırma & Puanlar"])
     
     with tab1:
         st.subheader("Günlük Hedef Testi: LGS Türkçe - Sözel Mantık")
-        st.info("💡 **Hoca Notu:** Sözel mantıkta öncülleri eledikten sonra kesin olanları yerleştirmeyi unutma!")
+        st.info("💡 **İpucu:** Öncülleri dikkatlice okuyup kesin olan bilgileri önce sabitleyin.")
         
         q_text = "Bir sinema salonunda A, B, C, D koltuklarına oturan 4 arkadaşın oturma düzeniyle ilgili bilinenler şunlardır...\nBuna göre kim kesinlikle C koltuğundadır?"
         st.write(f"**Soru:** {q_text}")
@@ -238,16 +238,16 @@ elif menu == "👨‍🎓 Öğrenci Portalı & Koçluk":
         ans = st.radio("Seçiminizi yapın:", ["A) Ahmet", "B) Burak", "C) Cansu", "D) Deniz"])
         if st.button("Cevabı Kontrol Et"):
             if ans.startswith("C"):
-                st.success("🎉 Tebrikler! Harika bir mantık yürüttün, doğru cevap!")
+                st.success("🎉 Tebrikler, doğru cevap!")
             else:
-                st.error("❌ Yanlış! Bak burada şu ipucunu kaçırdın: 2. öncülde Cansu'nun yeri kesin olarak verilmişti.")
+                st.error("❌ Yanlış! Öncüllerdeki yerleşim kuralını tekrar inceleyin.")
                 
     with tab2:
         st.subheader("Yapay Zeka Koçuna Sor")
         user_q = st.text_input("Takıldığın bir soru veya konu var mı? Yaz buraya anlatalım:")
         if st.button("Koça Danış"):
             if user_q:
-                st.info(f"🤖 **Koçun Cevabı:** Dur! '{user_q}' konusunu dert etme. Bak işin sırrı şurada: Asla formülü ezberleme, mantığı kavra...")
+                st.info(f"🤖 **Koçun Cevabı:** '{user_q}' konusu için harika bir taktik: Adım adım ilerle, öncülleri asla göz ardı etme.")
             else:
                 st.warning("Lütfen bir soru veya konu yazın.")
                 
@@ -255,7 +255,7 @@ elif menu == "👨‍🎓 Öğrenci Portalı & Koçluk":
         st.subheader("🏆 Kurşun Kalem Puanı (KKP) ve Rozetler")
         st.metric("Toplam Puanın (KKP)", "1,450 KKP", "Seviye: Altın Öğrenci 🥇")
         st.progress(75)
-        st.write("Sonraki seviyeye kalmış olan soru hedefi: **50 soru**")
+        st.write("Sonraki seviyeye kalan soru hedefi: **50 soru**")
 
 # --- VELİ TAKİP PANELİ ---
 elif menu == "👪 Veli Takip Paneli":
@@ -278,7 +278,7 @@ elif menu == "👪 Veli Takip Paneli":
     st.write("⚠️ **Matematik - Kareköklü İfadeler:** %60 (Tekrar Edilmeli)")
     st.write("🚨 **Fen - Basit Makineler:** %45 (Acil Soru Çözümü Önerilir)")
     
-    if st.button("Veli Raporunu PDF / Yazdır olarak İndir"):
+    if st.button("Veli Raporunu İndir"):
         st.success("Veli bilgilendirme raporu başarıyla hazırlandı.")
 
 # --- B2B LİSANS & KURUM YÖNETİMİ ---
@@ -320,7 +320,7 @@ elif menu == "🤖 Yapay Zeka Soru Fabrikası":
                 cursor.execute("""
                     INSERT INTO questions (subject, grade, question_text, option_a, option_b, option_c, option_d, correct_answer, explanation)
                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """, (subject, grade, q_text_sample, "A) Seçenek 1", "B) Seçenek 2", "C) Seçenek 3", "D) Doğru Seçenek", "D", "Tonguç ekolü pratik çözüm açıklaması burada yer alır."))
+                """, (subject, grade, q_text_sample, "A) Seçenek 1", "B) Seçenek 2", "C) Seçenek 3", "D) Doğru Seçenek", "D", "Detaylı çözüm açıklaması burada yer alır."))
             conn.commit()
             conn.close()
             st.success(f"Başarıyla {count} adet soru üretildi ve veritabanına eklendi!")
@@ -388,4 +388,4 @@ elif menu == "💎 Paketler & Abonelik (Freemium)":
 
 # --- ALT BİLGİ ---
 st.markdown("---")
-st.caption("© 2026 Kurşun Kalem Dijital Eğitim Teknolojileri | Tüm hakları saklıdır. Gri Cafer & Beyaz Cevdet onaylıdır 🐾")
+st.caption("© 2026 Kurşun Kalem Dijital Eğitim Teknolojileri | Tüm hakları saklıdır.")
