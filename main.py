@@ -151,7 +151,7 @@ st.sidebar.title("🧭 Sistem Navigasyonu")
 ana_modul = st.sidebar.radio(
     "Çalışma Alanı Seçin:",
     [
-        "🏠 Ana Sayfa & 2027 LGS Geri Sayım",
+        "🏠 Ana Sayfa & 2027 LGS'ye Geri Sayım",
         "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)",
         "🎓 Öğrenci Portalı & Soru Çözüm",
         "👪 Veli Takip Paneli",
@@ -162,13 +162,13 @@ ana_modul = st.sidebar.radio(
 st.sidebar.markdown("---")
 
 # --- ANA SAYFA & GERİ SAYIM ---
-if ana_modul == "🏠 Ana Sayfa & 2027 LGS Geri Sayım":
+if ana_modul == "🏠 Ana Sayfa & 2027 LGS'ye Geri Sayım":
     kurumsal_logo_goster()
     st.title("📚 Kurşun Kalem Dijital Eğitim Platformuna Hoş Geldiniz")
     st.markdown("İlkokuldan YKS'ye uzanan, yapay zeka destekli Türkiye'nin en akıllı soru ve koçluk ekosistemi.")
     
-    # --- CANLI SANYE SANYE AKAN JS GERİ SAYIM SAYACI ---
-    st.markdown("### ⏳ 2027 LGS Sınavına Geri Sayım (13 Haziran 2027)")
+    # --- CANLI SANİYE SANİYE AKAN LGS'YE GERİ SAYIM SAYACI ---
+    st.markdown("### ⏳ 2027 LGS'ye Geri Sayım (13 Haziran 2027)")
     
     timer_html = """
     <div style="display: flex; gap: 20px; font-family: sans-serif; margin-bottom: 20px;">
