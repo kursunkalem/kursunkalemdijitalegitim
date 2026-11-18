@@ -1,11 +1,13 @@
 import os
 import json
 import sqlite3
+import datetime
 from io import BytesIO
 import streamlit as st
 from google import genai
 from docx import Document
 from docx.shared import Inches, Pt, RGBColor
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 from pypdf import PdfReader
 
 API_KEY = "AQ.Ab8RN6Ln16aqw1zeiFjrpBNsDE9rLkAwtjet6QfCfMam4Uzu6w"
@@ -88,6 +90,14 @@ def load_kazanimlar():
                     "T.8.1.18. Farklı kaynaklardan alınan metinler arasında sentez ve karşılaştırma yapar."
                 ]
             }
+        },
+        "Matematik": {
+            "8. Sınıf (LGS / Beceri Temelli)": {
+                "Sayılar ve İşlemler": [
+                    "M.8.1.1. Verilen pozitif tam sayıların pozitif tam sayı çarpanlarını bulur.",
+                    "M.8.1.2. İki doğal sayının en büyük ortak bölenini (EBOB) ve en küçük ortak katını (EKOK) hesaplar."
+                ]
+            }
         }
     }
     if not os.path.exists(dosya_adi):
@@ -139,11 +149,69 @@ def save_arsiv(yeni_test):
 st.sidebar.title("🧭 Sistem Navigasyonu")
 ana_modul = st.sidebar.radio(
     "Çalışma Alanı Seçin:",
-    ["🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)", "🎓 Öğrenci & Akıllı Koç Portalı"]
+    [
+        "🏠 Ana Sayfa & 2027 LGS Geri Sayım",
+        "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)",
+        "🎓 Öğrenci Portalı & Soru Çözüm",
+        "👪 Veli Takip Paneli",
+        "🏢 B2B Lisans & Kurum Yönetimi",
+        "💎 Paketler & Abonelik Vitrini"
+    ]
 )
 st.sidebar.markdown("---")
 
-if ana_modul == "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)":
+# --- ANA SAYFA & GERİ SAYIM ---
+if ana_modul == "🏠 Ana Sayfa & 2027 LGS Geri Sayım":
+    kurumsal_logo_goster()
+    st.title("📚 Kurşun Kalem Dijital Eğitim Platformuna Hoş Geldiniz")
+    st.markdown("İlkokuldan YKS'ye uzanan, yapay zeka destekli Türkiye'nin en akıllı soru ve koçluk ekosistemi.")
+    
+    # --- LGS 2027 GERİ SAYIM SAYACI (13 Haziran 2027) ---
+    st.markdown("### ⏳ 2027 LGS Sınavına Geri Sayım (13 Haziran 2027)")
+    exam_date = datetime.datetime(2027, 6, 13, 9, 30, 0)
+    now = datetime.datetime.now()
+    remaining = exam_date - now
+    
+    if remaining.total_seconds() > 0:
+        days = remaining.days
+        hours, remainder = divmod(remaining.seconds, 3600)
+        minutes, seconds = divmod(remainder, 60)
+        
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric(label="📅 Gün", value=f"{days} Gün")
+        c2.metric(label="⏰ Saat", value=f"{hours} Saat")
+        c3.metric(label="⏱️ Dakika", value=f"{minutes} Dk")
+        c4.metric(label="⚡ Saniye", value=f"{seconds} Sn")
+    else:
+        st.success("🎉 LGS 2027 Sınavı Gerçekleşti!")
+    
+    st.markdown("---")
+    
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric(label="Üretilen Soru Havuzu", value="142,500+", delta="+1,200 bugün")
+    with col2:
+        st.metric(label="Aktif Öğrenci/Veli", value="18,420", delta="+340 bu hafta")
+    with col3:
+        st.metric(label="B2B Anlaşmalı Kurum", value="48", delta="4 Yeni")
+    with col4:
+        st.metric(label="Çözülen Soru Sayısı", value="2.4 Milyon", delta="%98 Başarı")
+        
+    st.markdown("---")
+    st.subheader("💡 Platform Özellikleri")
+    col_a, col_b, col_c = st.columns(3)
+    with col_a:
+        st.markdown("### 🎯 Soru Fabrikası")
+        st.write("MEB formatına uygun saniyeler içinde yeni nesil soru üretin ve veritabanına kaydedin.")
+    with col_b:
+        st.markdown("### 📄 Profesyonel Word Çıktısı")
+        st.write("Soru havuzundaki soruları tek tıkla 2 sütunlu, yayıncı kalitesinde .docx test kağıtlarına dönüştürün.")
+    with col_c:
+        st.markdown("### 📊 Veli & Kurum Paneli")
+        st.write("Öğrenci gelişimini takip edin, kurumsal lisanslarla okulları sisteme dahil edin.")
+
+# --- YAZAR / SORU FABRİKASI PANELİ ---
+elif ana_modul == "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)":
     tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
         "🎯 Soru Üretici",
         "✍️ Profesyonel Redaktör & Editör",
@@ -414,15 +482,15 @@ if ana_modul == "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)":
             st.header("⚙️ Test ve Kurum Parametreleri")
             
             kurum_adi = st.text_input("Kurum / Okul Adı", value="Kurşun Kalem Dijital Eğitim")
-            secilen_brans = st.selectbox("Branş Seçimi", list(kazanim_db.keys()))
+            secilen_brans = st.selectbox("Branş Seçimi", list(kazanim_db.keys()), key="yazar_brans")
             
             sinif_listesi = list(kazanim_db[secilen_brans].keys())
-            secilen_sinif = st.selectbox("Sınıf Seviyesi", sinif_listesi)
+            secilen_sinif = st.selectbox("Sınıf Seviyesi", sinif_listesi, key="yazar_sinif")
             
             alan_listesi = list(kazanim_db[secilen_brans][secilen_sinif].keys())
-            secilen_alan = st.selectbox("Öğrenme Alanı", alan_listesi)
+            secilen_alan = st.selectbox("Öğrenme Alanı", alan_listesi, key="yazar_alan")
             
-            secilen_kazanim = st.selectbox("Hedef Kazanım", kazanim_db[secilen_brans][secilen_sinif][secilen_alan])
+            secilen_kazanim = st.selectbox("Hedef Kazanım", kazanim_db[secilen_brans][secilen_sinif][secilen_alan], key="yazar_kazanim")
             
             soru_adedi = st.slider("Üretilecek Soru Adedi (Test Modu)", min_value=1, max_value=5, value=2)
             zorluk_seviyesi = st.select_slider("Zorluk Derecesi", options=["Orta", "Orta-Zor", "İleri Düzey"], value="Orta-Zor")
@@ -604,8 +672,167 @@ if ana_modul == "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)":
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             )
 
-# --- KURŞUN KALEM ÖĞRENCİ VE AKILLI KOÇ PORTALI & PAKETLER VİTRİNİ ---
-else:
+# --- ÖĞRENCİ PORTALI & SORU ÇÖZÜM ---
+elif ana_modul == "🎓 Öğrenci Portalı & Soru Çözüm":
+    kurumsal_logo_goster()
+    st.title("🎓 Öğrenci Portalı & Soru Çözüm Merkezi")
+    st.markdown("Veritabanındaki güncel soruları çözerek KKP puanları toplayın ve eksiklerinizi kapatın.")
+
+    ogrenci_tab1, ogrenci_tab2, ogrenci_tab3, ogrenci_tab4 = st.tabs([
+        "🎯 Soru Bankası & Test Çöz",
+        "🧠 Yapay Zeka Akıllı Koç",
+        "📊 Kişisel Gelişim Karnem",
+        "🏆 Şampiyonlar Liderlik Tablosu"
+    ])
+
+    with ogrenci_tab1:
+        st.subheader("İnteraktif Soru Çözümü")
+        arsiv_listesi = load_arsiv()
+        if not arsiv_listesi:
+            st.info("Henüz arşivde test bulunmuyor. Yazar panelinden test üreterek buraya aktarabilirsin.")
+        else:
+            secilen_test = st.selectbox("Test Seçin", [t.get('baslik') for t in arsiv_listesi])
+            secilen_test_obj = next((t for t in arsiv_listesi if t.get('baslik') == secilen_test), None)
+
+            if secilen_test_obj:
+                for idx, soru in enumerate(secilen_test_obj.get('sorular', []), 1):
+                    st.markdown(f"---")
+                    st.markdown(f"### Soru {idx}")
+                    if soru.get("baglam_metni"): st.write(soru.get("baglam_metni"))
+                    st.markdown(f"**{soru.get('soru_koku')}**")
+                    
+                    cevap_secimi = st.radio(
+                        f"Seçim (Soru {idx}):",
+                        [f"A) {soru.get('sik_a')}", f"B) {soru.get('sik_b')}", f"C) {soru.get('sik_c')}", f"D) {soru.get('sik_d')}"],
+                        key=f"ogrenci_soru_{idx}",
+                        index=None
+                    )
+
+                    if st.button(f"Cevabı Kontrol Et (Soru {idx})", key=f"btn_ogrenci_{idx}"):
+                        if cevap_secimi is None:
+                            st.warning("Şık seçiniz.")
+                        else:
+                            secilen_harf = cevap_secimi[0]
+                            dogru_harf = soru.get('dogru_cevap').strip().upper()
+                            if secilen_harf == dogru_harf:
+                                st.success(f"🎉 Tebrikler! Doğru cevap ({dogru_harf}).")
+                                conn = sqlite3.connect("okul.db")
+                                c = conn.cursor()
+                                c.execute("UPDATE ogrenciler SET puan = puan + 15, cozulen_soru = cozulen_soru + 1, dogru_sayisi = dogru_sayisi + 1 WHERE id = 4")
+                                conn.commit()
+                                conn.close()
+                            else:
+                                st.error(f"❌ Yanlış! Doğru seçenek: **{dogru_harf}**")
+
+    with ogrenci_tab2:
+        st.subheader("🧠 Kurşun Kalem Yapay Zeka Akıllı Koç")
+        st.markdown("Çözdüğün testlerin sonuçlarına göre eksiklerini analiz eden ve sana özel çalışma programı çıkaran akıllı koç asistanı.")
+
+        ogrenci_mesaji = st.text_input("Koça sorunu yaz:", placeholder="Örn: Sözel mantık sorularında çok zaman kaybediyorum, ne yapmalıyım?")
+        if st.button("🤖 Akıllı Koçtan Tavsiye Al", type="primary"):
+            if not ogrenci_mesaji.strip():
+                st.warning("Lütfen koça bir soru veya sorun yaz.")
+            else:
+                with st.spinner("Akıllı Koç analiz yapıyor ve sana özel strateji hazırlıyor..."):
+                    try:
+                        client = genai.Client(api_key=API_KEY)
+                        koc_prompt = (
+                            "Sen Kurşun Kalem Dijital Eğitim'in 'Geleceği yazan dijital eğitim' felsefesine bağlı; "
+                            "ultra akıllı, motive edici ve nokta atışı taktikler veren LGS Eğitim Koçusun. "
+                            "Öğrencinin yazdığı soruya veya sorununa karşılık; ona net, pratik ve taktiksel bir rehberlik sun."
+                        )
+                        resp = client.models.generate_content(
+                            model="gemini-3.8-flash",
+                            contents=ogrenci_mesaji,
+                            config={"system_instruction": koc_prompt, "temperature": 0.5}
+                        )
+                        st.success("Akıllı Koç Tavsiyesi:")
+                        st.markdown(resp.text)
+                    except Exception as e:
+                        st.error(f"Koç yanıt üretirken hata oluştu: {e}")
+
+    with ogrenci_tab3:
+        st.subheader("📊 Kişisel Gelişim ve Başarı Karnem")
+        conn = sqlite3.connect("okul.db")
+        c = conn.cursor()
+        c.execute("SELECT puan, cozulen_soru, dogru_sayisi FROM ogrenciler WHERE id = 4")
+        veri = c.fetchone()
+        conn.close()
+
+        puan, soru_sayisi, dogru_sayisi = veri if veri else (120, 12, 10)
+        yanlis_sayisi = soru_sayisi - dogru_sayisi if soru_sayisi >= dogru_sayisi else 0
+        basari = int((dogru_sayisi / soru_sayisi) * 100) if soru_sayisi > 0 else 0
+
+        col1, col2, col3, col4 = st.columns(4)
+        col1.metric("Toplam Puan", f"{puan} P")
+        col2.metric("Çözülen Soru", f"{soru_sayisi} Soru")
+        col3.metric("Doğru / Yanlış", f"{dogru_sayisi} D / {yanlis_sayisi} Y")
+        col4.metric("Başarı Oranı", f"%{basari}")
+
+        st.markdown("---")
+        st.info("💡 **Analiz Notu:** Sözel mantıkta hızlandın fakat paragraf hızını artırmak için günde 15 paragraf sorusu çözmelisin.")
+
+    with ogrenci_tab4:
+        st.subheader("🏆 Şampiyonlar Ligi Liderlik Tablosu")
+        conn = sqlite3.connect("okul.db")
+        c = conn.cursor()
+        c.execute("SELECT isim, puan, cozulen_soru FROM ogrenciler ORDER BY puan DESC")
+        ogrenciler = c.fetchall()
+        conn.close()
+
+        tablo = []
+        for sira, (isim, p, s) in enumerate(ogrenciler, 1):
+            madalya = "🥇" if sira == 1 else ("🥈" if sira == 2 else ("🥉" if sira == 3 else "🏅"))
+            tablo.append({"Sıra": f"{madalya} {sira}", "Öğrenci": isim, "Puan": p, "Çözülen Soru": s})
+        st.table(tablo)
+
+# --- VELİ TAKİP PANELİ ---
+elif ana_modul == "👪 Veli Takip Paneli":
+    kurumsal_logo_goster()
+    st.title("👪 Veli Takip ve Performans Paneli")
+    st.markdown("Çocuğunuzun günlük çalışma saatlerini, test sonuçlarını ve kazanım eksiklerini anlık takip edin.")
+    
+    student_name = st.selectbox("Öğrenci Seçin", ["Ahmet Furkan Kurşun (8. Sınıf - LGS)"])
+    
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.metric("Bu Hafta Çözülen Soru", "340 Soru", "+45 dünden")
+    with col2:
+        st.metric("Genel Başarı Oranı", "%82", "+4%")
+    with col3:
+        st.metric("Günlük Çalışma Süresi", "2 Saat 15 Dk", "Hedef: 2 Saat")
+        
+    st.markdown("---")
+    st.subheader("📊 Haftalık Kazanım Analizi (Zayıf / Güçlü Alanlar)")
+    st.write("✅ **Türkçe - Fiilimsiler:** %95 (Çok İyi)")
+    st.write("⚠️ **Matematik - Kareköklü İfadeler:** %60 (Tekrar Edilmeli)")
+    st.write("🚨 **Fen - Basit Makineler:** %45 (Acil Soru Çözümü Önerilir)")
+    
+    if st.button("Veli Raporunu İndir"):
+        st.success("Veli bilgilendirme raporu başarıyla hazırlandı.")
+
+# --- B2B LİSANS & KURUM YÖNETİMİ ---
+elif ana_modul == "🏢 B2B Lisans & Kurum Yönetimi":
+    kurumsal_logo_goster()
+    st.title("🏢 B2B Kurumsal Lisans & Okul Paneli")
+    st.markdown("Dershaneler, özel okullar ve kurs merkezleri için toplu öğrenci ve öğretmen lisans yönetimi.")
+    
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader("Kurum Bilgileri")
+        st.text_input("Kurum Adı", "Örnek Özel LGS Kursu")
+        st.text_input("Yetkili Adı Soyadı", "Kürşat Han Kurşun")
+        st.number_input("Aktif Öğrenci Lisans Adedi", min_value=10, max_value=1000, value=150)
+        st.button("Lisans Paketini Güncelle")
+        
+    with col2:
+        st.subheader("Kurum Öğretmenleri")
+        st.write("Sisteme kayıtlı öğretmenler kendi adına soru üretebilir ve kurumsal test indirebilir.")
+        if st.button("Öğretmenleri Listele"):
+            st.json(["Uğur Hoca (Matematik)", "Adil Hoca (Türkçe)", "Zeynep Hoca (Fen Bilimleri)"])
+
+# --- PAKETLER & ABONELİK VİTRİNİ ---
+elif ana_modul == "💎 Paketler & Abonelik Vitrini":
     kurumsal_logo_goster()
     
     st.markdown("""
@@ -638,215 +865,70 @@ else:
         </style>
     """, unsafe_allow_html=True)
 
-    st.title("🎓 Kurşun Kalem - Öğrenci Sınav, Akıllı Koç ve Paket Vitrini")
-    st.markdown("🚀 *Geleceği yazan dijital eğitim* felsefesiyle; test çözebileceğiniz, yapay zeka koçundan rehberlik alabileceğiniz ve eğitim paketlerimizi inceleyebileceğiniz modül.")
+    st.title("💎 Kurşun Kalem - Eğitim Paketleri ve Fiyatlandırma Vitrini")
+    st.markdown("🚀 *Geleceği yazan dijital eğitim* felsefesiyle; öğrencilerimiz ve kurumlarımız için en uygun yapay zeka destekli paketlerimiz.")
 
-    ogrenci_tab1, ogrenci_tab2, ogrenci_tab3, ogrenci_tab4, ogrenci_tab5, ogrenci_tab6 = st.tabs([
-        "📦 Eğitim Paketlerimiz",
-        "🎯 Günlük Test Çöz & Anında Çözüm",
-        "🧠 Yapay Zeka Akıllı Koç",
-        "📊 Kişisel Gelişim Karnem",
-        "🏆 Şampiyonlar Liderlik Tablosu",
-        "💡 Soru Stratejileri & Taktikler"
-    ])
+    col1, col2, col3 = st.columns(3)
 
-    with ogrenci_tab1:
-        st.subheader("📦 Kurşun Kalem Dijital Eğitim Paketleri")
-        st.markdown("Öğrencinin hedeflediği sınıfa ve sınava en uygun, yapay zeka destekli akıllı paketlerimiz:")
-        
-        sinif_filtresi = st.radio(
-            "Eğitim Seviyesi Filtrele:",
-            ["Tümü", "LGS 2027", "8. Sınıf", "7. Sınıf", "6. Sınıf", "5. Sınıf"],
-            horizontal=True
-        )
-        st.markdown("---")
+    with col1:
+        st.markdown("""
+            <div class="paket-karti">
+                <h4>🎯 LGS 2027 Türkçe & Sözel Beceri Paketi</h4>
+                <p style="font-size: 13px; color: #555;">LGS'de yeni nesil sözel mantık ve paragraf atlamak isteyenler için özel koçluk destekli paket.</p>
+                <hr style="margin: 10px 0;">
+                <ul style="font-size: 13px; padding-left: 15px; color: #444;">
+                    <li>✓ Bireysel Koçluk & Akıllı Takip</li>
+                    <li>✓ Sınırsız Yapay Zeka Soru Üretimi</li>
+                    <li>✓ Kişiselleştirilmiş Eksik Kapatma Testleri</li>
+                    <li>✓ 2 Sütunlu LGS PDF & Word Çıktıları</li>
+                    <li>✓ Şampiyonlar Liderlik Tablosu Erişimi</li>
+                </ul>
+                <div class="fiyat-etiketi">34.900 TL</div>
+                <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 2.908 TL)</div>
+            </div>
+        """, unsafe_allow_html=True)
+        if st.button("Hemen Al (Paket 1)", key="btn_p1", use_container_width=True):
+            st.success("Tebrikler! LGS Sözel Paket sepetinize eklendi. Ödeme sayfasına yönlendiriliyorsunuz...")
 
-        col1, col2, col3 = st.columns(3)
+    with col2:
+        st.markdown("""
+            <div class="paket-karti">
+                <h4>🚀 LGS 2027 Tüm Dersler Tam Set</h4>
+                <p style="font-size: 13px; color: #555;">Türkçe, Matematik, Fen ve Tüm Sözel-Sayısal derslerde en tepeyi hedefleyenler için tam kapsamlı set.</p>
+                <hr style="margin: 10px 0;">
+                <ul style="font-size: 13px; padding-left: 15px; color: #444;">
+                    <li>✓ Bütün Derslerde Yapay Zeka Desteği</li>
+                    <li>✓ 5.000+ Beceri Temelli Soru Bankası</li>
+                    <li>✓ Akıllı Kazanım Analizi ve Karne</li>
+                    <li>✓ 7/24 AI Akıllı Koçluk Asistanı</li>
+                    <li>✓ Sınırsız Video / Strateji Rehberliği</li>
+                </ul>
+                <div class="fiyat-etiketi">44.900 TL</div>
+                <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 3.741 TL)</div>
+            </div>
+        """, unsafe_allow_html=True)
+        if st.button("Hemen Al (Paket 2)", key="btn_p2", use_container_width=True):
+            st.success("Tebrikler! LGS Tam Set sepetinize eklendi. Ödeme sayfasına yönlendiriliyorsunuz...")
 
-        with col1:
-            st.markdown("""
-                <div class="paket-karti">
-                    <h4>🎯 LGS 2027 Türkçe & Sözel Beceri Paketi</h4>
-                    <p style="font-size: 13px; color: #555;">LGS'de yeni nesil sözel mantık ve paragraf atlamak isteyenler için özel koçluk destekli paket.</p>
-                    <hr style="margin: 10px 0;">
-                    <ul style="font-size: 13px; padding-left: 15px; color: #444;">
-                        <li>✓ Bireysel Koçluk & Akıllı Takip</li>
-                        <li>✓ Sınırsız Yapay Zeka Soru Üretimi</li>
-                        <li>✓ Kişiselleştirilmiş Eksik Kapatma Testleri</li>
-                        <li>✓ 2 Sütunlu LGS PDF & Word Çıktıları</li>
-                        <li>✓ Şampiyonlar Liderlik Tablosu Erişimi</li>
-                    </ul>
-                    <div class="fiyat-etiketi">34.900 TL</div>
-                    <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 2.908 TL)</div>
-                </div>
-            """, unsafe_allow_html=True)
-            if st.button("Hemen Al (Paket 1)", key="btn_p1", use_container_width=True):
-                st.success("Tebrikler! LGS Sözel Paket sepetinize eklendi. Ödeme sayfasına yönlendiriliyorsunuz...")
+    with col3:
+        st.markdown("""
+            <div class="paket-karti">
+                <h4>🏢 Kurumsal Okul & Kurs Lisansı (B2B)</h4>
+                <p style="font-size: 13px; color: #555;">Dershaneler, özel okullar ve kurs merkezleri için toplu öğrenci ve öğretmen lisans yönetimi.</p>
+                <hr style="margin: 10px 0;">
+                <ul style="font-size: 13px; padding-left: 15px; color: #444;">
+                    <li>✓ Okul / Kurs Yönetim Paneli</li>
+                    <li>✓ Sınırsız Öğretmen & Öğrenci Lisansı</li>
+                    <li>✓ Kuruma Özel Logo ile Word Çıktısı</li>
+                    <li>✓ Öncelikli Teknik Destek</li>
+                </ul>
+                <div class="fiyat-etiketi">4.999 TL / Yıl</div>
+                <div class="taksit-bilgisi">Kurumsal Faturalı ve Esnek Lisanslama</div>
+            </div>
+        """, unsafe_allow_html=True)
+        if st.button("Kurumsal Başvuru Yap", key="btn_b2b", use_container_width=True):
+            st.success("Kurumsal başvuru formunuz alındı. Eğitim danışmanlarımız sizinle iletişime geçecektir.")
 
-        with col2:
-            st.markdown("""
-                <div class="paket-karti">
-                    <h4>🚀 LGS 2027 Tüm Dersler Tam Set</h4>
-                    <p style="font-size: 13px; color: #555;">Türkçe, Matematik, Fen ve Tüm Sözel-Sayısal derslerde en tepeyi hedefleyenler için tam kapsamlı set.</p>
-                    <hr style="margin: 10px 0;">
-                    <ul style="font-size: 13px; padding-left: 15px; color: #444;">
-                        <li>✓ Bütün Derslerde Yapay Zeka Desteği</li>
-                        <li>✓ 5.000+ Beceri Temelli Soru Bankası</li>
-                        <li>✓ Akıllı Kazanım Analizi ve Karne</li>
-                        <li>✓ 7/24 AI Akıllı Koçluk Asistanı</li>
-                        <li>✓ Sınırsız Video / Strateji Rehberliği</li>
-                    </ul>
-                    <div class="fiyat-etiketi">44.900 TL</div>
-                    <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 3.741 TL)</div>
-                </div>
-            """, unsafe_allow_html=True)
-            if st.button("Hemen Al (Paket 2)", key="btn_p2", use_container_width=True):
-                st.success("Tebrikler! LGS Tam Set sepetinize eklendi. Ödeme sayfasına yönlendiriliyorsunuz...")
-
-        with col3:
-            st.markdown("""
-                <div class="paket-karti">
-                    <h4>💡 8. Sınıf Hızlandırma & Deneme Paketi</h4>
-                    <p style="font-size: 13px; color: #555;">Sınava az kala eksiklerini hızla kapatmak ve tam deneme simülasyonu çözmek isteyenler için.</p>
-                    <hr style="margin: 10px 0;">
-                    <ul style="font-size: 13px; padding-left: 15px; color: #444;">
-                        <li>✓ Gerçek LGS Süre Simülasyonu</li>
-                        <li>✓ Otomatik Net ve Puan Hesaplama</li>
-                        <li>✓ Nokta Atışı Eksik Kapatma Testleri</li>
-                        <li>✓ Kurumsal Redaksiyon Süzgecinden Geçmiş Sorular</li>
-                    </ul>
-                    <div class="fiyat-etiketi">24.900 TL</div>
-                    <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 2.075 TL)</div>
-                </div>
-            """, unsafe_allow_html=True)
-            if st.button("Hemen Al (Paket 3)", key="btn_p3", use_container_width=True):
-                st.success("Tebrikler! Deneme Paketi sepetinize eklendi. Ödeme sayfasına yönlendiriliyorsunuz...")
-
-    with ogrenci_tab2:
-        st.subheader("🎯 İnteraktif Beceri Sınavı")
-        arsiv_listesi = load_arsiv()
-        if not arsiv_listesi:
-            st.info("Henüz arşivde test bulunmuyor. Yazar panelinden test üreterek buraya aktarabilirsin.")
-            st.markdown("### Örnek LGS Beceri Temelli Soru")
-            st.info("Aşağıdaki cümlelerin hangisinde altı çizili sözcük **fiilimsi** değildir?")
-            secim = st.radio("Seçenekler:", [
-                "A) Okuldan gelen öğrenci içeri girdi.",
-                "B) Yarışmada koşan atlet birinci oldu.",
-                "C) Çocuğun yüzü tatlı tatlı gülüyordu.",
-                "D) Görünmez kazalardan kaçınmalıyız."
-            ], index=None)
-
-            if st.button("Cevabı Değerlendir"):
-                if secim is None:
-                    st.warning("Lütfen şık seçin.")
-                elif secim.startswith("C"):
-                    st.success("🎉 Doğru! 'Gülüyordu' sözcüğü çekimli fiildir.")
-                    conn = sqlite3.connect("okul.db")
-                    c = conn.cursor()
-                    c.execute("UPDATE ogrenciler SET puan = puan + 15, cozulen_soru = cozulen_soru + 1, dogru_sayisi = dogru_sayisi + 1 WHERE id = 4")
-                    conn.commit()
-                    conn.close()
-                else:
-                    st.error("❌ Yanlış. Doğru seçenek C olmalıydı.")
-        else:
-            secilen_test = st.selectbox("Test Seçin", [t.get('baslik') for t in arsiv_listesi])
-            secilen_test_obj = next((t for t in arsiv_listesi if t.get('baslik') == secilen_test), None)
-
-            if secilen_test_obj:
-                for idx, soru in enumerate(secilen_test_obj.get('sorular', []), 1):
-                    st.markdown(f"---")
-                    st.markdown(f"### Soru {idx}")
-                    if soru.get("baglam_metni"): st.write(soru.get("baglam_metni"))
-                    st.markdown(f"**{soru.get('soru_koku')}**")
-                    
-                    cevap_secimi = st.radio(
-                        f"Seçim (Soru {idx}):",
-                        [f"A) {soru.get('sik_a')}", f"B) {soru.get('sik_b')}", f"C) {soru.get('sik_c')}", f"D) {soru.get('sik_d')}"],
-                        key=f"kurumsal_soru_{idx}",
-                        index=None
-                    )
-
-                    if st.button(f"Cevabı Kontrol Et (Soru {idx})", key=f"btn_kurumsal_{idx}"):
-                        if cevap_secimi is None:
-                            st.warning("Şık seçiniz.")
-                        else:
-                            secilen_harf = cevap_secimi[0]
-                            dogru_harf = soru.get('dogru_cevap').strip().upper()
-                            if secilen_harf == dogru_harf:
-                                st.success(f"🎉 Tebrikler! Doğru cevap ({dogru_harf}).")
-                                conn = sqlite3.connect("okul.db")
-                                c = conn.cursor()
-                                c.execute("UPDATE ogrenciler SET puan = puan + 15, cozulen_soru = cozulen_soru + 1, dogru_sayisi = dogru_sayisi + 1 WHERE id = 4")
-                                conn.commit()
-                                conn.close()
-                            else:
-                                st.error(f"❌ Yanlış! Doğru seçenek: **{dogru_harf}**")
-
-    with ogrenci_tab3:
-        st.subheader("🧠 Kurşun Kalem Yapay Zeka Akıllı Koç")
-        st.markdown("Çözdüğün testlerin sonuçlarına göre eksiklerini analiz eden ve sana özel çalışma programı çıkaran akıllı koç asistanı.")
-
-        ogrenci_mesaji = st.text_input("Koça sorunu yaz:", placeholder="Örn: Sözel mantık sorularında çok zaman kaybediyorum, ne yapmalıyım?")
-        if st.button("🤖 Akıllı Koçtan Tavsiye Al", type="primary"):
-            if not ogrenci_mesaji.strip():
-                st.warning("Lütfen koça bir soru veya sorun yaz.")
-            else:
-                with st.spinner("Akıllı Koç analiz yapıyor ve sana özel strateji hazırlıyor..."):
-                    try:
-                        client = genai.Client(api_key=API_KEY)
-                        koc_prompt = (
-                            "Sen Kurşun Kalem Dijital Eğitim'in 'Geleceği yazan dijital eğitim' felsefesine bağlı; "
-                            "ultra akıllı, motive edici ve nokta atışı taktikler veren LGS Eğitim Koçusun. "
-                            "Öğrencinin yazdığı soruya veya sorununa karşılık; ona net, pratik ve taktiksel bir rehberlik sun."
-                        )
-                        resp = client.models.generate_content(
-                            model="gemini-3.8-flash",
-                            contents=ogrenci_mesaji,
-                            config={"system_instruction": koc_prompt, "temperature": 0.5}
-                        )
-                        st.success("Akıllı Koç Tavsiyesi:")
-                        st.markdown(resp.text)
-                    except Exception as e:
-                        st.error(f"Koç yanıt üretirken hata oluştu: {e}")
-
-    with ogrenci_tab4:
-        st.subheader("📊 Kişisel Gelişim ve Başarı Karnem")
-        conn = sqlite3.connect("okul.db")
-        c = conn.cursor()
-        c.execute("SELECT puan, cozulen_soru, dogru_sayisi FROM ogrenciler WHERE id = 4")
-        veri = c.fetchone()
-        conn.close()
-
-        puan, soru_sayisi, dogru_sayisi = veri if veri else (120, 12, 10)
-        yanlis_sayisi = soru_sayisi - dogru_sayisi if soru_sayisi >= dogru_sayisi else 0
-        basari = int((dogru_sayisi / soru_sayisi) * 100) if soru_sayisi > 0 else 0
-
-        col1, col2, col3, col4 = st.columns(4)
-        col1.metric("Toplam Puan", f"{puan} P")
-        col2.metric("Çözülen Soru", f"{soru_sayisi} Soru")
-        col3.metric("Doğru / Yanlış", f"{dogru_sayisi} D / {yanlis_sayisi} Y")
-        col4.metric("Başarı Oranı", f"%{basari}")
-
-        st.markdown("---")
-        st.info("💡 **Analiz Notu:** Sözel mantıkta hızlandın fakat paragraf hızını artırmak için günde 15 paragraf sorusu çözmelisin.")
-
-    with ogrenci_tab5:
-        st.subheader("🏆 Şampiyonlar Ligi Liderlik Tablosu")
-        conn = sqlite3.connect("okul.db")
-        c = conn.cursor()
-        c.execute("SELECT isim, puan, cozulen_soru FROM ogrenciler ORDER BY puan DESC")
-        ogrenciler = c.fetchall()
-        conn.close()
-
-        tablo = []
-        for sira, (isim, p, s) in enumerate(ogrenciler, 1):
-            madalya = "🥇" if sira == 1 else ("🥈" if sira == 2 else ("🥉" if sira == 3 else "🏅"))
-            tablo.append({"Sıra": f"{madalya} {sira}", "Öğrenci": isim, "Puan": p, "Çözülen Soru": s})
-        st.table(tablo)
-
-    with ogrenci_tab6:
-        st.subheader("💡 Sınav Taktikleri ve Stratejiler")
-        with st.expander("📌 Sözel Mantık Taktikleri"):
-            st.write("1. Kesin bilgileri ele alın.\n2. Şema kurun.")
-        with st.expander("📌 Paragraf Şifreleri"):
-            st.write("1. Olumsuz soru köklerine dikkat edin.\n2. Son cümleye odaklanın.")
+# --- ALT BİLGİ ---
+st.markdown("---")
+st.caption("© 2026 Kurşun Kalem Dijital Eğitim Teknolojileri | Tüm hakları saklıdır. Gri Cafer & Beyaz Cevdet onaylıdır 🐾")
