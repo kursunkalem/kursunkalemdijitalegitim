@@ -1,8 +1,3 @@
-İstediğin gibi, **"Geleceği yazan dijital eğitim"** vizyonumuzla taçlandırdığımız, Doping Hafıza tarzı profesyonel paket vitrini, akıllı koçluk, soru fabrikası ve öğrenci portalını içeren **tam, eksiksiz ve hatasız** kodunun tamamı aşağıdadır.
-
-Bu kodu doğrudan projendeki ana Python dosyasına (`main.py`) kopyalayıp yapıştırarak anında çalıştırabilirsin:
-
-```python
 import os
 import json
 import sqlite3
@@ -51,9 +46,9 @@ def init_db():
     c.execute("SELECT COUNT(*) FROM ogrenciler")
     if c.fetchone()[0] == 0:
         ornekler = [
-            ("Zeynep Yılmaz", 450, 45, 41),
-            ("Ahmet Demir", 380, 40, 34),
-            ("Elif Çelik", 520, 55, 50),
+            ("Kürşat Kurşun", 450, 45, 41),
+            ("Burak Aygören", 380, 40, 34),
+            ("Elif Öztürk", 520, 55, 50),
             ("Kullanıcı Öğrenci", 120, 12, 10)
         ]
         c.executemany("INSERT INTO ogrenciler (isim, puan, cozulen_soru, dogru_sayisi) VALUES (?, ?, ?, ?)", ornekler)
@@ -855,5 +850,3 @@ else:
             st.write("1. Kesin bilgileri ele alın.\n2. Şema kurun.")
         with st.expander("📌 Paragraf Şifreleri"):
             st.write("1. Olumsuz soru köklerine dikkat edin.\n2. Son cümleye odaklanın.")
-
-```
