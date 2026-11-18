@@ -2,8 +2,8 @@ import os
 import json
 import sqlite3
 import datetime
-import time
 from io import BytesIO
+import streamlit.components.v1 as components
 import streamlit as st
 from google import genai
 from docx import Document
@@ -167,29 +167,60 @@ if ana_modul == "🏠 Ana Sayfa & 2027 LGS Geri Sayım":
     st.title("📚 Kurşun Kalem Dijital Eğitim Platformuna Hoş Geldiniz")
     st.markdown("İlkokuldan YKS'ye uzanan, yapay zeka destekli Türkiye'nin en akıllı soru ve koçluk ekosistemi.")
     
-    # --- CANLI AKAN LGS 2027 GERİ SAYIM SAYACI ---
+    # --- CANLI SANYE SANYE AKAN JS GERİ SAYIM SAYACI ---
     st.markdown("### ⏳ 2027 LGS Sınavına Geri Sayım (13 Haziran 2027)")
     
-    # Canlı sayaç konteyneri ve otomatik yenileme döngüsü
-    sayac_yeri = st.empty()
-    
-    exam_date = datetime.datetime(2027, 6, 13, 9, 30, 0)
-    now = datetime.datetime.now()
-    remaining = exam_date - now
-    
-    if remaining.total_seconds() > 0:
-        days = remaining.days
-        hours, remainder = divmod(remaining.seconds, 3600)
-        minutes, seconds = divmod(remainder, 60)
-        
-        with sayac_yeri.container():
-            c1, c2, c3, c4 = st.columns(4)
-            c1.metric(label="📅 Gün", value=f"{days} Gün")
-            c2.metric(label="⏰ Saat", value=f"{hours} Saat")
-            c3.metric(label="⏱️ Dakika", value=f"{minutes} Dk")
-            c4.metric(label="⚡ Saniye", value=f"{seconds} Sn")
-    else:
-        sayac_yeri.success("🎉 LGS 2027 Sınavı Gerçekleşti!")
+    timer_html = """
+    <div style="display: flex; gap: 20px; font-family: sans-serif; margin-bottom: 20px;">
+        <div style="background: #f8f9fa; border: 1px solid #e0e0e0; padding: 15px 25px; border-radius: 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex: 1;">
+            <div style="font-size: 12px; color: #666; font-weight: 600; text-transform: uppercase;">📅 Gün</div>
+            <div id="days" style="font-size: 32px; font-weight: bold; color: #2c3e50; margin-top: 5px;">0</div>
+        </div>
+        <div style="background: #f8f9fa; border: 1px solid #e0e0e0; padding: 15px 25px; border-radius: 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex: 1;">
+            <div style="font-size: 12px; color: #666; font-weight: 600; text-transform: uppercase;">⏰ Saat</div>
+            <div id="hours" style="font-size: 32px; font-weight: bold; color: #2c3e50; margin-top: 5px;">0</div>
+        </div>
+        <div style="background: #f8f9fa; border: 1px solid #e0e0e0; padding: 15px 25px; border-radius: 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex: 1;">
+            <div style="font-size: 12px; color: #666; font-weight: 600; text-transform: uppercase;">⏱️ Dakika</div>
+            <div id="minutes" style="font-size: 32px; font-weight: bold; color: #2c3e50; margin-top: 5px;">0</div>
+        </div>
+        <div style="background: #f8f9fa; border: 1px solid #e0e0e0; padding: 15px 25px; border-radius: 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex: 1;">
+            <div style="font-size: 12px; color: #666; font-weight: 600; text-transform: uppercase;">⚡ Saniye</div>
+            <div id="seconds" style="font-size: 32px; font-weight: bold; color: #e74c3c; margin-top: 5px;">0</div>
+        </div>
+    </div>
+
+    <script>
+        const targetDate = new Date("June 13, 2027 09:30:00").getTime();
+
+        function updateTimer() {
+            const now = new Date().getTime();
+            const distance = targetDate - now;
+
+            if (distance < 0) {
+                document.getElementById("days").innerText = "0";
+                document.getElementById("hours").innerText = "0";
+                document.getElementById("minutes").innerText = "0";
+                document.getElementById("seconds").innerText = "0";
+                return;
+            }
+
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+            document.getElementById("days").innerText = days;
+            document.getElementById("hours").innerText = hours;
+            document.getElementById("minutes").innerText = minutes;
+            document.getElementById("seconds").innerText = seconds;
+        }
+
+        setInterval(updateTimer, 1000);
+        updateTimer();
+    </script>
+    """
+    components.html(timer_html, height=110)
 
     st.markdown("---")
     
