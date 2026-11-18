@@ -1,7 +1,7 @@
 import sqlite3
 import streamlit as st
 
-# 1. Sayfa Yapılandırması (En başta olmalı)
+# Sayfa Yapılandırması
 st.set_page_config(
     page_title="Kurşun Kalem Dijital Eğitim",
     page_icon="✏️",
@@ -10,138 +10,127 @@ st.set_page_config(
 )
 
 
-# 2. Veritabanı Bağlantısı ve Tablo Oluşturma
+# Veritabanı Kurulumu
 def init_db():
   conn = sqlite3.connect("okul.db")
   c = conn.cursor()
-  # Öğrenci tablosu
+  c.execute("""
+        CREATE TABLE IF NOT EXISTS sorular (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            soru_metni TEXT,
+            secenek_a TEXT,
+            secenek_b TEXT,
+            secenek_c TEXT,
+            secenek_d TEXT,
+            dogru_cevap TEXT,
+            kazanim TEXT
+        )
+    """)
   c.execute("""
         CREATE TABLE IF NOT EXISTS ogrenciler (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             isim TEXT,
             puan INTEGER,
-            cozulen_soru INTEGER,
-            dogru_sayisi INTEGER
+            cozulen_soru INTEGER
         )
     """)
-  # Örnek başlangıç verisi yoksa ekle
-  c.execute("SELECT COUNT(*) FROM ogrenciler")
-  if c.fetchone()[0] == 0:
-    ornekler = [
-        ("Zeynep Yılmaz", 450, 45, 41),
-        ("Ahmet Demir", 380, 40, 34),
-        ("Elif Çelik", 520, 55, 50),
-        ("Kerem Kaya", 310, 35, 28),
-    ]
-    c.executemany(
-        "INSERT INTO ogrenciler (isim, puan, cozulen_soru, dogru_sayisi) VALUES"
-        " (?, ?, ?, ?)",
-        ornekler,
-    )
   conn.commit()
   conn.close()
 
 
 init_db()
 
-# 3. Kenar Çubuğu (Sidebar) Navigasyon
-st.sidebar.title("📚 Kurşun Kalem")
+# Yan Menü (Navigasyon)
+st.sidebar.title("✏️ Kurşun Kalem Dijital")
 st.sidebar.markdown("---")
-menu = st.sidebar.selectbox(
-    "Menü Seçin",
+secim = st.sidebar.selectbox(
+    "Modül Seçin",
     [
-        "🎯 Günlük Test Çöz",
-        "📊 Gelişim Karnem",
-        "🏆 Liderlik Tablosu",
+        "👨‍🏫 Yazar / Soru Üretim Paneli",
+        "🎯 Öğrenci Soru Çözüm Ekranı",
+        "🏆 Liderlik & Karnem",
         "💡 Soru Stratejileri",
     ],
 )
 
-# --- SAYFA 1: GÜNLÜK TEST ÇÖZ ---
-if menu == "🎯 Günlük Test Çöz":
-  st.title("🎯 LGS Türkçe Beceri Testi")
+# 1. YAZAR / SORU ÜRETİM PANELİ (Senin asıl panelin)
+if secim == "👨‍🏫 Yazar / Soru Üretim Paneli":
+  st.title("👨‍🏫 Kurşun Kalem - Soru Yazar Paneli")
   st.write(
-      "Günün sorusunu dikkatle oku, doğru seçeneği işaretle ve anında"
-      " değerlendir!"
+      "Kendi hazırladığın LGS ve Türkçe sorularını sisteme ekleyebilir, soru"
+      " havuzunu yönetebilirsin."
   )
 
-  st.markdown("---")
-  st.markdown("### Soru 1 (Sözel Mantık / Fiilimsiler)")
-  st.info(
-      "Aşağıdaki cümlelerin hangisinde altı çizili sözcük **sıfat-fiil**"
-      " görevinde **kullanılmamıştır**?"
-  )
+  with st.form("soru_formu"):
+    s_metni = st.text_area("Soru Kökü ve Metni")
+    col1, col2 = st.columns(2)
+    with col1:
+      s_a = st.text_input("A Seçeneği")
+      s_b = st.text_input("B Seçeneği")
+    with col2:
+      s_c = st.text_input("C Seçeneği")
+      s_d = st.text_input("D Seçeneği")
 
-  secim = st.radio(
-      "Seçenekler:",
-      [
-          "A) Akacak kan damarda durmaz.",
-          "B) Sararmış yapraklar bahçeyi kaplamıştı.",
-          "C) Görünmez kaza hepimizi sarstı.",
-          "D) Çocuklar bahçede neşeyle koşuyordu.",
-      ],
-      index=None,
-  )
+    dogru = st.selectbox("Doğru Cevap", ["A", "B", "C", "D"])
+    kazanim = st.text_input("İlgili Kazanım (Örn: Fiilimsiler, Sözel Mantık)")
 
-  if st.button("Cevabı Gönder"):
-    if secim is None:
-      st.warning("Lütfen bir seçenek işaretleyin!")
-    elif secim.startswith("D"):
-      st.success(
-          "🎉 **Tebrikler, Doğru!** 'Koşuyordu' sözcüğü cümlenin yüklemidir ve"
-          " çekimli bir fiildir; sıfat-fiil değildir."
-      )
-      # Veritabanında skoru artır
-      conn = sqlite3.connect("okul.db")
-      c = conn.cursor()
-      c.execute(
-          "UPDATE ogrenciler SET puan = puan + 10, cozulen_soru = cozulen_soru +"
-          " 1, dogru_sayisi = dogru_sayisi + 1 WHERE id = 1"
-      )
-      conn.commit()
-      conn.close()
-    else:
-      st.error(
-          "❌ **Yanlış Cevap.** Doğru seçenek **D** olmalıydı. A, B ve C"
-          " seçeneklerindeki fiilimsiler isimleri nitelerken, D seçeneğindeki"
-          " sözcük çekimli fiildir."
-      )
+    kaydet = st.form_submit_button("Soruyu Sisteme Kaydet")
+    if kaydet:
+      if s_metni and kazanim:
+        conn = sqlite3.connect("okul.db")
+        c = conn.cursor()
+        c.execute(
+            "INSERT INTO sorular (soru_metni, secenek_a, secenek_b, secenek_c,"
+            " secenek_d, dogru_cevap, kazanım) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (s_metni, s_a, s_b, s_c, s_d, dogru, kazanim),
+        )
+        conn.commit()
+        conn.close()
+        st.success("🎉 Soru başarıyla havuza eklendi!")
+      else:
+        st.warning("Lütfen soru metnini ve kazanımı boş bırakmayın.")
 
-# --- SAYFA 2: GELİŞİM KARNEM ---
-elif menu == "📊 Gelişim Karnem":
-  st.title("📊 Kişisel Gelişim ve Başarı Karnesi")
-  st.write("Genel performansını ve doğru/yanlış analizini buradan incele.")
+# 2. ÖĞRENCİ SORU ÇÖZÜM EKRANI
+elif secim == "🎯 Öğrenci Soru Çözüm Ekranı":
+  st.title("🎯 Öğrenci Test Çözüm Paneli")
+  st.write("Sistemdeki havuzdan rastgele gelen soruları çözmeye başla!")
 
   conn = sqlite3.connect("okul.db")
   c = conn.cursor()
-  c.execute(
-      "SELECT puan, cozulen_soru, dogru_sayisi FROM ogrenciler WHERE id = 1"
-  )
-  veri = c.fetchone()
+  c.execute("SELECT id, soru_metni, secenek_a, secenek_b, secenek_c, secenek_d, dogru_cevap FROM sorular")
+  sorular = c.fetchall()
   conn.close()
 
-  puan, soru, dogru = veri if veri else (0, 0, 0)
-  yanlis = soru - dogru if soru >= dogru else 0
+  if not sorular:
+    st.info(
+        "Henüz havuzda soru bulunmuyor. 'Yazar / Soru Üretim Paneli' üzerinden"
+        " soru ekleyebilirsin!"
+    )
+  else:
+    for idx, s in enumerate(sorular, 1):
+      st.markdown(f"### Soru {idx}")
+      st.info(s[1])
+      secim_ogrenci = st.radio(
+          f"Seçenekler (Soru {idx}):",
+          [f"A) {s[2]}", f"B) {s[3]}", f"C) {s[4]}", f"D) {s[5]}"],
+          key=f"soru_{s[0]}",
+          index=None,
+      )
 
-  col1, col2, col3 = st.columns(3)
-  col1.metric("Toplam Puan", f"{puan} P")
-  col2.metric("Çözülen Soru", f"{soru} Soru")
-  col3.metric("Doğru / Yanlış", f"{dogru} D / {yanlis} Y")
+      if st.button(f"Cevabı Kontrol Et (Soru {idx})", key=f"btn_{s[0]}"):
+        if secim_ogrenci is None:
+          st.warning("Lütfen bir seçenek seç.")
+        else:
+          verilen_harf = secim_ogrenci[0]
+          if verilen_harf == s[6]:
+            st.success("🎉 Doğru cevap!")
+          else:
+            st.error(f"❌ Yanlış. Doğru cevap: **{s[6]}**")
 
-  st.markdown("---")
-  st.subheader("💡 Yapay Zeka Tavsiyesi")
-  st.info(
-      "Son çözdüğün testlere göre **'Fiilimsiler'** ve **'Sözel Mantık'**"
-      " konularında ekstra soru çözmelisin. Tavsiye edilen testler yakında"
-      " yüklenecektir."
-  )
-
-# --- SAYFA 3: LİDERLİK TABLOSU ---
-elif menu == "🏆 Liderlik Tablosu":
-  st.title("🏆 Şampiyonlar Ligi - Liderlik Tablosu")
-  st.write(
-      "En çok puan toplayan ve düzenli soru çözen başarılı öğrencilerimiz!"
-  )
+# 3. LİDERLİK & KARNEM
+elif secim == "🏆 Liderlik & Karnem":
+  st.title("🏆 Liderlik Tablosu ve Gelişim")
+  st.write("Öğrencilerin puan durumları ve başarı sıralaması.")
 
   conn = sqlite3.connect("okul.db")
   c = conn.cursor()
@@ -151,39 +140,18 @@ elif menu == "🏆 Liderlik Tablosu":
   ogrenciler = c.fetchall()
   conn.close()
 
-  # Tablo gösterimi
-  tablo_verisi = []
-  for sira, (isim, p, s) in enumerate(ogrenciler, 1):
-    madalya = "🥇" if sira == 1 else ("🥈" if sira == 2 else ("🥉" if sira == 3 else "🏅"))
-    tablo_verisi.append(
-        {
-            "Sıra": f"{madalya} {sira}",
-            "Öğrenci": isim,
-            "Puan": p,
-            "Çözülen Soru": s,
-        }
-    )
+  if ogrenciler:
+    for sira, (isim, puan, soru) in enumerate(ogrenciler, 1):
+      st.write(f"**{sira}.** {isim} - Puan: {puan} (Çözülen: {soru})")
+  else:
+    st.info("Henüz kayıtlı öğrenci verisi bulunmuyor.")
 
-  st.table(tablo_verisi)
-
-# --- SAYFA 4: SORU STRATEJİLERİ ---
-elif menu == "💡 Soru Stratejileri":
+# 4. SORU STRATEJİLERİ
+elif secim == "💡 Soru Stratejileri":
   st.title("💡 LGS Türkçe Çözüm Stratejileri")
-  st.write(
-      "Sınavda hayat kurtaracak pratik ipuçları ve paragraf taktikleri."
+  st.write("Sınavda hız kazandıracak taktikler.")
+  st.markdown(
+      "- **Sözel Mantık:** Önce kesin bilgileri ele alıp tablo oluşturun.\n-"
+      " **Paragraf:** Ana düşünce sorularında giriş ve sonuç cümlelerine"
+      " odaklanın."
   )
-
-  with st.expander("📌 Sözel Mantık Sorularını Çözme Taktikleri"):
-    st.write(
-        "1. Öncülleri kesin yargılardan başlayarak eleyin.\n"
-        "2. Tablo veya şema çizmek her zaman işinizi kolaylaştırır.\n"
-        "3. Olumsuz köklere ('değildir', 'olamaz') özellikle dikkat edin."
-    )
-
-  with st.expander("📌 Paragraf Sorularında 'Ana Düşünce' Nasıl Bulunur?"):
-    st.write(
-        "1. Parçanın ilk ve son cümlelerine odaklanın.\n"
-        "2. Yazarın okuyucuya vermek istediği temel mesajı tek cümleyle"
-        " özetlemeye çalışın.\n"
-        "3. Kendi düşüncelerinizi değil, metnin içindeki anlamı esas alın."
-    )
