@@ -821,7 +821,7 @@ elif ana_modul == "🏢 B2B Lisans & Kurum Yönetimi":
     with col1:
         st.subheader("Kurum Bilgileri")
         st.text_input("Kurum Adı", "Örnek Özel LGS Kursu")
-        st.text_input("Yetkili Adı Soyadı", "Kürşat Han Kurşun")
+        st.text_input("Yetkili Adı Soyadı", "Elif Öztürk")
         st.number_input("Aktif Öğrenci Lisans Adedi", min_value=10, max_value=1000, value=150)
         st.button("Lisans Paketini Güncelle")
         
