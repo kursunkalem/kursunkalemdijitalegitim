@@ -44,6 +44,12 @@ def init_db():
             kkp INTEGER DEFAULT 150
         )
     """)
+    # Eski tablolarda kkp sütunu yoksa hata vermemesi için güvenli ekleme (Migration)
+    try:
+        c.execute("ALTER TABLE ogrenciler ADD COLUMN kkp INTEGER DEFAULT 150")
+    except:
+        pass
+
     c.execute("SELECT COUNT(*) FROM ogrenciler")
     if c.fetchone()[0] == 0:
         ornekler = [
