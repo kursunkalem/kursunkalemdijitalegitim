@@ -931,4 +931,4 @@ elif ana_modul == "💎 Paketler & Abonelik Vitrini":
 
 # --- ALT BİLGİ ---
 st.markdown("---")
-st.caption("© 2026 Kurşun Kalem Dijital Eğitim Teknolojileri | Tüm hakları saklıdır. Gri Cafer & Beyaz Cevdet onaylıdır 🐾")
+st.caption("© 2026 Kurşun Kalem Dijital Eğitim Teknolojileri | Tüm hakları saklıdır.")
