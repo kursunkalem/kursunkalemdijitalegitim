@@ -51,9 +51,9 @@ def init_db():
     c.execute("SELECT COUNT(*) FROM ogrenciler")
     if c.fetchone()[0] == 0:
         ornekler = [
-            ("Kürşat Kurşun", 450, 45, 41),
-            ("Burak Aygören", 380, 40, 34),
-            ("Elif Öztürk", 520, 55, 50),
+            ("Zeynep Yılmaz", 450, 45, 41),
+            ("Ahmet Demir", 380, 40, 34),
+            ("Elif Çelik", 520, 55, 50),
             ("Kullanıcı Öğrenci", 120, 12, 10)
         ]
         c.executemany("INSERT INTO ogrenciler (isim, puan, cozulen_soru, dogru_sayisi) VALUES (?, ?, ?, ?)", ornekler)
