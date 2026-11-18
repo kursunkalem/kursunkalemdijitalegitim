@@ -40,18 +40,19 @@ def init_db():
             isim TEXT,
             puan INTEGER,
             cozulen_soru INTEGER,
-            dogru_sayisi INTEGER
+            dogru_sayisi INTEGER,
+            kkp INTEGER DEFAULT 150
         )
     """)
     c.execute("SELECT COUNT(*) FROM ogrenciler")
     if c.fetchone()[0] == 0:
         ornekler = [
-            ("Zeynep Yılmaz", 450, 45, 41),
-            ("Ahmet Demir", 380, 40, 34),
-            ("Elif Çelik", 520, 55, 50),
-            ("Kullanıcı Öğrenci", 120, 12, 10)
+            ("Zeynep Yılmaz", 450, 45, 41, 450),
+            ("Ahmet Demir", 380, 40, 34, 380),
+            ("Elif Çelik", 520, 55, 50, 520),
+            ("Kullanıcı Öğrenci", 120, 12, 10, 150)
         ]
-        c.executemany("INSERT INTO ogrenciler (isim, puan, cozulen_soru, dogru_sayisi) VALUES (?, ?, ?, ?)", ornekler)
+        c.executemany("INSERT INTO ogrenciler (isim, puan, cozulen_soru, dogru_sayisi, kkp) VALUES (?, ?, ?, ?, ?)", ornekler)
     conn.commit()
     conn.close()
 
@@ -143,16 +144,58 @@ ana_modul = st.sidebar.radio(
 )
 st.sidebar.markdown("---")
 
+# Canlı Sayaç Bilgilendirmesi (Sidebar)
+st.sidebar.info("📊 **Canlı Ekosistem Verisi**\n\n• Bugün Üretilen Soru: **14.850**\n• Aktif Öğrenci: **3.420**\n• Çözülen Test: **9.120**")
+
 if ana_modul == "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)":
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
         "🎯 Soru Üretici",
         "✍️ Profesyonel Redaktör & Editör",
         "🤖 Akıllı Komut (Asistan)",
         "📚 Geçmiş Arşivi",
         "➕ Soru Ekle",
         "📄 Çoklu Format Dosya Yükle",
-        "⚙️ Havuz Yönetimi"
+        "⚙️ Havuz Yönetimi",
+        "🏢 B2B Kurumsal Lisans"
     ])
+
+    with tab8:
+        kurumsal_logo_goster()
+        st.header("🏢 Öğretmenler & Kurumlar İçin B2B Soru Fabrikası Lisansı")
+        st.markdown("Okullar, özel ders merkezleri ve dijital yayıncılık yapan öğretmenler için sınırsız Word/PDF soru üretim lisanları.")
+        
+        col_b1, col_b2 = st.columns(2)
+        with col_b1:
+            st.markdown("""
+                <div style="background:#fff; border:1px solid #ddd; padding:20px; border-radius:10px;">
+                    <h3>🏫 Kurum / Okul Lisansı</h3>
+                    <p style="color:#666;">Birden fazla öğretmen ve şube için kurumsal ortak soru havuzu ve sınırsız 2 sütunlu çıktı.</p>
+                    <h2 style="color:#2c3e50;">14.900 TL / Yıl</h2>
+                    <ul style="font-size:13px;">
+                        <li>✓ Sınırsız Soru Üretimi</li>
+                        <li>✓ Tüm Sınıf Düzeyleri (1-12 & YKS)</li>
+                        <li>✓ Kurumsal Logo Entegrasyonu</li>
+                    </ul>
+                </div>
+            """, unsafe_allow_html=True)
+            if st.button("Kurumsal Lisans Satın Al", key="btn_b2b_1"):
+                st.success("Tebrikler! Kurumsal lisans başvuru talebiniz alındı.")
+
+        with col_b2:
+            st.markdown("""
+                <div style="background:#fff; border:1px solid #ddd; padding:20px; border-radius:10px;">
+                    <h3>👨‍🏫 Bireysel Yazar / Öğretmen Lisansı</h3>
+                    <p style="color:#666;">Özel ders veren veya kendi kitabını yazan öğretmenler için profesyonel yazar paketi.</p>
+                    <h2 style="color:#2c3e50;">4.900 TL / Yıl</h2>
+                    <ul style="font-size:13px;">
+                        <li>✓ Gelişmiş Redaktör Modülü</li>
+                        <li>✓ Word (.docx) 2 Sütun Aktarım</li>
+                        <li>✓ AI Asistan Desteği</li>
+                    </ul>
+                </div>
+            """, unsafe_allow_html=True)
+            if st.button("Yazar Lisansı Satın Al", key="btn_b2b_2"):
+                st.success("Tebrikler! Yazar lisansı talebiniz alındı.")
 
     with tab7:
         kurumsal_logo_goster()
@@ -641,11 +684,12 @@ else:
     st.title("🎓 Kurşun Kalem - Öğrenci Sınav, Akıllı Koç ve Paket Vitrini")
     st.markdown("🚀 *Geleceği yazan dijital eğitim* felsefesiyle; ilkokuldan YKS'ye tüm sınıf düzeyleri için yapay zeka destekli eğitim paketlerimizi inceleyin.")
 
-    ogrenci_tab1, ogrenci_tab2, ogrenci_tab3, ogrenci_tab4, ogrenci_tab5, ogrenci_tab6 = st.tabs([
+    ogrenci_tab1, ogrenci_tab2, ogrenci_tab3, ogrenci_tab4, ogrenci_tab5, ogrenci_tab6, ogrenci_tab7 = st.tabs([
         "📦 Eğitim Paketlerimiz",
         "🎯 Günlük Test Çöz & Anında Çözüm",
         "🧠 Yapay Zeka Akıllı Koç",
         "📊 Kişisel Gelişim Karnem",
+        "👨‍👩‍👧 Veli Takip Paneli",
         "🏆 Şampiyonlar Liderlik Tablosu",
         "💡 Soru Stratejileri & Taktikler"
     ])
@@ -661,10 +705,8 @@ else:
         )
         st.markdown("---")
 
-        # Dinamik Filtreleme Mantığına Göre Kartları Gösterelim
         col1, col2, col3 = st.columns(3)
 
-        # 1. PAKET (İlkokul / Temel Eğitim)
         if sinif_filtresi in ["Tümü", "1. Sınıf", "2. Sınıf", "3. Sınıf", "4. Sınıf"]:
             with col1:
                 st.markdown("""
@@ -673,10 +715,10 @@ else:
                         <p style="font-size: 13px; color: #555;">1, 2, 3 ve 4. sınıflar için okuma anlama, akıcı okuma ve eğlenceli matematik beceri paketi.</p>
                         <hr style="margin: 10px 0;">
                         <ul style="font-size: 13px; padding-left: 15px; color: #444;">
-                            <li>✓ Eğlenceli Yapay Zeka Destekli Alıştırmalar</li>
+                            <li>✓ Eğlenceli Yapay Zeka Alıştırmaları</li>
                             <li>✓ Okuma Hızı ve Anlama Takibi</li>
                             <li>✓ İnteraktif Oyunlaştırılmış Soru Bankası</li>
-                            <li>✓ Veliler İçin Gelişim Raporlama</li>
+                            <li>✓ Ücretsiz 1 Adet Deneme Sınavı Hakkı</li>
                         </ul>
                         <div class="fiyat-etiketi">19.900 TL</div>
                         <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 1.658 TL)</div>
@@ -685,7 +727,6 @@ else:
                 if st.button("Hemen Al (İlkokul Seti)", key="btn_ilkokul", use_container_width=True):
                     st.success("Tebrikler! İlkokul Temel Set sepetinize eklendi.")
 
-        # 2. PAKET (Ortaokul / Ara Sınıflar 5, 6, 7)
         if sinif_filtresi in ["Tümü", "5. Sınıf", "6. Sınıf", "7. Sınıf"]:
             with col2:
                 st.markdown("""
@@ -697,7 +738,7 @@ else:
                             <li>✓ Yeni Nesil Beceri Temelli Sorular</li>
                             <li>✓ Eksik Kapatma Akıllı Algoritması</li>
                             <li>✓ 7/24 AI Akıllı Koçluk Desteği</li>
-                            <li>✓ Konu Tarama ve Başarı Analizleri</li>
+                            <li>✓ Kurşun Kalem Puan (KKP) Kazanma</li>
                         </ul>
                         <div class="fiyat-etiketi">27.900 TL</div>
                         <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 2.325 TL)</div>
@@ -706,7 +747,6 @@ else:
                 if st.button("Hemen Al (Ortaokul Seti)", key="btn_ortaokul", use_container_width=True):
                     st.success("Tebrikler! Ortaokul Güçlendirme Seti sepetinize eklendi.")
 
-        # 3. PAKET (LGS 2027 / 8. Sınıf)
         if sinif_filtresi in ["Tümü", "LGS 2027", "8. Sınıf"]:
             with col3:
                 st.markdown("""
@@ -718,7 +758,7 @@ else:
                             <li>✓ Bütün Derslerde Yapay Zeka Desteği</li>
                             <li>✓ 5.000+ Beceri Temelli Soru Bankası</li>
                             <li>✓ Akıllı Kazanım Analizi ve Karne</li>
-                            <li>✓ Gerçek LGS Süre Simülasyonu</li>
+                            <li>✓ Veli Takip Paneli Erişimi</li>
                         </ul>
                         <div class="fiyat-etiketi">44.900 TL</div>
                         <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 3.741 TL)</div>
@@ -727,7 +767,6 @@ else:
                 if st.button("Hemen Al (LGS Seti)", key="btn_lgs", use_container_width=True):
                     st.success("Tebrikler! LGS Tam Set sepetinize eklendi.")
 
-        # Alt satır paketleri (YKS ve Özel Sözel Setler)
         st.markdown("<br>", unsafe_allow_html=True)
         col4, col5, col6 = st.columns(3)
 
@@ -787,10 +826,12 @@ else:
                     st.success("Tebrikler! Deneme Paketi sepetinize eklendi.")
 
     with ogrenci_tab2:
-        st.subheader("🎯 İnteraktif Beceri Sınavı")
+        st.subheader("🎯 İnteraktif Beceri Sınavı & Freemium Deneme Modülü")
+        st.markdown("🎁 *Ücretsiz Freemium Deneme Sınavı Hakkınız Aktif!* Aşağıdaki örnek LGS beceri testini çözerek sistemimizi deneyebilirsiniz.")
+        
         arsiv_listesi = load_arsiv()
         if not arsiv_listesi:
-            st.info("Henüz arşivde test bulunmuyor. Yazar panelinden test üreterek buraya aktarabilirsin.")
+            st.info("Havuzda kayıtlı özel test bulunmuyor. Örnek standart LGS sorusu üzerinden test modülü:")
             st.markdown("### Örnek LGS Beceri Temelli Soru")
             st.info("Aşağıdaki cümlelerin hangisinde altı çizili sözcük **fiilimsi** değildir?")
             secim = st.radio("Seçenekler:", [
@@ -798,16 +839,16 @@ else:
                 "B) Yarışmada koşan atlet birinci oldu.",
                 "C) Çocuğun yüzü tatlı tatlı gülüyordu.",
                 "D) Görünmez kazalardan kaçınmalıyız."
-            ], index=None)
+            ], index=None, key="freemium_radio")
 
-            if st.button("Cevabı Değerlendir"):
+            if st.button("Cevabı Değerlendir (KKP Kazan)"):
                 if secim is None:
                     st.warning("Lütfen şık seçin.")
                 elif secim.startswith("C"):
-                    st.success("🎉 Doğru! 'Gülüyordu' sözcüğü çekimli fiildir.")
+                    st.success("🎉 Doğru! 'Gülüyordu' sözcüğü çekimli fiildir. +15 Kurşun Kalem Puan (KKP) kazandınız!")
                     conn = sqlite3.connect("okul.db")
                     c = conn.cursor()
-                    c.execute("UPDATE ogrenciler SET puan = puan + 15, cozulen_soru = cozulen_soru + 1, dogru_sayisi = dogru_sayisi + 1 WHERE id = 4")
+                    c.execute("UPDATE ogrenciler SET puan = puan + 15, cozulen_soru = cozulen_soru + 1, dogru_sayisi = dogru_sayisi + 1, kkp = kkp + 15 WHERE id = 4")
                     conn.commit()
                     conn.close()
                 else:
@@ -837,10 +878,10 @@ else:
                             secilen_harf = cevap_secimi[0]
                             dogru_harf = soru.get('dogru_cevap').strip().upper()
                             if secilen_harf == dogru_harf:
-                                st.success(f"🎉 Tebrikler! Doğru cevap ({dogru_harf}).")
+                                st.success(f"🎉 Tebrikler! Doğru cevap ({dogru_harf}). +20 KKP Kazandınız!")
                                 conn = sqlite3.connect("okul.db")
                                 c = conn.cursor()
-                                c.execute("UPDATE ogrenciler SET puan = puan + 15, cozulen_soru = cozulen_soru + 1, dogru_sayisi = dogru_sayisi + 1 WHERE id = 4")
+                                c.execute("UPDATE ogrenciler SET puan = puan + 15, cozulen_soru = cozulen_soru + 1, dogru_sayisi = dogru_sayisi + 1, kkp = kkp + 20 WHERE id = 4")
                                 conn.commit()
                                 conn.close()
                             else:
@@ -874,27 +915,42 @@ else:
                         st.error(f"Koç yanıt üretirken hata oluştu: {e}")
 
     with ogrenci_tab4:
-        st.subheader("📊 Kişisel Gelişim ve Başarı Karnem")
+        st.subheader("📊 Kişisel Gelişim ve Başarı Karnem & Oyunlaştırma")
         conn = sqlite3.connect("okul.db")
         c = conn.cursor()
-        c.execute("SELECT puan, cozulen_soru, dogru_sayisi FROM ogrenciler WHERE id = 4")
+        c.execute("SELECT puan, cozulen_soru, dogru_sayisi, kkp FROM ogrenciler WHERE id = 4")
         veri = c.fetchone()
         conn.close()
 
-        puan, soru_sayisi, dogru_sayisi = veri if veri else (120, 12, 10)
+        puan, soru_sayisi, dogru_sayisi, kkp = veri if veri else (120, 12, 10, 150)
         yanlis_sayisi = soru_sayisi - dogru_sayisi if soru_sayisi >= dogru_sayisi else 0
         basari = int((dogru_sayisi / soru_sayisi) * 100) if soru_sayisi > 0 else 0
 
-        col1, col2, col3, col4 = st.columns(4)
+        col1, col2, col3, col4, col5 = st.columns(5)
         col1.metric("Toplam Puan", f"{puan} P")
         col2.metric("Çözülen Soru", f"{soru_sayisi} Soru")
         col3.metric("Doğru / Yanlış", f"{dogru_sayisi} D / {yanlis_sayisi} Y")
         col4.metric("Başarı Oranı", f"%{basari}")
+        col5.metric("Kurşun Kalem Puan (KKP)", f"⭐ {kkp} KKP")
 
         st.markdown("---")
+        st.markdown("### 🏅 Kazanılan Dijital Rozetler")
+        st.info("🏆 **Paragraf Canavarı** (Açık) | 🥈 **Sözel Mantık Uzmanı** (Açık) | 🔥 **7 Gün Kesintisiz Çalışma Ateşi** (Kilitli)")
         st.info("💡 **Analiz Notu:** Sözel mantıkta hızlandın fakat paragraf hızını artırmak için günde 15 paragraf sorusu çözmelisin.")
 
     with ogrenci_tab5:
+        st.subheader("👨‍👩‍👧 Veli Takip Paneli")
+        st.markdown("Velilerin çocuklarının günlük çözdüğü soru sayılarını, net gelişimini ve eksik konularını cepten takip edebileceği özel ekran.")
+        
+        col_v1, col_v2 = st.columns(2)
+        with col_v1:
+            st.metric("Öğrenci Günlük Çalışma Süresi", "2 Saat 45 Dk")
+            st.metric("Bu Hafta Çözülen Toplam Soru", f"{soru_sayisi + 35} Soru")
+        with col_v2:
+            st.success("🟢 Durum: Öğrenci bu hafta çalışma hedeflerini %92 oranında tamamladı.")
+            st.info("📌 **Veli Tavsiyesi:** Çocuğunuzun fen bilimleri ağırlıklı eksiklerini kapatmak için 'Ortaokul Güçlendirme Paketi'ni inceleyebilirsiniz.")
+
+    with ogrenci_tab6:
         st.subheader("🏆 Şampiyonlar Ligi Liderlik Tablosu")
         conn = sqlite3.connect("okul.db")
         c = conn.cursor()
@@ -908,7 +964,7 @@ else:
             tablo.append({"Sıra": f"{madalya} {sira}", "Öğrenci": isim, "Puan": p, "Çözülen Soru": s})
         st.table(tablo)
 
-    with ogrenci_tab6:
+    with ogrenci_tab7:
         st.subheader("💡 Sınav Taktikleri ve Stratejiler")
         with st.expander("📌 Sözel Mantık Taktikleri"):
             st.write("1. Kesin bilgileri ele alın.\n2. Şema kurun.")
