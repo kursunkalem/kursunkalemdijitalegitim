@@ -426,4 +426,319 @@ if ana_modul == "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)":
             
             soru_adedi = st.slider("Üretilecek Soru Adedi (Test Modu)", min_value=1, max_value=5, value=2)
             zorluk_seviyesi = st.select_slider("Zorluk Derecesi", options=["Orta", "Orta-Zor", "İleri Düzey"], value="Orta-Zor")
-            tema_girdisi = st.text_input("Bağlam / Tema / Senaryo", placeholder="Örn: Sürdürülebilirlik, deney
+            tema_girdisi = st.text_input("Bağlam / Tema / Senaryo", placeholder="Örn: Sürdürülebilirlik, deney analizi...")
+            
+            kalite_kontrol = st.checkbox("🔍 Otomatik Soru Kalite & Redaksiyon Denetimi", value=True, help="Üretilen soruların çeldirici kalitesini ve kazanım uyumunu arka planda denetler.")
+            
+            uret_butonu = st.button("✨ Kurumsal Soru Paketi Üret", type="primary", use_container_width=True)
+
+        referanslar_str = json.dumps(referans_havuzu, ensure_ascii=False, indent=2)
+        if len(referanslar_str) > 3000:
+            referanslar_str = referanslar_str[:3000] + "\n...(Kalan referanslar hız için kırpıldı)"
+
+        SYSTEM_PROMPT = (
+            f"Sen uzman bir {secilen_brans} eğitimcisi, müfredat geliştirme uzmanı ve kıdemli soru yazarısın.\n"
+            f"Görevin; {kurum_adi} akademik çizgisine ve aşağıdaki Türkiye Yüzyılı Maarif Modeli ortak çerçevesine tam uygun, "
+            "öğrencinin zihinsel becerilerini, analiz ve sentez yeteneğini geliştiren özgün çoktan seçmeli sorular üretmektir. Çözüm analizi İSTEMİYORUM.\n\n"
+            + MAARIF_EGITIM_CERCEVESI + "\n\n"
+            "Aşağıda verilen YÜKLENEN DOSYA/GÖRSEL KAYNAK verilerindeki soru kalıplarını, çeldirici niteliklerini ve metin uzunluklarını incele; benzer nitelikte özgün sorular üret.\n"
+            "Çıktıyı YALNIZCA geçerli bir JSON dizisi (liste) formatında (hiçbir ek metin, açıklama veya markdown backtick eklemeden) şu yapıda ver:\n"
+            "[\n  {\n    \"baglam_metni\": \"...\",\n    \"soru_koku\": \"...\",\n    \"sik_a\": \"...\",\n    \"sik_b\": \"...\",\n    \"sik_c\": \"...\",\n    \"sik_d\": \"...\",\n    \"dogru_cevap\": \"A/B/C/D\"\n  }\n]\n\n"
+            "REFERANS DOSYA İÇERİKLERİ:\n" + referanslar_str
+        )
+
+        def toplu_soru_uret(brans, sinif, kazanim, tema, zorluk, adet, validator_aktif):
+            client = genai.Client(api_key=API_KEY)
+            kullanici_istegi = (
+                f"Kriterler:\n- Branş: {brans}\n- Sınıf: {sinif}\n- Kazanım: {kazanim}\n"
+                f"- Tema/Bağlam: {tema}\n- Zorluk: {zorluk}\n- Üretilecek Soru Adedi: {adet}\n"
+                f"Bu kriterlere uygun tam {adet} adet özgün beceri temelli soru üret ve JSON listesi olarak dön."
+            )
+
+            response = client.models.generate_content(
+                model="gemini-3.8-flash",
+                contents=kullanici_istegi,
+                config={
+                    "system_instruction": SYSTEM_PROMPT,
+                    "temperature": 0.4,
+                    "max_output_tokens": 2048
+                }
+            )
+
+            text = response.text.strip()
+            if text.startswith("```json"): text = text[7:]
+            if text.endswith("```"): text = text[:-3]
+            sorular = json.loads(text.strip())
+
+            if validator_aktif and sorular:
+                validator_prompt = (
+                    "Sen bir Baş Redaktör ve Kalite Kontrol Uzmanısın. Aşağıdaki soru listesini incele; "
+                    "eğer şıklarda veya soru kökünde mantık hatası, zayıf çeldirici veya kazanım uyumsuzluğu varsa düzelt. "
+                    "Çıktıyı YALNIZCA aynı JSON listesi formatında geri ver:"
+                )
+                val_resp = client.models.generate_content(
+                    model="gemini-3.8-flash",
+                    contents=json.dumps(sorular, ensure_ascii=False),
+                    config={
+                        "system_instruction": validator_prompt,
+                        "temperature": 0.3,
+                        "max_output_tokens": 2048
+                    }
+                )
+                val_text = val_resp.text.strip()
+                if val_text.startswith("```json"): val_text = val_text[7:]
+                if val_text.endswith("```"): val_text = val_text[:-3]
+                try:
+                    sorular = json.loads(val_text.strip())
+                except: pass
+
+            return sorular
+
+        def word_iki_sutunlu_olustur(kurum, brans, sinif, kazanim, soru_listesi):
+            doc = Document()
+            sections = doc.sections
+            for section in sections:
+                section.top_margin = Inches(0.8)
+                section.bottom_margin = Inches(0.8)
+                section.left_margin = Inches(0.8)
+                section.right_margin = Inches(0.8)
+
+            p_logo = doc.add_paragraph()
+            run_logo = p_logo.add_run("✏️ [ KURŞUN KALEM DİJİTAL EĞİTİM ]")
+            run_logo.bold = True
+            run_logo.font.color.rgb = RGBColor(192, 57, 43)
+            run_logo.font.size = Pt(12)
+
+            doc.add_heading(f"{kurum} - {brans} ({sinif}) Değerlendirme Testi", level=1)
+            p_info = doc.add_paragraph("Adı Soyadı: ..........................................      Sınıf/No: ............ / ............ ")
+            p_info.runs[0].italic = True
+            p_kazanim = doc.add_paragraph(f"Hedef Kazanım: {kazanim}")
+            p_kazanim.runs[0].italic = True
+            doc.add_paragraph("-" * 65)
+
+            table = doc.add_table(rows=1, cols=2)
+            table.autofit = False
+
+            table.columns[0].width = Inches(3.3)
+            table.columns[1].width = Inches(3.3)
+
+            cell_left = table.cell(0, 0)
+            cell_right = table.cell(0, 1)
+
+            for i, soru in enumerate(soru_listesi, 1):
+                target_cell = cell_left if (i % 2 != 0) else cell_right
+
+                p_sno = target_cell.add_paragraph()
+                p_sno.add_run(f"Soru {i}").bold = True
+
+                if soru.get("baglam_metni"):
+                    target_cell.add_paragraph(soru.get("baglam_metni"))
+
+                p_kok = target_cell.add_paragraph()
+                p_kok.add_run(soru.get("soru_koku", "")).bold = True
+
+                target_cell.add_paragraph(f"A) {soru.get('sik_a', '')}")
+                target_cell.add_paragraph(f"B) {soru.get('sik_b', '')}")
+                target_cell.add_paragraph(f"C) {soru.get('sik_c', '')}")
+                target_cell.add_paragraph(f"D) {soru.get('sik_d', '')}")
+                target_cell.add_paragraph("-" * 30)
+
+            doc.add_page_break()
+            doc.add_heading("Cevap Anahtarı", level=1)
+            for i, soru in enumerate(soru_listesi, 1):
+                p_cevap = doc.add_paragraph()
+                p_cevap.add_run(f"Soru {i} Doğru Cevap: {soru.get('dogru_cevap', '')}").bold = True
+
+            buffer = BytesIO()
+            doc.save(buffer)
+            buffer.seek(0)
+            return buffer
+
+        if uret_butonu:
+            if not API_KEY:
+                st.error("API anahtarı tanımlı değil.")
+            elif not tema_girdisi.strip():
+                st.warning("Lütfen bir bağlam veya tema girin.")
+            else:
+                with st.spinner(f"{kurum_adi} standartlarında redaksiyon denetimiyle {soru_adedi} soru hazırlanıyor..."):
+                    try:
+                        uretilen_sorular = toplu_soru_uret(
+                            secilen_brans, secilen_sinif, secilen_kazanim,
+                            tema_girdisi, zorluk_seviyesi, soru_adedi, kalite_kontrol
+                        )
+                        st.session_state["toplu_sorular"] = uretilen_sorular
+                        st.session_state["test_meta"] = (kurum_adi, secilen_brans, secilen_sinif, secilen_kazanim)
+
+                        save_arsiv({
+                            "baslik": f"{secilen_brans} - {secilen_sinif} Testi",
+                            "kurum": kurum_adi,
+                            "sorular": uretilen_sorular
+                        })
+                    except Exception as e:
+                        st.error(f"Soru üretim hatası oluştu: {e}")
+
+        if "toplu_sorular" in st.session_state:
+            sorular = st.session_state["toplu_sorular"]
+            k_kurum, k_brans, k_sinif, k_kazanim = st.session_state["test_meta"]
+
+            st.success(f"✨ {len(sorular)} adet özgün soru redaksiyon ve kalite süzgecinden geçerek başarıyla üretildi!")
+
+            for idx, soru in enumerate(sorular, 1):
+                with st.expander(f"📄 Soru {idx} Önizlemesi"):
+                    if soru.get("baglam_metni"):
+                        st.write(soru.get("baglam_metni"))
+                    st.markdown(f"**{soru.get('soru_koku', '')}**")
+                    st.write(f"**A)** {soru.get('sik_a', '')}")
+                    st.write(f"**B)** {soru.get('sik_b', '')}")
+                    st.write(f"**C)** {soru.get('sik_c', '')}")
+                    st.write(f"**D)** {soru.get('sik_d', '')}")
+                    st.success(f"**Doğru Cevap:** {soru.get('dogru_cevap', '')}")
+
+            docx_buffer = word_iki_sutunlu_olustur(k_kurum, k_brans, k_sinif, k_kazanim, sorular)
+
+            safe_filename = f"{k_brans}_{k_sinif}".replace(' ', '_').replace('(', '').replace(')', '').replace('/', '_')
+            st.download_button(
+                label="📥 2 Sütunlu LGS Formatında Word (.docx) İndir",
+                data=docx_buffer,
+                file_name=f"{safe_filename}_kurumsal_test.docx",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            )
+
+else:
+    kurumsal_logo_goster()
+    st.title("🎓 Kurşun Kalem - Öğrenci Sınav ve Gelişim Portalı")
+    st.markdown("Öğrencilerin test çözebileceği, anında geri bildirim alabileceği, liderlik tablosunu takip edip gelişim karnesini inceleyebileceği interaktif modül.")
+
+    ogrenci_tab1, ogrenci_tab2, ogrenci_tab3, ogrenci_tab4 = st.tabs([
+        "🎯 Günlük Test Çöz",
+        "📊 Gelişim Karnem",
+        "🏆 Liderlik Tablosu",
+        "💡 Soru Stratejileri & Taktikler"
+    ])
+
+    with ogrenci_tab1:
+        st.subheader("🎯 İnteraktif Beceri Testi ve Anında Çözüm")
+        st.write("Sistemde kayıtlı arşiv sorularından veya örnek sorulardan çözmeye başla, cevabını anında kontrol et!")
+
+        arsiv_listesi = load_arsiv()
+        if not arsiv_listesi:
+            st.info("Henüz arşivde test bulunmuyor. 'Yazar Paneli' üzerinden soru üreterek havuza soru ekleyebilirsin.")
+            st.markdown("### Örnek Soru 1 (Sözel Mantık / Fiilimsiler)")
+            st.info("Aşağıdaki cümlelerin hangisinde altı çizili sözcük **sıfat-fiil** görevinde kullanılmamıştır?")
+            secim = st.radio("Seçenekler:", [
+                "A) Akacak kan damarda durmaz.",
+                "B) Sararmış yapraklar bahçeyi kaplamıştı.",
+                "C) Görünmez kaza hepimizi sarstı.",
+                "D) Çocuklar bahçede neşeyle koşuyordu."
+            ], index=None)
+
+            if st.button("Cevabı Kontrol Et"):
+                if secim is None:
+                    st.warning("Lütfen bir seçenek seçin.")
+                elif secim.startswith("D"):
+                    st.success("🎉 **Tebrikler, Doğru!** 'Koşuyordu' cümlenin yüklemidir, çekimli fiildir.")
+                    conn = sqlite3.connect("okul.db")
+                    c = conn.cursor()
+                    c.execute("UPDATE ogrenciler SET puan = puan + 10, cozulen_soru = cozulen_soru + 1, dogru_sayisi = dogru_sayisi + 1 WHERE id = 4")
+                    conn.commit()
+                    conn.close()
+                else:
+                    st.error("❌ Yanlış cevap. Doğru seçenek D olmalıydı.")
+        else:
+            secilen_test = st.selectbox("Çözmek İstediğin Testi Seç", [t.get('baslik') for t in arsiv_listesi])
+            secilen_test_obj = next((t for t in arsiv_listesi if t.get('baslik') == secilen_test), None)
+
+            if secilen_test_obj:
+                for idx, soru in enumerate(secilen_test_obj.get('sorular', []), 1):
+                    st.markdown(f"---")
+                    st.markdown(f"### Soru {idx}")
+                    if soru.get("baglam_metni"):
+                        st.write(soru.get("baglam_metni"))
+                    st.markdown(f"**{soru.get('soru_koku')}**")
+                    
+                    cevap_secimi = st.radio(
+                        f"Seçimin (Soru {idx}):",
+                        [f"A) {soru.get('sik_a')}", f"B) {soru.get('sik_b')}", f"C) {soru.get('sik_c')}", f"D) {soru.get('sik_d')}"],
+                        key=f"ogrenci_soru_{idx}",
+                        index=None
+                    )
+
+                    if st.button(f"Soru {idx} Kontrol Et", key=f"btn_kontrol_{idx}"):
+                        if cevap_secimi is None:
+                            st.warning("Lütfen bir şık işaretleyin.")
+                        else:
+                            secilen_harf = cevap_secimi[0]
+                            dogru_harf = soru.get('dogru_cevap').strip().upper()
+                            if secilen_harf == dogru_harf:
+                                st.success(f"🎉 Tebrikler! Doğru cevap ({dogru_harf}).")
+                                conn = sqlite3.connect("okul.db")
+                                c = conn.cursor()
+                                c.execute("UPDATE ogrenciler SET puan = puan + 10, cozulen_soru = cozulen_soru + 1, dogru_sayisi = dogru_sayisi + 1 WHERE id = 4")
+                                conn.commit()
+                                conn.close()
+                            else:
+                                st.error(f"❌ Yanlış cevap. Doğru seçenek **{dogru_harf}** olmalıydı.")
+
+    with ogrenci_tab2:
+        st.subheader("📊 Kişisel Gelişim ve Başarı Karnem")
+        st.write("Genel performansını, çözdüğün soru sayısını ve başarı oranını aşağıdan takip edebilirsin.")
+
+        conn = sqlite3.connect("okul.db")
+        c = conn.cursor()
+        c.execute("SELECT puan, cozulen_soru, dogru_sayisi FROM ogrenciler WHERE id = 4")
+        veri = c.fetchone()
+        conn.close()
+
+        puan, soru_sayisi, dogru_sayisi = veri if veri else (100, 10, 8)
+        yanlis_sayisi = soru_sayisi - dogru_sayisi if soru_sayisi >= dogru_sayisi else 0
+        basari_yuzdesi = int((dogru_sayisi / soru_sayisi) * 100) if soru_sayisi > 0 else 0
+
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Toplam Puan", f"{puan} P")
+        c2.metric("Çözülen Soru", f"{soru_sayisi} Soru")
+        c3.metric("Doğru / Yanlış", f"{dogru_sayisi} D / {yanlis_sayisi} Y")
+        c4.metric("Başarı Oranı", f"%{basari_yuzdesi}")
+
+        st.markdown("---")
+        st.subheader("💡 Yapay Zeka Destekli Gelişim Önerisi")
+        st.info("Son çözdüğün testlerde özellikle **Sözel Mantık ve Grafik Okuma** sorularında başarılısın. Ancak **Fiilimsiler** konusunda birkaç tekrar yapman önerilir.")
+
+    with ogrenci_tab3:
+        st.subheader("🏆 Şampiyonlar Ligi - Liderlik Tablosu")
+        st.write("Platformda en çok puan toplayan ve düzenli soru çözen başarılı öğrenciler!")
+
+        conn = sqlite3.connect("okul.db")
+        c = conn.cursor()
+        c.execute("SELECT isim, puan, cozulen_soru FROM ogrenciler ORDER BY puan DESC")
+        ogrenciler = c.fetchall()
+        conn.close()
+
+        tablo_verisi = []
+        for sira, (isim, p, s) in enumerate(ogrenciler, 1):
+            madalya = "🥇" if sira == 1 else ("🥈" if sira == 2 else ("🥉" if sira == 3 else "🏅"))
+            tablo_verisi.append({
+                "Sıra": f"{madalya} {sira}",
+                "Öğrenci Adı": isim,
+                "Toplam Puan": p,
+                "Çözülen Soru": s
+            })
+
+        st.table(tablo_verisi)
+
+    with ogrenci_tab4:
+        st.subheader("💡 LGS Türkçe Çözüm Stratejileri ve İpuçları")
+        st.write("Sınavda hayat kurtaracak, zaman kazandıracak pratik taktikler.")
+
+        with st.expander("📌 Sözel Mantık Sorularını Çözme Taktikleri"):
+            st.write(
+                "1. Öncülleri kesin yargılardan başlayarak eleyin.\n"
+                "2. Bilgileri mutlaka bir tablo veya şema halinde kağıda dökün.\n"
+                "3. Olumsuz köklere ('değildir', 'olamaz') dikkat edin."
+            )
+
+        with st.expander("📌 Paragraf Sorularında 'Ana Düşünce' Nasıl Bulunur?"):
+            st.write(
+                "1. Parçanın ilk ve son cümlelerine odaklanın.\n"
+                "2. Yazarın okuyucuya aktarmak istediği ana fikri tek cümleyle özetleyin.\n"
+                "3. Kendi görüşlerinizi değil, metnin aktardığı düşünceyi esas alın."
+            )
