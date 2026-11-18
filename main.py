@@ -2,6 +2,7 @@ import os
 import json
 import sqlite3
 import datetime
+import time
 from io import BytesIO
 import streamlit as st
 from google import genai
@@ -166,8 +167,12 @@ if ana_modul == "🏠 Ana Sayfa & 2027 LGS Geri Sayım":
     st.title("📚 Kurşun Kalem Dijital Eğitim Platformuna Hoş Geldiniz")
     st.markdown("İlkokuldan YKS'ye uzanan, yapay zeka destekli Türkiye'nin en akıllı soru ve koçluk ekosistemi.")
     
-    # --- LGS 2027 GERİ SAYIM SAYACI (13 Haziran 2027) ---
+    # --- CANLI AKAN LGS 2027 GERİ SAYIM SAYACI ---
     st.markdown("### ⏳ 2027 LGS Sınavına Geri Sayım (13 Haziran 2027)")
+    
+    # Canlı sayaç konteyneri ve otomatik yenileme döngüsü
+    sayac_yeri = st.empty()
+    
     exam_date = datetime.datetime(2027, 6, 13, 9, 30, 0)
     now = datetime.datetime.now()
     remaining = exam_date - now
@@ -177,14 +182,15 @@ if ana_modul == "🏠 Ana Sayfa & 2027 LGS Geri Sayım":
         hours, remainder = divmod(remaining.seconds, 3600)
         minutes, seconds = divmod(remainder, 60)
         
-        c1, c2, c3, c4 = st.columns(4)
-        c1.metric(label="📅 Gün", value=f"{days} Gün")
-        c2.metric(label="⏰ Saat", value=f"{hours} Saat")
-        c3.metric(label="⏱️ Dakika", value=f"{minutes} Dk")
-        c4.metric(label="⚡ Saniye", value=f"{seconds} Sn")
+        with sayac_yeri.container():
+            c1, c2, c3, c4 = st.columns(4)
+            c1.metric(label="📅 Gün", value=f"{days} Gün")
+            c2.metric(label="⏰ Saat", value=f"{hours} Saat")
+            c3.metric(label="⏱️ Dakika", value=f"{minutes} Dk")
+            c4.metric(label="⚡ Saniye", value=f"{seconds} Sn")
     else:
-        st.success("🎉 LGS 2027 Sınavı Gerçekleşti!")
-    
+        sayac_yeri.success("🎉 LGS 2027 Sınavı Gerçekleşti!")
+
     st.markdown("---")
     
     col1, col2, col3, col4 = st.columns(4)
