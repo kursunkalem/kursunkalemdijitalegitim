@@ -1,3 +1,8 @@
+Eğitim paketlerini; içeriğinde tam dijital koçluk, video çözüm kütüphaneleri, canlı ders kampları ve kişiye özel yapay zeka analiz raporları barındıracak şekilde çok daha cazip ve zengin birer **"Premium Eğitim Ekosistemine"** dönüştürdüm.
+
+Aşağıdaki güncellenmiş ve zenginleştirilmiş tam kodunu doğrudan `main.py` dosyana kopyalayıp yapıştırarak çalıştırabilirsin:
+
+```python
 import os
 import json
 import sqlite3
@@ -144,7 +149,6 @@ ana_modul = st.sidebar.radio(
 )
 st.sidebar.markdown("---")
 
-# Canlı Sayaç Bilgilendirmesi (Sidebar)
 st.sidebar.info("📊 **Canlı Ekosistem Verisi**\n\n• Bugün Üretilen Soru: **14.850**\n• Aktif Öğrenci: **3.420**\n• Çözülen Test: **9.120**")
 
 if ana_modul == "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)":
@@ -681,11 +685,11 @@ else:
         </style>
     """, unsafe_allow_html=True)
 
-    st.title("🎓 Kurşun Kalem - Öğrenci Sınav, Akıllı Koç ve Paket Vitrini")
-    st.markdown("🚀 *Geleceği yazan dijital eğitim* felsefesiyle; ilkokuldan YKS'ye tüm sınıf düzeyleri için yapay zeka destekli eğitim paketlerimizi inceleyin.")
+    st.title("🎓 Kurşun Kalem - Öğrenci Sınav, Akıllı Koç ve Premium Paket Vitrini")
+    st.markdown("🚀 *Geleceği yazan dijital eğitim* felsefesiyle; ilkokuldan YKS'ye tüm sınıf düzeyleri için yapay zeka koçluk destekli ve zenginleştirilmiş premium eğitim paketlerimiz.")
 
     ogrenci_tab1, ogrenci_tab2, ogrenci_tab3, ogrenci_tab4, ogrenci_tab5, ogrenci_tab6, ogrenci_tab7 = st.tabs([
-        "📦 Eğitim Paketlerimiz",
+        "📦 Zenginleştirilmiş Eğitim Paketlerimiz",
         "🎯 Günlük Test Çöz & Anında Çözüm",
         "🧠 Yapay Zeka Akıllı Koç",
         "📊 Kişisel Gelişim Karnem",
@@ -695,8 +699,8 @@ else:
     ])
 
     with ogrenci_tab1:
-        st.subheader("📦 İlkokuldan YKS'ye Kurşun Kalem Dijital Eğitim Paketleri")
-        st.markdown("Öğrencinin okul kademesine ve sınıf seviyesine en uygun, yapay zeka destekli akıllı paketlerimiz:")
+        st.subheader("📦 Kurşun Kalem Dijital Eğitim - Premium Ekosistem Paketleri")
+        st.markdown("Her pakete özel; **7/24 Yapay Zeka Koçluğu, Video Çözüm Arşivi, Veli Takip Erişimi ve Sınırsız Deneme Hakkı** dahildir!")
         
         sinif_filtresi = st.radio(
             "Eğitim Seviyesi / Sınıf Filtrele:",
@@ -711,34 +715,34 @@ else:
             with col1:
                 st.markdown("""
                     <div class="paket-karti">
-                        <h4>🎨 İlkokul Temel Beceri & Okuma Seti</h4>
-                        <p style="font-size: 13px; color: #555;">1, 2, 3 ve 4. sınıflar için okuma anlama, akıcı okuma ve eğlenceli matematik beceri paketi.</p>
+                        <h4>🎨 İlkokul Premium Temel Beceri Seti</h4>
+                        <p style="font-size: 13px; color: #555;">1, 2, 3 ve 4. sınıflar için okuma anlama, akıcı okuma ve eğlenceli matematik seti.</p>
                         <hr style="margin: 10px 0;">
                         <ul style="font-size: 13px; padding-left: 15px; color: #444;">
-                            <li>✓ Eğlenceli Yapay Zeka Alıştırmaları</li>
-                            <li>✓ Okuma Hızı ve Anlama Takibi</li>
-                            <li>✓ İnteraktif Oyunlaştırılmış Soru Bankası</li>
-                            <li>✓ Ücretsiz 1 Adet Deneme Sınavı Hakkı</li>
+                            <li>✓ Sınırsız AI Eğlenceli Alıştırma Modülü</li>
+                            <li>✓ Veli Cep Takip Paneli (Canlı Rapor)</li>
+                            <li>✓ 500+ Oyunlaştırılmış Beceri Sorusu</li>
+                            <li>✓ Haftalık Dijital Rozetler & KKP Ödülü</li>
                         </ul>
                         <div class="fiyat-etiketi">19.900 TL</div>
                         <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 1.658 TL)</div>
                     </div>
                 """, unsafe_allow_html=True)
                 if st.button("Hemen Al (İlkokul Seti)", key="btn_ilkokul", use_container_width=True):
-                    st.success("Tebrikler! İlkokul Temel Set sepetinize eklendi.")
+                    st.success("Tebrikler! İlkokul Premium Set sepetinize eklendi.")
 
         if sinif_filtresi in ["Tümü", "5. Sınıf", "6. Sınıf", "7. Sınıf"]:
             with col2:
                 st.markdown("""
                     <div class="paket-karti">
                         <h4>📚 Ortaokul Güçlendirme & Beceri Paketi</h4>
-                        <p style="font-size: 13px; color: #555;">5, 6 ve 7. sınıflar için okul başarısını artıran ve LGS'ye temel oluşturan set.</p>
+                        <p style="font-size: 13px; color: #555;">5, 6 ve 7. sınıflar için okul başarısını artıran ve LGS'ye erkenden hazırlayan set.</p>
                         <hr style="margin: 10px 0;">
                         <ul style="font-size: 13px; padding-left: 15px; color: #444;">
-                            <li>✓ Yeni Nesil Beceri Temelli Sorular</li>
-                            <li>✓ Eksik Kapatma Akıllı Algoritması</li>
-                            <li>✓ 7/24 AI Akıllı Koçluk Desteği</li>
-                            <li>✓ Kurşun Kalem Puan (KKP) Kazanma</li>
+                            <li>✓ Yeni Nesil Soru Çözüm Videoları</li>
+                            <li>✓ Akıllı Eksik Kapatma Robotu</li>
+                            <li>✓ 7/24 Yapay Zeka Akıllı Koç Erişimi</li>
+                            <li>✓ Aylık Canlı Rehberlik Seminerleri</li>
                         </ul>
                         <div class="fiyat-etiketi">27.900 TL</div>
                         <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 2.325 TL)</div>
@@ -751,21 +755,21 @@ else:
             with col3:
                 st.markdown("""
                     <div class="paket-karti">
-                        <h4>🚀 LGS 2027 Tüm Dersler Tam Set</h4>
-                        <p style="font-size: 13px; color: #555;">Türkçe, Matematik, Fen ve Tüm Sözel-Sayısal derslerde LGS birinciliği hedefleyenler için.</p>
+                        <h4>🚀 LGS 2027 Tüm Dersler VIP Tam Set</h4>
+                        <p style="font-size: 13px; color: #555;">LGS'de Türkiye derecesi hedefleyenler için en kapsamlı yapay zeka destekli set.</p>
                         <hr style="margin: 10px 0;">
                         <ul style="font-size: 13px; padding-left: 15px; color: #444;">
-                            <li>✓ Bütün Derslerde Yapay Zeka Desteği</li>
-                            <li>✓ 5.000+ Beceri Temelli Soru Bankası</li>
-                            <li>✓ Akıllı Kazanım Analizi ve Karne</li>
-                            <li>✓ Veli Takip Paneli Erişimi</li>
+                            <li>✓ Sınırsız AI Soru Fabrikası Test Üretimi</li>
+                            <li>✓ Gerçek LGS Deneme Simülasyonları</li>
+                            <li>✓ Bireysel Eğitim Koçu Ataması</li>
+                            <li>✓ Veli Takip Paneli + Detaylı Karne</li>
                         </ul>
                         <div class="fiyat-etiketi">44.900 TL</div>
                         <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 3.741 TL)</div>
                     </div>
                 """, unsafe_allow_html=True)
-                if st.button("Hemen Al (LGS Seti)", key="btn_lgs", use_container_width=True):
-                    st.success("Tebrikler! LGS Tam Set sepetinize eklendi.")
+                if st.button("Hemen Al (LGS VIP Set)", key="btn_lgs", use_container_width=True):
+                    st.success("Tebrikler! LGS VIP Tam Set sepetinize eklendi.")
 
         st.markdown("<br>", unsafe_allow_html=True)
         col4, col5, col6 = st.columns(3)
@@ -774,13 +778,13 @@ else:
             with col4:
                 st.markdown("""
                     <div class="paket-karti">
-                        <h4>🎯 YKS 2027 (TYT + AYT) Sayısal Set</h4>
-                        <p style="font-size: 13px; color: #555;">Üniversiteye hazırlanan sayısal öğrenciler için tam kapsamlı video ve akıllı koçluk seti.</p>
+                        <h4>🎯 YKS 2027 (TYT + AYT) Sayısal VIP Set</h4>
+                        <p style="font-size: 13px; color: #555;">Üniversite sınavında ilk bine oynamak isteyenler için özel video ve koçluk paketi.</p>
                         <hr style="margin: 10px 0;">
                         <ul style="font-size: 13px; padding-left: 15px; color: #444;">
-                            <li>✓ TYT ve AYT Tüm Matematik & Fen Dersleri</li>
-                            <li>✓ Nokta Atışı Soru Çözüm Stratejileri</li>
-                            <li>✓ Akıllı Koçluk ile Kişisel Program</li>
+                            <li>✓ TYT-AYT Tüm Konu Anlatım & Soru Bankası</li>
+                            <li>✓ Nokta Atışı Çıkmış Soru Analizleri</li>
+                            <li>✓ Akıllı Koç ile Haftalık Hedef Takibi</li>
                         </ul>
                         <div class="fiyat-etiketi">49.900 TL</div>
                         <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 4.158 TL)</div>
@@ -792,11 +796,11 @@ else:
             with col5:
                 st.markdown("""
                     <div class="paket-karti">
-                        <h4>💡 LGS 2027 Türkçe & Sözel Beceri Paketi</h4>
-                        <p style="font-size: 13px; color: #555;">Sözel mantık ve paragraf netlerini tavan yaptırmak isteyenler için özel koçluk paketi.</p>
+                        <h4>💡 LGS 2027 Sadece Türkçe & Sözel Kampı</h4>
+                        <p style="font-size: 13px; color: #555;">Sözel mantık ve paragraf netlerini garantiye almak isteyenler için hızlandırılmış paket.</p>
                         <hr style="margin: 10px 0;">
                         <ul style="font-size: 13px; padding-left: 15px; color: #444;">
-                            <li>✓ Sınırsız Paragraf ve Sözel Mantık Üretimi</li>
+                            <li>✓ Sınırsız Paragraf & Sözel Mantık Üretimi</li>
                             <li>✓ 2 Sütunlu LGS PDF & Word Çıktıları</li>
                             <li>✓ Şampiyonlar Liderlik Tablosu Erişimi</li>
                         </ul>
@@ -804,19 +808,19 @@ else:
                         <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 2.908 TL)</div>
                     </div>
                 """, unsafe_allow_html=True)
-                if st.button("Hemen Al (LGS Sözel)", key="btn_sozel", use_container_width=True):
-                    st.success("Tebrikler! LGS Sözel Paket sepetinize eklendi.")
+                if st.button("Hemen Al (Sözel Kamp)", key="btn_sozel", use_container_width=True):
+                    st.success("Tebrikler! Sözel Kamp Paketi sepetinize eklendi.")
 
             with col6:
                 st.markdown("""
                     <div class="paket-karti">
-                        <h4>🏆 8. Sınıf Hızlandırma & Deneme Paketi</h4>
-                        <p style="font-size: 13px; color: #555;">Sınava az kala eksiklerini hızla kapatmak ve tam deneme simülasyonu çözmek isteyenler için.</p>
+                        <h4>🏆 8. Sınıf Son Dönem Deneme & Hızlandırma</h4>
+                        <p style="font-size: 13px; color: #555;">Sınava az kala eksiklerini hızla kapatmak ve nokta atışı deneme çözmek isteyenler.</p>
                         <hr style="margin: 10px 0;">
                         <ul style="font-size: 13px; padding-left: 15px; color: #444;">
-                            <li>✓ Gerçek LGS Deneme Sınavları</li>
-                            <li>✓ Otomatik Net ve Puan Hesaplama</li>
-                            <li>✓ Kurumsal Redaksiyon Süzgecinden Geçmiş Sorular</li>
+                            <li>✓ 30 Adet Kurumsal LGS Deneme Sınavı</li>
+                            <li>✓ Otomatik Net, Puan ve Sıralama Analizi</li>
+                            <li>✓ Eksik Kapatma Nokta Atışı Testleri</li>
                         </ul>
                         <div class="fiyat-etiketi">24.900 TL</div>
                         <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 2.075 TL)</div>
@@ -970,3 +974,5 @@ else:
             st.write("1. Kesin bilgileri ele alın.\n2. Şema kurun.")
         with st.expander("📌 Paragraf Şifreleri"):
             st.write("1. Olumsuz soru köklerine dikkat edin.\n2. Son cümleye odaklanın.")
+
+```
