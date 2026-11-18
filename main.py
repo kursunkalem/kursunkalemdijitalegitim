@@ -10,7 +10,7 @@ from pypdf import PdfReader
 
 API_KEY = "AQ.Ab8RN6Ln16aqw1zeiFjrpBNsDE9rLkAwtjet6QfCfMam4Uzu6w"
 
-st.set_page_config(page_title="Kurşun Kalem Dijital Eğitim - Doping Hafıza & Soru Fabrikası", page_icon="🎯", layout="wide")
+st.set_page_config(page_title="Kurşun Kalem Dijital Eğitim - Geleceği Yazan Dijital Eğitim", page_icon="✏️", layout="wide")
 
 def kurumsal_logo_goster():
     st.markdown("""
@@ -18,7 +18,7 @@ def kurumsal_logo_goster():
             <div style="background: #e74c3c; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; font-weight: bold; border: 2px solid #f39c12;">✏️</div>
             <div>
                 <h2 style="color: white; margin: 0; font-size: 20px; font-family: sans-serif;">KURŞUN KALEM DİJİTAL EĞİTİM</h2>
-                <p style="color: #bdc3c7; margin: 0; font-size: 12px;">Türkiye Yüzyılı Maarif Modeli • Profesyonel Soru Fabrikası & Doping Hafıza Tarzı Akıllı Öğrenci Portalı</p>
+                <p style="color: #f1c40f; margin: 0; font-size: 13px; font-weight: 600;">Geleceği yazan dijital eğitim • Profesyonel Soru Fabrikası & Akıllı Öğrenci Portalı</p>
             </div>
         </div>
     """, unsafe_allow_html=True)
@@ -139,7 +139,7 @@ def save_arsiv(yeni_test):
 st.sidebar.title("🧭 Sistem Navigasyonu")
 ana_modul = st.sidebar.radio(
     "Çalışma Alanı Seçin:",
-    ["🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)", "🎓 Doping Tarzı Öğrenci & Akıllı Koç Portalı"]
+    ["🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)", "🎓 Öğrenci & Akıllı Koç Portalı"]
 )
 st.sidebar.markdown("---")
 
@@ -604,13 +604,45 @@ if ana_modul == "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)":
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
             )
 
-# --- DOPİNG HAFIZA TARZI ÖĞRENCİ VE AKILLI KOÇ PORTALI ---
+# --- KURŞUN KALEM ÖĞRENCİ VE AKILLI KOÇ PORTALI & PAKETLER VİTRİNİ ---
 else:
     kurumsal_logo_goster()
-    st.title("🎓 Kurşun Kalem - Doping Tarzı Akıllı Öğrenci ve Koçluk Portalı")
-    st.markdown("Öğrencilerin test çözebileceği, yapay zeka koçundan kişiselleştirilmiş yönlendirme alabileceği ve eksiklerini kapatabileceği akıllı sistem.")
+    
+    st.markdown("""
+        <style>
+        .paket-karti {
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            transition: transform 0.3s ease;
+        }
+        .paket-karti:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        .fiyat-etiketi {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-top: 10px;
+            margin-bottom: 5px;
+        }
+        .taksit-bilgisi {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+        }
+        </style>
+    """, unsafe_allow_html=True)
 
-    ogrenci_tab1, ogrenci_tab2, ogrenci_tab3, ogrenci_tab4, ogrenci_tab5 = st.tabs([
+    st.title("🎓 Kurşun Kalem - Öğrenci Sınav, Akıllı Koç ve Paket Vitrini")
+    st.markdown("🚀 *Geleceği yazan dijital eğitim* felsefesiyle; test çözebileceğiniz, yapay zeka koçundan rehberlik alabileceğiniz ve eğitim paketlerimizi inceleyebileceğiniz modül.")
+
+    ogrenci_tab1, ogrenci_tab2, ogrenci_tab3, ogrenci_tab4, ogrenci_tab5, ogrenci_tab6 = st.tabs([
+        "📦 Eğitim Paketlerimiz",
         "🎯 Günlük Test Çöz & Anında Çözüm",
         "🧠 Yapay Zeka Akıllı Koç",
         "📊 Kişisel Gelişim Karnem",
@@ -619,6 +651,78 @@ else:
     ])
 
     with ogrenci_tab1:
+        st.subheader("📦 Kurşun Kalem Dijital Eğitim Paketleri")
+        st.markdown("Öğrencinin hedeflediği sınıfa ve sınava en uygun, yapay zeka destekli akıllı paketlerimiz:")
+        
+        sinif_filtresi = st.radio(
+            "Eğitim Seviyesi Filtrele:",
+            ["Tümü", "LGS 2027", "8. Sınıf", "7. Sınıf", "6. Sınıf", "5. Sınıf"],
+            horizontal=True
+        )
+        st.markdown("---")
+
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            st.markdown("""
+                <div class="paket-karti">
+                    <h4>🎯 LGS 2027 Türkçe & Sözel Beceri Paketi</h4>
+                    <p style="font-size: 13px; color: #555;">LGS'de yeni nesil sözel mantık ve paragraf atlamak isteyenler için özel koçluk destekli paket.</p>
+                    <hr style="margin: 10px 0;">
+                    <ul style="font-size: 13px; padding-left: 15px; color: #444;">
+                        <li>✓ Bireysel Koçluk & Akıllı Takip</li>
+                        <li>✓ Sınırsız Yapay Zeka Soru Üretimi</li>
+                        <li>✓ Kişiselleştirilmiş Eksik Kapatma Testleri</li>
+                        <li>✓ 2 Sütunlu LGS PDF & Word Çıktıları</li>
+                        <li>✓ Şampiyonlar Liderlik Tablosu Erişimi</li>
+                    </ul>
+                    <div class="fiyat-etiketi">34.900 TL</div>
+                    <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 2.908 TL)</div>
+                </div>
+            """, unsafe_allow_html=True)
+            if st.button("Hemen Al (Paket 1)", key="btn_p1", use_container_width=True):
+                st.success("Tebrikler! LGS Sözel Paket sepetinize eklendi. Ödeme sayfasına yönlendiriliyorsunuz...")
+
+        with col2:
+            st.markdown("""
+                <div class="paket-karti">
+                    <h4>🚀 LGS 2027 Tüm Dersler Tam Set</h4>
+                    <p style="font-size: 13px; color: #555;">Türkçe, Matematik, Fen ve Tüm Sözel-Sayısal derslerde en tepeyi hedefleyenler için tam kapsamlı set.</p>
+                    <hr style="margin: 10px 0;">
+                    <ul style="font-size: 13px; padding-left: 15px; color: #444;">
+                        <li>✓ Bütün Derslerde Yapay Zeka Desteği</li>
+                        <li>✓ 5.000+ Beceri Temelli Soru Bankası</li>
+                        <li>✓ Akıllı Kazanım Analizi ve Karne</li>
+                        <li>✓ 7/24 AI Akıllı Koçluk Asistanı</li>
+                        <li>✓ Sınırsız Video / Strateji Rehberliği</li>
+                    </ul>
+                    <div class="fiyat-etiketi">44.900 TL</div>
+                    <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 3.741 TL)</div>
+                </div>
+            """, unsafe_allow_html=True)
+            if st.button("Hemen Al (Paket 2)", key="btn_p2", use_container_width=True):
+                st.success("Tebrikler! LGS Tam Set sepetinize eklendi. Ödeme sayfasına yönlendiriliyorsunuz...")
+
+        with col3:
+            st.markdown("""
+                <div class="paket-karti">
+                    <h4>💡 8. Sınıf Hızlandırma & Deneme Paketi</h4>
+                    <p style="font-size: 13px; color: #555;">Sınava az kala eksiklerini hızla kapatmak ve tam deneme simülasyonu çözmek isteyenler için.</p>
+                    <hr style="margin: 10px 0;">
+                    <ul style="font-size: 13px; padding-left: 15px; color: #444;">
+                        <li>✓ Gerçek LGS Süre Simülasyonu</li>
+                        <li>✓ Otomatik Net ve Puan Hesaplama</li>
+                        <li>✓ Nokta Atışı Eksik Kapatma Testleri</li>
+                        <li>✓ Kurumsal Redaksiyon Süzgecinden Geçmiş Sorular</li>
+                    </ul>
+                    <div class="fiyat-etiketi">24.900 TL</div>
+                    <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 2.075 TL)</div>
+                </div>
+            """, unsafe_allow_html=True)
+            if st.button("Hemen Al (Paket 3)", key="btn_p3", use_container_width=True):
+                st.success("Tebrikler! Deneme Paketi sepetinize eklendi. Ödeme sayfasına yönlendiriliyorsunuz...")
+
+    with ogrenci_tab2:
         st.subheader("🎯 İnteraktif Beceri Sınavı")
         arsiv_listesi = load_arsiv()
         if not arsiv_listesi:
@@ -658,11 +762,11 @@ else:
                     cevap_secimi = st.radio(
                         f"Seçim (Soru {idx}):",
                         [f"A) {soru.get('sik_a')}", f"B) {soru.get('sik_b')}", f"C) {soru.get('sik_c')}", f"D) {soru.get('sik_d')}"],
-                        key=f"doping_soru_{idx}",
+                        key=f"kurumsal_soru_{idx}",
                         index=None
                     )
 
-                    if st.button(f"Cevabı Kontrol Et (Soru {idx})", key=f"btn_doping_{idx}"):
+                    if st.button(f"Cevabı Kontrol Et (Soru {idx})", key=f"btn_kurumsal_{idx}"):
                         if cevap_secimi is None:
                             st.warning("Şık seçiniz.")
                         else:
@@ -678,8 +782,8 @@ else:
                             else:
                                 st.error(f"❌ Yanlış! Doğru seçenek: **{dogru_harf}**")
 
-    with ogrenci_tab2:
-        st.subheader("🧠 Doping Hafıza Tarzı Yapay Zeka Akıllı Koç")
+    with ogrenci_tab3:
+        st.subheader("🧠 Kurşun Kalem Yapay Zeka Akıllı Koç")
         st.markdown("Çözdüğün testlerin sonuçlarına göre eksiklerini analiz eden ve sana özel çalışma programı çıkaran akıllı koç asistanı.")
 
         ogrenci_mesaji = st.text_input("Koça sorunu yaz:", placeholder="Örn: Sözel mantık sorularında çok zaman kaybediyorum, ne yapmalıyım?")
@@ -691,7 +795,8 @@ else:
                     try:
                         client = genai.Client(api_key=API_KEY)
                         koc_prompt = (
-                            "Sen Doping Hafıza tarzı ultra akıllı, motive edici ve nokta atışı taktikler veren bir LGS Eğitim Koçusun. "
+                            "Sen Kurşun Kalem Dijital Eğitim'in 'Geleceği yazan dijital eğitim' felsefesine bağlı; "
+                            "ultra akıllı, motive edici ve nokta atışı taktikler veren LGS Eğitim Koçusun. "
                             "Öğrencinin yazdığı soruya veya sorununa karşılık; ona net, pratik ve taktiksel bir rehberlik sun."
                         )
                         resp = client.models.generate_content(
@@ -704,7 +809,7 @@ else:
                     except Exception as e:
                         st.error(f"Koç yanıt üretirken hata oluştu: {e}")
 
-    with ogrenci_tab3:
+    with ogrenci_tab4:
         st.subheader("📊 Kişisel Gelişim ve Başarı Karnem")
         conn = sqlite3.connect("okul.db")
         c = conn.cursor()
@@ -723,9 +828,9 @@ else:
         col4.metric("Başarı Oranı", f"%{basari}")
 
         st.markdown("---")
-        st.info("💡 **Doping Analiz Notu:** Sözel mantıkta hızlandın fakat paragraf hızını artırmak için günde 15 paragraf sorusu çözmelisin.")
+        st.info("💡 **Analiz Notu:** Sözel mantıkta hızlandın fakat paragraf hızını artırmak için günde 15 paragraf sorusu çözmelisin.")
 
-    with ogrenci_tab4:
+    with ogrenci_tab5:
         st.subheader("🏆 Şampiyonlar Ligi Liderlik Tablosu")
         conn = sqlite3.connect("okul.db")
         c = conn.cursor()
@@ -739,7 +844,7 @@ else:
             tablo.append({"Sıra": f"{madalya} {sira}", "Öğrenci": isim, "Puan": p, "Çözülen Soru": s})
         st.table(tablo)
 
-    with ogrenci_tab5:
+    with ogrenci_tab6:
         st.subheader("💡 Sınav Taktikleri ve Stratejiler")
         with st.expander("📌 Sözel Mantık Taktikleri"):
             st.write("1. Kesin bilgileri ele alın.\n2. Şema kurun.")
