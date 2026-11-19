@@ -1,12 +1,3 @@
-Gönderdiğin bu `main.py` kodunun üzerine;
-
-1. **En üstte sadece `"Ana Sayfa"**` olacak şekilde sayfa adını ve başlığını güncelledim (`"Ana Sayfa ve Geri Sayım"` ifadesini kaldırdım).
-2. **4 ana kategorili Veli Bilgilendirme, Duyuru ve Otomatik Mesaj Merkezi**ni (`render_parent_notification_center`) doğrudan **Veli Takip Paneli** içine entegre ettim.
-3. Mevcut tüm yapını (gömülü SVG/PNG logo, Okul Sırt Çantası sepeti ve callback'leri, 12 paket, Soru & Redaksiyon Fabrikası, Öğrenci Portalı & Mini Deneme, Dijimentor, B2B Lisans & Zümre Dağıtımı, iyzico simülatörü ve logolu DOCX indirmeleri) korudum.
-
-Aşağıdaki kodu doğrudan `main.py` dosyana yapıştırabilirsin:
-
-```python
 import base64
 import html
 import io
@@ -2797,5 +2788,3 @@ elif current_page == "Paketler & Abonelik Vitrini":
         monthly_price=active_bag_summary["monthly_price"],
         summary=active_bag_summary,
     )
-
-```
