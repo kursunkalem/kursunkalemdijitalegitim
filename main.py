@@ -1,4 +1,5 @@
 import base64
+import html
 import io
 import os
 import re
@@ -68,10 +69,48 @@ EMBEDDED_LOGO_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 
   </g>
 </svg>"""
 
+# Alışveriş Sepeti Mantığında Çalışan Okul Sırt Çantası Görseli (SVG)
+SCHOOL_BACKPACK_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 300" width="260" height="300">
+  <defs>
+    <linearGradient id="bagBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e3a8a"/>
+      <stop offset="60%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#7f1d1d"/>
+    </linearGradient>
+    <linearGradient id="bagPocket" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+    <linearGradient id="strapGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#334155"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+  </defs>
+  <!-- Taşıma askısı -->
+  <path d="M 98 56 Q 130 20 162 56" fill="none" stroke="#1e293b" stroke-width="10" stroke-linecap="round"/>
+  <!-- Omuz askıları -->
+  <path d="M 88 64 C 58 95, 54 165, 66 245" fill="none" stroke="url(#strapGrad)" stroke-width="16" stroke-linecap="round"/>
+  <path d="M 172 64 C 202 95, 206 165, 194 245" fill="none" stroke="url(#strapGrad)" stroke-width="16" stroke-linecap="round"/>
+  <!-- Ana sırt çantası gövdesi -->
+  <rect x="64" y="56" width="132" height="205" rx="34" fill="url(#bagBody)" stroke="#0f172a" stroke-width="4"/>
+  <!-- Üst kapak şeridi -->
+  <path d="M 68 92 Q 130 116 192 92 L 192 78 Q 130 56 68 78 Z" fill="#334155" opacity="0.55"/>
+  <!-- Ön cep (sepet gözü) -->
+  <rect x="80" y="138" width="100" height="98" rx="22" fill="url(#bagPocket)" stroke="#fef3c7" stroke-width="2.5"/>
+  <!-- Cep fermuar çizgisi -->
+  <path d="M 88 152 Q 130 166 172 152" fill="none" stroke="#0f172a" stroke-width="3" stroke-dasharray="6,4"/>
+  <!-- Cep üstündeki okul rozeti -->
+  <circle cx="130" cy="186" r="22" fill="#ffffff" stroke="#0f172a" stroke-width="2.5"/>
+  <text x="130" y="184" text-anchor="middle" font-family="Plus Jakarta Sans, Arial, sans-serif" font-size="9" font-weight="800" fill="#0f172a">ÇANTA</text>
+  <text x="130" y="196" text-anchor="middle" font-family="Plus Jakarta Sans, Arial, sans-serif" font-size="8" font-weight="700" fill="#881337">PAKETLER</text>
+  <!-- Alt taban güçlendirme -->
+  <rect x="72" y="242" width="116" height="20" rx="10" fill="#090d16"/>
+</svg>"""
 
-def get_embedded_logo_svg_data_uri() -> str:
-    """Gömülü SVG logoyu HTML img etiketinde kalıcı kullanmak için Data URI üretir."""
-    encoded = base64.b64encode(EMBEDDED_LOGO_SVG.encode("utf-8")).decode("ascii")
+
+def svg_to_data_uri(svg_str: str) -> str:
+    """SVG metnini güvenli Data URI formatına çevirir."""
+    encoded = base64.b64encode(svg_str.encode("utf-8")).decode("ascii")
     return f"data:image/svg+xml;base64,{encoded}"
 
 
@@ -93,11 +132,9 @@ def get_embedded_logo_png_bytes() -> Optional[bytes]:
         img = Image.new("RGBA", (size, size), (255, 255, 255, 255))
         draw = ImageDraw.Draw(img)
 
-        # Dış lacivert ve altın sarısı halkalar
         draw.ellipse([14, 14, size - 14, size - 14], outline=(15, 23, 42, 255), width=10)
         draw.arc([20, 20, size - 20, size - 20], start=290, end=75, fill=(212, 175, 55, 255), width=8)
 
-        # Açık kitap ve mezuniyet kepi formu
         draw.pieslice([68, 95, 252, 215], start=180, end=360, fill=(23, 44, 86, 255))
         draw.polygon(
             [(160, 56), (232, 88), (160, 120), (88, 88)],
@@ -106,11 +143,9 @@ def get_embedded_logo_png_bytes() -> Optional[bytes]:
         )
         draw.rectangle([122, 104, 198, 130], fill=(23, 44, 86, 255))
 
-        # Marka metinleri
         draw.text((160, 182), "DİJİTAL OKUL", fill=(11, 24, 54, 255), anchor="mm")
         draw.text((160, 206), "— KURŞUN KALEM —", fill=(127, 29, 29, 255), anchor="mm")
 
-        # Sağ altta sarı kurşun kalem vurgusu
         draw.line([(215, 252), (274, 206)], fill=(234, 179, 8, 255), width=12)
         draw.polygon([(274, 206), (284, 198), (281, 212)], fill=(15, 23, 42, 255))
 
@@ -429,7 +464,8 @@ CURRICULUM_TOPICS: Dict[str, Dict[str, List[str]]] = {
     },
 }
 
-LOGO_DATA_URI = get_embedded_logo_svg_data_uri()
+LOGO_DATA_URI = svg_to_data_uri(EMBEDDED_LOGO_SVG)
+BACKPACK_DATA_URI = svg_to_data_uri(SCHOOL_BACKPACK_SVG)
 LOGO_PNG_BYTES = get_embedded_logo_png_bytes()
 
 st.markdown(
@@ -612,6 +648,52 @@ st.markdown(
             box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07);
             border-color: #94a3b8;
         }
+        .kp-bag-shell {
+            background: linear-gradient(145deg, #fffbeb 0%, #ffffff 55%, #fff1f2 100%);
+            border: 1.5px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 1.2rem 1.35rem;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+        }
+        .kp-bag-visual {
+            position: relative;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 0.85rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 250px;
+        }
+        .kp-bag-visual img {
+            width: 150px;
+            height: 175px;
+            object-fit: contain;
+        }
+        .kp-bag-count-pill {
+            margin-top: 0.4rem;
+            background: #0f172a;
+            color: #fbbf24;
+            font-size: 0.78rem;
+            font-weight: 800;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            letter-spacing: 0.3px;
+        }
+        .kp-bag-item-chip {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-left: 4px solid #881337;
+            border-radius: 10px;
+            padding: 0.5rem 0.75rem;
+            margin-bottom: 0.45rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+        }
         .kp-metric-box {
             background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
             border: 1px solid #e2e8f0;
@@ -660,7 +742,7 @@ st.markdown(
 )
 
 # ==============================================================================
-# YARDIMCI FONKSİYONLAR: LOGO, API, GEMINI, SAYAÇ, KOTA VE DOCX
+# YARDIMCI FONKSİYONLAR: LOGO, ÇANTA SEPETİ, API, GEMINI, SAYAÇ, KOTA VE DOCX
 # ==============================================================================
 def attach_logo_to_doc(doc: Document, width_in: float = 1.15) -> None:
     """Mümkünse gömülü logoyu DOCX belgesinin üst kısmına ortalanmış olarak ekler."""
@@ -770,6 +852,149 @@ def record_activity(module_name: str, summary: str) -> None:
     st.session_state["activity_log"] = logs[:12]
 
 
+def get_tier_by_id(tier_id: str) -> Dict[str, Any]:
+    """Paket kimliğine göre abonelik paketi kaydını döndürür."""
+    return next((t for t in SUBSCRIPTION_TIERS if t["id"] == tier_id), SUBSCRIPTION_TIERS[1])
+
+
+def get_bag_items() -> Dict[str, int]:
+    """Okul sırt çantasındaki {tier_id: adet} eşleşmesini döndürür."""
+    raw_bag = st.session_state.get("backpack_cart")
+    if not isinstance(raw_bag, dict) or not raw_bag:
+        default_id = st.session_state.get("selected_tier_id", SUBSCRIPTION_TIERS[1]["id"])
+        st.session_state["backpack_cart"] = {default_id: 1}
+        return st.session_state["backpack_cart"]
+    return {k: int(v) for k, v in raw_bag.items() if int(v) > 0}
+
+
+def add_tier_to_bag(tier_id: str, qty: int = 1) -> None:
+    """Paketi okul sırt çantasına (sepete) ekler ve aktif seçimi günceller."""
+    bag = dict(get_bag_items())
+    bag[tier_id] = bag.get(tier_id, 0) + max(1, int(qty))
+    st.session_state["backpack_cart"] = bag
+    st.session_state["selected_tier_id"] = tier_id
+    sync_plan_quotas(get_bag_summary(), force_reset=True)
+
+
+def update_bag_qty(tier_id: str, delta: int) -> None:
+    """Çantadaki paketin adedini artırır veya azaltır; 0 olursa kaldırır."""
+    bag = dict(get_bag_items())
+    new_qty = bag.get(tier_id, 0) + delta
+    if new_qty <= 0:
+        bag.pop(tier_id, None)
+    else:
+        bag[tier_id] = new_qty
+    st.session_state["backpack_cart"] = bag
+    if bag:
+        st.session_state["selected_tier_id"] = next(iter(bag.keys()))
+    sync_plan_quotas(get_bag_summary(), force_reset=True)
+
+
+def clear_bag() -> None:
+    """Okul sırt çantasını boşaltır."""
+    st.session_state["backpack_cart"] = {}
+    sync_plan_quotas(get_bag_summary(), force_reset=True)
+
+
+def get_bag_summary() -> Dict[str, Any]:
+    """Okul sırt çantasındaki tüm paketlerin toplam fiyat, kota ve adedini hesaplar."""
+    bag = get_bag_items()
+    entries: List[Dict[str, Any]] = []
+    total_monthly_price = 0
+    total_monthly_quota = 0
+    total_coach_quota = 0
+    total_count = 0
+
+    for tid, qty in bag.items():
+        tier = get_tier_by_id(tid)
+        line_price = int(tier["monthly_price"]) * qty
+        line_quota = int(tier["monthly_quota"]) * qty
+        line_coach = int(tier["coach_quota"]) * qty
+
+        total_monthly_price += line_price
+        total_monthly_quota += line_quota
+        total_coach_quota += line_coach
+        total_count += qty
+
+        entries.append(
+            {
+                "tier": tier,
+                "qty": qty,
+                "line_price": line_price,
+                "line_quota": line_quota,
+                "line_coach": line_coach,
+            }
+        )
+
+    if entries:
+        title = (
+            entries[0]["tier"]["name"]
+            if len(entries) == 1
+            else f"Sırt Çantası ({total_count} Paket)"
+        )
+        segment = (
+            entries[0]["tier"]["segment"]
+            if len(entries) == 1
+            else "Karma / Çoklu Paket"
+        )
+        badge = entries[0]["tier"]["badge"] if len(entries) == 1 else f"{len(entries)} Çeşit"
+    else:
+        title = "Boş Çanta"
+        segment = "Seçim Bekleniyor"
+        badge = "0 Paket"
+
+    return {
+        "id": "backpack_bundle",
+        "name": title,
+        "segment": segment,
+        "badge": badge,
+        "monthly_price": total_monthly_price,
+        "monthly_quota": total_monthly_quota,
+        "coach_quota": total_coach_quota,
+        "total_count": total_count,
+        "entries": entries,
+        "features": [
+            f"Çantadaki {total_count} paket için toplam aylık {total_monthly_quota:,} soru kotası".replace(",", "."),
+            f"Toplam aylık {total_coach_quota} Dijimentor çalışma planı hakkı",
+            "Kurumsal logolu DOCX test, plan ve teklif çıktısı",
+        ],
+    }
+
+
+def sync_plan_quotas(summary: Dict[str, Any], force_reset: bool = False) -> None:
+    """Çantadaki toplam kotalara göre oturum kotalarını eşitler."""
+    sig = f"{summary['total_count']}:{summary['monthly_quota']}:{summary['coach_quota']}"
+    if force_reset or st.session_state.get("quota_tier_id") != sig:
+        st.session_state["quota_tier_id"] = sig
+        st.session_state["remaining_question_quota"] = int(summary["monthly_quota"])
+        st.session_state["remaining_coach_quota"] = int(summary["coach_quota"])
+
+
+def consume_quota(kind: str, amount: int = 1) -> Tuple[bool, str]:
+    """Soru ('question') veya mentorluk ('coach') kotasından kullanım düşer."""
+    summary = get_bag_summary()
+    sync_plan_quotas(summary, force_reset=False)
+
+    if kind == "question":
+        rem = int(st.session_state.get("remaining_question_quota", 0))
+        if rem < amount:
+            return False, (
+                f"Okul sırt çantanızda ({summary['name']}) yeterli soru üretim kotası kalmadı "
+                f"(Kalan: {rem}, İstenen: {amount}). Paketler vitrininden paket ekleyebilirsiniz."
+            )
+        st.session_state["remaining_question_quota"] = rem - amount
+        return True, ""
+
+    rem_c = int(st.session_state.get("remaining_coach_quota", 0))
+    if rem_c < amount:
+        return False, (
+            f"Okul sırt çantanızda ({summary['name']}) Dijimentor plan kotası doldu "
+            f"(Kalan: {rem_c}). Paketler vitrininden paket ekleyebilirsiniz."
+        )
+    st.session_state["remaining_coach_quota"] = rem_c - amount
+    return True, ""
+
+
 def extract_answer_key(raw_text: str) -> Dict[int, str]:
     """Metindeki 'Cevap Anahtarı' bölümünden {soru_no: 'A'|'B'|'C'|'D'} haritası çıkarır."""
     if not raw_text.strip():
@@ -839,44 +1064,6 @@ def parse_quiz_questions(raw_text: str) -> List[Dict[str, Any]]:
             )
 
     return parsed
-
-
-def get_tier_by_id(tier_id: str) -> Dict[str, Any]:
-    """Paket kimliğine göre abonelik paketi kaydını döndürür."""
-    return next((t for t in SUBSCRIPTION_TIERS if t["id"] == tier_id), SUBSCRIPTION_TIERS[1])
-
-
-def sync_plan_quotas(tier: Dict[str, Any], force_reset: bool = False) -> None:
-    """Aktif pakete göre soru ve mentorluk kotalarını eşitler."""
-    if force_reset or st.session_state.get("quota_tier_id") != tier["id"]:
-        st.session_state["quota_tier_id"] = tier["id"]
-        st.session_state["remaining_question_quota"] = int(tier["monthly_quota"])
-        st.session_state["remaining_coach_quota"] = int(tier["coach_quota"])
-
-
-def consume_quota(kind: str, amount: int = 1) -> Tuple[bool, str]:
-    """Soru ('question') veya mentorluk ('coach') kotasından kullanım düşer."""
-    active_tier = get_tier_by_id(st.session_state.selected_tier_id)
-    sync_plan_quotas(active_tier, force_reset=False)
-
-    if kind == "question":
-        rem = int(st.session_state.get("remaining_question_quota", 0))
-        if rem < amount:
-            return False, (
-                f"Aktif paketinizde ({active_tier['name']}) yeterli soru üretim kotası kalmadı "
-                f"(Kalan: {rem}, İstenen: {amount}). Paketler vitrininden paket yükseltebilirsiniz."
-            )
-        st.session_state["remaining_question_quota"] = rem - amount
-        return True, ""
-
-    rem_c = int(st.session_state.get("remaining_coach_quota", 0))
-    if rem_c < amount:
-        return False, (
-            f"Aktif paketinizde ({active_tier['name']}) Dijimentor plan kotası doldu "
-            f"(Kalan: {rem_c}). Paketler vitrininden paket yükseltebilirsiniz."
-        )
-    st.session_state["remaining_coach_quota"] = rem_c - amount
-    return True, ""
 
 
 def format_countdown(target: datetime) -> Tuple[int, int, int, int]:
@@ -1031,13 +1218,13 @@ def build_coach_docx(title_meta: str, plan_text: str) -> bytes:
 
 def build_commercial_brief_docx(
     title: str,
-    tier: Dict[str, Any],
+    summary: Dict[str, Any],
     billing_cycle: str,
     installment: int,
     total_amount: int,
     extra_notes: str,
 ) -> bytes:
-    """Kurumsal lisans veya abonelik özeti için DOCX teklif/bilgilendirme belgesi üretir."""
+    """Okul sırt çantasındaki paketler veya kurumsal lisans için DOCX teklif/özet belgesi üretir."""
     doc = Document()
     for section in doc.sections:
         section.top_margin = Inches(0.75)
@@ -1049,7 +1236,7 @@ def build_commercial_brief_docx(
 
     h = doc.add_paragraph()
     h.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r = h.add_run(f"{BRAND_NAME.upper()} — KURUMSAL LİSANS & ABONELİK ÖZETİ")
+    r = h.add_run(f"{BRAND_NAME.upper()} — OKUL SIRT ÇANTASI & ABONELİK ÖZETİ")
     r.bold = True
     r.font.size = Pt(14)
     r.font.color.rgb = RGBColor(15, 23, 42)
@@ -1060,27 +1247,35 @@ def build_commercial_brief_docx(
 
     doc.add_paragraph("─" * 78)
 
-    lines = [
-        f"Seçili Paket: {tier['name']} ({tier['segment']} • {tier['badge']})",
-        f"Aylık Liste Fiyatı: {tier['monthly_price']:,} ₺".replace(",", "."),
+    lines: List[str] = [
+        f"Çanta Durumu: {summary['name']} ({summary['total_count']} Adet Paket)",
+        f"Aylık Liste Toplamı: {summary['monthly_price']:,} ₺".replace(",", "."),
         f"Tercih Edilen Dönem: {billing_cycle}",
         f"iyzico Taksit Planı: {installment} Taksit",
         f"Hesaplanan Toplam Tutar: {total_amount:,} ₺".replace(",", "."),
-        f"Aylık Soru Üretim Kotası: {tier['monthly_quota']:,} Soru".replace(",", "."),
-        f"Dijimentor Plan Kotası: {tier['coach_quota']} Plan / Ay",
+        f"Toplam Aylık Soru Kotası: {summary['monthly_quota']:,} Soru".replace(",", "."),
+        f"Toplam Dijimentor Plan Kotası: {summary['coach_quota']} Plan / Ay",
         "",
-        "Paket Kapsamı:",
-    ] + [f"• {feat}" for feat in tier["features"]]
+        "Çantadaki Paketler:",
+    ]
+
+    for entry in summary.get("entries", []):
+        t = entry["tier"]
+        qty = entry["qty"]
+        lines.append(
+            f"• {t['name']} x{qty} ({t['segment']}) — {entry['line_price']:,} ₺/ay | "
+            f"{entry['line_quota']:,} soru/ay".replace(",", ".")
+        )
 
     if extra_notes.strip():
-        lines += ["", "Kurumsal / Ek Notlar:", extra_notes.strip()]
+        lines += ["", "Ek / Kurumsal Notlar:", extra_notes.strip()]
 
     for line in lines:
         p = doc.add_paragraph()
         p.paragraph_format.space_after = Pt(3.5)
         run = p.add_run(line)
         run.font.size = Pt(10.5)
-        if line.startswith(("Seçili Paket", "Paket Kapsamı", "Kurumsal / Ek Notlar")):
+        if line.startswith(("Çanta Durumu", "Çantadaki Paketler", "Ek / Kurumsal Notlar")):
             run.bold = True
             run.font.color.rgb = RGBColor(153, 27, 27)
 
@@ -1090,40 +1285,149 @@ def build_commercial_brief_docx(
     return buf.getvalue()
 
 
+def render_school_backpack_panel() -> Dict[str, Any]:
+    """Seçilen paketleri alışveriş sepeti gibi Okul Sırt Çantası görseli içinde gösterir ve yönetir."""
+    summary = get_bag_summary()
+    entries = summary["entries"]
+
+    st.markdown('<div class="kp-bag-shell">', unsafe_allow_html=True)
+    st.markdown("### 🎒 Okul Sırt Çantam (Seçili Paket Sepeti)")
+    st.caption(
+        "Vitrin veya paket kartlarından seçtiğiniz paketler okul sırt çantanızda toplanır; "
+        "adet güncelleyebilir, çıkarabilir veya çantadaki tüm paketler için iyzico ödemesi oluşturabilirsiniz."
+    )
+
+    v_col, list_col = st.columns([1.15, 2.25])
+
+    with v_col:
+        chips_html = ""
+        for entry in entries:
+            safe_name = html.escape(entry["tier"]["name"])
+            safe_qty = int(entry["qty"])
+            chips_html += (
+                f'<div style="background:#fef3c7;color:#0f172a;border:1px solid #f59e0b;'
+                f'border-radius:8px;padding:0.22rem 0.5rem;font-size:0.74rem;font-weight:700;'
+                f'margin-top:0.25rem;width:100%;text-align:center;">'
+                f'📘 {safe_name} (x{safe_qty})</div>'
+            )
+
+        if not chips_html:
+            chips_html = (
+                '<div style="color:#64748b;font-size:0.78rem;margin-top:0.35rem;text-align:center;">'
+                'Çanta şu an boş</div>'
+            )
+
+        st.markdown(
+            f"""
+            <div class="kp-bag-visual">
+                <img src="{BACKPACK_DATA_URI}" alt="Okul Sırt Çantası Sepeti"/>
+                <div class="kp-bag-count-pill">Çantada {summary['total_count']} Paket</div>
+                <div style="width:100%;margin-top:0.35rem;">{chips_html}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with list_col:
+        if not entries:
+            st.info(
+                "Okul sırt çantanız boş. Aşağıdaki paket kartlarından **Çantaya Ekle** butonuna "
+                "tıklayarak seçtiğiniz paketleri çantanın içine alabilirsiniz."
+            )
+        else:
+            for entry in entries:
+                t = entry["tier"]
+                qty = entry["qty"]
+                c_info, c_minus, c_plus, c_rem = st.columns([4.4, 0.85, 0.85, 1.1])
+                with c_info:
+                    st.markdown(
+                        f"""
+                        <div class="kp-bag-item-chip">
+                            <div>
+                                <b>{html.escape(t['name'])}</b>
+                                <span style="color:#64748b;font-size:0.78rem;"> • {html.escape(t['segment'])}</span><br>
+                                <span style="color:#475569;font-size:0.78rem;">
+                                    Adet: <b>{qty}</b> • Aylık Kota: <b>{entry['line_quota']:,}</b> Soru
+                                </span>
+                            </div>
+                            <div style="font-weight:800;color:#881337;white-space:nowrap;">
+                                {entry['line_price']:,} ₺/ay
+                            </div>
+                        </div>
+                        """.replace(",", "."),
+                        unsafe_allow_html=True,
+                    )
+                with c_minus:
+                    if st.button("−", key=f"bag_minus_{t['id']}", use_container_width=True):
+                        update_bag_qty(t["id"], -1)
+                        st.rerun()
+                with c_plus:
+                    if st.button("+", key=f"bag_plus_{t['id']}", use_container_width=True):
+                        update_bag_qty(t["id"], +1)
+                        st.rerun()
+                with c_rem:
+                    if st.button("Çıkar", key=f"bag_del_{t['id']}", use_container_width=True):
+                        update_bag_qty(t["id"], -qty)
+                        st.rerun()
+
+            m1, m2, m3 = st.columns(3)
+            m1.metric("Çanta Aylık Toplam", f"{summary['monthly_price']:,} ₺".replace(",", "."))
+            m2.metric("Toplam Aylık Soru", f"{summary['monthly_quota']:,}".replace(",", "."))
+            m3.metric("Toplam Dijimentor Plan", f"{summary['coach_quota']} / Ay")
+
+            if st.button("🗑️ Çantayı Boşalt", key="bag_clear_all"):
+                clear_bag()
+                record_activity("Sırt Çantası", "Çantadaki paketler temizlendi")
+                st.rerun()
+
+    st.markdown("</div>", unsafe_allow_html=True)
+    return summary
+
+
 def render_iyzico_simulator(
     package_name: str,
     monthly_price: int,
-    tier_id: Optional[str] = None,
+    summary: Optional[Dict[str, Any]] = None,
 ) -> None:
     """iyzico taksit ve ödeme simülatörü."""
+    bag_summary = summary if summary is not None else get_bag_summary()
+    effective_monthly = (
+        int(bag_summary["monthly_price"]) if bag_summary["total_count"] > 0 else int(monthly_price)
+    )
+    display_label = (
+        f"{package_name} ({bag_summary['total_count']} Paket)"
+        if bag_summary["total_count"] > 0
+        else package_name
+    )
+
     st.markdown("### 💳 iyzico Taksit & Ödeme Simülatörü")
     c1, c2, c3 = st.columns(3)
     with c1:
         billing_cycle = st.selectbox(
             "Dönem Seçimi",
             ["Aylık Abonelik", "3 Aylık (%10 İndirim)", "Yıllık (%20 İndirim)"],
-            key=f"cycle_{package_name}",
+            key=f"cycle_{display_label}",
         )
     with c2:
         installment = st.selectbox(
             "Taksit Sayısı (iyzico)",
             [1, 2, 3, 6, 9, 12],
             index=2,
-            key=f"inst_{package_name}",
+            key=f"inst_{display_label}",
         )
     with c3:
         card_brand = st.selectbox(
             "Kart Programı",
             ["Bonus", "Maximum", "World", "Axess", "Paraf", "Diğer Banka Kartı"],
-            key=f"card_{package_name}",
+            key=f"card_{display_label}",
         )
 
     if "3 Aylık" in billing_cycle:
-        total_amount = round(monthly_price * 3 * 0.90)
+        total_amount = round(effective_monthly * 3 * 0.90)
     elif "Yıllık" in billing_cycle:
-        total_amount = round(monthly_price * 12 * 0.80)
+        total_amount = round(effective_monthly * 12 * 0.80)
     else:
-        total_amount = monthly_price
+        total_amount = effective_monthly
 
     monthly_installment = total_amount / installment
 
@@ -1134,25 +1438,21 @@ def render_iyzico_simulator(
 
     btn_c1, btn_c2 = st.columns([2, 1])
     with btn_c1:
-        if st.button("iyzico Ödeme Talebi Oluştur (Simülasyon)", key=f"pay_btn_{package_name}"):
-            target_tier = get_tier_by_id(tier_id) if tier_id else next(
-                (t for t in SUBSCRIPTION_TIERS if t["name"] == package_name), SUBSCRIPTION_TIERS[1]
+        if st.button("iyzico Ödeme Talebi Oluştur (Simülasyon)", key=f"pay_btn_{display_label}"):
+            sync_plan_quotas(bag_summary, force_reset=True)
+            record_activity(
+                "iyzico Ödeme",
+                f"{display_label} ({total_amount:,} ₺) aktiflendi".replace(",", "."),
             )
-            st.session_state.selected_tier_id = target_tier["id"]
-            sync_plan_quotas(target_tier, force_reset=True)
-            record_activity("iyzico Ödeme", f"{package_name} ({total_amount:,} ₺) aktiflendi".replace(",", "."))
             st.success(
-                f"**{package_name}** paketi için **{total_amount:,} ₺** ({installment} taksit, "
-                f"{card_brand}) tutarında iyzico ödeme oturumu hazırlandı ve paket kotası "
-                f"({target_tier['monthly_quota']:,} soru) aktifleşti.".replace(",", ".")
+                f"**{display_label}** için **{total_amount:,} ₺** ({installment} taksit, "
+                f"{card_brand}) tutarında iyzico ödeme oturumu hazırlandı ve toplam kota "
+                f"({bag_summary['monthly_quota']:,} soru) aktifleşti.".replace(",", ".")
             )
     with btn_c2:
-        target_tier = get_tier_by_id(tier_id) if tier_id else next(
-            (t for t in SUBSCRIPTION_TIERS if t["name"] == package_name), SUBSCRIPTION_TIERS[1]
-        )
         brief_docx = build_commercial_brief_docx(
-            title=f"{package_name} Özeti",
-            tier=target_tier,
+            title=f"{display_label} Özeti",
+            summary=bag_summary,
             billing_cycle=billing_cycle,
             installment=int(installment),
             total_amount=int(total_amount),
@@ -1161,9 +1461,9 @@ def render_iyzico_simulator(
         st.download_button(
             label="📥 Teklif / Özet DOCX",
             data=brief_docx,
-            file_name=f"kursun_kalem_{target_tier['id']}_ozet.docx",
+            file_name="kursun_kalem_sirt_cantasi_ozet.docx",
             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            key=f"dl_brief_{package_name}",
+            key=f"dl_brief_{display_label}",
         )
 
 
@@ -1178,6 +1478,8 @@ if "dijimentor_plan" not in st.session_state:
     st.session_state.dijimentor_plan = ""
 if "selected_tier_id" not in st.session_state:
     st.session_state.selected_tier_id = SUBSCRIPTION_TIERS[1]["id"]
+if "backpack_cart" not in st.session_state:
+    st.session_state.backpack_cart = {SUBSCRIPTION_TIERS[1]["id"]: 1}
 if "live_tick" not in st.session_state:
     st.session_state.live_tick = False
 if "portal_question_draft" not in st.session_state:
@@ -1190,12 +1492,12 @@ if "activity_log" not in st.session_state:
         {"time": "10:42:18", "module": "Dijimentor", "summary": "Haftalık çeldirici & tempo analizi aktif"},
     ]
 
-sync_plan_quotas(get_tier_by_id(st.session_state.selected_tier_id), force_reset=False)
+bag_summary_global = get_bag_summary()
+sync_plan_quotas(bag_summary_global, force_reset=False)
 api_key_ready = resolve_gemini_api_key() is not None
-active_tier_global = get_tier_by_id(st.session_state.selected_tier_id)
 
 # ==============================================================================
-# KENAR ÇUBUĞU (KALICI LOGO + CUSTOM BUTTON NAVİGASYON + KOTA ÖZETİ)
+# KENAR ÇUBUĞU (KALICI LOGO + CUSTOM BUTTON NAVİGASYON + ÇANTA & KOTA ÖZETİ)
 # ==============================================================================
 with st.sidebar:
     st.markdown(
@@ -1230,7 +1532,8 @@ with st.sidebar:
     for p_name in PAGES:
         is_current = st.session_state.active_page == p_name
         btn_type = "primary" if is_current else "secondary"
-        label = f"{page_icons.get(p_name, '•')} {p_name}"
+        suffix = f" ({bag_summary_global['total_count']})" if p_name == "Paketler & Abonelik Vitrini" else ""
+        label = f"{page_icons.get(p_name, '•')} {p_name}{suffix}"
         if st.button(label, key=f"nav_{p_name}", type=btn_type):
             st.session_state.active_page = p_name
             st.rerun()
@@ -1239,11 +1542,13 @@ with st.sidebar:
     st.markdown(
         f"""
         <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:0.7rem 0.85rem;margin-bottom:0.75rem;">
-            <div style="font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;">Aktif Paket</div>
-            <div style="font-size:0.88rem;font-weight:700;color:#0f172a;margin-top:0.1rem;">{active_tier_global['name']}</div>
+            <div style="font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;">🎒 Okul Sırt Çantası</div>
+            <div style="font-size:0.88rem;font-weight:700;color:#0f172a;margin-top:0.1rem;">
+                {bag_summary_global['total_count']} Paket • {bag_summary_global['monthly_price']:,} ₺/ay
+            </div>
             <div style="font-size:0.78rem;color:#475569;margin-top:0.25rem;">
-                Soru Kotası: <b>{int(st.session_state.remaining_question_quota):,}</b>/{active_tier_global['monthly_quota']:,}<br>
-                Dijimentor Plan: <b>{int(st.session_state.remaining_coach_quota)}</b>/{active_tier_global['coach_quota']}
+                Soru Kotası: <b>{int(st.session_state.remaining_question_quota):,}</b>/{bag_summary_global['monthly_quota']:,}<br>
+                Dijimentor Plan: <b>{int(st.session_state.remaining_coach_quota)}</b>/{bag_summary_global['coach_quota']}
             </div>
         </div>
         """.replace(",", "."),
@@ -2019,9 +2324,25 @@ elif current_page == "B2B Lisans & Kurum":
 
         if st.session_state.get("last_b2b_summary"):
             b2b_tier = get_tier_by_id("b2b_kurs" if student_seats <= 300 else "b2b_kampus")
+            b2b_summary = {
+                "name": b2b_tier["name"],
+                "total_count": 1,
+                "monthly_price": b2b_tier["monthly_price"],
+                "monthly_quota": b2b_tier["monthly_quota"],
+                "coach_quota": b2b_tier["coach_quota"],
+                "entries": [
+                    {
+                        "tier": b2b_tier,
+                        "qty": 1,
+                        "line_price": b2b_tier["monthly_price"],
+                        "line_quota": b2b_tier["monthly_quota"],
+                        "line_coach": b2b_tier["coach_quota"],
+                    }
+                ],
+            }
             b2b_docx = build_commercial_brief_docx(
                 title=f"{org_name or 'Kurumsal'} Lisans Teklif Özeti",
-                tier=b2b_tier,
+                summary=b2b_summary,
                 billing_cycle="Yıllık (%20 İndirim)",
                 installment=6,
                 total_amount=round(b2b_tier["monthly_price"] * 12 * 0.80),
@@ -2080,12 +2401,19 @@ elif current_page == "B2B Lisans & Kurum":
             st.bar_chart(chart_map, height=225)
 
 # ==============================================================================
-# 7. PAKETLER & ABONELİK VİTRİNİ (12 PAKET, KARŞILAŞTIRMA MATRİSİ & IYZICO)
+# 7. PAKETLER & ABONELİK VİTRİNİ (OKUL SIRT ÇANTASI SEPETİ, 12 PAKET & IYZICO)
 # ==============================================================================
 elif current_page == "Paketler & Abonelik Vitrini":
     st.subheader("💎 Paketler & Abonelik Vitrini (12 Paket)")
-    st.write("İhtiyacınıza uygun öğrenci, YKS, veli veya kurumsal paketi seçin ve iyzico taksitlerini inceleyin.")
+    st.write(
+        "Seçtiğiniz paketler alışveriş sepeti gibi **Okul Sırt Çantası** görselinin içine eklenir; "
+        "birden fazla paket toplayabilir, adet ayarlayabilir ve iyzico taksitlerini inceleyebilirsiniz."
+    )
 
+    current_bag = get_bag_items()
+    active_bag_summary = render_school_backpack_panel()
+
+    st.markdown("---")
     selected_segment = st.segmented_control(
         "Segment Filtresi",
         options=["Tümü", "Öğrenci", "YKS", "Veli", "Kurum / B2B"],
@@ -2102,11 +2430,13 @@ elif current_page == "Paketler & Abonelik Vitrini":
         cols = st.columns(3)
         for idx, tier in enumerate(filtered_tiers[row_start : row_start + 3]):
             with cols[idx]:
+                in_bag_qty = current_bag.get(tier["id"], 0)
+                bag_tag = f" • 🎒 Çantada: {in_bag_qty}" if in_bag_qty > 0 else ""
                 st.markdown(
                     f"""
                     <div class="kp-card">
                         <div style="font-size:0.78rem;color:#64748b;font-weight:600;">
-                            {tier["segment"].upper()} • {tier["badge"]}
+                            {tier["segment"].upper()} • {tier["badge"]}{bag_tag}
                         </div>
                         <h4 style="margin:0.25rem 0;">{tier["name"]}</h4>
                         <div style="font-size:1.35rem;font-weight:700;color:#7f1d1d;margin-bottom:0.4rem;">
@@ -2119,11 +2449,10 @@ elif current_page == "Paketler & Abonelik Vitrini":
                 )
                 for feat in tier["features"]:
                     st.markdown(f"- {feat}")
-                if st.button("Paketi Seç", key=f"select_{tier['id']}"):
-                    st.session_state.selected_tier_id = tier["id"]
-                    sync_plan_quotas(tier, force_reset=True)
-                    record_activity("Abonelik", f"{tier['name']} paketi aktifleşti")
-                    st.toast(f"{tier['name']} seçildi ve kotası güncellendi.")
+                if st.button("🎒 Çantaya Ekle", key=f"select_{tier['id']}", use_container_width=True):
+                    add_tier_to_bag(tier["id"], 1)
+                    record_activity("Sırt Çantası", f"{tier['name']} çantaya eklendi")
+                    st.rerun()
 
     st.markdown("---")
     st.markdown("### 📊 12 Paket Karşılaştırma Matrisi")
@@ -2132,6 +2461,7 @@ elif current_page == "Paketler & Abonelik Vitrini":
             "Paket Adı": t["name"],
             "Segment": t["segment"],
             "Etiket": t["badge"],
+            "Çantadaki Adet": current_bag.get(t["id"], 0),
             "Aylık Soru Kotası": f"{t['monthly_quota']:,}".replace(",", "."),
             "Aylık Ücret (₺)": f"{t['monthly_price']:,}".replace(",", "."),
             "Öne Çıkan Kapsam": t["features"][0],
@@ -2141,15 +2471,8 @@ elif current_page == "Paketler & Abonelik Vitrini":
     st.dataframe(matrix_rows, use_container_width=True, hide_index=True)
 
     st.markdown("---")
-    chosen_tier = get_tier_by_id(st.session_state.selected_tier_id)
-    chosen_name = st.selectbox(
-        "Simülasyon İçin Paket Seçin",
-        options=[t["name"] for t in SUBSCRIPTION_TIERS],
-        index=[t["name"] for t in SUBSCRIPTION_TIERS].index(chosen_tier["name"]),
-    )
-    active_tier = next(t for t in SUBSCRIPTION_TIERS if t["name"] == chosen_name)
     render_iyzico_simulator(
-        active_tier["name"],
-        active_tier["monthly_price"],
-        active_tier["id"],
+        package_name=active_bag_summary["name"],
+        monthly_price=active_bag_summary["monthly_price"],
+        summary=active_bag_summary,
     )
