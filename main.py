@@ -979,7 +979,7 @@ elif ana_modul == "🏢 B2B Lisans & Kurum Yönetimi":
         if st.button("Öğretmenleri Listele"):
             st.json(["Uğur Hoca (Matematik)", "Adil Hoca (Türkçe)", "Zeynep Hoca (Fen Bilimleri)"])
 
-# --- PAKETLER & ABONELİK VİTRİNİ ---
+# --- PAKETLER & ABONELİK VİTRİNİ (12 PAKET + KARŞILAŞTIRMA + İYZİCO) ---
 elif ana_modul == "💎 Paketler & Abonelik Vitrini":
     kurumsal_logo_goster()
 
@@ -989,11 +989,11 @@ elif ana_modul == "💎 Paketler & Abonelik Vitrini":
             background-color: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: 14px;
-            padding: 22px;
+            padding: 20px;
             box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
             margin-bottom: 14px;
             transition: all 0.25s ease;
-            min-height: 410px;
+            min-height: 415px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -1009,10 +1009,15 @@ elif ana_modul == "💎 Paketler & Abonelik Vitrini":
             background: linear-gradient(180deg, #fffbeb 0%, #ffffff 28%);
             box-shadow: 0 8px 22px rgba(243, 156, 18, 0.16);
         }
+        .paket-karti.vip {
+            border: 2px solid #2c3e50;
+            background: linear-gradient(180deg, #f1f5f9 0%, #ffffff 28%);
+            box-shadow: 0 8px 22px rgba(44, 62, 80, 0.14);
+        }
         .rozet {
             position: absolute;
             top: -12px;
-            right: 18px;
+            right: 16px;
             background: linear-gradient(135deg, #e67e22, #f39c12);
             color: #ffffff;
             font-size: 11px;
@@ -1022,44 +1027,47 @@ elif ana_modul == "💎 Paketler & Abonelik Vitrini":
             letter-spacing: 0.4px;
             box-shadow: 0 2px 6px rgba(230, 126, 34, 0.35);
         }
+        .rozet.koyu {
+            background: linear-gradient(135deg, #1e293b, #334155);
+        }
         .paket-baslik {
-            font-size: 17px;
+            font-size: 16.5px;
             font-weight: 800;
             color: #1e293b;
             margin-bottom: 6px;
         }
         .paket-aciklama {
-            font-size: 13px;
+            font-size: 12.8px;
             color: #64748b;
             line-height: 1.45;
-            min-height: 40px;
+            min-height: 42px;
         }
         .paket-liste {
-            font-size: 13px;
+            font-size: 12.8px;
             padding-left: 0;
             list-style: none;
             color: #334155;
-            margin: 12px 0;
-            line-height: 1.75;
+            margin: 10px 0;
+            line-height: 1.72;
         }
         .fiyat-etiketi {
-            font-size: 25px;
+            font-size: 24px;
             font-weight: 800;
             color: #1e293b;
-            margin-top: 8px;
+            margin-top: 6px;
         }
         .taksit-bilgisi {
-            font-size: 12px;
+            font-size: 11.8px;
             color: #64748b;
         }
         .kategori-baslik {
             background: #f1f5f9;
             border-left: 4px solid #2c3e50;
-            padding: 8px 14px;
+            padding: 9px 14px;
             border-radius: 6px;
             font-weight: 700;
             color: #1e293b;
-            margin: 18px 0 16px 0;
+            margin: 22px 0 16px 0;
             font-size: 15px;
         }
         .odeme-kutu {
@@ -1073,37 +1081,67 @@ elif ana_modul == "💎 Paketler & Abonelik Vitrini":
     """, unsafe_allow_html=True)
 
     st.title("💎 Kurşun Kalem - Eğitim Paketleri ve Abonelik Vitrini")
-    st.markdown("🚀 *Geleceği yazan dijital eğitim* ekosistemiyle; öğrenciler, öğretmenler, yazarlar ve eğitim kurumları için kapsamlı çözümlerimiz.")
+    st.markdown("🚀 *Geleceği yazan dijital eğitim* ekosistemiyle; ilkokuldan YKS'ye, deneme kulüplerinden yayınevi ve okul çözümlerine kadar 12 farklı uzmanlık paketi.")
 
     paket_fiyatlari = {
-        "Ara Sınıf Gelişim Paketi (5-6-7. Sınıf)": 24900,
+        "İlkokul (1-4. Sınıf) Temel Beceri & Okuma Paketi": 16900,
+        "Ortaokul Ara Sınıf (5-6-7. Sınıf) Gelişim Paketi": 24900,
+        "LGS 2027 Türkiye Geneli Online Deneme Kulübü (24 Deneme)": 11900,
         "LGS 2027 Türkçe & Sözel Beceri Paketi": 34900,
+        "LGS 2027 Sayısal (Matematik & Fen) Güçlendirme Paketi": 36900,
         "LGS 2027 Tüm Dersler VIP Tam Set": 44900,
-        "YKS 2027 (TYT - AYT) Akıllı Hazırlık": 49900,
-        "Yazar & Öğretmen Stüdyosu Pro": 14900,
+        "LGS 2027 Derece & Birebir Koçluk Ultra Paketi": 58900,
+        "YKS 2027 TYT Temel Yeterlilik Hız Paketi": 32900,
+        "YKS 2027 (TYT - AYT) Tam Kapsamlı Hazırlık Seti": 49900,
+        "Bağımsız Öğretmen & Yazar Stüdyosu Pro": 14900,
+        "Yayınevi & Soru Bankası Üretim Fabrikası (Enterprise)": 39900,
         "Kurumsal Okul & Kurs Lisansı (B2B)": 59900
     }
 
     def paket_sec(paket_adi):
         st.session_state["secili_paket"] = paket_adi
 
-    # --- BÖLÜM 1: BİREYSEL ÖĞRENCİ & SINAV HAZIRLIK PAKETLERİ ---
-    st.markdown('<div class="kategori-baslik">🎓 Bireysel Öğrenci & Sınav Hazırlık Paketleri</div>', unsafe_allow_html=True)
-    col1, col2, col3 = st.columns(3)
+    # --- KATEGORİ 1: İLKOKUL, ORTAOKUL ARA SINIF & DENEME KULÜBÜ ---
+    st.markdown('<div class="kategori-baslik">🌱 İlkokul, Ortaokul Ara Sınıf & Deneme Kulübü Paketleri</div>', unsafe_allow_html=True)
+    c1, c2, c3 = st.columns(3)
 
-    with col1:
+    with c1:
         st.markdown("""
             <div class="paket-karti">
                 <div>
-                    <div class="paket-baslik">🌱 Ara Sınıf Gelişim Paketi (5-6-7. Sınıf)</div>
-                    <div class="paket-aciklama">Ortaokul temellerini sağlamlaştıran, Maarif Modeli uyumlu akıllı takip ve soru paketi.</div>
+                    <div class="paket-baslik">🎈 İlkokul (1-4. Sınıf) Temel Beceri Paketi</div>
+                    <div class="paket-aciklama">Okuduğunu anlama, dikkat geliştirme ve temel mantık-muhakeme alışkanlığı kazandıran başlangıç paketi.</div>
+                    <hr style="margin: 10px 0; border-color: #e2e8f0;">
+                    <ul class="paket-liste">
+                        <li>✓ Seviyeye Uygun Hikâye & Paragraf Etkinlikleri</li>
+                        <li>✓ Görsel Zekâ ve Akıl Oyunları Soruları</li>
+                        <li>✓ Oyunlaştırılmış Puan & Rozet Sistemi</li>
+                        <li>✓ Veli Haftalık Gelişim Bilgilendirmesi</li>
+                        <li>✓ Maarif Modeli Temel Değerler İçerikleri</li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="fiyat-etiketi">16.900 TL</div>
+                    <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 1.408 TL)</div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+        if st.button("Hemen Başla (İlkokul)", key="btn_ilk", use_container_width=True):
+            paket_sec("İlkokul (1-4. Sınıf) Temel Beceri & Okuma Paketi")
+
+    with c2:
+        st.markdown("""
+            <div class="paket-karti">
+                <div>
+                    <div class="paket-baslik">🌿 Ara Sınıf (5-6-7. Sınıf) Gelişim Paketi</div>
+                    <div class="paket-aciklama">Ortaokul temellerini sağlamlaştıran, LGS'ye erken ve stressiz hazırlık sağlayan kapsamlı takip paketi.</div>
                     <hr style="margin: 10px 0; border-color: #e2e8f0;">
                     <ul class="paket-liste">
                         <li>✓ Tüm Derslerde Beceri Temelli Soru Havuzu</li>
                         <li>✓ Haftalık Kazanım & Konu Tarama Testleri</li>
                         <li>✓ Yapay Zeka Eksik Analiz Karnesi</li>
-                        <li>✓ Veli Takip Paneli Anlık Bildirim</li>
-                        <li>✓ Şampiyonlar Liderlik Tablosu</li>
+                        <li>✓ Veli Takip Paneli Anlık Raporlama</li>
+                        <li>✓ Şampiyonlar Liderlik Tablosu Erişimi</li>
                     </ul>
                 </div>
                 <div>
@@ -1112,21 +1150,49 @@ elif ana_modul == "💎 Paketler & Abonelik Vitrini":
                 </div>
             </div>
         """, unsafe_allow_html=True)
-        if st.button("Hemen Başla (Ara Sınıf)", key="btn_p_ara", use_container_width=True):
-            paket_sec("Ara Sınıf Gelişim Paketi (5-6-7. Sınıf)")
+        if st.button("Hemen Başla (Ara Sınıf)", key="btn_ara", use_container_width=True):
+            paket_sec("Ortaokul Ara Sınıf (5-6-7. Sınıf) Gelişim Paketi")
 
-    with col2:
+    with c3:
         st.markdown("""
             <div class="paket-karti">
                 <div>
-                    <div class="paket-baslik">🎯 LGS 2027 Türkçe & Sözel Beceri Paketi</div>
-                    <div class="paket-aciklama">Yeni nesil sözel mantık, görsel yorumlama ve paragrafta hız kazanmak isteyenler için özel paket.</div>
+                    <div class="paket-baslik">📝 LGS 2027 Türkiye Geneli Deneme Kulübü</div>
+                    <div class="paket-aciklama">Gerçek sınav provası yapmak ve Türkiye sıralamasını anlık görmek isteyenler için 24'lü deneme maratonu.</div>
                     <hr style="margin: 10px 0; border-color: #e2e8f0;">
                     <ul class="paket-liste">
-                        <li>✓ Bireysel Koçluk & Akıllı Takip</li>
+                        <li>✓ 24 Adet Türkiye Geneli Online LGS Denemesi</li>
+                        <li>✓ MEB & Maarif Modeli Birebir Soru Kurgu</li>
+                        <li>✓ Detaylı Kazanım & Konu Eksik Karnesi</li>
+                        <li>✓ Yüzdelik Dilim & İl/İlçe Sıralama Analizi</li>
+                        <li>✓ İndirilebilir 2 Sütunlu PDF/Word Kitapçık</li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="fiyat-etiketi">11.900 TL</div>
+                    <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 991 TL)</div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+        if st.button("Deneme Kulübüne Katıl", key="btn_deneme", use_container_width=True):
+            paket_sec("LGS 2027 Türkiye Geneli Online Deneme Kulübü (24 Deneme)")
+
+    # --- KATEGORİ 2: LGS 2027 BRANŞ & TAM KAPSAMLI HAZIRLIK PAKETLERİ ---
+    st.markdown('<div class="kategori-baslik">🎯 LGS 2027 Branş & Tam Kapsamlı Hazırlık Paketleri</div>', unsafe_allow_html=True)
+    c4, c5, c6 = st.columns(3)
+
+    with c4:
+        st.markdown("""
+            <div class="paket-karti">
+                <div>
+                    <div class="paket-baslik">📖 LGS 2027 Türkçe & Sözel Beceri Paketi</div>
+                    <div class="paket-aciklama">Sözel mantık, görsel yorumlama ve uzun paragraf sorularında tam isabet hedefleyenler için özel paket.</div>
+                    <hr style="margin: 10px 0; border-color: #e2e8f0;">
+                    <ul class="paket-liste">
                         <li>✓ Sınırsız Özgün Sözel Mantık Soru Üretimi</li>
-                        <li>✓ Kişiselleştirilmiş Eksik Kapatma Testleri</li>
-                        <li>✓ 2 Sütunlu LGS PDF & Word Çıktıları</li>
+                        <li>✓ Kişiselleştirilmiş Paragraf Hız Kampı</li>
+                        <li>✓ İnkılap, Din ve İngilizce Beceri Testleri</li>
+                        <li>✓ 2 Sütunlu LGS Word (.docx) Test Çıktısı</li>
                         <li>✓ 7/24 AI Sözel Strateji Asistanı</li>
                     </ul>
                 </div>
@@ -1136,23 +1202,47 @@ elif ana_modul == "💎 Paketler & Abonelik Vitrini":
                 </div>
             </div>
         """, unsafe_allow_html=True)
-        if st.button("Hemen Al (LGS Sözel)", key="btn_p1", use_container_width=True):
+        if st.button("Hemen Al (LGS Sözel)", key="btn_lgs_soz", use_container_width=True):
             paket_sec("LGS 2027 Türkçe & Sözel Beceri Paketi")
 
-    with col3:
+    with c5:
+        st.markdown("""
+            <div class="paket-karti">
+                <div>
+                    <div class="paket-baslik">📐 LGS 2027 Sayısal Güçlendirme Paketi</div>
+                    <div class="paket-aciklama">Matematik ve Fen Bilimlerinde yeni nesil problem çözme ve veri analizi becerisini zirveye taşıyan paket.</div>
+                    <hr style="margin: 10px 0; border-color: #e2e8f0;">
+                    <ul class="paket-liste">
+                        <li>✓ Yeni Nesil Matematik & Fen Soru Fabrikası</li>
+                        <li>✓ Adım Adım Görsel & Tablo Yorumlama</li>
+                        <li>✓ Kişisel Hata Defteri & Tekrar Testleri</li>
+                        <li>✓ Kazanım Bazlı Eksik Kapatma Modülü</li>
+                        <li>✓ 7/24 AI Sayısal Taktik Koçu</li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="fiyat-etiketi">36.900 TL</div>
+                    <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 3.075 TL)</div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+        if st.button("Hemen Al (LGS Sayısal)", key="btn_lgs_say", use_container_width=True):
+            paket_sec("LGS 2027 Sayısal (Matematik & Fen) Güçlendirme Paketi")
+
+    with c6:
         st.markdown("""
             <div class="paket-karti populer">
                 <div class="rozet">⭐ EN ÇOK TERCİH EDİLEN</div>
                 <div>
                     <div class="paket-baslik">🚀 LGS 2027 Tüm Dersler VIP Tam Set</div>
-                    <div class="paket-aciklama">Türkçe, Matematik, Fen ve tüm branşlarda Türkiye derecesi hedefleyenler için tam donanımlı set.</div>
+                    <div class="paket-aciklama">Tüm sözel ve sayısal derslerde eksiksiz içerik, sınırsız AI soru ve tam koçluk desteği sunan ana paket.</div>
                     <hr style="margin: 10px 0; border-color: #fde68a;">
                     <ul class="paket-liste">
                         <li>✓ Tüm Branşlarda Sınırsız AI Soru Fabrikası</li>
                         <li>✓ 140.000+ Beceri Temelli Soru Havuzu</li>
                         <li>✓ 7/24 Yapay Zeka Akıllı Koçluk & Program</li>
+                        <li>✓ 24'lü Türkiye Geneli Deneme Kulübü Dahil</li>
                         <li>✓ Birebir Deneme Analizi & Veli Raporlama</li>
-                        <li>✓ Türkiye Geneli Online Deneme Sınavları</li>
                     </ul>
                 </div>
                 <div>
@@ -1161,26 +1251,75 @@ elif ana_modul == "💎 Paketler & Abonelik Vitrini":
                 </div>
             </div>
         """, unsafe_allow_html=True)
-        if st.button("🔥 VIP Tam Seti Seç", key="btn_p2", type="primary", use_container_width=True):
+        if st.button("🔥 VIP Tam Seti Seç", key="btn_lgs_vip", type="primary", use_container_width=True):
             paket_sec("LGS 2027 Tüm Dersler VIP Tam Set")
 
-    # --- BÖLÜM 2: YKS, YAZAR / ÖĞRETMEN & KURUMSAL LİSANSLAR ---
-    st.markdown('<div class="kategori-baslik">🏛️ YKS, Yazar / Öğretmen Stüdyosu & Kurumsal B2B Lisanslar</div>', unsafe_allow_html=True)
-    col4, col5, col6 = st.columns(3)
+    # --- KATEGORİ 3: DERECE KOÇLUĞU & YKS 2027 PAKETLERİ ---
+    st.markdown('<div class="kategori-baslik">🏆 LGS Derece Koçluğu & YKS 2027 Üniversite Hazırlık Paketleri</div>', unsafe_allow_html=True)
+    c7, c8, c9 = st.columns(3)
 
-    with col4:
+    with c7:
+        st.markdown("""
+            <div class="paket-karti vip">
+                <div class="rozet koyu">👑 %1 DİLİM HEDEFİ</div>
+                <div>
+                    <div class="paket-baslik">👑 LGS 2027 Derece & Birebir Koçluk Ultra</div>
+                    <div class="paket-aciklama">Fen ve Proje Liselerini hedefleyen öğrenciler için haftalık canlı mentorluk ve özel soru programı.</div>
+                    <hr style="margin: 10px 0; border-color: #cbd5e1;">
+                    <ul class="paket-liste">
+                        <li>✓ VIP Tam Set'teki Tüm Özellikler Dahil</li>
+                        <li>✓ Haftalık Birebir Eğitim Koçu Görüşmesi</li>
+                        <li>✓ Öğrenciye Özel Haftalık Soru Fasikülü</li>
+                        <li>✓ Veliye Özel Aylık Akademik Strateji Toplantısı</li>
+                        <li>✓ Sınav Kaygısı & Zaman Yönetimi Mentorluğu</li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="fiyat-etiketi">58.900 TL</div>
+                    <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 4.908 TL)</div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+        if st.button("Derece Paketini Seç", key="btn_derece", use_container_width=True):
+            paket_sec("LGS 2027 Derece & Birebir Koçluk Ultra Paketi")
+
+    with c8:
         st.markdown("""
             <div class="paket-karti">
                 <div>
-                    <div class="paket-baslik">🎓 YKS 2027 (TYT - AYT) Akıllı Hazırlık</div>
-                    <div class="paket-aciklama">Üniversite sınavına hazırlanan lise öğrencileri için ÖSYM formatında yeni nesil soru ve koçluk sistemi.</div>
+                    <div class="paket-baslik">⚡ YKS 2027 TYT Temel Yeterlilik Paketi</div>
+                    <div class="paket-aciklama">11 ve 12. sınıf öğrencileri için TYT Paragraf, Problem ve Fen-Sosyal hızlandırma programı.</div>
                     <hr style="margin: 10px 0; border-color: #e2e8f0;">
                     <ul class="paket-liste">
-                        <li>✓ TYT Paragraf & Problem Hız Modülü</li>
-                        <li>✓ Alan Bazlı (SAY / EA / SÖZ) AI Soru Üretimi</li>
+                        <li>✓ ÖSYM Tarzı Paragraf & Problem Üreticisi</li>
+                        <li>✓ Süre Tutmalı TYT Branş Denemeleri</li>
                         <li>✓ Kişisel Net Artış & Konu Takip Grafiği</li>
-                        <li>✓ Akıllı Koç ile Haftalık Ders Programı</li>
-                        <li>✓ Çıkmış Soru Benzeri Özgün Denemeler</li>
+                        <li>✓ Akıllı Koç ile Günlük Soru Hedef Takibi</li>
+                        <li>✓ Çıkmış Soru Benzeri Özgün Tarama Testleri</li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="fiyat-etiketi">32.900 TL</div>
+                    <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 2.741 TL)</div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+        if st.button("Hemen Al (YKS TYT)", key="btn_yks_tyt", use_container_width=True):
+            paket_sec("YKS 2027 TYT Temel Yeterlilik Hız Paketi")
+
+    with c9:
+        st.markdown("""
+            <div class="paket-karti">
+                <div>
+                    <div class="paket-baslik">🎓 YKS 2027 (TYT - AYT) Tam Hazırlık Seti</div>
+                    <div class="paket-aciklama">Sayısal, Eşit Ağırlık ve Sözel alanlarda üniversite hedefi için tam kapsamlı AI hazırlık ekosistemi.</div>
+                    <hr style="margin: 10px 0; border-color: #e2e8f0;">
+                    <ul class="paket-liste">
+                        <li>✓ TYT + AYT Tüm Branşlarda Sınırsız AI Soru</li>
+                        <li>✓ Alan Bazlı (SAY / EA / SÖZ) Akıllı Denemeler</li>
+                        <li>✓ Konu Bazlı Derinlik & Eksik Analiz Karnesi</li>
+                        <li>✓ 7/24 AI Sınav Koçu & Tercih Rehberliği</li>
+                        <li>✓ İndirilebilir 2 Sütunlu Baskı Kalitesi Testler</li>
                     </ul>
                 </div>
                 <div>
@@ -1189,39 +1328,67 @@ elif ana_modul == "💎 Paketler & Abonelik Vitrini":
                 </div>
             </div>
         """, unsafe_allow_html=True)
-        if st.button("Hemen Al (YKS 2027)", key="btn_p_yks", use_container_width=True):
-            paket_sec("YKS 2027 (TYT - AYT) Akıllı Hazırlık")
+        if st.button("Hemen Al (YKS Tam Set)", key="btn_yks_tam", use_container_width=True):
+            paket_sec("YKS 2027 (TYT - AYT) Tam Kapsamlı Hazırlık Seti")
 
-    with col5:
+    # --- KATEGORİ 4: YAZAR, ÖĞRETMEN, YAYINEVİ & KURUMSAL B2B LİSANSLAR ---
+    st.markdown('<div class="kategori-baslik">🏛️ Yazar, Öğretmen, Yayınevi & Kurumsal B2B Lisanslar</div>', unsafe_allow_html=True)
+    c10, c11, c12 = st.columns(3)
+
+    with c10:
         st.markdown("""
             <div class="paket-karti">
                 <div>
-                    <div class="paket-baslik">✍️ Yazar & Öğretmen Stüdyosu Pro</div>
-                    <div class="paket-aciklama">Kendi testini, fasikülünü ve deneme sınavını hazırlamak isteyen öğretmenler ve soru yazarları için.</div>
+                    <div class="paket-baslik">✍️ Öğretmen & Yazar Stüdyosu Pro</div>
+                    <div class="paket-aciklama">Bireysel öğretmenler ve soru yazarları için yapay zeka destekli hızlı soru ve yaprak test stüdyosu.</div>
                     <hr style="margin: 10px 0; border-color: #e2e8f0;">
                     <ul class="paket-liste">
                         <li>✓ Sınırsız Maarif Modeli Soru Üreticisi</li>
                         <li>✓ Baş Editör & Otomatik Redaksiyon Denetimi</li>
-                        <li>✓ PDF / Word / Görselden Soru Klonlama</li>
+                        <li>✓ PDF / Word / Görselden Soru Dönüştürme</li>
                         <li>✓ 2 Sütunlu Yayıncı Kalitesinde .docx Çıktısı</li>
                         <li>✓ Kişisel Soru Arşivi & Telif Yönetimi</li>
                     </ul>
                 </div>
                 <div>
                     <div class="fiyat-etiketi">14.900 TL / Yıl</div>
-                    <div class="taksit-bilgisi">Öğretmenlere Özel %20 İndirim Avantajı</div>
+                    <div class="taksit-bilgisi">Öğretmenlere Özel 12 Taksit İmkânı</div>
                 </div>
             </div>
         """, unsafe_allow_html=True)
-        if st.button("Yazar Lisansı Al", key="btn_p_yazar", use_container_width=True):
-            paket_sec("Yazar & Öğretmen Stüdyosu Pro")
+        if st.button("Yazar Lisansı Al", key="btn_yazar_pro", use_container_width=True):
+            paket_sec("Bağımsız Öğretmen & Yazar Stüdyosu Pro")
 
-    with col6:
+    with c11:
+        st.markdown("""
+            <div class="paket-karti">
+                <div>
+                    <div class="paket-baslik">📚 Yayınevi Soru Fabrikası (Enterprise)</div>
+                    <div class="paket-aciklama">Soru bankası, fasikül ve kurumsal deneme üreten yayınevleri için çoklu editör ve redaksiyon altyapısı.</div>
+                    <hr style="margin: 10px 0; border-color: #e2e8f0;">
+                    <ul class="paket-liste">
+                        <li>✓ 10 Yazar & Baş Editör Eşzamanlı Erişimi</li>
+                        <li>✓ Toplu Kitapçık & Fasikül Dizgi Çıktısı (.docx)</li>
+                        <li>✓ Gelişmiş Çeldirici & Kazanım Kalite Denetimi</li>
+                        <li>✓ Yayınevi Özel Referans Havuzu Eğitimi</li>
+                        <li>✓ Tam Telif & Ticari Baskı Kullanım Hakkı</li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="fiyat-etiketi">39.900 TL / Yıl</div>
+                    <div class="taksit-bilgisi">Kurumsal Faturalı Yayıncı Lisansı</div>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+        if st.button("Yayınevi Lisansı Seç", key="btn_yayinevi", use_container_width=True):
+            paket_sec("Yayınevi & Soru Bankası Üretim Fabrikası (Enterprise)")
+
+    with c12:
         st.markdown("""
             <div class="paket-karti">
                 <div>
                     <div class="paket-baslik">🏢 Kurumsal Okul & Kurs Lisansı (B2B)</div>
-                    <div class="paket-aciklama">Özel okullar, kolejler ve kurs merkezleri için çoklu öğrenci, öğretmen ve kurum yönetimi.</div>
+                    <div class="paket-aciklama">Özel okullar, kolejler ve kurs merkezleri için toplu öğrenci, öğretmen ve şube yönetim ekosistemi.</div>
                     <hr style="margin: 10px 0; border-color: #e2e8f0;">
                     <ul class="paket-liste">
                         <li>✓ Kuruma Özel Logo & Kapaklı Test Çıktısı</li>
@@ -1233,59 +1400,59 @@ elif ana_modul == "💎 Paketler & Abonelik Vitrini":
                 </div>
                 <div>
                     <div class="fiyat-etiketi">59.900 TL / Yıl</div>
-                    <div class="taksit-bilgisi">Kurumsal Faturalı Başlangıç Paketi</div>
+                    <div class="taksit-bilgisi">Kurumsal Faturalı Okul / Kurs Paketi</div>
                 </div>
             </div>
         """, unsafe_allow_html=True)
         if st.button("Kurumsal Başvuru Yap", key="btn_b2b", use_container_width=True):
             paket_sec("Kurumsal Okul & Kurs Lisansı (B2B)")
 
-    # --- BÖLÜM 3: PAKET KARŞILAŞTIRMA TABLOSU ---
-    st.markdown('<div class="kategori-baslik">📊 Paket Karşılaştırma Tablosu</div>', unsafe_allow_html=True)
+    # --- PAKET KARŞILAŞTIRMA TABLOSU ---
+    st.markdown('<div class="kategori-baslik">📊 Hızlı Paket Karşılaştırma Tablosu</div>', unsafe_allow_html=True)
     karsilastirma_verisi = [
         {
-            "Özellik / Modül": "Soru Fabrikası (AI Üretim)",
-            "Ara Sınıf": "Sınırlı (Günlük)",
-            "LGS Sözel": "Sözel Odaklı Sınırsız",
-            "LGS VIP Tam Set": "Tüm Dersler Sınırsız",
-            "YKS 2027": "TYT-AYT Sınırsız",
-            "Yazar Pro": "Sınırsız + Redaktör",
-            "Kurumsal B2B": "Kurumsal Sınırsız"
+            "Özellik / Modül": "AI Soru Fabrikası",
+            "İlkokul & Ara Sınıf": "Müfredat Uyumlu",
+            "LGS Branş (Sözel/Sayısal)": "Branş Odaklı Sınırsız",
+            "LGS VIP & Derece": "Tüm Dersler Sınırsız",
+            "YKS (TYT / AYT)": "ÖSYM Formatı Sınırsız",
+            "Yazar & Yayınevi": "Tam Yetki + Redaktör",
+            "Kurumsal B2B": "Kurum Geneli Sınırsız"
         },
         {
             "Özellik / Modül": "2 Sütunlu .docx Kitapçık",
-            "Ara Sınıf": "❌",
-            "LGS Sözel": "✅",
-            "LGS VIP Tam Set": "✅",
-            "YKS 2027": "✅",
-            "Yazar Pro": "✅",
-            "Kurumsal B2B": "✅ (Özel Logo)"
+            "İlkokul & Ara Sınıf": "Temel Test",
+            "LGS Branş (Sözel/Sayısal)": "✅",
+            "LGS VIP & Derece": "✅",
+            "YKS (TYT / AYT)": "✅",
+            "Yazar & Yayınevi": "✅ (Yayıncı Dizgi)",
+            "Kurumsal B2B": "✅ (Kurum Logolu)"
         },
         {
-            "Özellik / Modül": "7/24 AI Akıllı Koç",
-            "Ara Sınıf": "Temel Analiz",
-            "LGS Sözel": "Sözel Koç",
-            "LGS VIP Tam Set": "Tam Koçluk",
-            "YKS 2027": "Tam Koçluk",
-            "Yazar Pro": "Editör Asistanı",
-            "Kurumsal B2B": "Kurum Raporlama"
+            "Özellik / Modül": "7/24 AI Akıllı Koçluk",
+            "İlkokul & Ara Sınıf": "Temel Takip",
+            "LGS Branş (Sözel/Sayısal)": "Branş Koçu",
+            "LGS VIP & Derece": "Tam Koç + Canlı Mentor",
+            "YKS (TYT / AYT)": "Tam Koç + Net Takip",
+            "Yazar & Yayınevi": "Baş Editör Asistanı",
+            "Kurumsal B2B": "Şube & Öğrenci Analizi"
         },
         {
-            "Özellik / Modül": "Veli & Kurum Takip Paneli",
-            "Ara Sınıf": "Veli Paneli",
-            "LGS Sözel": "Veli Paneli",
-            "LGS VIP Tam Set": "Veli + Deneme Analiz",
-            "YKS 2027": "Gelişim Karnesi",
-            "Yazar Pro": "Soru Arşivi",
-            "Kurumsal B2B": "Şube & Öğretmen Yönetimi"
+            "Özellik / Modül": "Türkiye Geneli Denemeler",
+            "İlkokul & Ara Sınıf": "Dönem Sonu",
+            "LGS Branş (Sözel/Sayısal)": "Branş Denemeleri",
+            "LGS VIP & Derece": "24 Deneme Dahil",
+            "YKS (TYT / AYT)": "TYT-AYT Deneme Serisi",
+            "Yazar & Yayınevi": "Deneme Üretim Modülü",
+            "Kurumsal B2B": "Kurum İçi & Geneli"
         }
     ]
     st.dataframe(karsilastirma_verisi, use_container_width=True, hide_index=True)
 
-    # --- BÖLÜM 4: İYZİCO GÜVENLİ ÖDEME & TAKSİT HESAPLAMA ---
+    # --- İYZİCO GÜVENLİ ÖDEME & TAKSİT HESAPLAMA ---
     st.markdown('<div class="kategori-baslik">💳 iyzico ile Güvenli Ödeme & Taksit Planlayıcı</div>', unsafe_allow_html=True)
 
-    if "secili_paket" not in st.session_state:
+    if "secili_paket" not in st.session_state or st.session_state["secili_paket"] not in paket_fiyatlari:
         st.session_state["secili_paket"] = "LGS 2027 Tüm Dersler VIP Tam Set"
 
     st.markdown('<div class="odeme-kutu">', unsafe_allow_html=True)
@@ -1305,10 +1472,11 @@ elif ana_modul == "💎 Paketler & Abonelik Vitrini":
             value=12
         )
 
-        indirim_kodu = st.text_input("İndirim / Kurum Kodu (İsteğe Bağlı)", placeholder="Örn: KURSUNKALEM2027")
+        indirim_kodu = st.text_input("İndirim / Öğretmen / Kurum Kodu (İsteğe Bağlı)", placeholder="Örn: KURSUNKALEM2027 veya YAZAR20")
 
         ana_tutar = paket_fiyatlari[secilen_paket_adi]
-        indirim_orani = 0.10 if indirim_kodu.strip().upper() in ["KURSUNKALEM2027", "LGS2027", "YAZAR20"] else 0.0
+        kod = indirim_kodu.strip().upper()
+        indirim_orani = 0.20 if kod == "YAZAR20" else (0.10 if kod in ["KURSUNKALEM2027", "LGS2027", "YKS2027"] else 0.0)
         net_tutar = int(ana_tutar * (1 - indirim_orani))
         aylik_taksit = net_tutar / taksit_sayisi
 
