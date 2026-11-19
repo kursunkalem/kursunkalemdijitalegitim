@@ -26,10 +26,8 @@ BRAND_NAME = "Kurşun Kalem Dijital Eğitim"
 BRAND_TAGLINE = (
     "Geleceği yazan dijital eğitim • Profesyonel Soru Fabrikası, Dijikoç & Akıllı Öğrenci Portalı"
 )
-DEDICATION_TEXT = (
-    "Bu program Sevgili Annem Ayşe Kurşun'a ve Sevgili Babam Sinan Gürbüz Kurşun'a "
-    "ithaf edilmiştir."
-)
+DEFAULT_MODEL = "gemini-3.8-flash"
+FALLBACK_MODEL = "gemini-2.5-flash"
 
 # 2027 Sınav Hedef Tarihleri
 LGS_2027_TARGET = datetime(2027, 6, 13, 9, 30, 0)
@@ -323,15 +321,6 @@ st.markdown(
             text-transform: uppercase;
             letter-spacing: 0.4px;
         }
-        .kp-dedication {
-            background: #fffbeb;
-            border-left: 4px solid #b45309;
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            color: #78350f;
-            font-size: 0.9rem;
-            margin-top: 0.75rem;
-        }
         div[data-testid="stSidebar"] .stButton > button {
             width: 100%;
             text-align: left;
@@ -376,21 +365,38 @@ def get_gemini_client() -> genai.Client:
     return genai.Client(api_key=api_key)
 
 
-def call_gemini_text(prompt: str, system_instruction: str, model: str = "gemini-2.5-flash") -> str:
-    """Gemini API üzerinden metin üretir."""
+def call_gemini_text(
+    prompt: str,
+    system_instruction: str,
+    model: str = DEFAULT_MODEL,
+) -> str:
+    """Gemini API üzerinden metin üretir; model bulunamazsa yedek modele geçer."""
     client = get_gemini_client()
-    response = client.models.generate_content(
-        model=model,
-        contents=prompt,
-        config=types.GenerateContentConfig(
-            system_instruction=system_instruction,
-            temperature=0.7,
-        ),
-    )
-    text = getattr(response, "text", None)
-    if not text:
-        raise RuntimeError("Modelden boş yanıt döndü.")
-    return text.strip()
+    models_to_try = [model] if model == FALLBACK_MODEL else [model, FALLBACK_MODEL]
+    last_exc: Optional[Exception] = None
+
+    for candidate_model in models_to_try:
+        try:
+            response = client.models.generate_content(
+                model=candidate_model,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    system_instruction=system_instruction,
+                    temperature=0.7,
+                ),
+            )
+            text = getattr(response, "text", None)
+            if not text:
+                raise RuntimeError("Modelden boş yanıt döndü.")
+            return text.strip()
+        except Exception as exc:
+            last_exc = exc
+            err_str = str(exc)
+            if "404" in err_str or "NOT_FOUND" in err_str:
+                continue
+            raise
+
+    raise RuntimeError(f"Model çağrısı başarısız oldu: {last_exc}")
 
 
 def format_countdown(target: datetime) -> Tuple[int, int, int, int]:
@@ -486,7 +492,7 @@ def build_test_docx(
 
     footer_p = doc.add_paragraph()
     footer_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    footer_run = footer_p.add_run(f"\n{BRAND_NAME} • {DEDICATION_TEXT}")
+    footer_run = footer_p.add_run(f"\n{BRAND_NAME}")
     footer_run.italic = True
     footer_run.font.size = Pt(8.5)
     footer_run.font.color.rgb = RGBColor(100, 116, 139)
@@ -596,8 +602,6 @@ with st.sidebar:
     else:
         st.warning("● API Anahtarı Bekleniyor (Secrets)")
 
-    st.caption(DEDICATION_TEXT)
-
 # ==============================================================================
 # ÜST KURUMSAL BANNER
 # ==============================================================================
@@ -679,8 +683,6 @@ if current_page == "Ana Sayfa & Geri Sayım":
             """,
             unsafe_allow_html=True,
         )
-
-    st.markdown(f'<div class="kp-dedication">{DEDICATION_TEXT}</div>', unsafe_allow_html=True)
 
     if st.session_state.live_tick:
         time.sleep(1)
