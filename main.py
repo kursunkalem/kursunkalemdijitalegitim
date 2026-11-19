@@ -1,7 +1,8 @@
 import io
 import os
 import re
-from datetime import datetime, timedelta
+import time
+from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
 import streamlit as st
@@ -12,7 +13,7 @@ from google import genai
 from google.genai import types
 
 # ==============================================================================
-# SAYFA YAPILANDIRMASI VE KURUMSAL TEMA
+# SAYFA YAPILANDIRMASI VE KURUMSAL SABİTLER
 # ==============================================================================
 st.set_page_config(
     page_title="Kurşun Kalem Dijital Eğitim",
@@ -22,8 +23,15 @@ st.set_page_config(
 )
 
 BRAND_NAME = "Kurşun Kalem Dijital Eğitim"
-BRAND_TAGLINE = "Geleceği Yazan Dijital Eğitim • Profesyonel Soru Fabrikası & Akıllı Öğrenci Portalı"
-# 2027 LGS Hedef Tarihi: 13 Haziran 2027
+BRAND_TAGLINE = (
+    "Geleceği yazan dijital eğitim • Profesyonel Soru Fabrikası, Dijikoç & Akıllı Öğrenci Portalı"
+)
+DEDICATION_TEXT = (
+    "Bu program Sevgili Annem Ayşe Kurşun'a ve Sevgili Babam Sinan Gürbüz Kurşun'a "
+    "ithaf edilmiştir."
+)
+
+# 2027 Sınav Hedef Tarihleri
 LGS_2027_TARGET = datetime(2027, 6, 13, 9, 30, 0)
 YKS_2027_TARGET = datetime(2027, 6, 19, 10, 15, 0)
 
@@ -48,7 +56,7 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
         "features": [
             "Aylık 250 yapay zekâ destekli soru üretimi",
             "Öğrenci Portalı & adımlı çözüm desteği",
-            "2027 LGS geri sayım ve konu takibi",
+            "2027 LGS canlı geri sayım ve konu takibi",
             "Standart DOCX test çıktısı",
         ],
     },
@@ -72,7 +80,7 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
         "name": "LGS Tam Donanım Elit",
         "monthly_price": 1390,
         "badge": "Kapsamlı",
-        "desc": "Sınırsıza yakın soru üretimi, yoğun redaksiyon denetimi ve özel koçluk senaryoları.",
+        "desc": "Yüksek soru üretim kotası, yoğun redaksiyon denetimi ve özel koçluk senaryoları.",
         "features": [
             "Aylık 2.500 soru üretimi + otomatik redaksiyon",
             "Dijikoç günlük deneme analizi & çeldirici raporu",
@@ -128,7 +136,7 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
         "name": "Aile Takip & Rehberlik",
         "monthly_price": 590,
         "badge": "Veli Odaklı",
-        "desc": "Çocuğunuzun çalışma düzenini, deneme ivmesini ve eksik kazanımlarını şeffaf izleyin.",
+        "desc": "Öğrencinin çalışma düzenini, deneme ivmesini ve eksik kazanımlarını şeffaf izleyin.",
         "features": [
             "Veli Takip Paneli haftalık performans özeti",
             "Dijikoç çalışma disiplini ve motivasyon planı",
@@ -338,10 +346,10 @@ st.markdown(
 )
 
 # ==============================================================================
-# YARDIMCI FONKSİYONLAR: API ANAHTARI VE GEMINI İSTEMCİSİ
+# YARDIMCI FONKSİYONLAR: API ANAHTARI, GEMINI İSTEMCİSİ VE SAYAÇ
 # ==============================================================================
 def resolve_gemini_api_key() -> Optional[str]:
-    """Yalnızca st.secrets veya ortam değişkenlerinden geçerli API anahtarını okur."""
+    """Yalnızca st.secrets veya ortam değişkenlerinden API anahtarını okur."""
     key: Optional[str] = None
     try:
         if "GEMINI_API_KEY" in st.secrets:
@@ -397,6 +405,27 @@ def format_countdown(target: datetime) -> Tuple[int, int, int, int]:
     minutes = (total_seconds % 3600) // 60
     seconds = total_seconds % 60
     return days, hours, minutes, seconds
+
+
+def render_countdown_boxes(target: datetime) -> None:
+    """Gün, Saat, Dakika ve Saniye sayaç kutularını çizer."""
+    d, h, m, s = format_countdown(target)
+    c1, c2, c3, c4 = st.columns(4)
+    for col, val, lbl in [
+        (c1, f"{d:03d}", "GÜN"),
+        (c2, f"{h:02d}", "SAAT"),
+        (c3, f"{m:02d}", "DAKİKA"),
+        (c4, f"{s:02d}", "SANİYE"),
+    ]:
+        col.markdown(
+            f"""
+            <div class="kp-metric-box">
+                <div class="kp-metric-num">{val}</div>
+                <div class="kp-metric-lbl">{lbl}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
 
 def build_test_docx(
@@ -524,6 +553,8 @@ if "dijikoc_plan" not in st.session_state:
     st.session_state.dijikoc_plan = ""
 if "selected_tier_id" not in st.session_state:
     st.session_state.selected_tier_id = SUBSCRIPTION_TIERS[1]["id"]
+if "live_tick" not in st.session_state:
+    st.session_state.live_tick = False
 
 api_key_ready = resolve_gemini_api_key() is not None
 
@@ -583,7 +614,7 @@ st.markdown(
 current_page = st.session_state.active_page
 
 # ==============================================================================
-# 1. ANA SAYFA & GERİ SAYIM
+# 1. ANA SAYFA & CANLI GERİ SAYIM
 # ==============================================================================
 if current_page == "Ana Sayfa & Geri Sayım":
     st.subheader("🚀 Kurşun Kalem Dijital Eğitim Platformuna Hoş Geldiniz")
@@ -592,24 +623,16 @@ if current_page == "Ana Sayfa & Geri Sayım":
         "soru fabrikası, Dijikoç ve ölçme-değerlendirme ekosistemi."
     )
 
-    lgs_d, lgs_h, lgs_m, lgs_s = format_countdown(LGS_2027_TARGET)
-    st.markdown("#### 🏆 2027 LGS'ye Geri Sayım (13 Haziran 2027)")
-    c1, c2, c3, c4 = st.columns(4)
-    for col, val, lbl in [
-        (c1, f"{lgs_d:03d}", "GÜN"),
-        (c2, f"{lgs_h:02d}", "SAAT"),
-        (c3, f"{lgs_m:02d}", "DAKİKA"),
-        (c4, f"{lgs_s:02d}", "SANİYE"),
-    ]:
-        col.markdown(
-            f"""
-            <div class="kp-metric-box">
-                <div class="kp-metric-num">{val}</div>
-                <div class="kp-metric-lbl">{lbl}</div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+    head_col, toggle_col = st.columns([3, 1])
+    with head_col:
+        st.markdown("#### 🏆 2027 LGS'ye Geri Sayım (13 Haziran 2027)")
+    with toggle_col:
+        live_counter = st.toggle("⏱️ Canlı Sayaç Akışı", value=st.session_state.live_tick)
+        st.session_state.live_tick = live_counter
+
+    counter_placeholder = st.empty()
+    with counter_placeholder.container():
+        render_countdown_boxes(LGS_2027_TARGET)
 
     yks_d, yks_h, _, _ = format_countdown(YKS_2027_TARGET)
     st.caption(f"2027 YKS (19 Haziran 2027) için kalan süre: **{yks_d} gün {yks_h} saat**")
@@ -658,6 +681,10 @@ if current_page == "Ana Sayfa & Geri Sayım":
         )
 
     st.markdown(f'<div class="kp-dedication">{DEDICATION_TEXT}</div>', unsafe_allow_html=True)
+
+    if st.session_state.live_tick:
+        time.sleep(1)
+        st.rerun()
 
 # ==============================================================================
 # 2. SORU & REDAKSİYON FABRİKASI
@@ -825,7 +852,10 @@ elif current_page == "Dijikoç":
             ],
             index=0,
         )
-        recent_score = st.text_input("Son Deneme / Sınav Durumu", value="Orta seviye, süreyi yetiştirmede zorlanıyorum")
+        recent_score = st.text_input(
+            "Son Deneme / Sınav Durumu",
+            value="Orta seviye, süreyi yetiştirmede zorlanıyorum",
+        )
 
     if st.button("🎯 Dijikoç Planı Oluştur", type="primary"):
         sys_coach = (
@@ -886,9 +916,13 @@ elif current_page == "B2B Lisans & Kurum":
         with c1:
             org_name = st.text_input("Kurum / Okul Adı")
             city = st.text_input("İl / İlçe", value="İstanbul")
-            teacher_seats = st.number_input("Öğretmen / Editör Koltuk Sayısı", min_value=1, max_value=500, value=15)
+            teacher_seats = st.number_input(
+                "Öğretmen / Editör Koltuk Sayısı", min_value=1, max_value=500, value=15
+            )
         with c2:
-            student_seats = st.number_input("Öğrenci Hesap Sayısı", min_value=10, max_value=10000, value=250)
+            student_seats = st.number_input(
+                "Öğrenci Hesap Sayısı", min_value=10, max_value=10000, value=250
+            )
             contact_name = st.text_input("Yetkili Adı Soyadı")
             contact_email = st.text_input("Kurumsal E-posta")
 
