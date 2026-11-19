@@ -24,15 +24,13 @@ def get_gemini_api_key() -> str:
             return str(st.secrets["GEMINI_API_KEY"]).strip()
     except Exception:
         pass
-    env_key = os.getenv("GEMINI_API_KEY", "").strip()
-    if env_key:
-        return env_key
-    session_key = st.session_state.get("runtime_gemini_api_key", "").strip()
-    if session_key:
-        return session_key
-    return ""
+    return os.getenv("GEMINI_API_KEY", "").strip()
 
-API_KEY = get_gemini_api_key()
+def get_genai_client():
+    key = get_gemini_api_key()
+    if not key:
+        raise ValueError("GEMINI_API_KEY bulunamadı. Streamlit Secrets veya ortam değişkenine GEMINI_API_KEY tanımlayın.")
+    return genai.Client(api_key=key)
 
 # --- TEMİZ VE MODERN SİSTEM CSS ---
 st.markdown("""
@@ -246,12 +244,6 @@ def save_arsiv(yeni_test):
     except:
         pass
 
-def get_genai_client():
-    key = get_gemini_api_key()
-    if not key:
-        raise ValueError("Geçerli bir Gemini API anahtarı bulunamadı. Lütfen Streamlit Secrets (GEMINI_API_KEY) veya API Ayarları bölümünden anahtar girin.")
-    return genai.Client(api_key=key)
-
 # --- SİSTEM NAVİGASYONU (BUTON TABANLI TEMİZ MENÜ) ---
 if "ana_modul" not in st.session_state:
     st.session_state["ana_modul"] = "🏠 Ana Sayfa & 2027 LGS'ye Geri Sayım"
@@ -284,18 +276,7 @@ with st.sidebar:
             st.session_state["ana_modul"] = deger
             st.rerun()
 
-    with st.expander("🔑 Gemini API Anahtarı", expanded=not bool(API_KEY)):
-        girilen_key = st.text_input(
-            "API Key (AIza...)",
-            value=st.session_state.get("runtime_gemini_api_key", ""),
-            type="password",
-            placeholder="AIzaSy..."
-        )
-        if st.button("Anahtarı Uygula", use_container_width=True):
-            st.session_state["runtime_gemini_api_key"] = girilen_key.strip()
-            st.rerun()
-
-    durum_metni = "🟢 Sistem Aktif" if get_gemini_api_key() else "🟡 API Anahtarı Bekleniyor"
+    durum_metni = "🟢 Sistem Aktif" if get_gemini_api_key() else "🟡 GEMINI_API_KEY Bekleniyor"
     st.markdown(f"""
         <div class="sb-status">
             <strong>{durum_metni}</strong> • 2027 LGS & Maarif Modeli
@@ -809,7 +790,7 @@ elif ana_modul == "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)":
 
         if uret_butonu:
             if not get_gemini_api_key():
-                st.error("Geçerli bir Gemini API anahtarı tanımlı değil.")
+                st.error("GEMINI_API_KEY tanımlı değil.")
             elif not tema_girdisi.strip():
                 st.warning("Lütfen bir bağlam veya tema girin.")
             else:
