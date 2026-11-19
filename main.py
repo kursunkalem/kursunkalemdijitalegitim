@@ -334,13 +334,13 @@ st.markdown(
             max-width: 1320px;
         }
         .kp-hero {
-            background: linear-gradient(125deg, #0b1324 0%, #17253d 55%, #7f1d1d 100%);
+            background: linear-gradient(125deg, #090e1a 0%, #16233b 52%, #7f1d1d 100%);
             color: #ffffff;
-            padding: 1.5rem 1.85rem;
+            padding: 1.55rem 1.9rem;
             border-radius: 16px;
             margin-bottom: 1.3rem;
-            box-shadow: 0 12px 28px rgba(11, 19, 36, 0.16);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 14px 30px rgba(9, 14, 26, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .kp-hero h1 {
             margin: 0;
@@ -354,6 +354,21 @@ st.markdown(
             font-size: 0.93rem;
             color: #e2e8f0;
             font-weight: 400;
+        }
+        .kp-tech-strip {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.85rem;
+        }
+        .kp-tech-pill {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            color: #f8fafc;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.24rem 0.65rem;
+            border-radius: 999px;
         }
         .kp-studio-banner {
             background: linear-gradient(135deg, #ffffff 0%, #f8fafc 65%, #fff5f5 100%);
@@ -391,9 +406,10 @@ st.markdown(
             border-radius: 12px;
             padding: 0.9rem 1.05rem;
             box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
-            transition: border-color 0.15s ease;
+            transition: transform 0.15s ease, border-color 0.15s ease;
         }
         .kp-kpi-card:hover {
+            transform: translateY(-2px);
             border-color: #cbd5e1;
         }
         .kp-kpi-label {
@@ -436,15 +452,22 @@ st.markdown(
             border: 1px solid #e2e8f0;
             border-radius: 12px;
             padding: 1.15rem 1.25rem;
-            margin-bottom: 0.9rem;
+            margin-bottom: 0.7rem;
             box-shadow: 0 2px 8px rgba(15, 23, 42, 0.035);
+            transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+        }
+        .kp-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07);
+            border-color: #94a3b8;
         }
         .kp-metric-box {
-            background: #f8fafc;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
             border: 1px solid #e2e8f0;
             border-radius: 12px;
             padding: 1rem;
             text-align: center;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
         }
         .kp-metric-num {
             font-size: 1.55rem;
@@ -545,6 +568,68 @@ def call_gemini_text(
             raise
 
     raise RuntimeError(f"Model çağrısı başarısız oldu: {last_exc}")
+
+
+def navigate_to(page_name: str) -> None:
+    """İstenen sayfaya geçiş yapar ve uygulamayı yeniler."""
+    if page_name in PAGES:
+        st.session_state.active_page = page_name
+        st.rerun()
+
+
+def record_activity(module_name: str, summary: str) -> None:
+    """Oturum içi teknolojik aktivite akışına kayıt ekler."""
+    logs: List[Dict[str, str]] = st.session_state.setdefault("activity_log", [])
+    logs.insert(
+        0,
+        {
+            "time": datetime.now().strftime("%H:%M:%S"),
+            "module": module_name,
+            "summary": summary,
+        },
+    )
+    st.session_state["activity_log"] = logs[:12]
+
+
+def parse_quiz_questions(raw_text: str) -> List[Dict[str, Any]]:
+    """Üretilen test metninden etkileşimli mini deneme için sorular ayıklar."""
+    if not raw_text.strip():
+        return []
+
+    main_body = re.split(r"(?:^|\n)#*\s*Cevap\s*Anahtar", raw_text, maxsplit=1, flags=re.IGNORECASE)[0]
+    blocks = re.split(r"(?=(?:^|\n)#*\s*Soru\s*\d+)", main_body.strip(), flags=re.IGNORECASE)
+    parsed: List[Dict[str, Any]] = []
+
+    for block in blocks:
+        text = block.strip()
+        if not re.match(r"^#*\s*Soru\s*\d+", text, flags=re.IGNORECASE):
+            continue
+        lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+        stem_lines: List[str] = []
+        options: Dict[str, str] = {}
+        current_opt: Optional[str] = None
+
+        for ln in lines:
+            opt_match = re.match(r"^[\-\*\s]*([A-D])\s*[\)\.\:]\s*(.+)$", ln, flags=re.IGNORECASE)
+            if opt_match:
+                letter = opt_match.group(1).upper()
+                options[letter] = opt_match.group(2).strip()
+                current_opt = letter
+            elif current_opt:
+                options[current_opt] = f"{options[current_opt]} {ln}".strip()
+            else:
+                stem_lines.append(ln)
+
+        if len(options) >= 2:
+            parsed.append(
+                {
+                    "stem": "\n".join(stem_lines),
+                    "options": options,
+                    "full_text": text,
+                }
+            )
+
+    return parsed
 
 
 def get_tier_by_id(tier_id: str) -> Dict[str, Any]:
@@ -836,6 +921,7 @@ def render_iyzico_simulator(package_name: str, monthly_price: int, tier_id: Opti
             )
             st.session_state.selected_tier_id = target_tier["id"]
             sync_plan_quotas(target_tier, force_reset=True)
+            record_activity("iyzico Ödeme", f"{package_name} ({total_amount:,} ₺) aktiflendi".replace(",", "."))
             st.success(
                 f"**{package_name}** paketi için **{total_amount:,} ₺** ({installment} taksit, "
                 f"{card_brand}) tutarında iyzico ödeme oturumu hazırlandı ve paket kotası "
@@ -875,6 +961,15 @@ if "selected_tier_id" not in st.session_state:
     st.session_state.selected_tier_id = SUBSCRIPTION_TIERS[1]["id"]
 if "live_tick" not in st.session_state:
     st.session_state.live_tick = False
+if "portal_question_draft" not in st.session_state:
+    st.session_state.portal_question_draft = ""
+if "portal_exam_source" not in st.session_state:
+    st.session_state.portal_exam_source = ""
+if "activity_log" not in st.session_state:
+    st.session_state.activity_log = [
+        {"time": "09:15:00", "module": "Soru Fabrikası", "summary": "8. Sınıf LGS Muhakeme seti hazır"},
+        {"time": "10:42:18", "module": "Dijimentor", "summary": "Haftalık çeldirici & tempo analizi aktif"},
+    ]
 
 sync_plan_quotas(get_tier_by_id(st.session_state.selected_tier_id), force_reset=False)
 api_key_ready = resolve_gemini_api_key() is not None
@@ -940,6 +1035,13 @@ st.markdown(
     <div class="kp-hero">
         <h1>✏️ {BRAND_NAME}</h1>
         <p>{BRAND_TAGLINE}</p>
+        <div class="kp-tech-strip">
+            <span class="kp-tech-pill">⚡ Gemini AI Motoru</span>
+            <span class="kp-tech-pill">📐 Maarif Modeli Kazanım Uyumu</span>
+            <span class="kp-tech-pill">🎯 Dijimentor v3 Analitik</span>
+            <span class="kp-tech-pill">📄 Kurumsal DOCX Stüdyo</span>
+            <span class="kp-tech-pill">💳 iyzico Altyapı</span>
+        </div>
     </div>
     """,
     unsafe_allow_html=True,
@@ -948,7 +1050,7 @@ st.markdown(
 current_page = st.session_state.active_page
 
 # ==============================================================================
-# 1. ANA SAYFA & CANLI GERİ SAYIM
+# 1. ANA SAYFA & CANLI GERİ SAYIM + ANALİTİK KOMUTA MERKEZİ
 # ==============================================================================
 if current_page == "Ana Sayfa & Geri Sayım":
     st.subheader("🚀 Kurşun Kalem Dijital Eğitim Platformuna Hoş Geldiniz")
@@ -978,7 +1080,7 @@ if current_page == "Ana Sayfa & Geri Sayım":
     m3.metric("B2B Anlaşmalı Kurum", "48", "+4 Yeni")
     m4.metric("Çözülen Soru Sayısı", "2.4 Milyon", "%98 Başarı")
 
-    st.markdown("### 💡 Platform Modülleri")
+    st.markdown("### 💡 Platform Modülleri & Hızlı Geçiş")
     f1, f2, f3 = st.columns(3)
     with f1:
         st.markdown(
@@ -991,6 +1093,8 @@ if current_page == "Ana Sayfa & Geri Sayım":
             """,
             unsafe_allow_html=True,
         )
+        if st.button("Soru Fabrikasına Git →", key="go_factory", use_container_width=True):
+            navigate_to("Soru & Redaksiyon Fabrikası")
     with f2:
         st.markdown(
             """
@@ -1002,6 +1106,8 @@ if current_page == "Ana Sayfa & Geri Sayım":
             """,
             unsafe_allow_html=True,
         )
+        if st.button("Dijimentor'u Aç →", key="go_mentor", use_container_width=True):
+            navigate_to("Dijimentor")
     with f3:
         st.markdown(
             """
@@ -1013,6 +1119,35 @@ if current_page == "Ana Sayfa & Geri Sayım":
             """,
             unsafe_allow_html=True,
         )
+        if st.button("Paketler & Abonelik Vitrini →", key="go_plans", use_container_width=True):
+            navigate_to("Paketler & Abonelik Vitrini")
+
+    st.markdown("---")
+    ana_l, ana_r = st.columns([2, 1])
+    with ana_l:
+        st.markdown("#### 📈 Haftalık Soru Üretim & Çözüm Telemetrisi")
+        telemetry_data = {
+            "Pzt": 16800,
+            "Sal": 18200,
+            "Çar": 19500,
+            "Per": 21100,
+            "Cum": 22400,
+            "Cmt": 25900,
+            "Paz": 24800,
+        }
+        st.area_chart(telemetry_data, height=205)
+    with ana_r:
+        st.markdown("#### ⚡ Canlı Oturum Akışı")
+        for item in st.session_state.get("activity_log", [])[:5]:
+            st.markdown(
+                f"""
+                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:0.55rem 0.75rem;margin-bottom:0.45rem;">
+                    <div style="font-size:0.72rem;font-weight:700;color:#881337;">{item['time']} • {item['module']}</div>
+                    <div style="font-size:0.82rem;color:#0f172a;margin-top:0.1rem;">{item['summary']}</div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
     if st.session_state.live_tick:
         time.sleep(1)
@@ -1027,6 +1162,9 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
         "Türkiye Yüzyılı Maarif Modeli standartlarında, Otomatik Redaktör ve Kalite Kontrollü "
         "değerlendirme testleri oluşturun."
     )
+
+    if st.session_state.get("factory_focus_topic"):
+        st.info(f"Dijimentor'dan aktarılan odak konu: **{st.session_state['factory_focus_topic']}**")
 
     with st.expander("📋 Test ve Kurum Parametreleri", expanded=True):
         r1c1, r1c2, r1c3 = st.columns(3)
@@ -1043,7 +1181,8 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
             learning_area = st.selectbox("Öğrenme Alanı", areas, index=0)
             outcomes = CURRICULUM_TOPICS[branch][learning_area]
             outcome = st.selectbox("Hedef Kazanım", outcomes, index=0)
-            context_theme = st.text_input("Bağlam / Tema / Senaryo", value="HAYAT")
+            default_theme = st.session_state.get("factory_focus_topic") or "HAYAT"
+            context_theme = st.text_input("Bağlam / Tema / Senaryo", value=default_theme)
         with r1c3:
             question_count = st.slider("Üretilecek Soru Adedi (Test Modu)", 1, 10, 3)
             difficulty = st.select_slider(
@@ -1084,6 +1223,7 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
                 with st.spinner("Sorular üretiliyor ve kalite denetimi yapılıyor..."):
                     result = call_gemini_text(prompt=user_prompt, system_instruction=sys_prompt)
                 st.session_state.generated_test_text = result
+                record_activity("Soru Fabrikası", f"{branch} • {question_count} soru üretildi")
                 st.success(
                     f"Soru paketi başarıyla oluşturuldu. Kalan soru kotası: "
                     f"{int(st.session_state.remaining_question_quota):,}".replace(",", ".")
@@ -1108,56 +1248,119 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
             context_theme=context_theme,
             generated_content=st.session_state.generated_test_text,
         )
-        st.download_button(
-            label="📥 Testi DOCX Olarak İndir",
-            data=docx_bytes,
-            file_name=f"kursun_kalem_{branch.lower().replace(' ', '_')}_test.docx",
-            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        )
+        act_c1, act_c2, act_c3 = st.columns(3)
+        with act_c1:
+            st.download_button(
+                label="📥 Testi DOCX Olarak İndir",
+                data=docx_bytes,
+                file_name=f"kursun_kalem_{branch.lower().replace(' ', '_')}_test.docx",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                use_container_width=True,
+            )
+        with act_c2:
+            if st.button("🎓 Mini Deneme Olarak Çöz", use_container_width=True):
+                st.session_state["portal_exam_source"] = st.session_state.generated_test_text
+                record_activity("Köprü", "Test Öğrenci Portalı mini denemesine aktarıldı")
+                navigate_to("Öğrenci Portalı & Çözüm")
+        with act_c3:
+            if st.button("💡 İlk Soruyu Çözüm Rehberine Gönder", use_container_width=True):
+                parsed_q = parse_quiz_questions(st.session_state.generated_test_text)
+                st.session_state["portal_question_draft"] = (
+                    parsed_q[0]["full_text"] if parsed_q else st.session_state.generated_test_text[:1000]
+                )
+                navigate_to("Öğrenci Portalı & Çözüm")
 
 # ==============================================================================
-# 3. ÖĞRENCİ PORTALI & ÇÖZÜM
+# 3. ÖĞRENCİ PORTALI & ÇÖZÜM + İNTERAKTİF MİNİ DENEME
 # ==============================================================================
 elif current_page == "Öğrenci Portalı & Çözüm":
-    st.subheader("🎓 Öğrenci Portalı & Adımlı Çözüm Asistanı")
-    st.write("Takıldığın soruyu veya konuyu gir; adım adım yönlendirme ve çözüm stratejisi al.")
+    st.subheader("🎓 Öğrenci Portalı, Mini Deneme & Adımlı Çözüm Asistanı")
+    st.write(
+        "Üretilen soruları interaktif mini deneme olarak çözebilir veya takıldığın soruyu "
+        "adım adım mentorluk rehberiyle analiz edebilirsin."
+    )
 
-    col_l, col_r = st.columns([2, 1])
-    with col_l:
-        student_question = st.text_area(
-            "Çözümünü İncelemek İstediğin Soru Metni",
-            height=160,
-            placeholder="Soru kökünü, verilen öncülleri ve şıkları buraya yapıştır...",
-        )
-    with col_r:
-        hint_mode = st.radio(
-            "Yardım Düzeyi",
-            ["Önce İpucu Ver (Kendim Çözeyim)", "Adım Adım Çözümü Göster"],
-            index=0,
-        )
-        student_attempt = st.text_input("Senin Tahminin / Şıkkın", placeholder="Örn: C şıkkı, çünkü...")
+    tab_exam, tab_hint = st.tabs(["📝 İnteraktif Mini Deneme", "🔍 Adımlı Çözüm Asistanı"])
 
-    if st.button("🔍 Çözüm Rehberi Oluştur", type="primary"):
-        if not student_question.strip():
-            st.warning("Lütfen önce bir soru metni girin.")
+    with tab_exam:
+        exam_source = st.text_area(
+            "Deneme Soru Metni (Soru Fabrikasından otomatik gelir veya buraya yapıştır)",
+            value=st.session_state.get("portal_exam_source") or st.session_state.get("generated_test_text", ""),
+            height=140,
+            placeholder="Soru 1) ... A) ... B) ... C) ... D) ...",
+        )
+        st.session_state["portal_exam_source"] = exam_source
+        questions = parse_quiz_questions(exam_source)
+
+        if not questions:
+            st.info(
+                "Etkileşimli şık işaretleyebilmek için **Soru & Redaksiyon Fabrikası** sayfasından "
+                "bir test üretin veya 'Soru 1 ... A) ... B) ... C) ... D) ...' biçiminde sorular yapıştırın."
+            )
         else:
-            sys_inst = (
-                "Sen sabırlı, pedagojik ve teşvik edici bir eğitim mentorusun. "
-                "Öğrenciye doğrudan ezberletmek yerine mantığını kavratacak şekilde açıkla."
+            st.markdown(f"#### 🎯 Aktif Mini Deneme ({len(questions)} Soru)")
+            user_answers: Dict[int, str] = {}
+            for idx, q in enumerate(questions):
+                with st.container(border=True):
+                    st.markdown(q["stem"])
+                    opts = list(q["options"].keys())
+                    chosen = st.radio(
+                        f"Soru {idx + 1} Yanıtın",
+                        options=opts,
+                        format_func=lambda k, o_map=q["options"]: f"{k}) {o_map[k]}",
+                        horizontal=True,
+                        key=f"mini_q_{idx}",
+                    )
+                    user_answers[idx] = chosen
+
+            if st.button("✅ Denemeyi Tamamla ve Değerlendir", type="primary"):
+                answered_cnt = len(user_answers)
+                record_activity("Mini Deneme", f"{answered_cnt} soruluk deneme tamamlandı")
+                st.success(
+                    f"Deneme kaydı tamamlandı! **{answered_cnt}/{len(questions)}** soru yanıtlandı. "
+                    "Detaylı gerekçe ve adım adım çözüm için yan sekmedeki **Adımlı Çözüm Asistanı**nı kullanabilirsin."
+                )
+
+    with tab_hint:
+        col_l, col_r = st.columns([2, 1])
+        with col_l:
+            default_q = st.session_state.get("portal_question_draft", "")
+            student_question = st.text_area(
+                "Çözümünü İncelemek İstediğin Soru Metni",
+                value=default_q,
+                height=160,
+                placeholder="Soru kökünü, verilen öncülleri ve şıkları buraya yapıştır...",
             )
-            prompt = (
-                f"Soru:\n{student_question}\n\n"
-                f"Öğrencinin Denemesi: {student_attempt or 'Belirtilmedi'}\n"
-                f"Yardım Düzeyi: {hint_mode}\n\n"
-                "Lütfen Türkçe olarak net ve anlaşılır yanıt ver."
+        with col_r:
+            hint_mode = st.radio(
+                "Yardım Düzeyi",
+                ["Önce İpucu Ver (Kendim Çözeyim)", "Adım Adım Çözümü Göster"],
+                index=0,
             )
-            try:
-                with st.spinner("Çözüm rehberi hazırlanıyor..."):
-                    ans = call_gemini_text(prompt=prompt, system_instruction=sys_inst)
-                st.markdown("#### 💡 Çözüm Analizi")
-                st.markdown(ans)
-            except Exception as exc:
-                st.error(f"Çözüm üretilirken hata oluştu: {exc}")
+            student_attempt = st.text_input("Senin Tahminin / Şıkkın", placeholder="Örn: C şıkkı, çünkü...")
+
+        if st.button("🔍 Çözüm Rehberi Oluştur", type="primary", key="btn_solve_guide"):
+            if not student_question.strip():
+                st.warning("Lütfen önce bir soru metni girin.")
+            else:
+                sys_inst = (
+                    "Sen sabırlı, pedagojik ve teşvik edici bir eğitim mentorusun. "
+                    "Öğrenciye doğrudan ezberletmek yerine mantığını kavratacak şekilde açıkla."
+                )
+                prompt = (
+                    f"Soru:\n{student_question}\n\n"
+                    f"Öğrencinin Denemesi: {student_attempt or 'Belirtilmedi'}\n"
+                    f"Yardım Düzeyi: {hint_mode}\n\n"
+                    "Lütfen Türkçe olarak net ve anlaşılır yanıt ver."
+                )
+                try:
+                    with st.spinner("Çözüm rehberi hazırlanıyor..."):
+                        ans = call_gemini_text(prompt=prompt, system_instruction=sys_inst)
+                    record_activity("Çözüm Asistanı", f"{hint_mode} üretildi")
+                    st.markdown("#### 💡 Çözüm Analizi")
+                    st.markdown(ans)
+                except Exception as exc:
+                    st.error(f"Çözüm üretilirken hata oluştu: {exc}")
 
 # ==============================================================================
 # 4. DİJİMENTOR — KURUMSAL AKILLI MENTORLUK STÜDYOSU
@@ -1371,6 +1574,7 @@ elif current_page == "Dijimentor":
                 with st.spinner("Dijimentor çalışma ve deneme stratejisi hazırlanıyor..."):
                     plan = call_gemini_text(prompt=prompt_coach, system_instruction=sys_coach)
                 st.session_state.dijimentor_plan = plan
+                record_activity("Dijimentor", f"{target_exam} • {weekly_hours} saatlik plan üretildi")
                 st.success("Dijimentor planı başarıyla oluşturuldu.")
             except Exception as exc:
                 st.session_state["remaining_coach_quota"] = int(
@@ -1391,13 +1595,14 @@ elif current_page == "Dijimentor":
         )
         docx_coach = build_coach_docx(meta_summary, st.session_state.dijimentor_plan)
 
-        d_col1, d_col2 = st.columns(2)
+        d_col1, d_col2, d_col3 = st.columns(3)
         with d_col1:
             st.download_button(
                 label="📥 Mentorluk Planını DOCX İndir",
                 data=docx_coach,
                 file_name="dijimentor_calisma_plani.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                use_container_width=True,
             )
         with d_col2:
             st.download_button(
@@ -1405,11 +1610,16 @@ elif current_page == "Dijimentor":
                 data=st.session_state.dijimentor_plan.encode("utf-8"),
                 file_name="dijimentor_calisma_plani.txt",
                 mime="text/plain",
+                use_container_width=True,
             )
+        with d_col3:
+            if st.button("⚙️ Zayıf Konulardan Soru Üret →", use_container_width=True):
+                st.session_state["factory_focus_topic"] = weak_topics.split(",")[0].strip()
+                navigate_to("Soru & Redaksiyon Fabrikası")
         st.markdown("</div>", unsafe_allow_html=True)
 
 # ==============================================================================
-# 5. VELİ TAKİP PANELİ
+# 5. VELİ TAKİP PANELİ + PERFORMANS GRAFİKLERİ
 # ==============================================================================
 elif current_page == "Veli Takip Paneli":
     st.subheader("👨‍👩‍👧 Veli Takip Paneli")
@@ -1424,6 +1634,20 @@ elif current_page == "Veli Takip Paneli":
     st.progress(0.84, text="Okuma ve Anlama — %84")
     st.progress(0.72, text="Sayısal Muhakeme ve Problem Çözme — %72")
     st.progress(0.90, text="Düzenli Tekrar ve Ödev Tamamlama — %90")
+
+    g_col1, g_col2 = st.columns(2)
+    with g_col1:
+        st.markdown("#### 📈 Haftalık Doğruluk İvmesi (%)")
+        st.area_chart(
+            {"1. Hafta": 71, "2. Hafta": 74, "3. Hafta": 77, "4. Hafta": 81},
+            height=190,
+        )
+    with g_col2:
+        st.markdown("#### 📊 Ders Bazlı Başarı Oranı (%)")
+        st.bar_chart(
+            {"Türkçe": 84, "Matematik": 72, "Fen": 82, "Sosyal": 86, "İngilizce": 79},
+            height=190,
+        )
 
 # ==============================================================================
 # 6. B2B LİSANS & KURUM
@@ -1460,6 +1684,7 @@ elif current_page == "B2B Lisans & Kurum":
                     f"E-posta: {contact_email or '-'} | Koltuk: {teacher_seats} Öğretmen, "
                     f"{student_seats} Öğrenci"
                 )
+                record_activity("B2B Lisans", f"{org_name} teklif taslağı hazırlandı")
                 st.success(
                     f"**{org_name}** ({city}) için **{teacher_seats} öğretmen** ve "
                     f"**{student_seats} öğrenci** kapasiteli kurumsal lisans talebi kaydedildi."
@@ -1525,6 +1750,7 @@ elif current_page == "Paketler & Abonelik Vitrini":
                 if st.button("Paketi Seç", key=f"select_{tier['id']}"):
                     st.session_state.selected_tier_id = tier["id"]
                     sync_plan_quotas(tier, force_reset=True)
+                    record_activity("Abonelik", f"{tier['name']} paketi aktifleşti")
                     st.toast(f"{tier['name']} seçildi ve kotası güncellendi.")
 
     st.markdown("---")
