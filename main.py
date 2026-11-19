@@ -20,77 +20,178 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- MODERN SİSTEM NAVİGASYONU & KENAR ÇUBUĞU CSS ---
+# --- YENİ NESİL SİSTEM NAVİGASYONU & KONTROL PANELİ CSS ---
 st.markdown("""
 <style>
-    /* Sidebar Genel Arka Plan ve Kenarlık */
+    /* Ana Kenar Çubuğu Arka Plan ve Yapısı */
     section[data-testid="stSidebar"] {
-        background-color: #f8fafc;
+        background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
         border-right: 1px solid #e2e8f0;
-        width: 315px !important;
+        width: 330px !important;
     }
 
-    /* Sidebar İç Boşluklar */
     section[data-testid="stSidebar"] .block-container {
-        padding-top: 1.5rem;
-        padding-left: 1rem;
-        padding-right: 1rem;
+        padding-top: 1.25rem;
+        padding-left: 0.95rem;
+        padding-right: 0.95rem;
+        padding-bottom: 2rem;
     }
 
-    /* Radyo Grubunu Dikey Kart Listesine Çevirme */
-    section[data-testid="stSidebar"] div[role="radiogroup"] {
-        gap: 8px;
-        margin-top: 10px;
+    /* Navigasyon Üst Başlık Kartı */
+    .nav-header-card {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        border: 1px solid #334155;
+        border-radius: 14px;
+        padding: 14px 16px;
+        margin-bottom: 14px;
+        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.14);
+        position: relative;
+        overflow: hidden;
     }
-
-    /* Menü Kartları - Varsayılan / Pasif Durum */
-    section[data-testid="stSidebar"] div[role="radiogroup"] > label {
-        background-color: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
-        padding: 11px 14px;
-        margin: 0 !important;
-        cursor: pointer;
-        transition: all 0.2s ease-in-out;
-        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+    .nav-header-card::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #e74c3c, #f39c12, #fbbf24);
+    }
+    .nav-brand-row {
         display: flex;
         align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+    }
+    .nav-main-title {
+        color: #ffffff;
+        font-size: 0.98rem;
+        font-weight: 800;
+        letter-spacing: 0.2px;
+        margin: 0;
+    }
+    .nav-pill {
+        background: rgba(243, 156, 18, 0.18);
+        color: #fbbf24;
+        border: 1px solid rgba(251, 191, 36, 0.4);
+        font-size: 0.68rem;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 999px;
+        white-space: nowrap;
+    }
+    .nav-sub-caption {
+        color: #94a3b8;
+        font-size: 0.76rem;
+        margin-top: 5px;
+        line-height: 1.35;
     }
 
-    /* Klasik Yuvarlak Radyo Düğmesini Gizleme */
+    /* Radyo Grubunu Özel Kart Koleksiyonuna Dönüştürme */
+    section[data-testid="stSidebar"] div[role="radiogroup"] {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 4px;
+    }
+
+    /* Klasik Radyo Yuvarlağını Tamamen Kaldırma */
     section[data-testid="stSidebar"] div[role="radiogroup"] > label > div:first-child {
         display: none !important;
     }
 
-    /* Menü Metin Ayarları */
+    /* Pasif Navigasyon Kartları */
+    section[data-testid="stSidebar"] div[role="radiogroup"] > label {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-left: 4px solid #cbd5e1;
+        border-radius: 12px;
+        padding: 11px 14px 11px 15px;
+        margin: 0 !important;
+        cursor: pointer;
+        transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 2px 5px rgba(15, 23, 42, 0.03);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: relative;
+    }
+
     section[data-testid="stSidebar"] div[role="radiogroup"] > label p {
-        font-size: 0.89rem !important;
-        font-weight: 500 !important;
-        color: #334155 !important;
+        font-size: 0.88rem !important;
+        font-weight: 600 !important;
+        color: #1e293b !important;
         line-height: 1.35 !important;
         margin: 0 !important;
+        width: 100%;
     }
 
-    /* Üzerine Gelince (Hover Efekti) */
+    /* Kart Üzerine Gelindiğinde (Hover) */
     section[data-testid="stSidebar"] div[role="radiogroup"] > label:hover {
-        background-color: #f1f5f9;
-        border-color: #cbd5e1;
-        transform: translateX(3px);
+        background: #ffffff;
+        border-color: #94a3b8;
+        border-left-color: #f59e0b;
+        transform: translateX(4px);
+        box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
     }
 
-    /* Seçili (Aktif) Menü Kartı */
+    /* Aktif / Seçili Navigasyon Kartı */
     section[data-testid="stSidebar"] div[role="radiogroup"] > label:has(input:checked) {
-        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%) !important;
-        border-color: #2c3e50 !important;
-        border-left: 5px solid #f39c12 !important;
-        box-shadow: 0 4px 12px rgba(44, 62, 80, 0.18) !important;
-        transform: translateX(3px);
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+        border-color: #1e293b !important;
+        border-left: 5px solid #f59e0b !important;
+        transform: translateX(4px);
+        box-shadow: 0 8px 18px rgba(30, 41, 59, 0.22) !important;
     }
 
-    /* Seçili Öğenin Yazı Rengi */
     section[data-testid="stSidebar"] div[role="radiogroup"] > label:has(input:checked) p {
         color: #ffffff !important;
-        font-weight: 600 !important;
+        font-weight: 700 !important;
+    }
+
+    section[data-testid="stSidebar"] div[role="radiogroup"] > label:has(input:checked)::after {
+        content: "▸";
+        color: #fbbf24;
+        font-size: 1rem;
+        font-weight: 800;
+        margin-left: 8px;
+    }
+
+    /* Alt Durum & Modül Bilgi Kutusu */
+    .nav-footer-box {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 12px 14px;
+        margin-top: 14px;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+    }
+    .nav-status-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin-bottom: 6px;
+    }
+    .nav-live-dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background-color: #22c55e;
+        border-radius: 50%;
+        margin-right: 6px;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.22);
+    }
+    .nav-active-module {
+        font-size: 0.75rem;
+        color: #475569;
+        background: #f8fafc;
+        border: 1px dashed #cbd5e1;
+        border-radius: 8px;
+        padding: 7px 10px;
+        line-height: 1.35;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -230,32 +331,44 @@ def save_arsiv(yeni_test):
     except:
         pass
 
-# --- MODERN SİSTEM NAVİGASYONU ---
+# --- YENİ NESİL SİSTEM NAVİGASYONU ---
 st.sidebar.markdown("""
-    <div style="margin-bottom: 4px;">
-        <div style="font-size: 1.22rem; font-weight: 800; color: #1e293b; letter-spacing: -0.2px;">🧭 Sistem Navigasyonu</div>
-        <div style="font-size: 0.82rem; color: #64748b; margin-top: 2px;">Çalışma Alanı Seçin:</div>
+    <div class="nav-header-card">
+        <div class="nav-brand-row">
+            <div class="nav-main-title">🧭 Sistem Navigasyonu</div>
+            <span class="nav-pill">MAARİF AI</span>
+        </div>
+        <div class="nav-sub-caption">
+            Çalışma alanları ve kontrol merkezleri arasında geçiş yapın
+        </div>
     </div>
 """, unsafe_allow_html=True)
 
+modul_aciklamalari = {
+    "🏠 Ana Sayfa & 2027 LGS'ye Geri Sayım": "Canlı sınav sayacı, platform metrikleri ve genel özet",
+    "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)": "AI soru üretimi, baş editör redaksiyonu ve 2 sütunlu .docx",
+    "🎓 Öğrenci Portalı & Soru Çözüm": "İnteraktif test çözümü, akıllı koç ve liderlik tablosu",
+    "👪 Veli Takip Paneli": "Kazanım analizi, çalışma süresi ve gelişim raporu",
+    "🏢 B2B Lisans & Kurum Yönetimi": "Okul, kurs ve öğretmen lisans kontrol merkezi",
+    "💎 Paketler & Abonelik Vitrini": "12 özel eğitim paketi, karşılaştırma ve iyzico ödeme"
+}
+
 ana_modul = st.sidebar.radio(
     "Çalışma Alanı Seçin:",
-    [
-        "🏠 Ana Sayfa & 2027 LGS'ye Geri Sayım",
-        "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)",
-        "🎓 Öğrenci Portalı & Soru Çözüm",
-        "👪 Veli Takip Paneli",
-        "🏢 B2B Lisans & Kurum Yönetimi",
-        "💎 Paketler & Abonelik Vitrini"
-    ],
+    list(modul_aciklamalari.keys()),
     label_visibility="collapsed"
 )
 
-st.sidebar.markdown("""
-    <hr style="margin: 18px 0 12px 0; border-color: #e2e8f0;">
-    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; font-size: 0.78rem; color: #475569; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);">
-        <div style="font-weight: 700; color: #1e293b; margin-bottom: 2px;">🟢 Sistem Aktif</div>
-        <div>Kurşun Kalem Dijital Eğitim</div>
+st.sidebar.markdown(f"""
+    <div class="nav-footer-box">
+        <div class="nav-status-row">
+            <span><span class="nav-live-dot"></span>Sistem Çevrimiçi</span>
+            <span style="color:#d97706;">LGS 2027</span>
+        </div>
+        <div class="nav-active-module">
+            <strong>Aktif Modül:</strong> {ana_modul}<br>
+            <span style="color:#64748b;">{modul_aciklamalari[ana_modul]}</span>
+        </div>
     </div>
 """, unsafe_allow_html=True)
 
@@ -620,8 +733,17 @@ elif ana_modul == "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)":
         st.markdown("Türkiye Yüzyılı Maarif Modeli standartlarında, **Otomatik Redaktör ve Kalite Kontrollü** ve **2 Sütunlu LGS Kitapçık Formatında** profesyonel değerlendirme testleri oluşturun.")
 
         with st.sidebar:
-            kurumsal_logo_goster()
-            st.header("⚙️ Test ve Kurum Parametreleri")
+            st.markdown("""
+                <div class="nav-header-card" style="margin-top: 8px;">
+                    <div class="nav-brand-row">
+                        <div class="nav-main-title">⚙️ Test Parametreleri</div>
+                        <span class="nav-pill">STÜDYO</span>
+                    </div>
+                    <div class="nav-sub-caption">
+                        Branş, kazanım, zorluk ve çıktı ayarları
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
 
             kurum_adi = st.text_input("Kurum / Okul Adı", value="Kurşun Kalem Dijital Eğitim")
             secilen_brans = st.selectbox("Branş Seçimi", list(kazanim_db.keys()), key="yazar_brans")
