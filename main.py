@@ -27,6 +27,15 @@ BRAND_TAGLINE = "KURŞUN KALEM DİJİTAL EĞİTİM- Geleceği Yazan Dijital Eği
 DEFAULT_MODEL = "gemini-3.8-flash"
 FALLBACK_MODEL = "gemini-2.5-flash"
 
+LOGO_CANDIDATE_PATHS = [
+    "logo.png",
+    "logo.jpg",
+    "logo.jpeg",
+    "assets/logo.png",
+    "assets/logo.jpg",
+    "WhatsApp Image 2026-11-19 at 18.39.00.jpeg",
+]
+
 LGS_2027_TARGET = datetime(2027, 6, 13, 9, 30, 0)
 YKS_2027_TARGET = datetime(2027, 6, 19, 10, 15, 0)
 
@@ -336,7 +345,7 @@ st.markdown(
         .kp-hero {
             background: linear-gradient(125deg, #090e1a 0%, #16233b 52%, #7f1d1d 100%);
             color: #ffffff;
-            padding: 1.55rem 1.9rem;
+            padding: 1.45rem 1.85rem;
             border-radius: 16px;
             margin-bottom: 1.3rem;
             box-shadow: 0 14px 30px rgba(9, 14, 26, 0.2);
@@ -506,8 +515,39 @@ st.markdown(
 )
 
 # ==============================================================================
-# YARDIMCI FONKSİYONLAR: API ANAHTARI, GEMINI İSTEMCİSİ, SAYAÇ, KOTA VE DOCX
+# YARDIMCI FONKSİYONLAR: LOGO, API, GEMINI, SAYAÇ, KOTA VE DOCX
 # ==============================================================================
+def resolve_logo_bytes() -> Optional[bytes]:
+    """Oturumda yüklenen veya yerel dizindeki kurumsal logo baytlarını döndürür."""
+    uploaded_bytes = st.session_state.get("uploaded_logo_bytes")
+    if isinstance(uploaded_bytes, (bytes, bytearray)) and len(uploaded_bytes) > 0:
+        return bytes(uploaded_bytes)
+
+    for candidate in LOGO_CANDIDATE_PATHS:
+        try:
+            if os.path.isfile(candidate):
+                with open(candidate, "rb") as fh:
+                    data = fh.read()
+                if data:
+                    return data
+        except Exception:
+            continue
+    return None
+
+
+def attach_logo_to_doc(doc: Document, logo_bytes: Optional[bytes], width_in: float = 1.25) -> None:
+    """Varsa kurumsal logoyu DOCX belgesinin üst kısmına ortalanmış olarak ekler."""
+    if not logo_bytes:
+        return
+    try:
+        p = doc.add_paragraph()
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p.paragraph_format.space_after = Pt(4)
+        p.add_run().add_picture(io.BytesIO(logo_bytes), width=Inches(width_in))
+    except Exception:
+        pass
+
+
 def resolve_gemini_api_key() -> Optional[str]:
     """Yalnızca st.secrets veya ortam değişkenlerinden API anahtarını okur."""
     key: Optional[str] = None
@@ -591,25 +631,53 @@ def record_activity(module_name: str, summary: str) -> None:
     st.session_state["activity_log"] = logs[:12]
 
 
+def extract_answer_key(raw_text: str) -> Dict[int, str]:
+    """Metindeki 'Cevap Anahtarı' bölümünden {soru_no: 'A'|'B'|'C'|'D'} haritası çıkarır."""
+    if not raw_text.strip():
+        return {}
+
+    parts = re.split(r"(?:^|\n)#*\s*Cevap\s*Anahtar[^\n]*", raw_text, maxsplit=1, flags=re.IGNORECASE)
+    search_space = parts[1] if len(parts) > 1 else raw_text
+    key_map: Dict[int, str] = {}
+
+    patterns = [
+        r"(?:Soru\s*)?(\d+)\s*[\.\-\:\)]\s*\**\s*([A-D])\b",
+        r"(\d+)\s*\.\s*Soru\s*[\:\-\)]\s*\**\s*([A-D])\b",
+    ]
+    for pat in patterns:
+        for m in re.finditer(pat, search_space, flags=re.IGNORECASE):
+            q_num = int(m.group(1))
+            ans_letter = m.group(2).upper()
+            if q_num not in key_map:
+                key_map[q_num] = ans_letter
+
+    return key_map
+
+
 def parse_quiz_questions(raw_text: str) -> List[Dict[str, Any]]:
-    """Üretilen test metninden etkileşimli mini deneme için sorular ayıklar."""
+    """Üretilen test metninden etkileşimli mini deneme için soruları ve cevap anahtarını ayıklar."""
     if not raw_text.strip():
         return []
 
+    answer_map = extract_answer_key(raw_text)
     main_body = re.split(r"(?:^|\n)#*\s*Cevap\s*Anahtar", raw_text, maxsplit=1, flags=re.IGNORECASE)[0]
     blocks = re.split(r"(?=(?:^|\n)#*\s*Soru\s*\d+)", main_body.strip(), flags=re.IGNORECASE)
     parsed: List[Dict[str, Any]] = []
 
     for block in blocks:
         text = block.strip()
-        if not re.match(r"^#*\s*Soru\s*\d+", text, flags=re.IGNORECASE):
+        num_match = re.match(r"^#*\s*Soru\s*(\d+)", text, flags=re.IGNORECASE)
+        if not num_match:
             continue
+        q_num = int(num_match.group(1))
         lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
         stem_lines: List[str] = []
         options: Dict[str, str] = {}
         current_opt: Optional[str] = None
 
         for ln in lines:
+            if re.match(r"^\[?Redaksiyon", ln, flags=re.IGNORECASE):
+                continue
             opt_match = re.match(r"^[\-\*\s]*([A-D])\s*[\)\.\:]\s*(.+)$", ln, flags=re.IGNORECASE)
             if opt_match:
                 letter = opt_match.group(1).upper()
@@ -623,8 +691,10 @@ def parse_quiz_questions(raw_text: str) -> List[Dict[str, Any]]:
         if len(options) >= 2:
             parsed.append(
                 {
+                    "num": q_num,
                     "stem": "\n".join(stem_lines),
                     "options": options,
+                    "correct": answer_map.get(q_num),
                     "full_text": text,
                 }
             )
@@ -713,6 +783,7 @@ def build_test_docx(
     outcome: str,
     context_theme: str,
     generated_content: str,
+    logo_bytes: Optional[bytes] = None,
 ) -> bytes:
     """Üretilen soruları kurumsal başlıklı DOCX dosyasına dönüştürür."""
     doc = Document()
@@ -722,6 +793,8 @@ def build_test_docx(
         section.bottom_margin = Inches(0.75)
         section.left_margin = Inches(0.75)
         section.right_margin = Inches(0.75)
+
+    attach_logo_to_doc(doc, logo_bytes, width_in=1.2)
 
     title_p = doc.add_paragraph()
     title_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -774,7 +847,7 @@ def build_test_docx(
     return buffer.getvalue()
 
 
-def build_coach_docx(title_meta: str, plan_text: str) -> bytes:
+def build_coach_docx(title_meta: str, plan_text: str, logo_bytes: Optional[bytes] = None) -> bytes:
     """Dijimentor çalışma planını kurumsal DOCX belgesine çevirir."""
     doc = Document()
     for section in doc.sections:
@@ -782,6 +855,8 @@ def build_coach_docx(title_meta: str, plan_text: str) -> bytes:
         section.bottom_margin = Inches(0.75)
         section.left_margin = Inches(0.75)
         section.right_margin = Inches(0.75)
+
+    attach_logo_to_doc(doc, logo_bytes, width_in=1.2)
 
     h = doc.add_paragraph()
     h.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -823,6 +898,7 @@ def build_commercial_brief_docx(
     installment: int,
     total_amount: int,
     extra_notes: str,
+    logo_bytes: Optional[bytes] = None,
 ) -> bytes:
     """Kurumsal lisans veya abonelik özeti için DOCX teklif/bilgilendirme belgesi üretir."""
     doc = Document()
@@ -831,6 +907,8 @@ def build_commercial_brief_docx(
         section.bottom_margin = Inches(0.75)
         section.left_margin = Inches(0.75)
         section.right_margin = Inches(0.75)
+
+    attach_logo_to_doc(doc, logo_bytes, width_in=1.2)
 
     h = doc.add_paragraph()
     h.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -875,7 +953,12 @@ def build_commercial_brief_docx(
     return buf.getvalue()
 
 
-def render_iyzico_simulator(package_name: str, monthly_price: int, tier_id: Optional[str] = None) -> None:
+def render_iyzico_simulator(
+    package_name: str,
+    monthly_price: int,
+    tier_id: Optional[str] = None,
+    logo_bytes: Optional[bytes] = None,
+) -> None:
     """iyzico taksit ve ödeme simülatörü."""
     st.markdown("### 💳 iyzico Taksit & Ödeme Simülatörü")
     c1, c2, c3 = st.columns(3)
@@ -938,6 +1021,7 @@ def render_iyzico_simulator(package_name: str, monthly_price: int, tier_id: Opti
             installment=int(installment),
             total_amount=int(total_amount),
             extra_notes=f"Kart Programı: {card_brand}",
+            logo_bytes=logo_bytes,
         )
         st.download_button(
             label="📥 Teklif / Özet DOCX",
@@ -974,14 +1058,27 @@ if "activity_log" not in st.session_state:
 sync_plan_quotas(get_tier_by_id(st.session_state.selected_tier_id), force_reset=False)
 api_key_ready = resolve_gemini_api_key() is not None
 active_tier_global = get_tier_by_id(st.session_state.selected_tier_id)
+active_logo_bytes = resolve_logo_bytes()
 
 # ==============================================================================
-# KENAR ÇUBUĞU (CUSTOM BUTTON NAVİGASYON + AKTİF PAKET KOTA ÖZETİ)
+# KENAR ÇUBUĞU (LOGO + CUSTOM BUTTON NAVİGASYON + AKTİF PAKET KOTA ÖZETİ)
 # ==============================================================================
 with st.sidebar:
+    if active_logo_bytes:
+        st.image(active_logo_bytes, use_container_width=True)
+    else:
+        uploaded_logo = st.file_uploader(
+            "Kurumsal Logo Yükle (PNG/JPG)",
+            type=["png", "jpg", "jpeg"],
+            key="sidebar_logo_uploader",
+        )
+        if uploaded_logo is not None:
+            st.session_state["uploaded_logo_bytes"] = uploaded_logo.getvalue()
+            st.rerun()
+
     st.markdown(
         f"""
-        <div style="background:#0f172a;color:#ffffff;padding:0.9rem 1rem;border-radius:10px;margin-bottom:0.85rem;">
+        <div style="background:#0f172a;color:#ffffff;padding:0.9rem 1rem;border-radius:10px;margin-top:0.4rem;margin-bottom:0.85rem;">
             <div style="font-weight:700;font-size:1rem;">🧭 Sistem Navigasyonu</div>
             <div style="font-size:0.78rem;color:#cbd5e1;margin-top:0.15rem;">{BRAND_NAME}</div>
         </div>
@@ -1028,24 +1125,30 @@ with st.sidebar:
         st.warning("● API Anahtarı Bekleniyor (Secrets)")
 
 # ==============================================================================
-# ÜST KURUMSAL BANNER
+# ÜST KURUMSAL BANNER (LOGO + BAŞLIK + SLOGAN)
 # ==============================================================================
-st.markdown(
-    f"""
-    <div class="kp-hero">
-        <h1>✏️ {BRAND_NAME}</h1>
-        <p>{BRAND_TAGLINE}</p>
-        <div class="kp-tech-strip">
-            <span class="kp-tech-pill">⚡ Gemini AI Motoru</span>
-            <span class="kp-tech-pill">📐 Maarif Modeli Kazanım Uyumu</span>
-            <span class="kp-tech-pill">🎯 Dijimentor v3 Analitik</span>
-            <span class="kp-tech-pill">📄 Kurumsal DOCX Stüdyo</span>
-            <span class="kp-tech-pill">💳 iyzico Altyapı</span>
+banner_logo_col, banner_text_col = st.columns([1.2, 6.8]) if active_logo_bytes else (None, st.container())
+if active_logo_bytes and banner_logo_col is not None:
+    with banner_logo_col:
+        st.image(active_logo_bytes, use_container_width=True)
+
+with banner_text_col:
+    st.markdown(
+        f"""
+        <div class="kp-hero">
+            <h1>✏️ {BRAND_NAME}</h1>
+            <p>{BRAND_TAGLINE}</p>
+            <div class="kp-tech-strip">
+                <span class="kp-tech-pill">⚡ Gemini AI Motoru</span>
+                <span class="kp-tech-pill">📐 Maarif Modeli Kazanım Uyumu</span>
+                <span class="kp-tech-pill">🎯 Dijimentor v3 Analitik</span>
+                <span class="kp-tech-pill">📄 Kurumsal DOCX Stüdyo</span>
+                <span class="kp-tech-pill">💳 iyzico Altyapı</span>
+            </div>
         </div>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+        """,
+        unsafe_allow_html=True,
+    )
 
 current_page = st.session_state.active_page
 
@@ -1205,7 +1308,7 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
                 "uzman bir Türkçe ve test yazarısın. Soruların özgün, açık, çeldiricileri güçlü, "
                 "dil bilgisi ve yazım kurallarına kusursuz uygun olmasını sağla. "
                 "Otomatik redaksiyon açıksa her sorunun sonunda kısa bir [Redaksiyon & Çeldirici Notu] ekle "
-                "ve en sonda ayrı bir 'Cevap Anahtarı ve Kısa Gerekçeler' bölümü oluştur."
+                "ve en sonda mutlaka 'Cevap Anahtarı' başlığı altında '1-A', '2-C' formatında net anahtar ver."
             )
             user_prompt = (
                 f"Kurum: {institution}\n"
@@ -1217,7 +1320,7 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
                 f"Zorluk Derecesi: {difficulty}\n"
                 f"Soru Adedi: {question_count}\n"
                 f"Otomatik Redaksiyon ve Kalite Denetimi: {'Aktif' if auto_review else 'Pasif'}\n\n"
-                "Lütfen numaralandırılmış çoktan seçmeli (A, B, C, D) özgün sorular üret."
+                "Lütfen numaralandırılmış çoktan seçmeli (Soru 1, Soru 2... ve A, B, C, D şıkları) özgün sorular üret."
             )
             try:
                 with st.spinner("Sorular üretiliyor ve kalite denetimi yapılıyor..."):
@@ -1247,6 +1350,7 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
             outcome=outcome,
             context_theme=context_theme,
             generated_content=st.session_state.generated_test_text,
+            logo_bytes=active_logo_bytes,
         )
         act_c1, act_c2, act_c3 = st.columns(3)
         with act_c1:
@@ -1271,23 +1375,23 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
                 navigate_to("Öğrenci Portalı & Çözüm")
 
 # ==============================================================================
-# 3. ÖĞRENCİ PORTALI & ÇÖZÜM + İNTERAKTİF MİNİ DENEME
+# 3. ÖĞRENCİ PORTALI & ÇÖZÜM + İNTERAKTİF MİNİ DENEME (NET & DOĞRULUK MOTORU)
 # ==============================================================================
 elif current_page == "Öğrenci Portalı & Çözüm":
     st.subheader("🎓 Öğrenci Portalı, Mini Deneme & Adımlı Çözüm Asistanı")
     st.write(
-        "Üretilen soruları interaktif mini deneme olarak çözebilir veya takıldığın soruyu "
-        "adım adım mentorluk rehberiyle analiz edebilirsin."
+        "Üretilen soruları otomatik cevap anahtarı kontrollü mini deneme olarak çözebilir veya "
+        "takıldığın soruyu adım adım mentorluk rehberiyle analiz edebilirsin."
     )
 
-    tab_exam, tab_hint = st.tabs(["📝 İnteraktif Mini Deneme", "🔍 Adımlı Çözüm Asistanı"])
+    tab_exam, tab_hint = st.tabs(["📝 İnteraktif Mini Deneme & Net Analizi", "🔍 Adımlı Çözüm Asistanı"])
 
     with tab_exam:
         exam_source = st.text_area(
             "Deneme Soru Metni (Soru Fabrikasından otomatik gelir veya buraya yapıştır)",
             value=st.session_state.get("portal_exam_source") or st.session_state.get("generated_test_text", ""),
-            height=140,
-            placeholder="Soru 1) ... A) ... B) ... C) ... D) ...",
+            height=130,
+            placeholder="Soru 1) ... A) ... B) ... C) ... D) ... Cevap Anahtarı: 1-B",
         )
         st.session_state["portal_exam_source"] = exam_source
         questions = parse_quiz_questions(exam_source)
@@ -1305,7 +1409,7 @@ elif current_page == "Öğrenci Portalı & Çözüm":
                     st.markdown(q["stem"])
                     opts = list(q["options"].keys())
                     chosen = st.radio(
-                        f"Soru {idx + 1} Yanıtın",
+                        f"Soru {q['num']} Yanıtın",
                         options=opts,
                         format_func=lambda k, o_map=q["options"]: f"{k}) {o_map[k]}",
                         horizontal=True,
@@ -1313,13 +1417,69 @@ elif current_page == "Öğrenci Portalı & Çözüm":
                     )
                     user_answers[idx] = chosen
 
-            if st.button("✅ Denemeyi Tamamla ve Değerlendir", type="primary"):
-                answered_cnt = len(user_answers)
-                record_activity("Mini Deneme", f"{answered_cnt} soruluk deneme tamamlandı")
-                st.success(
-                    f"Deneme kaydı tamamlandı! **{answered_cnt}/{len(questions)}** soru yanıtlandı. "
-                    "Detaylı gerekçe ve adım adım çözüm için yan sekmedeki **Adımlı Çözüm Asistanı**nı kullanabilirsin."
+            if st.button("✅ Denemeyi Bitir ve Netimi Hesapla", type="primary"):
+                correct_cnt = 0
+                wrong_cnt = 0
+                ungraded_cnt = 0
+                wrong_questions: List[Dict[str, Any]] = []
+                result_rows: List[Dict[str, str]] = []
+
+                for idx, q in enumerate(questions):
+                    u_ans = user_answers[idx]
+                    c_ans = q.get("correct")
+                    if not c_ans:
+                        ungraded_cnt += 1
+                        status_txt = "Anahtar Yok"
+                    elif u_ans == c_ans:
+                        correct_cnt += 1
+                        status_txt = "✅ Doğru"
+                    else:
+                        wrong_cnt += 1
+                        wrong_questions.append(q)
+                        status_txt = "❌ Yanlış"
+
+                    result_rows.append(
+                        {
+                            "Soru": f"Soru {q['num']}",
+                            "Senin Yanıtın": u_ans,
+                            "Doğru Cevap": c_ans or "Belirtilmedi",
+                            "Durum": status_txt,
+                        }
+                    )
+
+                graded_total = correct_cnt + wrong_cnt
+                net_score = max(0.0, correct_cnt - (wrong_cnt / 3.0))
+                accuracy = (correct_cnt / graded_total * 100.0) if graded_total > 0 else 0.0
+
+                st.session_state["last_exam_report"] = {
+                    "correct": correct_cnt,
+                    "wrong": wrong_cnt,
+                    "net": net_score,
+                    "accuracy": accuracy,
+                    "rows": result_rows,
+                    "first_wrong": wrong_questions[0]["full_text"] if wrong_questions else "",
+                }
+                record_activity(
+                    "Mini Deneme",
+                    f"{correct_cnt}D {wrong_cnt}Y • {net_score:.2f} Net (%{accuracy:.0f})",
                 )
+
+            report = st.session_state.get("last_exam_report")
+            if report:
+                st.markdown("---")
+                r1, r2, r3, r4 = st.columns(4)
+                r1.metric("Doğru Sayısı", f"{report['correct']} Soru")
+                r2.metric("Yanlış Sayısı", f"{report['wrong']} Soru")
+                r3.metric("Hesaplanan Net (3Y=1D)", f"{report['net']:.2f} Net")
+                r4.metric("Başarı Oranı", f"%{report['accuracy']:.1f}")
+
+                st.dataframe(report["rows"], use_container_width=True, hide_index=True)
+
+                if report.get("first_wrong"):
+                    if st.button("🔍 Yanlış Yaptığım İlk Soruyu Çözüm Rehberine Aktar"):
+                        st.session_state["portal_question_draft"] = report["first_wrong"]
+                        st.toast("Yanlış soru Adımlı Çözüm Asistanı sekmesine aktarıldı.")
+                        st.rerun()
 
     with tab_hint:
         col_l, col_r = st.columns([2, 1])
@@ -1593,7 +1753,9 @@ elif current_page == "Dijimentor":
             f"Hedef: {target_exam} | Hedef Bandı: {target_goal} | "
             f"Haftalık Süre: {weekly_hours} Saat | Odak: {coach_focus}"
         )
-        docx_coach = build_coach_docx(meta_summary, st.session_state.dijimentor_plan)
+        docx_coach = build_coach_docx(
+            meta_summary, st.session_state.dijimentor_plan, logo_bytes=active_logo_bytes
+        )
 
         d_col1, d_col2, d_col3 = st.columns(3)
         with d_col1:
@@ -1650,62 +1812,118 @@ elif current_page == "Veli Takip Paneli":
         )
 
 # ==============================================================================
-# 6. B2B LİSANS & KURUM
+# 6. B2B LİSANS & KURUM + ZÜMRE SORU DAĞITIMI & RAPORLAMA SİMÜLASYONU
 # ==============================================================================
 elif current_page == "B2B Lisans & Kurum":
     st.subheader("🏫 B2B Lisans & Kurum Yönetimi")
     st.write(
         "Okullar, kurs merkezleri ve eğitim kurumları için toplu soru üretimi, zümre "
-        "kalite denetimi ve kurumsal lisanslama çözümleri."
+        "kapasite dağıtımı ve kurumsal lisanslama çözümleri."
     )
 
-    with st.form("b2b_inquiry_form"):
-        c1, c2 = st.columns(2)
-        with c1:
-            org_name = st.text_input("Kurum / Okul Adı")
-            city = st.text_input("İl / İlçe", value="İstanbul")
-            teacher_seats = st.number_input(
-                "Öğretmen / Editör Koltuk Sayısı", min_value=1, max_value=500, value=15
-            )
-        with c2:
-            student_seats = st.number_input(
-                "Öğrenci Hesap Sayısı", min_value=10, max_value=10000, value=250
-            )
-            contact_name = st.text_input("Yetkili Adı Soyadı")
-            contact_email = st.text_input("Kurumsal E-posta")
+    tab_b2b_form, tab_b2b_zumre = st.tabs(
+        ["📋 Kurumsal Lisans Teklif Stüdyosu", "📊 Zümre Soru Dağıtımı & Kurumsal Rapor"]
+    )
 
-        submitted = st.form_submit_button("Kurumsal Lisans Teklifi Hazırla")
-        if submitted:
-            if not org_name.strip():
-                st.warning("Lütfen kurum adını girin.")
-            else:
-                st.session_state["last_b2b_summary"] = (
-                    f"Kurum: {org_name} ({city}) | Yetkili: {contact_name or '-'} | "
-                    f"E-posta: {contact_email or '-'} | Koltuk: {teacher_seats} Öğretmen, "
-                    f"{student_seats} Öğrenci"
+    with tab_b2b_form:
+        with st.form("b2b_inquiry_form"):
+            c1, c2 = st.columns(2)
+            with c1:
+                org_name = st.text_input("Kurum / Okul Adı", value="Özel Kurşun Kalem Akademi")
+                city = st.text_input("İl / İlçe", value="İstanbul")
+                teacher_seats = st.number_input(
+                    "Öğretmen / Editör Koltuk Sayısı", min_value=1, max_value=500, value=15
                 )
-                record_activity("B2B Lisans", f"{org_name} teklif taslağı hazırlandı")
-                st.success(
-                    f"**{org_name}** ({city}) için **{teacher_seats} öğretmen** ve "
-                    f"**{student_seats} öğrenci** kapasiteli kurumsal lisans talebi kaydedildi."
+            with c2:
+                student_seats = st.number_input(
+                    "Öğrenci Hesap Sayısı", min_value=10, max_value=10000, value=250
                 )
+                contact_name = st.text_input("Yetkili Adı Soyadı")
+                contact_email = st.text_input("Kurumsal E-posta")
 
-    if st.session_state.get("last_b2b_summary"):
-        b2b_tier = get_tier_by_id("b2b_kurs" if student_seats <= 300 else "b2b_kampus")
-        b2b_docx = build_commercial_brief_docx(
-            title=f"{org_name or 'Kurumsal'} Lisans Teklif Özeti",
-            tier=b2b_tier,
-            billing_cycle="Yıllık (%20 İndirim)",
-            installment=6,
-            total_amount=round(b2b_tier["monthly_price"] * 12 * 0.80),
-            extra_notes=st.session_state["last_b2b_summary"],
+            submitted = st.form_submit_button("Kurumsal Lisans Teklifi Hazırla")
+            if submitted:
+                if not org_name.strip():
+                    st.warning("Lütfen kurum adını girin.")
+                else:
+                    st.session_state["last_b2b_summary"] = (
+                        f"Kurum: {org_name} ({city}) | Yetkili: {contact_name or '-'} | "
+                        f"E-posta: {contact_email or '-'} | Koltuk: {teacher_seats} Öğretmen, "
+                        f"{student_seats} Öğrenci"
+                    )
+                    st.session_state["b2b_org_cache"] = {
+                        "org": org_name,
+                        "teachers": int(teacher_seats),
+                        "students": int(student_seats),
+                    }
+                    record_activity("B2B Lisans", f"{org_name} teklif taslağı hazırlandı")
+                    st.success(
+                        f"**{org_name}** ({city}) için **{teacher_seats} öğretmen** ve "
+                        f"**{student_seats} öğrenci** kapasiteli kurumsal lisans talebi kaydedildi."
+                    )
+
+        if st.session_state.get("last_b2b_summary"):
+            b2b_tier = get_tier_by_id("b2b_kurs" if student_seats <= 300 else "b2b_kampus")
+            b2b_docx = build_commercial_brief_docx(
+                title=f"{org_name or 'Kurumsal'} Lisans Teklif Özeti",
+                tier=b2b_tier,
+                billing_cycle="Yıllık (%20 İndirim)",
+                installment=6,
+                total_amount=round(b2b_tier["monthly_price"] * 12 * 0.80),
+                extra_notes=st.session_state["last_b2b_summary"],
+                logo_bytes=active_logo_bytes,
+            )
+            st.download_button(
+                label="📥 Kurumsal Lisans Teklifini DOCX İndir",
+                data=b2b_docx,
+                file_name="kursun_kalem_kurumsal_teklif.docx",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+
+    with tab_b2b_zumre:
+        org_cache = st.session_state.get(
+            "b2b_org_cache", {"org": "Özel Kurşun Kalem Akademi", "teachers": 15, "students": 250}
         )
-        st.download_button(
-            label="📥 Kurumsal Lisans Teklifini DOCX İndir",
-            data=b2b_docx,
-            file_name="kursun_kalem_kurumsal_teklif.docx",
-            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        recommended_tier = get_tier_by_id(
+            "b2b_kurs" if org_cache["students"] <= 300 else "b2b_kampus"
         )
+        total_q = recommended_tier["monthly_quota"]
+
+        bk1, bk2, bk3, bk4 = st.columns(4)
+        bk1.metric("Kurum Profili", org_cache["org"])
+        bk2.metric("Aylık Soru Havuzu", f"{total_q:,}".replace(",", "."))
+        bk3.metric("Öğretmen Başına Kota", f"{total_q // max(1, org_cache['teachers']):,} Soru".replace(",", "."))
+        bk4.metric("Öğrenci Başına Test", f"{total_q // max(1, org_cache['students'])} Soru / Ay")
+
+        st.markdown("#### 📐 Branş Zümreleri Arası Soru Kotası Dağılımı")
+        dist_ratios = {
+            "Türkçe & Edebiyat Zümresi": 0.28,
+            "Matematik & Geometri Zümresi": 0.30,
+            "Fen Bilimleri Zümresi": 0.22,
+            "Sosyal Bilimler & İnkılap Zümresi": 0.12,
+            "Yabancı Dil (İngilizce) Zümresi": 0.08,
+        }
+        zumre_rows = []
+        chart_map: Dict[str, int] = {}
+        for z_name, ratio in dist_ratios.items():
+            allocated = int(round(total_q * ratio))
+            short_lbl = z_name.split(" ")[0]
+            chart_map[short_lbl] = allocated
+            zumre_rows.append(
+                {
+                    "Zümre Birimi": z_name,
+                    "Pay (%)": f"%{int(ratio * 100)}",
+                    "Aylık Soru Kotası": f"{allocated:,}".replace(",", "."),
+                    "Haftalık Deneme Hedefi": f"{max(1, allocated // 80)} Kitapçık",
+                    "Redaksiyon Standardı": "Maarif Modeli • Çift Kontrol",
+                }
+            )
+
+        zc1, zc2 = st.columns([3, 2])
+        with zc1:
+            st.dataframe(zumre_rows, use_container_width=True, hide_index=True)
+        with zc2:
+            st.bar_chart(chart_map, height=225)
 
 # ==============================================================================
 # 7. PAKETLER & ABONELİK VİTRİNİ (12 PAKET, KARŞILAŞTIRMA MATRİSİ & IYZICO)
@@ -1776,4 +1994,9 @@ elif current_page == "Paketler & Abonelik Vitrini":
         index=[t["name"] for t in SUBSCRIPTION_TIERS].index(chosen_tier["name"]),
     )
     active_tier = next(t for t in SUBSCRIPTION_TIERS if t["name"] == chosen_name)
-    render_iyzico_simulator(active_tier["name"], active_tier["monthly_price"], active_tier["id"])
+    render_iyzico_simulator(
+        active_tier["name"],
+        active_tier["monthly_price"],
+        active_tier["id"],
+        logo_bytes=active_logo_bytes,
+    )
