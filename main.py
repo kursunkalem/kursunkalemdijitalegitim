@@ -318,85 +318,120 @@ CURRICULUM_TOPICS: Dict[str, Dict[str, List[str]]] = {
 st.markdown(
     """
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+        html, body, [class*="css"] {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        [data-testid="stHeader"] {
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(8px);
+        }
+        [data-testid="stDecoration"] {
+            display: none;
+        }
         .block-container {
-            padding-top: 1.1rem;
-            padding-bottom: 2.5rem;
+            padding-top: 1.15rem;
+            padding-bottom: 4.5rem;
             max-width: 1320px;
         }
         .kp-hero {
-            background: linear-gradient(125deg, #0f172a 0%, #1e293b 52%, #7f1d1d 100%);
+            background: linear-gradient(125deg, #0b1324 0%, #17253d 55%, #7f1d1d 100%);
             color: #ffffff;
-            padding: 1.45rem 1.75rem;
+            padding: 1.5rem 1.85rem;
             border-radius: 16px;
-            margin-bottom: 1.25rem;
-            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.16);
+            margin-bottom: 1.3rem;
+            box-shadow: 0 12px 28px rgba(11, 19, 36, 0.16);
             border: 1px solid rgba(255, 255, 255, 0.08);
         }
         .kp-hero h1 {
             margin: 0;
-            font-size: 1.68rem;
-            font-weight: 700;
-            letter-spacing: 0.2px;
+            font-size: 1.66rem;
+            font-weight: 800;
+            letter-spacing: -0.2px;
             color: #ffffff;
         }
         .kp-hero p {
             margin: 0.35rem 0 0 0;
-            font-size: 0.94rem;
+            font-size: 0.93rem;
             color: #e2e8f0;
+            font-weight: 400;
         }
         .kp-studio-banner {
-            background: linear-gradient(135deg, #f8fafc 0%, #fff1f2 100%);
+            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 65%, #fff5f5 100%);
             border: 1px solid #e2e8f0;
-            border-left: 5px solid #991b1b;
+            border-left: 5px solid #881337;
             border-radius: 14px;
-            padding: 1.15rem 1.35rem;
+            padding: 1.15rem 1.4rem;
             margin-bottom: 1rem;
             box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
         }
         .kp-studio-title {
-            font-size: 1.28rem;
+            font-size: 1.24rem;
             font-weight: 700;
             color: #0f172a;
             margin: 0;
+            letter-spacing: -0.15px;
         }
         .kp-studio-sub {
-            font-size: 0.9rem;
+            font-size: 0.89rem;
             color: #475569;
-            margin: 0.3rem 0 0 0;
+            margin: 0.28rem 0 0 0;
+            line-height: 1.45;
         }
         .kp-panel {
             background: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: 14px;
-            padding: 1.2rem 1.3rem;
+            padding: 1.25rem 1.4rem;
             margin-bottom: 1rem;
-            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.035);
         }
         .kp-kpi-card {
             background: #ffffff;
             border: 1px solid #e2e8f0;
             border-radius: 12px;
-            padding: 0.85rem 1rem;
+            padding: 0.9rem 1.05rem;
             box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+            transition: border-color 0.15s ease;
+        }
+        .kp-kpi-card:hover {
+            border-color: #cbd5e1;
         }
         .kp-kpi-label {
-            font-size: 0.74rem;
-            font-weight: 600;
+            font-size: 0.71rem;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.6px;
             color: #64748b;
         }
         .kp-kpi-value {
-            font-size: 1.25rem;
-            font-weight: 700;
+            font-size: 1.26rem;
+            font-weight: 800;
             color: #0f172a;
             margin-top: 0.2rem;
         }
         .kp-kpi-sub {
-            font-size: 0.78rem;
-            color: #991b1b;
-            font-weight: 500;
-            margin-top: 0.15rem;
+            font-size: 0.77rem;
+            color: #881337;
+            font-weight: 600;
+            margin-top: 0.16rem;
+        }
+        .kp-dist-bar {
+            display: flex;
+            height: 10px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: #f1f5f9;
+            margin: 0.55rem 0 0.45rem 0;
+            border: 1px solid #e2e8f0;
+        }
+        .kp-dist-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: #475569;
         }
         .kp-card {
             background: #ffffff;
@@ -404,7 +439,7 @@ st.markdown(
             border-radius: 12px;
             padding: 1.15rem 1.25rem;
             margin-bottom: 0.9rem;
-            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.035);
         }
         .kp-metric-box {
             background: #f8fafc;
@@ -415,16 +450,17 @@ st.markdown(
         }
         .kp-metric-num {
             font-size: 1.55rem;
-            font-weight: 700;
-            color: #1e293b;
+            font-weight: 800;
+            color: #0f172a;
             line-height: 1.2;
         }
         .kp-metric-lbl {
-            font-size: 0.8rem;
+            font-size: 0.78rem;
             color: #64748b;
             margin-top: 0.25rem;
             text-transform: uppercase;
-            letter-spacing: 0.4px;
+            letter-spacing: 0.45px;
+            font-weight: 600;
         }
         div[data-testid="stSidebar"] .stButton > button {
             width: 100%;
@@ -433,6 +469,15 @@ st.markdown(
             border-radius: 8px;
             padding: 0.5rem 0.75rem;
             font-weight: 500;
+        }
+        .stButton > button {
+            border-radius: 8px;
+            font-weight: 600;
+        }
+        div[data-testid="stTextInput"] input,
+        div[data-testid="stTextArea"] textarea {
+            border-radius: 8px;
+            border-color: #cbd5e1;
         }
     </style>
     """,
@@ -1133,7 +1178,8 @@ elif current_page == "Dijimentor":
         unsafe_allow_html=True,
     )
 
-    daily_avg = st.session_state.get("dk_hours", 16) / 7.0
+    current_hours = int(st.session_state.get("dk_hours", 16))
+    daily_avg = current_hours / 7.0
     k_c1, k_c2, k_c3, k_c4 = st.columns(4)
     k_c1.markdown(
         f"""
@@ -1150,7 +1196,7 @@ elif current_page == "Dijimentor":
         <div class="kp-kpi-card">
             <div class="kp-kpi-label">Günlük Ortalama Tempo</div>
             <div class="kp-kpi-value">{daily_avg:.1f} Saat</div>
-            <div class="kp-kpi-sub">Pomodoro + Tekrar Döngülü</div>
+            <div class="kp-kpi-sub">Haftalık Toplam: {current_hours} Saat</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -1182,7 +1228,7 @@ elif current_page == "Dijimentor":
     p_cols = st.columns(len(DIJIMENTOR_PRESETS) + 1)
     for idx, (preset_title, preset_data) in enumerate(DIJIMENTOR_PRESETS.items()):
         with p_cols[idx]:
-            if st.button(preset_title, key=f"preset_{idx}"):
+            if st.button(preset_title, key=f"preset_{idx}", use_container_width=True):
                 st.session_state["dk_exam"] = preset_data["exam"]
                 st.session_state["dk_hours"] = preset_data["hours"]
                 st.session_state["dk_goal"] = preset_data["goal"]
@@ -1191,10 +1237,11 @@ elif current_page == "Dijimentor":
                 st.session_state["dk_status"] = preset_data["status"]
                 st.rerun()
     with p_cols[-1]:
-        if st.button("Planı Temizle", key="clear_dk_plan"):
+        if st.button("Planı Temizle", key="clear_dk_plan", use_container_width=True):
             st.session_state.dijimentor_plan = ""
             st.rerun()
 
+    st.write("")
     st.markdown('<div class="kp-panel">', unsafe_allow_html=True)
     st.markdown("#### 🎯 Öğrenci Hedef ve Çalışma Profili")
 
@@ -1214,7 +1261,7 @@ elif current_page == "Dijimentor":
             "Haftalık Çalışma Süresi (Saat)",
             min_value=4,
             max_value=45,
-            value=int(st.session_state.get("dk_hours", 16)),
+            value=current_hours,
             key="dk_hours_sld",
         )
         st.session_state["dk_hours"] = weekly_hours
@@ -1253,7 +1300,7 @@ elif current_page == "Dijimentor":
             value=st.session_state.get(
                 "dk_weak", "Paragrafta ana düşünce, üslü ifadeler, dikkat kaynaklı işlem hataları"
             ),
-            height=78,
+            height=82,
             key="dk_weak_area",
         )
         st.session_state["dk_weak"] = weak_topics
@@ -1267,6 +1314,31 @@ elif current_page == "Dijimentor":
         )
         st.session_state["dk_status"] = recent_score
 
+    q_hrs = round(weekly_hours * 0.45, 1)
+    r_hrs = round(weekly_hours * 0.30, 1)
+    a_hrs = round(weekly_hours * 0.25, 1)
+    st.markdown(
+        f"""
+        <div style="margin-top:0.5rem;padding-top:0.75rem;border-top:1px solid #f1f5f9;">
+            <div style="font-size:0.76rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.4px;">
+                Önerilen Haftalık Kapasite Dağılımı ({weekly_hours} Saat)
+            </div>
+            <div class="kp-dist-bar">
+                <div style="width:45%;background:#0f172a;" title="Soru & Muhakeme Pratiği"></div>
+                <div style="width:30%;background:#881337;" title="Konu Tekrarı & Kazanım"></div>
+                <div style="width:25%;background:#475569;" title="Deneme & Çeldirici Analizi"></div>
+            </div>
+            <div class="kp-dist-legend">
+                <span>■ Soru & Muhakeme: <b>{q_hrs} sa</b> (%45)</span>
+                <span>■ Konu Tekrarı: <b>{r_hrs} sa</b> (%30)</span>
+                <span>■ Deneme & Analiz: <b>{a_hrs} sa</b> (%25)</span>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.write("")
     include_routine = st.checkbox(
         "Günlük mikro rutin, deneme analiz protokolü ve hafta sonu kontrol listesi dahil et",
         value=True,
