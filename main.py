@@ -1,4 +1,3 @@
-```python
 import base64
 import html
 import io
@@ -2924,5 +2923,3 @@ elif current_page == "Paketler & Abonelik Vitrini":
         monthly_price=active_bag_summary["monthly_price"],
         summary=active_bag_summary,
     )
-
-```
