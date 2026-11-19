@@ -1,8 +1,3 @@
-Tamam, paket sayısını **12'den 16'ya** çıkarıp her paketin **fiyatını, aylık soru/Dijimentor kotasını ve özellik listesini (6'şar madde ile)** zenginleştirdim. Ayrıca karşılaştırma matrisi başlığını da dinamik olarak `len(SUBSCRIPTION_TIERS)` ile (`16 Paket Karşılaştırma Matrisi`) güncelledim.
-
-Kopyalarken en baştaki ````python` ve en sondaki ````` satırlarını dosyaya dahil etmemeye dikkat et:
-
-```python
 import base64
 import html
 import io
@@ -2989,5 +2984,3 @@ elif current_page == "Paketler & Abonelik Vitrini":
         monthly_price=active_bag_summary["monthly_price"],
         summary=active_bag_summary,
     )
-
-```
