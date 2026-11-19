@@ -1,3 +1,4 @@
+import base64
 import io
 import os
 import re
@@ -27,14 +28,62 @@ BRAND_TAGLINE = "KURŞUN KALEM DİJİTAL EĞİTİM- Geleceği Yazan Dijital Eği
 DEFAULT_MODEL = "gemini-3.8-flash"
 FALLBACK_MODEL = "gemini-2.5-flash"
 
-LOGO_CANDIDATE_PATHS = [
-    "logo.png",
-    "logo.jpg",
-    "logo.jpeg",
-    "assets/logo.png",
-    "assets/logo.jpg",
-    "WhatsApp Image 2026-11-19 at 18.39.00.jpeg",
-]
+# Kalıcı Gömülü Kurumsal Logo (SVG -> Base64 / PNG/JPEG uyumlu byte akışı)
+EMBEDDED_LOGO_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f6d365"/>
+      <stop offset="50%" stop-color="#d4af37"/>
+      <stop offset="100%" stop-color="#9a6b14"/>
+    </linearGradient>
+    <linearGradient id="navyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#172c56"/>
+      <stop offset="100%" stop-color="#091328"/>
+    </linearGradient>
+    <linearGradient id="pencilBody" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffd23f"/>
+      <stop offset="100%" stop-color="#e09f1f"/>
+    </linearGradient>
+  </defs>
+  <circle cx="256" cy="256" r="244" fill="#ffffff"/>
+  <path d="M 432 108 A 232 232 0 1 0 468 332 L 444 326 A 208 208 0 1 1 412 124 Z" fill="url(#navyGrad)"/>
+  <path d="M 456 138 A 232 232 0 0 1 474 295 L 452 292 A 210 210 0 0 0 436 152 Z" fill="url(#goldGrad)"/>
+  <path d="M 102 222 Q 178 214 256 254 Q 334 214 410 222 L 404 236 Q 332 228 256 266 Q 180 228 108 236 Z" fill="url(#navyGrad)"/>
+  <path d="M 118 202 Q 184 196 256 238 Q 328 196 394 202 L 390 214 Q 326 208 256 248 Q 186 208 122 214 Z" fill="url(#goldGrad)"/>
+  <polygon points="256,82 362,130 256,178 150,130" fill="url(#navyGrad)" stroke="url(#goldGrad)" stroke-width="5"/>
+  <polygon points="190,148 256,178 322,148 322,188 256,216 190,188" fill="url(#navyGrad)"/>
+  <path d="M 332 144 L 332 206" stroke="url(#goldGrad)" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="332" cy="214" r="9" fill="url(#goldGrad)"/>
+  <text x="256" y="314" text-anchor="middle" font-family="Plus Jakarta Sans, Arial, sans-serif" font-size="48" font-weight="800" fill="#0b1836" letter-spacing="1">DİJİTAL OKUL</text>
+  <line x1="92" y1="344" x2="152" y2="344" stroke="#64748b" stroke-width="2.5"/>
+  <text x="256" y="351" text-anchor="middle" font-family="Plus Jakarta Sans, Arial, sans-serif" font-size="22" font-weight="700" fill="#0f172a" letter-spacing="5">KURŞUN KALEM</text>
+  <line x1="360" y1="344" x2="420" y2="344" stroke="#64748b" stroke-width="2.5"/>
+  <path d="M 122 396 Q 272 414 432 356 Q 282 404 122 390 Z" fill="url(#goldGrad)"/>
+  <g transform="translate(432, 342) rotate(24)">
+    <rect x="-12" y="-110" width="24" height="96" rx="3" fill="url(#pencilBody)" stroke="#1e293b" stroke-width="2"/>
+    <rect x="-12" y="-124" width="24" height="14" fill="#cbd5e1" stroke="#1e293b" stroke-width="2"/>
+    <rect x="-12" y="-138" width="24" height="14" rx="4" fill="#f472b6" stroke="#1e293b" stroke-width="2"/>
+    <polygon points="-12,-14 12,-14 0,24" fill="#fde68a" stroke="#1e293b" stroke-width="2"/>
+    <polygon points="-3.5,12 3.5,12 0,24" fill="#0f172a"/>
+  </g>
+</svg>"""
+
+
+def get_embedded_logo_svg_data_uri() -> str:
+    """Gömülü SVG logoyu HTML img etiketinde kalıcı kullanmak için Data URI üretir."""
+    encoded = base64.b64encode(EMBEDDED_LOGO_SVG.encode("utf-8")).decode("ascii")
+    return f"data:image/svg+xml;base64,{encoded}"
+
+
+def get_embedded_logo_png_bytes() -> Optional[bytes]:
+    """Gömülü logoyu DOCX belgesine eklemek için PNG/SVG baytı üretir."""
+    try:
+        import cairosvg  # type: ignore
+
+        return cairosvg.svg2png(bytestring=EMBEDDED_LOGO_SVG.encode("utf-8"), scale=2.0)
+    except Exception:
+        return None
+
 
 LGS_2027_TARGET = datetime(2027, 6, 13, 9, 30, 0)
 YKS_2027_TARGET = datetime(2027, 6, 19, 10, 15, 0)
@@ -322,6 +371,9 @@ CURRICULUM_TOPICS: Dict[str, Dict[str, List[str]]] = {
     },
 }
 
+LOGO_DATA_URI = get_embedded_logo_svg_data_uri()
+LOGO_PNG_BYTES = get_embedded_logo_png_bytes()
+
 st.markdown(
     """
     <style>
@@ -342,25 +394,65 @@ st.markdown(
             padding-bottom: 4.5rem;
             max-width: 1320px;
         }
+        .kp-sidebar-logo {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 0.55rem;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
+        }
+        .kp-sidebar-logo img {
+            width: 132px;
+            height: 132px;
+            object-fit: contain;
+            display: block;
+        }
         .kp-hero {
             background: linear-gradient(125deg, #090e1a 0%, #16233b 52%, #7f1d1d 100%);
             color: #ffffff;
-            padding: 1.45rem 1.85rem;
+            padding: 1.35rem 1.7rem;
             border-radius: 16px;
             margin-bottom: 1.3rem;
             box-shadow: 0 14px 30px rgba(9, 14, 26, 0.2);
             border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+        .kp-hero-badge {
+            background: #ffffff;
+            border-radius: 14px;
+            padding: 0.35rem;
+            flex-shrink: 0;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .kp-hero-badge img {
+            width: 84px;
+            height: 84px;
+            object-fit: contain;
+            display: block;
+        }
+        .kp-hero-content {
+            flex: 1;
+            min-width: 0;
         }
         .kp-hero h1 {
             margin: 0;
-            font-size: 1.66rem;
+            font-size: 1.62rem;
             font-weight: 800;
             letter-spacing: -0.2px;
             color: #ffffff;
         }
         .kp-hero p {
-            margin: 0.35rem 0 0 0;
-            font-size: 0.93rem;
+            margin: 0.32rem 0 0 0;
+            font-size: 0.92rem;
             color: #e2e8f0;
             font-weight: 400;
         }
@@ -368,7 +460,7 @@ st.markdown(
             display: flex;
             flex-wrap: wrap;
             gap: 0.5rem;
-            margin-top: 0.85rem;
+            margin-top: 0.78rem;
         }
         .kp-tech-pill {
             background: rgba(255, 255, 255, 0.1);
@@ -517,33 +609,15 @@ st.markdown(
 # ==============================================================================
 # YARDIMCI FONKSİYONLAR: LOGO, API, GEMINI, SAYAÇ, KOTA VE DOCX
 # ==============================================================================
-def resolve_logo_bytes() -> Optional[bytes]:
-    """Oturumda yüklenen veya yerel dizindeki kurumsal logo baytlarını döndürür."""
-    uploaded_bytes = st.session_state.get("uploaded_logo_bytes")
-    if isinstance(uploaded_bytes, (bytes, bytearray)) and len(uploaded_bytes) > 0:
-        return bytes(uploaded_bytes)
-
-    for candidate in LOGO_CANDIDATE_PATHS:
-        try:
-            if os.path.isfile(candidate):
-                with open(candidate, "rb") as fh:
-                    data = fh.read()
-                if data:
-                    return data
-        except Exception:
-            continue
-    return None
-
-
-def attach_logo_to_doc(doc: Document, logo_bytes: Optional[bytes], width_in: float = 1.25) -> None:
-    """Varsa kurumsal logoyu DOCX belgesinin üst kısmına ortalanmış olarak ekler."""
-    if not logo_bytes:
+def attach_logo_to_doc(doc: Document, width_in: float = 1.15) -> None:
+    """Mümkünse gömülü logoyu DOCX belgesinin üst kısmına ortalanmış olarak ekler."""
+    if not LOGO_PNG_BYTES:
         return
     try:
         p = doc.add_paragraph()
         p.alignment = WD_ALIGN_PARAGRAPH.CENTER
         p.paragraph_format.space_after = Pt(4)
-        p.add_run().add_picture(io.BytesIO(logo_bytes), width=Inches(width_in))
+        p.add_run().add_picture(io.BytesIO(LOGO_PNG_BYTES), width=Inches(width_in))
     except Exception:
         pass
 
@@ -783,7 +857,6 @@ def build_test_docx(
     outcome: str,
     context_theme: str,
     generated_content: str,
-    logo_bytes: Optional[bytes] = None,
 ) -> bytes:
     """Üretilen soruları kurumsal başlıklı DOCX dosyasına dönüştürür."""
     doc = Document()
@@ -794,7 +867,7 @@ def build_test_docx(
         section.left_margin = Inches(0.75)
         section.right_margin = Inches(0.75)
 
-    attach_logo_to_doc(doc, logo_bytes, width_in=1.2)
+    attach_logo_to_doc(doc, width_in=1.15)
 
     title_p = doc.add_paragraph()
     title_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -847,7 +920,7 @@ def build_test_docx(
     return buffer.getvalue()
 
 
-def build_coach_docx(title_meta: str, plan_text: str, logo_bytes: Optional[bytes] = None) -> bytes:
+def build_coach_docx(title_meta: str, plan_text: str) -> bytes:
     """Dijimentor çalışma planını kurumsal DOCX belgesine çevirir."""
     doc = Document()
     for section in doc.sections:
@@ -856,7 +929,7 @@ def build_coach_docx(title_meta: str, plan_text: str, logo_bytes: Optional[bytes
         section.left_margin = Inches(0.75)
         section.right_margin = Inches(0.75)
 
-    attach_logo_to_doc(doc, logo_bytes, width_in=1.2)
+    attach_logo_to_doc(doc, width_in=1.15)
 
     h = doc.add_paragraph()
     h.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -898,7 +971,6 @@ def build_commercial_brief_docx(
     installment: int,
     total_amount: int,
     extra_notes: str,
-    logo_bytes: Optional[bytes] = None,
 ) -> bytes:
     """Kurumsal lisans veya abonelik özeti için DOCX teklif/bilgilendirme belgesi üretir."""
     doc = Document()
@@ -908,7 +980,7 @@ def build_commercial_brief_docx(
         section.left_margin = Inches(0.75)
         section.right_margin = Inches(0.75)
 
-    attach_logo_to_doc(doc, logo_bytes, width_in=1.2)
+    attach_logo_to_doc(doc, width_in=1.15)
 
     h = doc.add_paragraph()
     h.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -957,7 +1029,6 @@ def render_iyzico_simulator(
     package_name: str,
     monthly_price: int,
     tier_id: Optional[str] = None,
-    logo_bytes: Optional[bytes] = None,
 ) -> None:
     """iyzico taksit ve ödeme simülatörü."""
     st.markdown("### 💳 iyzico Taksit & Ödeme Simülatörü")
@@ -1021,7 +1092,6 @@ def render_iyzico_simulator(
             installment=int(installment),
             total_amount=int(total_amount),
             extra_notes=f"Kart Programı: {card_brand}",
-            logo_bytes=logo_bytes,
         )
         st.download_button(
             label="📥 Teklif / Özet DOCX",
@@ -1058,27 +1128,23 @@ if "activity_log" not in st.session_state:
 sync_plan_quotas(get_tier_by_id(st.session_state.selected_tier_id), force_reset=False)
 api_key_ready = resolve_gemini_api_key() is not None
 active_tier_global = get_tier_by_id(st.session_state.selected_tier_id)
-active_logo_bytes = resolve_logo_bytes()
 
 # ==============================================================================
-# KENAR ÇUBUĞU (LOGO + CUSTOM BUTTON NAVİGASYON + AKTİF PAKET KOTA ÖZETİ)
+# KENAR ÇUBUĞU (KALICI LOGO + CUSTOM BUTTON NAVİGASYON + KOTA ÖZETİ)
 # ==============================================================================
 with st.sidebar:
-    if active_logo_bytes:
-        st.image(active_logo_bytes, use_container_width=True)
-    else:
-        uploaded_logo = st.file_uploader(
-            "Kurumsal Logo Yükle (PNG/JPG)",
-            type=["png", "jpg", "jpeg"],
-            key="sidebar_logo_uploader",
-        )
-        if uploaded_logo is not None:
-            st.session_state["uploaded_logo_bytes"] = uploaded_logo.getvalue()
-            st.rerun()
+    st.markdown(
+        f"""
+        <div class="kp-sidebar-logo">
+            <img src="{LOGO_DATA_URI}" alt="{BRAND_NAME} Logosu"/>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     st.markdown(
         f"""
-        <div style="background:#0f172a;color:#ffffff;padding:0.9rem 1rem;border-radius:10px;margin-top:0.4rem;margin-bottom:0.85rem;">
+        <div style="background:#0f172a;color:#ffffff;padding:0.9rem 1rem;border-radius:10px;margin-bottom:0.85rem;">
             <div style="font-weight:700;font-size:1rem;">🧭 Sistem Navigasyonu</div>
             <div style="font-size:0.78rem;color:#cbd5e1;margin-top:0.15rem;">{BRAND_NAME}</div>
         </div>
@@ -1125,17 +1191,15 @@ with st.sidebar:
         st.warning("● API Anahtarı Bekleniyor (Secrets)")
 
 # ==============================================================================
-# ÜST KURUMSAL BANNER (LOGO + BAŞLIK + SLOGAN)
+# ÜST KURUMSAL BANNER (KALICI GÖMÜLÜ LOGO + BAŞLIK + SLOGAN)
 # ==============================================================================
-banner_logo_col, banner_text_col = st.columns([1.2, 6.8]) if active_logo_bytes else (None, st.container())
-if active_logo_bytes and banner_logo_col is not None:
-    with banner_logo_col:
-        st.image(active_logo_bytes, use_container_width=True)
-
-with banner_text_col:
-    st.markdown(
-        f"""
-        <div class="kp-hero">
+st.markdown(
+    f"""
+    <div class="kp-hero">
+        <div class="kp-hero-badge">
+            <img src="{LOGO_DATA_URI}" alt="{BRAND_NAME} Logosu"/>
+        </div>
+        <div class="kp-hero-content">
             <h1>✏️ {BRAND_NAME}</h1>
             <p>{BRAND_TAGLINE}</p>
             <div class="kp-tech-strip">
@@ -1146,9 +1210,10 @@ with banner_text_col:
                 <span class="kp-tech-pill">💳 iyzico Altyapı</span>
             </div>
         </div>
-        """,
-        unsafe_allow_html=True,
-    )
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 current_page = st.session_state.active_page
 
@@ -1350,7 +1415,6 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
             outcome=outcome,
             context_theme=context_theme,
             generated_content=st.session_state.generated_test_text,
-            logo_bytes=active_logo_bytes,
         )
         act_c1, act_c2, act_c3 = st.columns(3)
         with act_c1:
@@ -1753,9 +1817,7 @@ elif current_page == "Dijimentor":
             f"Hedef: {target_exam} | Hedef Bandı: {target_goal} | "
             f"Haftalık Süre: {weekly_hours} Saat | Odak: {coach_focus}"
         )
-        docx_coach = build_coach_docx(
-            meta_summary, st.session_state.dijimentor_plan, logo_bytes=active_logo_bytes
-        )
+        docx_coach = build_coach_docx(meta_summary, st.session_state.dijimentor_plan)
 
         d_col1, d_col2, d_col3 = st.columns(3)
         with d_col1:
@@ -1871,7 +1933,6 @@ elif current_page == "B2B Lisans & Kurum":
                 installment=6,
                 total_amount=round(b2b_tier["monthly_price"] * 12 * 0.80),
                 extra_notes=st.session_state["last_b2b_summary"],
-                logo_bytes=active_logo_bytes,
             )
             st.download_button(
                 label="📥 Kurumsal Lisans Teklifini DOCX İndir",
@@ -1998,5 +2059,4 @@ elif current_page == "Paketler & Abonelik Vitrini":
         active_tier["name"],
         active_tier["monthly_price"],
         active_tier["id"],
-        logo_bytes=active_logo_bytes,
     )
