@@ -672,33 +672,45 @@ def call_gemini_text(
     system_instruction: str,
     model: str = DEFAULT_MODEL,
 ) -> str:
-    """Gemini API üzerinden metin üretir; model bulunamazsa yedek modele geçer."""
+    """Gemini API üzerinden metin üretir; 503/429 yoğunluk ve 404 hatalarında tekrar dener ve yedek modele geçer."""
     client = get_gemini_client()
-    models_to_try = [model] if model == FALLBACK_MODEL else [model, FALLBACK_MODEL]
+    candidate_models = [model, FALLBACK_MODEL, "gemini-2.5-pro"]
+    deduped_models: List[str] = []
+    for m in candidate_models:
+        if m and m not in deduped_models:
+            deduped_models.append(m)
+
     last_exc: Optional[Exception] = None
 
-    for candidate_model in models_to_try:
-        try:
-            response = client.models.generate_content(
-                model=candidate_model,
-                contents=prompt,
-                config=types.GenerateContentConfig(
-                    system_instruction=system_instruction,
-                    temperature=0.7,
-                ),
-            )
-            text = getattr(response, "text", None)
-            if not text:
-                raise RuntimeError("Modelden boş yanıt döndü.")
-            return text.strip()
-        except Exception as exc:
-            last_exc = exc
-            err_str = str(exc)
-            if "404" in err_str or "NOT_FOUND" in err_str:
-                continue
-            raise
+    for candidate_model in deduped_models:
+        for attempt in range(3):
+            try:
+                response = client.models.generate_content(
+                    model=candidate_model,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        system_instruction=system_instruction,
+                        temperature=0.7,
+                    ),
+                )
+                text = getattr(response, "text", None)
+                if not text:
+                    raise RuntimeError("Modelden boş yanıt döndü.")
+                return text.strip()
+            except Exception as exc:
+                last_exc = exc
+                err_str = str(exc)
+                if "404" in err_str or "NOT_FOUND" in err_str:
+                    break
+                if any(tok in err_str for tok in ("503", "UNAVAILABLE", "429", "RESOURCE_EXHAUSTED", "overloaded")):
+                    time.sleep(1.2 * (attempt + 1))
+                    continue
+                raise
 
-    raise RuntimeError(f"Model çağrısı başarısız oldu: {last_exc}")
+    raise RuntimeError(
+        f"Model çağrısı geçici yoğunluk nedeniyle tamamlanamadı ({last_exc}). "
+        "Lütfen birkaç saniye sonra tekrar deneyin."
+    )
 
 
 def navigate_to(page_name: str) -> None:
@@ -1850,3 +1862,251 @@ elif current_page == "Dijimentor":
     if st.session_state.dijimentor_plan:
         st.markdown("---")
         st.markdown("### 📅 Kişiselleştirilmiş Dijimentor Mentorluk Raporu")
+        st.markdown(st.session_state.dijimentor_plan)
+
+        meta_summary = (
+            f"Hedef: {target_exam} | Hedef Bandı: {target_goal} | "
+            f"Haftalık Süre: {weekly_hours} Saat | Odak: {coach_focus}"
+        )
+        docx_coach = build_coach_docx(meta_summary, st.session_state.dijimentor_plan)
+
+        d_col1, d_col2, d_col3 = st.columns(3)
+        with d_col1:
+            st.download_button(
+                label="📥 Mentorluk Planını DOCX İndir",
+                data=docx_coach,
+                file_name="dijimentor_calisma_plani.docx",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                use_container_width=True,
+            )
+        with d_col2:
+            st.download_button(
+                label="📄 Planı Metin (.txt) İndir",
+                data=st.session_state.dijimentor_plan.encode("utf-8"),
+                file_name="dijimentor_calisma_plani.txt",
+                mime="text/plain",
+                use_container_width=True,
+            )
+        with d_col3:
+            if st.button("⚙️ Zayıf Konulardan Soru Üret →", use_container_width=True):
+                st.session_state["factory_focus_topic"] = weak_topics.split(",")[0].strip()
+                navigate_to("Soru & Redaksiyon Fabrikası")
+
+# ==============================================================================
+# 5. VELİ TAKİP PANELİ + PERFORMANS GRAFİKLERİ
+# ==============================================================================
+elif current_page == "Veli Takip Paneli":
+    st.subheader("👨‍👩‍👧 Veli Takip Paneli")
+    st.write("Öğrencinin haftalık çalışma düzeni, soru çözümü ve kazanım ilerleme özeti.")
+
+    v1, v2, v3 = st.columns(3)
+    v1.metric("Bu Hafta Çözülen Soru", "340 Soru", "+18% geçen haftaya göre")
+    v2.metric("Ortalama Doğruluk", "%81", "+4 puan")
+    v3.metric("Dijimentor Plan Uyumu", "%88", "6 / 7 gün aktif")
+
+    st.markdown("#### Kazanım Bazlı Görünüm")
+    st.progress(0.84, text="Okuma ve Anlama — %84")
+    st.progress(0.72, text="Sayısal Muhakeme ve Problem Çözme — %72")
+    st.progress(0.90, text="Düzenli Tekrar ve Ödev Tamamlama — %90")
+
+    g_col1, g_col2 = st.columns(2)
+    with g_col1:
+        st.markdown("#### 📈 Haftalık Doğruluk İvmesi (%)")
+        st.area_chart(
+            {"1. Hafta": 71, "2. Hafta": 74, "3. Hafta": 77, "4. Hafta": 81},
+            height=190,
+        )
+    with g_col2:
+        st.markdown("#### 📊 Ders Bazlı Başarı Oranı (%)")
+        st.bar_chart(
+            {"Türkçe": 84, "Matematik": 72, "Fen": 82, "Sosyal": 86, "İngilizce": 79},
+            height=190,
+        )
+
+# ==============================================================================
+# 6. B2B LİSANS & KURUM + ZÜMRE SORU DAĞITIMI & RAPORLAMA SİMÜLASYONU
+# ==============================================================================
+elif current_page == "B2B Lisans & Kurum":
+    st.subheader("🏫 B2B Lisans & Kurum Yönetimi")
+    st.write(
+        "Okullar, kurs merkezleri ve eğitim kurumları için toplu soru üretimi, zümre "
+        "kapasite dağıtımı ve kurumsal lisanslama çözümleri."
+    )
+
+    tab_b2b_form, tab_b2b_zumre = st.tabs(
+        ["📋 Kurumsal Lisans Teklif Stüdyosu", "📊 Zümre Soru Dağıtımı & Kurumsal Rapor"]
+    )
+
+    with tab_b2b_form:
+        with st.form("b2b_inquiry_form"):
+            c1, c2 = st.columns(2)
+            with c1:
+                org_name = st.text_input("Kurum / Okul Adı", value="Özel Kurşun Kalem Akademi")
+                city = st.text_input("İl / İlçe", value="İstanbul")
+                teacher_seats = st.number_input(
+                    "Öğretmen / Editör Koltuk Sayısı", min_value=1, max_value=500, value=15
+                )
+            with c2:
+                student_seats = st.number_input(
+                    "Öğrenci Hesap Sayısı", min_value=10, max_value=10000, value=250
+                )
+                contact_name = st.text_input("Yetkili Adı Soyadı")
+                contact_email = st.text_input("Kurumsal E-posta")
+
+            submitted = st.form_submit_button("Kurumsal Lisans Teklifi Hazırla")
+            if submitted:
+                if not org_name.strip():
+                    st.warning("Lütfen kurum adını girin.")
+                else:
+                    st.session_state["last_b2b_summary"] = (
+                        f"Kurum: {org_name} ({city}) | Yetkili: {contact_name or '-'} | "
+                        f"E-posta: {contact_email or '-'} | Koltuk: {teacher_seats} Öğretmen, "
+                        f"{student_seats} Öğrenci"
+                    )
+                    st.session_state["b2b_org_cache"] = {
+                        "org": org_name,
+                        "teachers": int(teacher_seats),
+                        "students": int(student_seats),
+                    }
+                    record_activity("B2B Lisans", f"{org_name} teklif taslağı hazırlandı")
+                    st.success(
+                        f"**{org_name}** ({city}) için **{teacher_seats} öğretmen** ve "
+                        f"**{student_seats} öğrenci** kapasiteli kurumsal lisans talebi kaydedildi."
+                    )
+
+        if st.session_state.get("last_b2b_summary"):
+            b2b_tier = get_tier_by_id("b2b_kurs" if student_seats <= 300 else "b2b_kampus")
+            b2b_docx = build_commercial_brief_docx(
+                title=f"{org_name or 'Kurumsal'} Lisans Teklif Özeti",
+                tier=b2b_tier,
+                billing_cycle="Yıllık (%20 İndirim)",
+                installment=6,
+                total_amount=round(b2b_tier["monthly_price"] * 12 * 0.80),
+                extra_notes=st.session_state["last_b2b_summary"],
+            )
+            st.download_button(
+                label="📥 Kurumsal Lisans Teklifini DOCX İndir",
+                data=b2b_docx,
+                file_name="kursun_kalem_kurumsal_teklif.docx",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+
+    with tab_b2b_zumre:
+        org_cache = st.session_state.get(
+            "b2b_org_cache", {"org": "Özel Kurşun Kalem Akademi", "teachers": 15, "students": 250}
+        )
+        recommended_tier = get_tier_by_id(
+            "b2b_kurs" if org_cache["students"] <= 300 else "b2b_kampus"
+        )
+        total_q = recommended_tier["monthly_quota"]
+
+        bk1, bk2, bk3, bk4 = st.columns(4)
+        bk1.metric("Kurum Profili", org_cache["org"])
+        bk2.metric("Aylık Soru Havuzu", f"{total_q:,}".replace(",", "."))
+        bk3.metric("Öğretmen Başına Kota", f"{total_q // max(1, org_cache['teachers']):,} Soru".replace(",", "."))
+        bk4.metric("Öğrenci Başına Test", f"{total_q // max(1, org_cache['students'])} Soru / Ay")
+
+        st.markdown("#### 📐 Branş Zümreleri Arası Soru Kotası Dağılımı")
+        dist_ratios = {
+            "Türkçe & Edebiyat Zümresi": 0.28,
+            "Matematik & Geometri Zümresi": 0.30,
+            "Fen Bilimleri Zümresi": 0.22,
+            "Sosyal Bilimler & İnkılap Zümresi": 0.12,
+            "Yabancı Dil (İngilizce) Zümresi": 0.08,
+        }
+        zumre_rows = []
+        chart_map: Dict[str, int] = {}
+        for z_name, ratio in dist_ratios.items():
+            allocated = int(round(total_q * ratio))
+            short_lbl = z_name.split(" ")[0]
+            chart_map[short_lbl] = allocated
+            zumre_rows.append(
+                {
+                    "Zümre Birimi": z_name,
+                    "Pay (%)": f"%{int(ratio * 100)}",
+                    "Aylık Soru Kotası": f"{allocated:,}".replace(",", "."),
+                    "Haftalık Deneme Hedefi": f"{max(1, allocated // 80)} Kitapçık",
+                    "Redaksiyon Standardı": "Maarif Modeli • Çift Kontrol",
+                }
+            )
+
+        zc1, zc2 = st.columns([3, 2])
+        with zc1:
+            st.dataframe(zumre_rows, use_container_width=True, hide_index=True)
+        with zc2:
+            st.bar_chart(chart_map, height=225)
+
+# ==============================================================================
+# 7. PAKETLER & ABONELİK VİTRİNİ (12 PAKET, KARŞILAŞTIRMA MATRİSİ & IYZICO)
+# ==============================================================================
+elif current_page == "Paketler & Abonelik Vitrini":
+    st.subheader("💎 Paketler & Abonelik Vitrini (12 Paket)")
+    st.write("İhtiyacınıza uygun öğrenci, YKS, veli veya kurumsal paketi seçin ve iyzico taksitlerini inceleyin.")
+
+    selected_segment = st.segmented_control(
+        "Segment Filtresi",
+        options=["Tümü", "Öğrenci", "YKS", "Veli", "Kurum / B2B"],
+        default="Tümü",
+    )
+
+    filtered_tiers = (
+        SUBSCRIPTION_TIERS
+        if not selected_segment or selected_segment == "Tümü"
+        else [t for t in SUBSCRIPTION_TIERS if t["segment"] == selected_segment]
+    )
+
+    for row_start in range(0, len(filtered_tiers), 3):
+        cols = st.columns(3)
+        for idx, tier in enumerate(filtered_tiers[row_start : row_start + 3]):
+            with cols[idx]:
+                st.markdown(
+                    f"""
+                    <div class="kp-card">
+                        <div style="font-size:0.78rem;color:#64748b;font-weight:600;">
+                            {tier["segment"].upper()} • {tier["badge"]}
+                        </div>
+                        <h4 style="margin:0.25rem 0;">{tier["name"]}</h4>
+                        <div style="font-size:1.35rem;font-weight:700;color:#7f1d1d;margin-bottom:0.4rem;">
+                            {tier["monthly_price"]:,} ₺ <span style="font-size:0.8rem;font-weight:400;color:#64748b;">/ ay</span>
+                        </div>
+                        <p style="font-size:0.86rem;color:#475569;">{tier["desc"]}</p>
+                    </div>
+                    """.replace(",", "."),
+                    unsafe_allow_html=True,
+                )
+                for feat in tier["features"]:
+                    st.markdown(f"- {feat}")
+                if st.button("Paketi Seç", key=f"select_{tier['id']}"):
+                    st.session_state.selected_tier_id = tier["id"]
+                    sync_plan_quotas(tier, force_reset=True)
+                    record_activity("Abonelik", f"{tier['name']} paketi aktifleşti")
+                    st.toast(f"{tier['name']} seçildi ve kotası güncellendi.")
+
+    st.markdown("---")
+    st.markdown("### 📊 12 Paket Karşılaştırma Matrisi")
+    matrix_rows = [
+        {
+            "Paket Adı": t["name"],
+            "Segment": t["segment"],
+            "Etiket": t["badge"],
+            "Aylık Soru Kotası": f"{t['monthly_quota']:,}".replace(",", "."),
+            "Aylık Ücret (₺)": f"{t['monthly_price']:,}".replace(",", "."),
+            "Öne Çıkan Kapsam": t["features"][0],
+        }
+        for t in SUBSCRIPTION_TIERS
+    ]
+    st.dataframe(matrix_rows, use_container_width=True, hide_index=True)
+
+    st.markdown("---")
+    chosen_tier = get_tier_by_id(st.session_state.selected_tier_id)
+    chosen_name = st.selectbox(
+        "Simülasyon İçin Paket Seçin",
+        options=[t["name"] for t in SUBSCRIPTION_TIERS],
+        index=[t["name"] for t in SUBSCRIPTION_TIERS].index(chosen_tier["name"]),
+    )
+    active_tier = next(t for t in SUBSCRIPTION_TIERS if t["name"] == chosen_name)
+    render_iyzico_simulator(
+        active_tier["name"],
+        active_tier["monthly_price"],
+        active_tier["id"],
+    )
