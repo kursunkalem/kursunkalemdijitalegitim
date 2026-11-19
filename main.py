@@ -13,7 +13,87 @@ from pypdf import PdfReader
 
 API_KEY = "AQ.Ab8RN6Ln16aqw1zeiFjrpBNsDE9rLkAwtjet6QfCfMam4Uzu6w"
 
-st.set_page_config(page_title="Kurşun Kalem Dijital Eğitim - Geleceği Yazan Dijital Eğitim", page_icon="✏️", layout="wide")
+st.set_page_config(
+    page_title="Kurşun Kalem Dijital Eğitim - Geleceği Yazan Dijital Eğitim",
+    page_icon="✏️",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# --- MODERN SİSTEM NAVİGASYONU & KENAR ÇUBUĞU CSS ---
+st.markdown("""
+<style>
+    /* Sidebar Genel Arka Plan ve Kenarlık */
+    section[data-testid="stSidebar"] {
+        background-color: #f8fafc;
+        border-right: 1px solid #e2e8f0;
+        width: 315px !important;
+    }
+
+    /* Sidebar İç Boşluklar */
+    section[data-testid="stSidebar"] .block-container {
+        padding-top: 1.5rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    /* Radyo Grubunu Dikey Kart Listesine Çevirme */
+    section[data-testid="stSidebar"] div[role="radiogroup"] {
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+    /* Menü Kartları - Varsayılan / Pasif Durum */
+    section[data-testid="stSidebar"] div[role="radiogroup"] > label {
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 11px 14px;
+        margin: 0 !important;
+        cursor: pointer;
+        transition: all 0.2s ease-in-out;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+        display: flex;
+        align-items: center;
+    }
+
+    /* Klasik Yuvarlak Radyo Düğmesini Gizleme */
+    section[data-testid="stSidebar"] div[role="radiogroup"] > label > div:first-child {
+        display: none !important;
+    }
+
+    /* Menü Metin Ayarları */
+    section[data-testid="stSidebar"] div[role="radiogroup"] > label p {
+        font-size: 0.89rem !important;
+        font-weight: 500 !important;
+        color: #334155 !important;
+        line-height: 1.35 !important;
+        margin: 0 !important;
+    }
+
+    /* Üzerine Gelince (Hover Efekti) */
+    section[data-testid="stSidebar"] div[role="radiogroup"] > label:hover {
+        background-color: #f1f5f9;
+        border-color: #cbd5e1;
+        transform: translateX(3px);
+    }
+
+    /* Seçili (Aktif) Menü Kartı */
+    section[data-testid="stSidebar"] div[role="radiogroup"] > label:has(input:checked) {
+        background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%) !important;
+        border-color: #2c3e50 !important;
+        border-left: 5px solid #f39c12 !important;
+        box-shadow: 0 4px 12px rgba(44, 62, 80, 0.18) !important;
+        transform: translateX(3px);
+    }
+
+    /* Seçili Öğenin Yazı Rengi */
+    section[data-testid="stSidebar"] div[role="radiogroup"] > label:has(input:checked) p {
+        color: #ffffff !important;
+        font-weight: 600 !important;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 def kurumsal_logo_goster():
     st.markdown("""
@@ -105,7 +185,8 @@ def load_kazanimlar():
         try:
             with open(dosya_adi, "w", encoding="utf-8") as f:
                 json.dump(varsayilan_veri, f, ensure_ascii=False, indent=2)
-        except: pass
+        except:
+            pass
     try:
         with open(dosya_adi, "r", encoding="utf-8") as f:
             return json.load(f)
@@ -120,7 +201,8 @@ def load_referanslar():
         try:
             with open(dosya_adi, "w", encoding="utf-8") as f:
                 json.dump([], f, ensure_ascii=False, indent=2)
-        except: pass
+        except:
+            pass
     try:
         with open(dosya_adi, "r", encoding="utf-8") as f:
             return json.load(f)
@@ -145,9 +227,17 @@ def save_arsiv(yeni_test):
     try:
         with open("soru_arsivi.json", "w", encoding="utf-8") as f:
             json.dump(arsiv[:20], f, ensure_ascii=False, indent=2)
-    except: pass
+    except:
+        pass
 
-st.sidebar.title("🧭 Sistem Navigasyonu")
+# --- MODERN SİSTEM NAVİGASYONU ---
+st.sidebar.markdown("""
+    <div style="margin-bottom: 4px;">
+        <div style="font-size: 1.22rem; font-weight: 800; color: #1e293b; letter-spacing: -0.2px;">🧭 Sistem Navigasyonu</div>
+        <div style="font-size: 0.82rem; color: #64748b; margin-top: 2px;">Çalışma Alanı Seçin:</div>
+    </div>
+""", unsafe_allow_html=True)
+
 ana_modul = st.sidebar.radio(
     "Çalışma Alanı Seçin:",
     [
@@ -157,8 +247,18 @@ ana_modul = st.sidebar.radio(
         "👪 Veli Takip Paneli",
         "🏢 B2B Lisans & Kurum Yönetimi",
         "💎 Paketler & Abonelik Vitrini"
-    ]
+    ],
+    label_visibility="collapsed"
 )
+
+st.sidebar.markdown("""
+    <hr style="margin: 18px 0 12px 0; border-color: #e2e8f0;">
+    <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 12px; font-size: 0.78rem; color: #475569; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);">
+        <div style="font-weight: 700; color: #1e293b; margin-bottom: 2px;">🟢 Sistem Aktif</div>
+        <div>Kurşun Kalem Dijital Eğitim</div>
+    </div>
+""", unsafe_allow_html=True)
+
 st.sidebar.markdown("---")
 
 # --- ANA SAYFA & GERİ SAYIM ---
@@ -166,10 +266,10 @@ if ana_modul == "🏠 Ana Sayfa & 2027 LGS'ye Geri Sayım":
     kurumsal_logo_goster()
     st.title("📚 Kurşun Kalem Dijital Eğitim Platformuna Hoş Geldiniz")
     st.markdown("İlkokuldan YKS'ye uzanan, yapay zeka destekli Türkiye'nin en akıllı soru ve koçluk ekosistemi.")
-    
+
     # --- CANLI SANİYE SANİYE AKAN LGS'YE GERİ SAYIM SAYACI ---
     st.markdown("### ⏳ 2027 LGS'ye Geri Sayım (13 Haziran 2027)")
-    
+
     timer_html = """
     <div style="display: flex; gap: 20px; font-family: sans-serif; margin-bottom: 20px;">
         <div style="background: #f8f9fa; border: 1px solid #e0e0e0; padding: 15px 25px; border-radius: 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex: 1;">
@@ -223,7 +323,7 @@ if ana_modul == "🏠 Ana Sayfa & 2027 LGS'ye Geri Sayım":
     components.html(timer_html, height=110)
 
     st.markdown("---")
-    
+
     col1, col2, col3, col4 = st.columns(4)
     with col1:
         st.metric(label="Üretilen Soru Havuzu", value="142,500+", delta="+1,200 bugün")
@@ -233,7 +333,7 @@ if ana_modul == "🏠 Ana Sayfa & 2027 LGS'ye Geri Sayım":
         st.metric(label="B2B Anlaşmalı Kurum", value="48", delta="4 Yeni")
     with col4:
         st.metric(label="Çözülen Soru Sayısı", value="2.4 Milyon", delta="%98 Başarı")
-        
+
     st.markdown("---")
     st.subheader("💡 Platform Özellikleri")
     col_a, col_b, col_c = st.columns(3)
@@ -284,15 +384,15 @@ elif ana_modul == "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)":
         kurumsal_logo_goster()
         st.header("📄 / 🖼️ PDF, Word (.docx) veya Görsel (JPEG/PNG) ile Soru Kaynağı Yükle")
         st.markdown("Elindeki deneme sınavı PDF, Word belgesi ya da sınav fotoğrafını buraya yükle. Program içeriği otomatik olarak okuyup yapay zekanın referans havuzuna işleyecektir.")
-        
+
         yuklenen_dosya = st.file_uploader("Dosya Seçin", type=["pdf", "docx", "jpg", "jpeg", "png"])
-        
+
         col_p1, col_p2 = st.columns(2)
         with col_p1:
             p_brans = st.selectbox("Kaynak Branşı", list(kazanim_db.keys()), key="p_brans")
         with col_p2:
             p_sinif = st.selectbox("Sınıf Seviyesi", ["5. Sınıf", "6. Sınıf", "7. Sınıf", "8. Sınıf (LGS / Beceri Temelli)"], key="p_sinif")
-        
+
         p_kazanim = st.text_input("Hedef Kazanım veya Konu Açıklaması", value="Genel Deneme Analizi ve Beceri Temelli Soru Standardı")
 
         if yuklenen_dosya is not None:
@@ -304,20 +404,22 @@ elif ana_modul == "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)":
                     reader = PdfReader(yuklenen_dosya)
                     for page in reader.pages:
                         metin = page.extract_text()
-                        if metin: cikti_metni += metin + "\n"
+                        if metin:
+                            cikti_metni += metin + "\n"
                     st.success(f"PDF başarıyla okundu! Toplam {len(reader.pages)} sayfa metin çıkarıldı.")
-                
+
                 elif dosya_uzantisi == "docx":
                     doc_file = Document(yuklenen_dosya)
                     for p in doc_file.paragraphs:
-                        if p.text: cikti_metni += p.text + "\n"
+                        if p.text:
+                            cikti_metni += p.text + "\n"
                     st.success("Word belgesi başarıyla okundu!")
-                
+
                 elif dosya_uzantisi in ["jpg", "jpeg", "png"]:
                     with st.spinner("Görsel yapay zeka ile taranıyor ve metne dönüştürülüyor..."):
                         client = genai.Client(api_key=API_KEY)
                         dosya_bytes = yuklenen_dosya.getvalue()
-                        
+
                         image_resp = client.models.generate_content(
                             model="gemini-3.8-flash",
                             contents=[
@@ -362,7 +464,7 @@ elif ana_modul == "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)":
             ref_kazanim = st.text_input("Kazanım Açıklaması")
             ref_baglam = st.text_area("Bağlam Metni / Senaryo / Veri")
             ref_kok = st.text_input("Soru Kökü")
-            
+
             col1, col2 = st.columns(2)
             with col1:
                 ref_a = st.text_input("A Şıkkı")
@@ -370,10 +472,10 @@ elif ana_modul == "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)":
             with col2:
                 ref_b = st.text_input("B Şıkkı")
                 ref_d = st.text_input("D Şıkkı")
-                
+
             ref_dogru = st.selectbox("Doğru Cevap", ["A", "B", "C", "D"])
             submitted = st.form_submit_button("💾 Referans Havuzuna Kaydet")
-            
+
             if submitted:
                 yeni_soru = {
                     "brans": ref_brans, "sinif": ref_sinif, "kazanim": ref_kazanim,
@@ -407,9 +509,9 @@ elif ana_modul == "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)":
         kurumsal_logo_goster()
         st.title("🤖 Kurşun Kalem Akıllı Asistanı")
         st.markdown("Yapay zekaya doğal dilde komut vererek dilediğiniz kriterlerde anında soru ve test ürettirin.")
-        
+
         serbest_komut = st.text_area("Ne tür bir test üretmek istiyorsunuz?", placeholder="Örn: 8. sınıf fen bilimleri DNA ve genetik kod ile ilgili orta-zor seviyede 2 soru hazırla.")
-        
+
         if st.button("🚀 Asistanla Üret", type="primary"):
             if not serbest_komut.strip():
                 st.warning("Lütfen bir komut yazın.")
@@ -434,15 +536,18 @@ elif ana_modul == "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)":
                             }
                         )
                         text = resp.text.strip()
-                        if text.startswith("```json"): text = text[7:]
-                        if text.endswith("```"): text = text[:-3]
-                        
+                        if text.startswith("```json"):
+                            text = text[7:]
+                        if text.endswith("```"):
+                            text = text[:-3]
+
                         asistan_sorular = json.loads(text.strip())
                         st.success(f"{len(asistan_sorular)} adet soru asistan tarafından başarıyla üretildi!")
-                        
+
                         for idx, s in enumerate(asistan_sorular, 1):
                             with st.expander(f"Asistan Soru {idx}"):
-                                if s.get("baglam_metni"): st.write(s.get("baglam_metni"))
+                                if s.get("baglam_metni"):
+                                    st.write(s.get("baglam_metni"))
                                 st.markdown(f"**{s.get('soru_koku')}**")
                                 st.write(f"A) {s.get('sik_a')}")
                                 st.write(f"B) {s.get('sik_b')}")
@@ -456,13 +561,13 @@ elif ana_modul == "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)":
         kurumsal_logo_goster()
         st.title("✍️ Profesyonel Metin Redaktörü & Editör")
         st.markdown("Yazdığın, dışarıdan aldığın veya düzenlenmesini istediğin soru metinlerini, paragrafları veya test taslaklarını **Türkiye Yüzyılı Maarif Modeli** standartlarına, dilbilgisi kurallarına ve akademik akıcılığa göre kusursuz hale getir.")
-        
+
         redakte_edilecek_metin = st.text_area(
-            "Redakte ve Editörlük Yapılacak Metni / Soruyu Buraya Yapıştırın:", 
+            "Redakte ve Editörlük Yapılacak Metni / Soruyu Buraya Yapıştırın:",
             height=250,
             placeholder="Örn: Buraya hatalı veya geliştirilmesi gereken soru metnini, açıklamayı veya paragrafı yapıştırın..."
         )
-        
+
         col_ed1, col_ed2 = st.columns(2)
         with col_ed1:
             editor_modu = st.selectbox(
@@ -517,24 +622,24 @@ elif ana_modul == "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)":
         with st.sidebar:
             kurumsal_logo_goster()
             st.header("⚙️ Test ve Kurum Parametreleri")
-            
+
             kurum_adi = st.text_input("Kurum / Okul Adı", value="Kurşun Kalem Dijital Eğitim")
             secilen_brans = st.selectbox("Branş Seçimi", list(kazanim_db.keys()), key="yazar_brans")
-            
+
             sinif_listesi = list(kazanim_db[secilen_brans].keys())
             secilen_sinif = st.selectbox("Sınıf Seviyesi", sinif_listesi, key="yazar_sinif")
-            
+
             alan_listesi = list(kazanim_db[secilen_brans][secilen_sinif].keys())
             secilen_alan = st.selectbox("Öğrenme Alanı", alan_listesi, key="yazar_alan")
-            
+
             secilen_kazanim = st.selectbox("Hedef Kazanım", kazanim_db[secilen_brans][secilen_sinif][secilen_alan], key="yazar_kazanim")
-            
+
             soru_adedi = st.slider("Üretilecek Soru Adedi (Test Modu)", min_value=1, max_value=5, value=2)
             zorluk_seviyesi = st.select_slider("Zorluk Derecesi", options=["Orta", "Orta-Zor", "İleri Düzey"], value="Orta-Zor")
             tema_girdisi = st.text_input("Bağlam / Tema / Senaryo", placeholder="Örn: Sürdürülebilirlik, deney analizi...")
-            
+
             kalite_kontrol = st.checkbox("🔍 Otomatik Soru Kalite & Redaksiyon Denetimi", value=True, help="Üretilen soruların çeldirici kalitesini ve kazanım uyumunu arka planda denetler.")
-            
+
             uret_butonu = st.button("✨ Kurumsal Soru Paketi Üret", type="primary", use_container_width=True)
 
         referanslar_str = json.dumps(referans_havuzu, ensure_ascii=False, indent=2)
@@ -571,8 +676,10 @@ elif ana_modul == "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)":
             )
 
             text = response.text.strip()
-            if text.startswith("```json"): text = text[7:]
-            if text.endswith("```"): text = text[:-3]
+            if text.startswith("```json"):
+                text = text[7:]
+            if text.endswith("```"):
+                text = text[:-3]
             sorular = json.loads(text.strip())
 
             if validator_aktif and sorular:
@@ -591,11 +698,14 @@ elif ana_modul == "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)":
                     }
                 )
                 val_text = val_resp.text.strip()
-                if val_text.startswith("```json"): val_text = val_text[7:]
-                if val_text.endswith("```"): val_text = val_text[:-3]
+                if val_text.startswith("```json"):
+                    val_text = val_text[7:]
+                if val_text.endswith("```"):
+                    val_text = val_text[:-3]
                 try:
                     sorular = json.loads(val_text.strip())
-                except: pass
+                except:
+                    pass
 
             return sorular
 
@@ -733,11 +843,12 @@ elif ana_modul == "🎓 Öğrenci Portalı & Soru Çözüm":
 
             if secilen_test_obj:
                 for idx, soru in enumerate(secilen_test_obj.get('sorular', []), 1):
-                    st.markdown(f"---")
+                    st.markdown("---")
                     st.markdown(f"### Soru {idx}")
-                    if soru.get("baglam_metni"): st.write(soru.get("baglam_metni"))
+                    if soru.get("baglam_metni"):
+                        st.write(soru.get("baglam_metni"))
                     st.markdown(f"**{soru.get('soru_koku')}**")
-                    
+
                     cevap_secimi = st.radio(
                         f"Seçim (Soru {idx}):",
                         [f"A) {soru.get('sik_a')}", f"B) {soru.get('sik_b')}", f"C) {soru.get('sik_c')}", f"D) {soru.get('sik_d')}"],
@@ -828,9 +939,9 @@ elif ana_modul == "👪 Veli Takip Paneli":
     kurumsal_logo_goster()
     st.title("👪 Veli Takip ve Performans Paneli")
     st.markdown("Çocuğunuzun günlük çalışma saatlerini, test sonuçlarını ve kazanım eksiklerini anlık takip edin.")
-    
+
     student_name = st.selectbox("Öğrenci Seçin", ["Ahmet Furkan Kurşun (8. Sınıf - LGS)"])
-    
+
     col1, col2, col3 = st.columns(3)
     with col1:
         st.metric("Bu Hafta Çözülen Soru", "340 Soru", "+45 dünden")
@@ -838,13 +949,13 @@ elif ana_modul == "👪 Veli Takip Paneli":
         st.metric("Genel Başarı Oranı", "%82", "+4%")
     with col3:
         st.metric("Günlük Çalışma Süresi", "2 Saat 15 Dk", "Hedef: 2 Saat")
-        
+
     st.markdown("---")
     st.subheader("📊 Haftalık Kazanım Analizi (Zayıf / Güçlü Alanlar)")
     st.write("✅ **Türkçe - Fiilimsiler:** %95 (Çok İyi)")
     st.write("⚠️ **Matematik - Kareköklü İfadeler:** %60 (Tekrar Edilmeli)")
     st.write("🚨 **Fen - Basit Makineler:** %45 (Acil Soru Çözümü Önerilir)")
-    
+
     if st.button("Veli Raporunu İndir"):
         st.success("Veli bilgilendirme raporu başarıyla hazırlandı.")
 
@@ -853,7 +964,7 @@ elif ana_modul == "🏢 B2B Lisans & Kurum Yönetimi":
     kurumsal_logo_goster()
     st.title("🏢 B2B Kurumsal Lisans & Okul Paneli")
     st.markdown("Dershaneler, özel okullar ve kurs merkezleri için toplu öğrenci ve öğretmen lisans yönetimi.")
-    
+
     col1, col2 = st.columns(2)
     with col1:
         st.subheader("Kurum Bilgileri")
@@ -861,7 +972,7 @@ elif ana_modul == "🏢 B2B Lisans & Kurum Yönetimi":
         st.text_input("Yetkili Adı Soyadı", "Elif Öztürk")
         st.number_input("Aktif Öğrenci Lisans Adedi", min_value=10, max_value=1000, value=150)
         st.button("Lisans Paketini Güncelle")
-        
+
     with col2:
         st.subheader("Kurum Öğretmenleri")
         st.write("Sisteme kayıtlı öğretmenler kendi adına soru üretebilir ve kurumsal test indirebilir.")
@@ -871,7 +982,7 @@ elif ana_modul == "🏢 B2B Lisans & Kurum Yönetimi":
 # --- PAKETLER & ABONELİK VİTRİNİ ---
 elif ana_modul == "💎 Paketler & Abonelik Vitrini":
     kurumsal_logo_goster()
-    
+
     st.markdown("""
         <style>
         .paket-karti {
