@@ -1,3 +1,6 @@
+Tamam, hiçbir parça bırakmadan **tüm `main.py` kodunu** en güncel haliyle (en üstte yalnızca `"Ana Sayfa"`, 4 ana kategorili Veli Bilgilendirme & Otomatik Mesaj Merkezi, profesyonel/yüksek kontrastlı Paketler & Abonelik Vitrini, Okul Sırt Çantası sepeti, iyzico simülatörü ve logolu DOCX üretimi) tek parça halinde veriyorum. Doğrudan kopyalayıp `main.py` dosyana yapıştırabilirsin:
+
+```python
 import base64
 import html
 import io
@@ -744,51 +747,152 @@ st.markdown(
             box-shadow: 0 8px 20px rgba(15, 23, 42, 0.07);
             border-color: #94a3b8;
         }
-        .kp-bag-shell {
-            background: linear-gradient(145deg, #fffbeb 0%, #ffffff 55%, #fff1f2 100%);
-            border: 1.5px solid #e2e8f0;
+        .kp-vitrin-header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #7f1d1d 100%);
+            color: #ffffff;
             border-radius: 16px;
-            padding: 1.2rem 1.35rem;
+            padding: 1.35rem 1.6rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
+        }
+        .kp-vitrin-header h2 {
+            margin: 0;
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: #ffffff;
+        }
+        .kp-vitrin-header p {
+            margin: 0.35rem 0 0 0;
+            font-size: 0.92rem;
+            color: #e2e8f0;
+        }
+        .kp-bag-shell {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-top: 4px solid #0f172a;
+            border-radius: 16px;
+            padding: 1.35rem 1.45rem;
+            margin-bottom: 1.25rem;
             box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
         }
         .kp-bag-visual {
-            position: relative;
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
+            background: linear-gradient(180deg, #f8fafc 0%, #eff6ff 100%);
+            border: 1px solid #dbeafe;
             border-radius: 14px;
-            padding: 0.85rem;
+            padding: 1rem;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            min-height: 250px;
         }
         .kp-bag-visual img {
-            width: 150px;
-            height: 175px;
+            width: 128px;
+            height: 148px;
             object-fit: contain;
         }
         .kp-bag-count-pill {
-            margin-top: 0.4rem;
+            margin-top: 0.5rem;
             background: #0f172a;
             color: #fbbf24;
             font-size: 0.78rem;
             font-weight: 800;
-            padding: 0.25rem 0.75rem;
+            padding: 0.28rem 0.8rem;
             border-radius: 999px;
-            letter-spacing: 0.3px;
         }
         .kp-bag-item-chip {
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
             border-left: 4px solid #881337;
             border-radius: 10px;
-            padding: 0.5rem 0.75rem;
-            margin-bottom: 0.45rem;
+            padding: 0.65rem 0.85rem;
+            margin-bottom: 0.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 0.85rem;
+            color: #0f172a;
+        }
+        .kp-pkg-card {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 14px;
+            padding: 1.2rem 1.25rem;
+            margin-bottom: 0.65rem;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+            transition: all 0.18s ease;
+        }
+        .kp-pkg-card:hover {
+            border-color: #0f172a;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.09);
+            transform: translateY(-2px);
+        }
+        .kp-pkg-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .kp-pkg-seg {
+            font-size: 0.72rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #1e3a8a;
+            background: #eff6ff;
+            padding: 0.22rem 0.6rem;
+            border-radius: 999px;
+        }
+        .kp-pkg-badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #881337;
+            background: #fff1f2;
+            border: 1px solid #fecdd3;
+            padding: 0.2rem 0.55rem;
+            border-radius: 999px;
+        }
+        .kp-pkg-title {
+            font-size: 1.08rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0.25rem 0;
+        }
+        .kp-pkg-price {
+            font-size: 1.45rem;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0.35rem 0 0.55rem 0;
+        }
+        .kp-pkg-price span {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #475569;
+        }
+        .kp-pkg-desc {
+            font-size: 0.86rem;
+            color: #334155;
+            line-height: 1.45;
+            margin-bottom: 0.75rem;
+            min-height: 3.6rem;
+        }
+        .kp-pkg-feats {
+            list-style: none;
+            padding: 0.65rem 0 0 0;
+            margin: 0;
+            border-top: 1px solid #f1f5f9;
+        }
+        .kp-pkg-feats li {
+            font-size: 0.83rem;
+            color: #1e293b;
+            font-weight: 500;
+            padding: 0.22rem 0;
+        }
+        .kp-pay-box {
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 16px;
+            padding: 1.35rem 1.5rem;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.05);
         }
         .kp-metric-box {
             background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
@@ -1397,18 +1501,28 @@ def build_commercial_brief_docx(
 
 
 def render_school_backpack_panel() -> Dict[str, Any]:
-    """Seçilen paketleri alışveriş sepeti gibi Okul Sırt Çantası görseli içinde gösterir ve yönetir."""
+    """Seçilen paketleri alışveriş sepeti gibi Okul Sırt Çantası içinde net ve hizalı gösterir."""
     summary = get_bag_summary()
     entries = summary["entries"]
 
     st.markdown('<div class="kp-bag-shell">', unsafe_allow_html=True)
-    st.markdown("### 🎒 Okul Sırt Çantam (Seçili Paket Sepeti)")
-    st.caption(
-        "Vitrin veya paket kartlarından seçtiğiniz paketler okul sırt çantanızda toplanır; "
-        "adet güncelleyebilir, çıkarabilir veya çantadaki tüm paketler için iyzico ödemesi oluşturabilirsiniz."
-    )
+    h_col, clr_col = st.columns([4, 1])
+    with h_col:
+        st.markdown("#### 🎒 Okul Sırt Çantam (Seçili Paket Sepeti)")
+        st.caption(
+            "Seçtiğiniz paketler burada birikir; adet güncelleyebilir, ürün çıkarabilir veya "
+            "tüm çanta için iyzico taksitli ödeme oluşturabilirsiniz."
+        )
+    with clr_col:
+        if entries:
+            st.button(
+                "🗑️ Çantayı Boşalt",
+                key="bag_clear_all",
+                use_container_width=True,
+                on_click=cb_clear_bag,
+            )
 
-    v_col, list_col = st.columns([1.15, 2.25])
+    v_col, list_col = st.columns([1.15, 2.85])
 
     with v_col:
         chips_html = ""
@@ -1417,14 +1531,14 @@ def render_school_backpack_panel() -> Dict[str, Any]:
             safe_qty = int(entry["qty"])
             chips_html += (
                 f'<div style="background:#fef3c7;color:#0f172a;border:1px solid #f59e0b;'
-                f'border-radius:8px;padding:0.22rem 0.5rem;font-size:0.74rem;font-weight:700;'
-                f'margin-top:0.25rem;width:100%;text-align:center;">'
+                f'border-radius:8px;padding:0.24rem 0.55rem;font-size:0.75rem;font-weight:700;'
+                f'margin-top:0.3rem;width:100%;text-align:center;">'
                 f'📘 {safe_name} (x{safe_qty})</div>'
             )
 
         if not chips_html:
             chips_html = (
-                '<div style="color:#64748b;font-size:0.78rem;margin-top:0.35rem;text-align:center;">'
+                '<div style="color:#475569;font-size:0.8rem;margin-top:0.4rem;text-align:center;font-weight:600;">'
                 'Çanta şu an boş</div>'
             )
 
@@ -1442,26 +1556,30 @@ def render_school_backpack_panel() -> Dict[str, Any]:
     with list_col:
         if not entries:
             st.info(
-                "Okul sırt çantanız boş. Aşağıdaki paket kartlarından **Çantaya Ekle** butonuna "
-                "tıklayarak seçtiğiniz paketleri çantanın içine alabilirsiniz."
+                "Okul sırt çantanız şu an boş. Aşağıdaki abonelik paketlerinden **Çantaya Ekle** "
+                "butonunu kullanarak dilediğiniz paketleri çantanıza ekleyebilirsiniz."
             )
         else:
             for entry in entries:
                 t = entry["tier"]
                 qty = entry["qty"]
-                c_info, c_minus, c_plus, c_rem = st.columns([4.4, 0.85, 0.85, 1.1])
+                c_info, c_minus, c_plus, c_rem = st.columns([4.6, 0.75, 0.75, 1.15])
                 with c_info:
                     st.markdown(
                         f"""
                         <div class="kp-bag-item-chip">
                             <div>
-                                <b>{html.escape(t['name'])}</b>
-                                <span style="color:#64748b;font-size:0.78rem;"> • {html.escape(t['segment'])}</span><br>
-                                <span style="color:#475569;font-size:0.78rem;">
-                                    Adet: <b>{qty}</b> • Aylık Kota: <b>{entry['line_quota']:,}</b> Soru
-                                </span>
+                                <div style="font-weight:800;font-size:0.92rem;color:#0f172a;">
+                                    {html.escape(t['name'])}
+                                    <span style="color:#1e3a8a;font-size:0.76rem;font-weight:700;"> • {html.escape(t['segment'])}</span>
+                                </div>
+                                <div style="color:#475569;font-size:0.8rem;margin-top:0.15rem;">
+                                    Adet: <b>{qty}</b> &nbsp;|&nbsp;
+                                    Soru Kotası: <b>{entry['line_quota']:,} / ay</b> &nbsp;|&nbsp;
+                                    Dijimentor: <b>{entry['line_coach']} plan / ay</b>
+                                </div>
                             </div>
-                            <div style="font-weight:800;color:#881337;white-space:nowrap;">
+                            <div style="font-weight:800;font-size:0.98rem;color:#881337;white-space:nowrap;">
                                 {entry['line_price']:,} ₺/ay
                             </div>
                         </div>
@@ -1493,16 +1611,11 @@ def render_school_backpack_panel() -> Dict[str, Any]:
                         args=(t["id"], -qty),
                     )
 
+            st.markdown("<div style='margin-top:0.5rem;'></div>", unsafe_allow_html=True)
             m1, m2, m3 = st.columns(3)
             m1.metric("Çanta Aylık Toplam", f"{summary['monthly_price']:,} ₺".replace(",", "."))
             m2.metric("Toplam Aylık Soru", f"{summary['monthly_quota']:,}".replace(",", "."))
             m3.metric("Toplam Dijimentor Plan", f"{summary['coach_quota']} / Ay")
-
-            st.button(
-                "🗑️ Çantayı Boşalt",
-                key="bag_clear_all",
-                on_click=cb_clear_bag,
-            )
 
     st.markdown("</div>", unsafe_allow_html=True)
     return summary
@@ -1513,7 +1626,7 @@ def render_iyzico_simulator(
     monthly_price: int,
     summary: Optional[Dict[str, Any]] = None,
 ) -> None:
-    """iyzico taksit ve ödeme simülatörü."""
+    """Kurumsal görünümde iyzico taksit, dönem indirimi ve teklif çıktısı paneli."""
     bag_summary = summary if summary is not None else get_bag_summary()
     effective_monthly = (
         int(bag_summary["monthly_price"]) if bag_summary["total_count"] > 0 else int(monthly_price)
@@ -1524,7 +1637,13 @@ def render_iyzico_simulator(
         else package_name
     )
 
-    st.markdown("### 💳 iyzico Taksit & Ödeme Simülatörü")
+    st.markdown('<div class="kp-pay-box">', unsafe_allow_html=True)
+    st.markdown("#### 💳 iyzico Taksit & Ödeme Simülatörü")
+    st.caption(
+        "Dönem avantajı ve taksit planına göre toplam tutarı hesaplayın, kotaları anında aktifleyin "
+        "veya DOCX teklif indirin."
+    )
+
     c1, c2, c3 = st.columns(3)
     with c1:
         billing_cycle = st.selectbox(
@@ -1555,14 +1674,21 @@ def render_iyzico_simulator(
 
     monthly_installment = total_amount / installment
 
+    st.markdown("<div style='margin:0.65rem 0;'></div>", unsafe_allow_html=True)
     m1, m2, m3 = st.columns(3)
     m1.metric("Toplam Tutar", f"{total_amount:,} ₺".replace(",", "."))
     m2.metric(f"{installment} Taksit Aylık", f"{monthly_installment:,.2f} ₺".replace(",", " "))
     m3.metric("Ödeme Altyapısı", f"iyzico • {card_brand}")
 
-    btn_c1, btn_c2 = st.columns([2, 1])
+    st.markdown("<div style='margin:0.65rem 0;'></div>", unsafe_allow_html=True)
+    btn_c1, btn_c2 = st.columns([2.2, 1])
     with btn_c1:
-        if st.button("iyzico Ödeme Talebi Oluştur (Simülasyon)", key=f"pay_btn_{display_label}"):
+        if st.button(
+            "🔐 iyzico Ödeme Talebi Oluştur (Simülasyon)",
+            key=f"pay_btn_{display_label}",
+            type="primary",
+            use_container_width=True,
+        ):
             sync_plan_quotas(bag_summary, force_reset=True)
             record_activity(
                 "iyzico Ödeme",
@@ -1588,7 +1714,9 @@ def render_iyzico_simulator(
             file_name="kursun_kalem_sirt_cantasi_ozet.docx",
             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             key=f"dl_brief_{display_label}",
+            use_container_width=True,
         )
+    st.markdown("</div>", unsafe_allow_html=True)
 
 
 def render_parent_notification_center() -> None:
@@ -2713,20 +2841,28 @@ elif current_page == "B2B Lisans & Kurum":
 # 7. PAKETLER & ABONELİK VİTRİNİ (OKUL SIRT ÇANTASI SEPETİ, 12 PAKET & IYZICO)
 # ==============================================================================
 elif current_page == "Paketler & Abonelik Vitrini":
-    st.subheader("💎 Paketler & Abonelik Vitrini (12 Paket)")
-    st.write(
-        "Seçtiğiniz paketler alışveriş sepeti gibi **Okul Sırt Çantası** görselinin içine eklenir; "
-        "birden fazla paket toplayabilir, adet ayarlayabilir ve iyzico taksitlerini inceleyebilirsiniz."
+    st.markdown(
+        """
+        <div class="kp-vitrin-header">
+            <h2>💎 Paketler & Abonelik Vitrini (12 Paket)</h2>
+            <p>
+                Öğrenci, YKS, Veli ve Kurumsal (B2B) segmentlerindeki paketleri Okul Sırt Çantanıza
+                ekleyin, adetleri yönetin ve iyzico taksit seçenekleriyle kotalarınızı aktifleyin.
+            </p>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
 
     current_bag = get_bag_items()
     active_bag_summary = render_school_backpack_panel()
 
-    st.markdown("---")
+    st.markdown("#### 🎯 Segment Filtresi")
     selected_segment = st.segmented_control(
         "Segment Filtresi",
         options=["Tümü", "Öğrenci", "YKS", "Veli", "Kurum / B2B"],
         default="Tümü",
+        label_visibility="collapsed",
     )
 
     filtered_tiers = (
@@ -2741,33 +2877,35 @@ elif current_page == "Paketler & Abonelik Vitrini":
             with cols[idx]:
                 in_bag_qty = current_bag.get(tier["id"], 0)
                 bag_tag = f" • 🎒 Çantada: {in_bag_qty}" if in_bag_qty > 0 else ""
+                feats_li = "".join([f"<li>✓ {html.escape(feat)}</li>" for feat in tier["features"]])
                 st.markdown(
                     f"""
-                    <div class="kp-card">
-                        <div style="font-size:0.78rem;color:#64748b;font-weight:600;">
-                            {tier["segment"].upper()} • {tier["badge"]}{bag_tag}
+                    <div class="kp-pkg-card">
+                        <div class="kp-pkg-top">
+                            <span class="kp-pkg-seg">{html.escape(tier["segment"])}</span>
+                            <span class="kp-pkg-badge">{html.escape(tier["badge"])}{html.escape(bag_tag)}</span>
                         </div>
-                        <h4 style="margin:0.25rem 0;">{tier["name"]}</h4>
-                        <div style="font-size:1.35rem;font-weight:700;color:#7f1d1d;margin-bottom:0.4rem;">
-                            {tier["monthly_price"]:,} ₺ <span style="font-size:0.8rem;font-weight:400;color:#64748b;">/ ay</span>
+                        <div class="kp-pkg-title">{html.escape(tier["name"])}</div>
+                        <div class="kp-pkg-price">
+                            {tier["monthly_price"]:,} ₺ <span>/ ay</span>
                         </div>
-                        <p style="font-size:0.86rem;color:#475569;">{tier["desc"]}</p>
+                        <div class="kp-pkg-desc">{html.escape(tier["desc"])}</div>
+                        <ul class="kp-pkg-feats">{feats_li}</ul>
                     </div>
                     """.replace(",", "."),
                     unsafe_allow_html=True,
                 )
-                for feat in tier["features"]:
-                    st.markdown(f"- {feat}")
                 st.button(
                     "🎒 Çantaya Ekle",
                     key=f"select_{tier['id']}",
+                    type="primary" if in_bag_qty > 0 else "secondary",
                     use_container_width=True,
                     on_click=cb_add_tier_to_bag,
                     args=(tier["id"], 1),
                 )
 
     st.markdown("---")
-    st.markdown("### 📊 12 Paket Karşılaştırma Matrisi")
+    st.markdown("#### 📊 12 Paket Karşılaştırma Matrisi")
     matrix_rows = [
         {
             "Paket Adı": t["name"],
@@ -2788,3 +2926,5 @@ elif current_page == "Paketler & Abonelik Vitrini":
         monthly_price=active_bag_summary["monthly_price"],
         summary=active_bag_summary,
     )
+
+```
