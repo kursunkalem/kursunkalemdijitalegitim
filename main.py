@@ -76,11 +76,47 @@ def get_embedded_logo_svg_data_uri() -> str:
 
 
 def get_embedded_logo_png_bytes() -> Optional[bytes]:
-    """Gömülü logoyu DOCX belgesine eklemek için PNG baytı üretir."""
+    """Gömülü logoyu DOCX belgesine eklemek için PNG baytı üretir (cairosvg veya Pillow fallback)."""
     try:
         import cairosvg  # type: ignore
 
-        return cairosvg.svg2png(bytestring=EMBEDDED_LOGO_SVG.encode("utf-8"), scale=2.0)
+        png = cairosvg.svg2png(bytestring=EMBEDDED_LOGO_SVG.encode("utf-8"), scale=2.0)
+        if png:
+            return png
+    except Exception:
+        pass
+
+    try:
+        from PIL import Image, ImageDraw  # type: ignore
+
+        size = 320
+        img = Image.new("RGBA", (size, size), (255, 255, 255, 255))
+        draw = ImageDraw.Draw(img)
+
+        # Dış lacivert ve altın sarısı halkalar
+        draw.ellipse([14, 14, size - 14, size - 14], outline=(15, 23, 42, 255), width=10)
+        draw.arc([20, 20, size - 20, size - 20], start=290, end=75, fill=(212, 175, 55, 255), width=8)
+
+        # Açık kitap ve mezuniyet kepi formu
+        draw.pieslice([68, 95, 252, 215], start=180, end=360, fill=(23, 44, 86, 255))
+        draw.polygon(
+            [(160, 56), (232, 88), (160, 120), (88, 88)],
+            fill=(15, 23, 42, 255),
+            outline=(212, 175, 55, 255),
+        )
+        draw.rectangle([122, 104, 198, 130], fill=(23, 44, 86, 255))
+
+        # Marka metinleri
+        draw.text((160, 182), "DİJİTAL OKUL", fill=(11, 24, 54, 255), anchor="mm")
+        draw.text((160, 206), "— KURŞUN KALEM —", fill=(127, 29, 29, 255), anchor="mm")
+
+        # Sağ altta sarı kurşun kalem vurgusu
+        draw.line([(215, 252), (274, 206)], fill=(234, 179, 8, 255), width=12)
+        draw.polygon([(274, 206), (284, 198), (281, 212)], fill=(15, 23, 42, 255))
+
+        out = io.BytesIO()
+        img.save(out, format="PNG")
+        return out.getvalue()
     except Exception:
         return None
 
@@ -1869,6 +1905,13 @@ elif current_page == "Dijimentor":
             f"Haftalık Süre: {weekly_hours} Saat | Odak: {coach_focus}"
         )
         docx_coach = build_coach_docx(meta_summary, st.session_state.dijimentor_plan)
+        txt_report = (
+            f"{BRAND_NAME}\n"
+            f"{meta_summary}\n"
+            f"Tarih: {datetime.now().strftime('%d.%m.%Y')}\n"
+            f"{'=' * 60}\n\n"
+            f"{st.session_state.dijimentor_plan}"
+        )
 
         d_col1, d_col2, d_col3 = st.columns(3)
         with d_col1:
@@ -1882,7 +1925,7 @@ elif current_page == "Dijimentor":
         with d_col2:
             st.download_button(
                 label="📄 Planı Metin (.txt) İndir",
-                data=st.session_state.dijimentor_plan.encode("utf-8"),
+                data=txt_report.encode("utf-8"),
                 file_name="dijimentor_calisma_plani.txt",
                 mime="text/plain",
                 use_container_width=True,
