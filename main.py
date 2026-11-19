@@ -24,7 +24,7 @@ st.set_page_config(
 
 BRAND_NAME = "Kurşun Kalem Dijital Eğitim"
 BRAND_TAGLINE = (
-    "Geleceği yazan dijital eğitim • Profesyonel Soru Fabrikası, Dijikoç & Akıllı Öğrenci Portalı"
+    "Geleceği yazan dijital eğitim • Profesyonel Soru Fabrikası, Dijimentor & Akıllı Öğrenci Portalı"
 )
 DEFAULT_MODEL = "gemini-3.8-flash"
 FALLBACK_MODEL = "gemini-2.5-flash"
@@ -36,13 +36,13 @@ PAGES = [
     "Ana Sayfa & Geri Sayım",
     "Soru & Redaksiyon Fabrikası",
     "Öğrenci Portalı & Çözüm",
-    "Dijikoç",
+    "Dijimentor",
     "Veli Takip Paneli",
     "B2B Lisans & Kurum",
     "Paketler & Abonelik Vitrini",
 ]
 
-DIJIKOC_PRESETS: Dict[str, Dict[str, Any]] = {
+DIJIMENTOR_PRESETS: Dict[str, Dict[str, Any]] = {
     "2027 LGS Derece & Net İvmesi": {
         "exam": "2027 LGS",
         "hours": 18,
@@ -74,7 +74,7 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
         "id": "ogrenci_temel",
         "segment": "Öğrenci",
         "name": "LGS Başlangıç Dijital",
-        "monthly_price": 490,
+        "monthly_price": 1490,
         "monthly_quota": 250,
         "coach_quota": 20,
         "badge": "Temel",
@@ -90,14 +90,14 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
         "id": "ogrenci_pro",
         "segment": "Öğrenci",
         "name": "2027 LGS Hedef Pro",
-        "monthly_price": 890,
+        "monthly_price": 2490,
         "monthly_quota": 1000,
         "coach_quota": 60,
         "badge": "Popüler",
-        "desc": "Yeni nesil muhakeme soruları, Dijikoç birebir çalışma planı ve veli raporu.",
+        "desc": "Yeni nesil muhakeme soruları, Dijimentor birebir çalışma planı ve veli raporu.",
         "features": [
             "Aylık 1.000 yapay zekâ soru ve redaksiyon hakkı",
-            "Dijikoç haftalık akıllı çalışma programı",
+            "Dijimentor haftalık akıllı çalışma programı",
             "Veli Takip Paneli canlı bildirimleri",
             "2 sütunlu LGS kitapçık DOCX çıktısı",
         ],
@@ -106,14 +106,14 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
         "id": "ogrenci_elit",
         "segment": "Öğrenci",
         "name": "LGS Tam Donanım Elit",
-        "monthly_price": 1390,
+        "monthly_price": 3790,
         "monthly_quota": 2500,
         "coach_quota": 150,
         "badge": "Kapsamlı",
-        "desc": "Yüksek soru üretim kotası, yoğun redaksiyon denetimi ve özel koçluk senaryoları.",
+        "desc": "Yüksek soru üretim kotası, yoğun redaksiyon denetimi ve özel mentorluk senaryoları.",
         "features": [
             "Aylık 2.500 soru üretimi + otomatik redaksiyon",
-            "Dijikoç günlük deneme analizi & çeldirici raporu",
+            "Dijimentor günlük deneme analizi & çeldirici raporu",
             "Veli Takip Paneli + haftalık özet bülteni",
             "Özel kurum/öğrenci başlıklı DOCX testler",
         ],
@@ -122,14 +122,14 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
         "id": "yks_sayisal",
         "segment": "YKS",
         "name": "YKS MF (Sayısal) Akademi",
-        "monthly_price": 990,
+        "monthly_price": 2890,
         "monthly_quota": 1200,
         "coach_quota": 80,
         "badge": "TYT + AYT",
         "desc": "TYT ve AYT Matematik, Fizik, Kimya, Biyoloji ve Türkçe odaklı ileri hazırlık paketi.",
         "features": [
             "TYT & AYT kazanım ve ÖSYM tarzı soru üretimi",
-            "Dijikoç net artırma ve süre yönetimi koçu",
+            "Dijimentor net artırma ve süre yönetimi mentorluğu",
             "Konu bazlı hata defteri ve çözüm desteği",
             "2 sütunlu deneme/test DOCX çıktısı",
         ],
@@ -138,14 +138,14 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
         "id": "yks_ea_sozel",
         "segment": "YKS",
         "name": "YKS EA & Sözel Atölye",
-        "monthly_price": 940,
+        "monthly_price": 2690,
         "monthly_quota": 1200,
         "coach_quota": 80,
         "badge": "TYT + AYT",
         "desc": "Türk Dili ve Edebiyatı, Tarih, Coğrafya, Matematik ve paragraf analizi paketi.",
         "features": [
             "Paragraf, edebiyat ve sosyal bilimler soru fabrikası",
-            "Dijikoç deneme stratejisi ve okuma hızı koçu",
+            "Dijimentor deneme stratejisi ve okuma hızı mentorluğu",
             "Detaylı çeldirici ve kazanım eşleştirme",
             "Düzenlenebilir DOCX çalışma kağıtları",
         ],
@@ -154,14 +154,14 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
         "id": "yks_vip",
         "segment": "YKS",
         "name": "YKS Derece VIP",
-        "monthly_price": 1590,
+        "monthly_price": 4290,
         "monthly_quota": 3000,
         "coach_quota": 200,
         "badge": "VIP",
-        "desc": "Yoğun deneme analizi, kişiselleştirilmiş Dijikoç ve yüksek soru üretim kotası.",
+        "desc": "Yoğun deneme analizi, kişiselleştirilmiş Dijimentor ve yüksek soru üretim kotası.",
         "features": [
             "Aylık 3.000 soru üretimi ve kalite denetimi",
-            "Dijikoç birebir hedef üniversite & net simülasyonu",
+            "Dijimentor birebir hedef üniversite & net simülasyonu",
             "Veli/danışman görünümü ve gelişim grafikleri",
             "Kurumsal standartta DOCX kitapçık çıktısı",
         ],
@@ -170,14 +170,14 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
         "id": "veli_aile",
         "segment": "Veli",
         "name": "Aile Takip & Rehberlik",
-        "monthly_price": 590,
+        "monthly_price": 1690,
         "monthly_quota": 400,
         "coach_quota": 40,
         "badge": "Veli Odaklı",
         "desc": "Öğrencinin çalışma düzenini, deneme ivmesini ve eksik kazanımlarını şeffaf izleyin.",
         "features": [
             "Veli Takip Paneli haftalık performans özeti",
-            "Dijikoç çalışma disiplini ve motivasyon planı",
+            "Dijimentor çalışma disiplini ve motivasyon planı",
             "Eksik kazanım uyarıları ve öneri listesi",
             "1 öğrenci profili dahil",
         ],
@@ -186,11 +186,11 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
         "id": "veli_coklu",
         "segment": "Veli",
         "name": "Çoklu Kardeş Aile Paketi",
-        "monthly_price": 990,
+        "monthly_price": 2790,
         "monthly_quota": 1500,
         "coach_quota": 90,
         "badge": "2 Öğrenci",
-        "desc": "İki kardeş için ayrı sınıf/sınav seviyelerinde takip, soru üretimi ve Dijikoç desteği.",
+        "desc": "İki kardeş için ayrı sınıf/sınav seviyelerinde takip, soru üretimi ve Dijimentor desteği.",
         "features": [
             "2 ayrı öğrenci profili (5–12. sınıf / LGS & YKS)",
             "Aylık 1.500 ortak soru üretim kotası",
@@ -202,7 +202,7 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
         "id": "b2b_ogretmen",
         "segment": "Kurum / B2B",
         "name": "Öğretmen & Zümre Stüdyosu",
-        "monthly_price": 1790,
+        "monthly_price": 5900,
         "monthly_quota": 4000,
         "coach_quota": 150,
         "badge": "Zümre",
@@ -218,14 +218,14 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
         "id": "b2b_kurs",
         "segment": "Kurum / B2B",
         "name": "Etüt Merkezi & Kurs Paketi",
-        "monthly_price": 4490,
+        "monthly_price": 14900,
         "monthly_quota": 12000,
         "coach_quota": 400,
         "badge": "Kurumsal",
         "desc": "Kurs merkezleri ve butik okullar için ölçeklenebilir soru fabrikası ve öğrenci portalı.",
         "features": [
             "Aylık 12.000 soru üretimi ve toplu test hazırlama",
-            "Öğrenci Portalı, Dijikoç ve Veli Paneli erişimi",
+            "Öğrenci Portalı, Dijimentor ve Veli Paneli erişimi",
             "Kurum logolu/başlıklı DOCX sınav çıktıları",
             "25 öğretmen + 250 öğrenci hesabı",
         ],
@@ -234,11 +234,11 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
         "id": "b2b_kampus",
         "segment": "Kurum / B2B",
         "name": "Okul & Kampüs Lisansı",
-        "monthly_price": 9900,
+        "monthly_price": 29900,
         "monthly_quota": 35000,
         "coach_quota": 1000,
         "badge": "Kampüs",
-        "desc": "Tüm kademelerde standart ölçme-değerlendirme ve akıllı koçluk altyapısı.",
+        "desc": "Tüm kademelerde standart ölçme-değerlendirme ve akıllı mentorluk altyapısı.",
         "features": [
             "Aylık 35.000 soru üretimi + öncelikli redaksiyon",
             "Tüm modüllerde kurumsal yetkilendirme",
@@ -250,7 +250,7 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
         "id": "b2b_ozel",
         "segment": "Kurum / B2B",
         "name": "Kurumsal Zincir & Yayınevi",
-        "monthly_price": 19900,
+        "monthly_price": 54900,
         "monthly_quota": 100000,
         "coach_quota": 2500,
         "badge": "Enterprise",
@@ -510,7 +510,7 @@ def get_tier_by_id(tier_id: str) -> Dict[str, Any]:
 
 
 def sync_plan_quotas(tier: Dict[str, Any], force_reset: bool = False) -> None:
-    """Aktif pakete göre soru ve koçluk kotalarını eşitler."""
+    """Aktif pakete göre soru ve mentorluk kotalarını eşitler."""
     if force_reset or st.session_state.get("quota_tier_id") != tier["id"]:
         st.session_state["quota_tier_id"] = tier["id"]
         st.session_state["remaining_question_quota"] = int(tier["monthly_quota"])
@@ -518,7 +518,7 @@ def sync_plan_quotas(tier: Dict[str, Any], force_reset: bool = False) -> None:
 
 
 def consume_quota(kind: str, amount: int = 1) -> Tuple[bool, str]:
-    """Soru ('question') veya koçluk ('coach') kotasından kullanım düşer."""
+    """Soru ('question') veya mentorluk ('coach') kotasından kullanım düşer."""
     active_tier = get_tier_by_id(st.session_state.selected_tier_id)
     sync_plan_quotas(active_tier, force_reset=False)
 
@@ -535,7 +535,7 @@ def consume_quota(kind: str, amount: int = 1) -> Tuple[bool, str]:
     rem_c = int(st.session_state.get("remaining_coach_quota", 0))
     if rem_c < amount:
         return False, (
-            f"Aktif paketinizde ({active_tier['name']}) Dijikoç plan kotası doldu "
+            f"Aktif paketinizde ({active_tier['name']}) Dijimentor plan kotası doldu "
             f"(Kalan: {rem_c}). Paketler vitrininden paket yükseltebilirsiniz."
         )
     st.session_state["remaining_coach_quota"] = rem_c - amount
@@ -647,7 +647,7 @@ def build_test_docx(
 
 
 def build_coach_docx(title_meta: str, plan_text: str) -> bytes:
-    """Dijikoç çalışma planını kurumsal DOCX belgesine çevirir."""
+    """Dijimentor çalışma planını kurumsal DOCX belgesine çevirir."""
     doc = Document()
     for section in doc.sections:
         section.top_margin = Inches(0.75)
@@ -657,7 +657,7 @@ def build_coach_docx(title_meta: str, plan_text: str) -> bytes:
 
     h = doc.add_paragraph()
     h.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r = h.add_run(f"{BRAND_NAME.upper()} — DİJİKOÇ ÇALIŞMA PLANI")
+    r = h.add_run(f"{BRAND_NAME.upper()} — DİJİMENTOR ÇALIŞMA PLANI")
     r.bold = True
     r.font.size = Pt(14)
     r.font.color.rgb = RGBColor(15, 23, 42)
@@ -724,7 +724,7 @@ def build_commercial_brief_docx(
         f"iyzico Taksit Planı: {installment} Taksit",
         f"Hesaplanan Toplam Tutar: {total_amount:,} ₺".replace(",", "."),
         f"Aylık Soru Üretim Kotası: {tier['monthly_quota']:,} Soru".replace(",", "."),
-        f"Dijikoç Plan Kotası: {tier['coach_quota']} Plan / Ay",
+        f"Dijimentor Plan Kotası: {tier['coach_quota']} Plan / Ay",
         "",
         "Paket Kapsamı:",
     ] + [f"• {feat}" for feat in tier["features"]]
@@ -826,8 +826,8 @@ if "active_page" not in st.session_state:
     st.session_state.active_page = PAGES[0]
 if "generated_test_text" not in st.session_state:
     st.session_state.generated_test_text = ""
-if "dijikoc_plan" not in st.session_state:
-    st.session_state.dijikoc_plan = ""
+if "dijimentor_plan" not in st.session_state:
+    st.session_state.dijimentor_plan = ""
 if "selected_tier_id" not in st.session_state:
     st.session_state.selected_tier_id = SUBSCRIPTION_TIERS[1]["id"]
 if "live_tick" not in st.session_state:
@@ -855,7 +855,7 @@ with st.sidebar:
         "Ana Sayfa & Geri Sayım": "🏠",
         "Soru & Redaksiyon Fabrikası": "⚙️",
         "Öğrenci Portalı & Çözüm": "🎓",
-        "Dijikoç": "🤖",
+        "Dijimentor": "🤖",
         "Veli Takip Paneli": "👨‍👩‍👧",
         "B2B Lisans & Kurum": "🏫",
         "Paketler & Abonelik Vitrini": "💎",
@@ -877,7 +877,7 @@ with st.sidebar:
             <div style="font-size:0.88rem;font-weight:700;color:#0f172a;margin-top:0.1rem;">{active_tier_global['name']}</div>
             <div style="font-size:0.78rem;color:#475569;margin-top:0.25rem;">
                 Soru Kotası: <b>{int(st.session_state.remaining_question_quota):,}</b>/{active_tier_global['monthly_quota']:,}<br>
-                Dijikoç Plan: <b>{int(st.session_state.remaining_coach_quota)}</b>/{active_tier_global['coach_quota']}
+                Dijimentor Plan: <b>{int(st.session_state.remaining_coach_quota)}</b>/{active_tier_global['coach_quota']}
             </div>
         </div>
         """.replace(",", "."),
@@ -911,7 +911,7 @@ if current_page == "Ana Sayfa & Geri Sayım":
     st.subheader("🚀 Kurşun Kalem Dijital Eğitim Platformuna Hoş Geldiniz")
     st.write(
         "İlkokuldan Liseye ve YKS'ye uzanan, yapay zekâ destekli Türkiye'nin akıllı "
-        "soru fabrikası, Dijikoç ve ölçme-değerlendirme ekosistemi."
+        "soru fabrikası, Dijimentor ve ölçme-değerlendirme ekosistemi."
     )
 
     head_col, toggle_col = st.columns([3, 1])
@@ -952,7 +952,7 @@ if current_page == "Ana Sayfa & Geri Sayım":
         st.markdown(
             """
             <div class="kp-card">
-                <h4>🤖 Dijikoç Akıllı Rehberlik</h4>
+                <h4>🤖 Dijimentor Akıllı Rehberlik</h4>
                 <p>Öğrencinin hedef sınavına, zayıf kazanımlarına ve haftalık temposuna göre
                 kişiselleştirilmiş çalışma ve deneme stratejisi sunar.</p>
             </div>
@@ -1099,7 +1099,7 @@ elif current_page == "Öğrenci Portalı & Çözüm":
             st.warning("Lütfen önce bir soru metni girin.")
         else:
             sys_inst = (
-                "Sen sabırlı, pedagojik ve teşvik edici bir eğitim koçusun. "
+                "Sen sabırlı, pedagojik ve teşvik edici bir eğitim mentorusun. "
                 "Öğrenciye doğrudan ezberletmek yerine mantığını kavratacak şekilde açıkla."
             )
             prompt = (
@@ -1117,13 +1117,13 @@ elif current_page == "Öğrenci Portalı & Çözüm":
                 st.error(f"Çözüm üretilirken hata oluştu: {exc}")
 
 # ==============================================================================
-# 4. DİJİKOÇ — KURUMSAL AKILLI KOÇLUK STÜDYOSU
+# 4. DİJİMENTOR — KURUMSAL AKILLI MENTORLUK STÜDYOSU
 # ==============================================================================
-elif current_page == "Dijikoç":
+elif current_page == "Dijimentor":
     st.markdown(
         """
         <div class="kp-studio-banner">
-            <div class="kp-studio-title">🤖 Dijikoç — Kurumsal Akıllı Sınav & Performans Koçu</div>
+            <div class="kp-studio-title">🤖 Dijimentor — Kurumsal Akıllı Sınav & Performans Mentorluğu</div>
             <div class="kp-studio-sub">
                 Hedef sınavına, haftalık çalışma kapasitene ve çeldirici/zaman analizine göre
                 ölçülebilir haftalık aksiyon planı ve deneme stratejisi üretir.
@@ -1138,8 +1138,8 @@ elif current_page == "Dijikoç":
     k_c1.markdown(
         f"""
         <div class="kp-kpi-card">
-            <div class="kp-kpi-label">Koçluk Motoru</div>
-            <div class="kp-kpi-value">Dijikoç v3</div>
+            <div class="kp-kpi-label">Mentorluk Motoru</div>
+            <div class="kp-kpi-value">Dijimentor v3</div>
             <div class="kp-kpi-sub">Kalan Plan: {int(st.session_state.remaining_coach_quota)} Hak</div>
         </div>
         """,
@@ -1178,9 +1178,9 @@ elif current_page == "Dijikoç":
 
     st.write("")
 
-    st.markdown("#### ⚡ Hızlı Koçluk Senaryoları")
-    p_cols = st.columns(len(DIJIKOC_PRESETS) + 1)
-    for idx, (preset_title, preset_data) in enumerate(DIJIKOC_PRESETS.items()):
+    st.markdown("#### ⚡ Hızlı Mentorluk Senaryoları")
+    p_cols = st.columns(len(DIJIMENTOR_PRESETS) + 1)
+    for idx, (preset_title, preset_data) in enumerate(DIJIMENTOR_PRESETS.items()):
         with p_cols[idx]:
             if st.button(preset_title, key=f"preset_{idx}"):
                 st.session_state["dk_exam"] = preset_data["exam"]
@@ -1192,7 +1192,7 @@ elif current_page == "Dijikoç":
                 st.rerun()
     with p_cols[-1]:
         if st.button("Planı Temizle", key="clear_dk_plan"):
-            st.session_state.dijikoc_plan = ""
+            st.session_state.dijimentor_plan = ""
             st.rerun()
 
     st.markdown('<div class="kp-panel">', unsafe_allow_html=True)
@@ -1230,7 +1230,7 @@ elif current_page == "Dijikoç":
         st.session_state["dk_goal"] = target_goal
 
         coach_focus = st.selectbox(
-            "Koçluk Odak Alanı",
+            "Mentorluk Odak Alanı",
             [
                 "Haftalık Dengeli Çalışma Programı",
                 "Deneme Net Artırma & Zaman Yönetimi",
@@ -1272,15 +1272,15 @@ elif current_page == "Dijikoç":
         value=True,
     )
 
-    if st.button("🎯 Dijikoç Planı Oluştur", type="primary"):
+    if st.button("🎯 Dijimentor Planı Oluştur", type="primary"):
         quota_ok, quota_msg = consume_quota("coach", 1)
         if not quota_ok:
             st.error(quota_msg)
         else:
             sys_coach = (
-                "Sen 'Dijikoç' adlı, Türkiye'deki öğrenciler için çalışan üst düzey, net, "
-                "empatik ve veri odaklı bir dijital eğitim koçusun. Yanıtını başlıklarla, "
-                "madde işaretleriyle ve uygulanabilir zaman bloklarıyla kurumsal bir koçluk "
+                "Sen 'Dijimentor' adlı, Türkiye'deki öğrenciler için çalışan üst düzey, net, "
+                "empatik ve veri odaklı bir dijital eğitim mentorusun. Yanıtını başlıklarla, "
+                "madde işaretleriyle ve uygulanabilir zaman bloklarıyla kurumsal bir mentorluk "
                 "raporu gibi düzenle. Şu bölümleri net oluştur:\n"
                 "1. Teşhis ve Stratejik Özet\n"
                 "2. Pazartesi–Pazar Haftalık Çalışma Planı (saat ve odak ders dağılımı)\n"
@@ -1292,48 +1292,48 @@ elif current_page == "Dijikoç":
                 f"Hedef Bandı: {target_goal}\n"
                 f"Haftalık Çalışma Süresi: {weekly_hours} saat\n"
                 f"Zorlanılan Dersler / Kazanımlar: {weak_topics}\n"
-                f"Koçluk Odak Alanı: {coach_focus}\n"
+                f"Mentorluk Odak Alanı: {coach_focus}\n"
                 f"Mevcut Deneme / Süre Durumu: {recent_score}\n"
                 f"Detaylı Rutin & Analiz Protokolü: {'Evet' if include_routine else 'Özet'}\n\n"
                 "Lütfen öğrenciye doğrudan uygulanabilir, motive edici ve net bir Türkçe plan sun."
             )
             try:
-                with st.spinner("Dijikoç çalışma ve deneme stratejisi hazırlanıyor..."):
+                with st.spinner("Dijimentor çalışma ve deneme stratejisi hazırlanıyor..."):
                     plan = call_gemini_text(prompt=prompt_coach, system_instruction=sys_coach)
-                st.session_state.dijikoc_plan = plan
-                st.success("Dijikoç planı başarıyla oluşturuldu.")
+                st.session_state.dijimentor_plan = plan
+                st.success("Dijimentor planı başarıyla oluşturuldu.")
             except Exception as exc:
                 st.session_state["remaining_coach_quota"] = int(
                     st.session_state.get("remaining_coach_quota", 0)
                 ) + 1
-                st.error(f"Dijikoç planı oluşturulurken hata oluştu: {exc}")
+                st.error(f"Dijimentor planı oluşturulurken hata oluştu: {exc}")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-    if st.session_state.dijikoc_plan:
+    if st.session_state.dijimentor_plan:
         st.markdown('<div class="kp-panel">', unsafe_allow_html=True)
-        st.markdown("### 📅 Kişiselleştirilmiş Dijikoç Koçluk Raporu")
-        st.markdown(st.session_state.dijikoc_plan)
+        st.markdown("### 📅 Kişiselleştirilmiş Dijimentor Mentorluk Raporu")
+        st.markdown(st.session_state.dijimentor_plan)
 
         meta_summary = (
             f"Hedef: {target_exam} | Hedef Bandı: {target_goal} | "
             f"Haftalık Süre: {weekly_hours} Saat | Odak: {coach_focus}"
         )
-        docx_coach = build_coach_docx(meta_summary, st.session_state.dijikoc_plan)
+        docx_coach = build_coach_docx(meta_summary, st.session_state.dijimentor_plan)
 
         d_col1, d_col2 = st.columns(2)
         with d_col1:
             st.download_button(
-                label="📥 Koçluk Planını DOCX İndir",
+                label="📥 Mentorluk Planını DOCX İndir",
                 data=docx_coach,
-                file_name="dijikoc_calisma_plani.docx",
+                file_name="dijimentor_calisma_plani.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             )
         with d_col2:
             st.download_button(
                 label="📄 Planı Metin (.txt) İndir",
-                data=st.session_state.dijikoc_plan.encode("utf-8"),
-                file_name="dijikoc_calisma_plani.txt",
+                data=st.session_state.dijimentor_plan.encode("utf-8"),
+                file_name="dijimentor_calisma_plani.txt",
                 mime="text/plain",
             )
         st.markdown("</div>", unsafe_allow_html=True)
@@ -1348,7 +1348,7 @@ elif current_page == "Veli Takip Paneli":
     v1, v2, v3 = st.columns(3)
     v1.metric("Bu Hafta Çözülen Soru", "340 Soru", "+18% geçen haftaya göre")
     v2.metric("Ortalama Doğruluk", "%81", "+4 puan")
-    v3.metric("Dijikoç Plan Uyumu", "%88", "6 / 7 gün aktif")
+    v3.metric("Dijimentor Plan Uyumu", "%88", "6 / 7 gün aktif")
 
     st.markdown("#### Kazanım Bazlı Görünüm")
     st.progress(0.84, text="Okuma ve Anlama — %84")
