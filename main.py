@@ -75,6 +75,8 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
         "segment": "Öğrenci",
         "name": "LGS Başlangıç Dijital",
         "monthly_price": 490,
+        "monthly_quota": 250,
+        "coach_quota": 20,
         "badge": "Temel",
         "desc": "5–8. sınıf öğrencileri için günlük kazanım tekrarları ve akıllı soru çözümleri.",
         "features": [
@@ -89,6 +91,8 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
         "segment": "Öğrenci",
         "name": "2027 LGS Hedef Pro",
         "monthly_price": 890,
+        "monthly_quota": 1000,
+        "coach_quota": 60,
         "badge": "Popüler",
         "desc": "Yeni nesil muhakeme soruları, Dijikoç birebir çalışma planı ve veli raporu.",
         "features": [
@@ -103,6 +107,8 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
         "segment": "Öğrenci",
         "name": "LGS Tam Donanım Elit",
         "monthly_price": 1390,
+        "monthly_quota": 2500,
+        "coach_quota": 150,
         "badge": "Kapsamlı",
         "desc": "Yüksek soru üretim kotası, yoğun redaksiyon denetimi ve özel koçluk senaryoları.",
         "features": [
@@ -117,6 +123,8 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
         "segment": "YKS",
         "name": "YKS MF (Sayısal) Akademi",
         "monthly_price": 990,
+        "monthly_quota": 1200,
+        "coach_quota": 80,
         "badge": "TYT + AYT",
         "desc": "TYT ve AYT Matematik, Fizik, Kimya, Biyoloji ve Türkçe odaklı ileri hazırlık paketi.",
         "features": [
@@ -131,6 +139,8 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
         "segment": "YKS",
         "name": "YKS EA & Sözel Atölye",
         "monthly_price": 940,
+        "monthly_quota": 1200,
+        "coach_quota": 80,
         "badge": "TYT + AYT",
         "desc": "Türk Dili ve Edebiyatı, Tarih, Coğrafya, Matematik ve paragraf analizi paketi.",
         "features": [
@@ -145,6 +155,8 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
         "segment": "YKS",
         "name": "YKS Derece VIP",
         "monthly_price": 1590,
+        "monthly_quota": 3000,
+        "coach_quota": 200,
         "badge": "VIP",
         "desc": "Yoğun deneme analizi, kişiselleştirilmiş Dijikoç ve yüksek soru üretim kotası.",
         "features": [
@@ -159,6 +171,8 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
         "segment": "Veli",
         "name": "Aile Takip & Rehberlik",
         "monthly_price": 590,
+        "monthly_quota": 400,
+        "coach_quota": 40,
         "badge": "Veli Odaklı",
         "desc": "Öğrencinin çalışma düzenini, deneme ivmesini ve eksik kazanımlarını şeffaf izleyin.",
         "features": [
@@ -173,6 +187,8 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
         "segment": "Veli",
         "name": "Çoklu Kardeş Aile Paketi",
         "monthly_price": 990,
+        "monthly_quota": 1500,
+        "coach_quota": 90,
         "badge": "2 Öğrenci",
         "desc": "İki kardeş için ayrı sınıf/sınav seviyelerinde takip, soru üretimi ve Dijikoç desteği.",
         "features": [
@@ -187,6 +203,8 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
         "segment": "Kurum / B2B",
         "name": "Öğretmen & Zümre Stüdyosu",
         "monthly_price": 1790,
+        "monthly_quota": 4000,
+        "coach_quota": 150,
         "badge": "Zümre",
         "desc": "Branş öğretmenleri ve zümre başkanları için hızlı kazanım testi ve redaksiyon aracı.",
         "features": [
@@ -201,6 +219,8 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
         "segment": "Kurum / B2B",
         "name": "Etüt Merkezi & Kurs Paketi",
         "monthly_price": 4490,
+        "monthly_quota": 12000,
+        "coach_quota": 400,
         "badge": "Kurumsal",
         "desc": "Kurs merkezleri ve butik okullar için ölçeklenebilir soru fabrikası ve öğrenci portalı.",
         "features": [
@@ -215,6 +235,8 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
         "segment": "Kurum / B2B",
         "name": "Okul & Kampüs Lisansı",
         "monthly_price": 9900,
+        "monthly_quota": 35000,
+        "coach_quota": 1000,
         "badge": "Kampüs",
         "desc": "Tüm kademelerde standart ölçme-değerlendirme ve akıllı koçluk altyapısı.",
         "features": [
@@ -229,6 +251,8 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
         "segment": "Kurum / B2B",
         "name": "Kurumsal Zincir & Yayınevi",
         "monthly_price": 19900,
+        "monthly_quota": 100000,
+        "coach_quota": 2500,
         "badge": "Enterprise",
         "desc": "Çok şubeli eğitim kurumları ve içerik ekipleri için özel kapasite ve entegrasyon.",
         "features": [
@@ -416,7 +440,7 @@ st.markdown(
 )
 
 # ==============================================================================
-# YARDIMCI FONKSİYONLAR: API ANAHTARI, GEMINI İSTEMCİSİ, SAYAÇ VE DOCX
+# YARDIMCI FONKSİYONLAR: API ANAHTARI, GEMINI İSTEMCİSİ, SAYAÇ, KOTA VE DOCX
 # ==============================================================================
 def resolve_gemini_api_key() -> Optional[str]:
     """Yalnızca st.secrets veya ortam değişkenlerinden API anahtarını okur."""
@@ -478,6 +502,44 @@ def call_gemini_text(
             raise
 
     raise RuntimeError(f"Model çağrısı başarısız oldu: {last_exc}")
+
+
+def get_tier_by_id(tier_id: str) -> Dict[str, Any]:
+    """Paket kimliğine göre abonelik paketi kaydını döndürür."""
+    return next((t for t in SUBSCRIPTION_TIERS if t["id"] == tier_id), SUBSCRIPTION_TIERS[1])
+
+
+def sync_plan_quotas(tier: Dict[str, Any], force_reset: bool = False) -> None:
+    """Aktif pakete göre soru ve koçluk kotalarını eşitler."""
+    if force_reset or st.session_state.get("quota_tier_id") != tier["id"]:
+        st.session_state["quota_tier_id"] = tier["id"]
+        st.session_state["remaining_question_quota"] = int(tier["monthly_quota"])
+        st.session_state["remaining_coach_quota"] = int(tier["coach_quota"])
+
+
+def consume_quota(kind: str, amount: int = 1) -> Tuple[bool, str]:
+    """Soru ('question') veya koçluk ('coach') kotasından kullanım düşer."""
+    active_tier = get_tier_by_id(st.session_state.selected_tier_id)
+    sync_plan_quotas(active_tier, force_reset=False)
+
+    if kind == "question":
+        rem = int(st.session_state.get("remaining_question_quota", 0))
+        if rem < amount:
+            return False, (
+                f"Aktif paketinizde ({active_tier['name']}) yeterli soru üretim kotası kalmadı "
+                f"(Kalan: {rem}, İstenen: {amount}). Paketler vitrininden paket yükseltebilirsiniz."
+            )
+        st.session_state["remaining_question_quota"] = rem - amount
+        return True, ""
+
+    rem_c = int(st.session_state.get("remaining_coach_quota", 0))
+    if rem_c < amount:
+        return False, (
+            f"Aktif paketinizde ({active_tier['name']}) Dijikoç plan kotası doldu "
+            f"(Kalan: {rem_c}). Paketler vitrininden paket yükseltebilirsiniz."
+        )
+    st.session_state["remaining_coach_quota"] = rem_c - amount
+    return True, ""
 
 
 def format_countdown(target: datetime) -> Tuple[int, int, int, int]:
@@ -626,7 +688,66 @@ def build_coach_docx(title_meta: str, plan_text: str) -> bytes:
     return buffer.getvalue()
 
 
-def render_iyzico_simulator(package_name: str, monthly_price: int) -> None:
+def build_commercial_brief_docx(
+    title: str,
+    tier: Dict[str, Any],
+    billing_cycle: str,
+    installment: int,
+    total_amount: int,
+    extra_notes: str,
+) -> bytes:
+    """Kurumsal lisans veya abonelik özeti için DOCX teklif/bilgilendirme belgesi üretir."""
+    doc = Document()
+    for section in doc.sections:
+        section.top_margin = Inches(0.75)
+        section.bottom_margin = Inches(0.75)
+        section.left_margin = Inches(0.75)
+        section.right_margin = Inches(0.75)
+
+    h = doc.add_paragraph()
+    h.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    r = h.add_run(f"{BRAND_NAME.upper()} — KURUMSAL LİSANS & ABONELİK ÖZETİ")
+    r.bold = True
+    r.font.size = Pt(14)
+    r.font.color.rgb = RGBColor(15, 23, 42)
+
+    sub = doc.add_paragraph()
+    sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    sub.add_run(f"{title}  |  Tarih: {datetime.now().strftime('%d.%m.%Y')}").font.size = Pt(9.5)
+
+    doc.add_paragraph("─" * 78)
+
+    lines = [
+        f"Seçili Paket: {tier['name']} ({tier['segment']} • {tier['badge']})",
+        f"Aylık Liste Fiyatı: {tier['monthly_price']:,} ₺".replace(",", "."),
+        f"Tercih Edilen Dönem: {billing_cycle}",
+        f"iyzico Taksit Planı: {installment} Taksit",
+        f"Hesaplanan Toplam Tutar: {total_amount:,} ₺".replace(",", "."),
+        f"Aylık Soru Üretim Kotası: {tier['monthly_quota']:,} Soru".replace(",", "."),
+        f"Dijikoç Plan Kotası: {tier['coach_quota']} Plan / Ay",
+        "",
+        "Paket Kapsamı:",
+    ] + [f"• {feat}" for feat in tier["features"]]
+
+    if extra_notes.strip():
+        lines += ["", "Kurumsal / Ek Notlar:", extra_notes.strip()]
+
+    for line in lines:
+        p = doc.add_paragraph()
+        p.paragraph_format.space_after = Pt(3.5)
+        run = p.add_run(line)
+        run.font.size = Pt(10.5)
+        if line.startswith(("Seçili Paket", "Paket Kapsamı", "Kurumsal / Ek Notlar")):
+            run.bold = True
+            run.font.color.rgb = RGBColor(153, 27, 27)
+
+    buf = io.BytesIO()
+    doc.save(buf)
+    buf.seek(0)
+    return buf.getvalue()
+
+
+def render_iyzico_simulator(package_name: str, monthly_price: int, tier_id: Optional[str] = None) -> None:
     """iyzico taksit ve ödeme simülatörü."""
     st.markdown("### 💳 iyzico Taksit & Ödeme Simülatörü")
     c1, c2, c3 = st.columns(3)
@@ -664,10 +785,37 @@ def render_iyzico_simulator(package_name: str, monthly_price: int) -> None:
     m2.metric(f"{installment} Taksit Aylık", f"{monthly_installment:,.2f} ₺".replace(",", " "))
     m3.metric("Ödeme Altyapısı", f"iyzico • {card_brand}")
 
-    if st.button("iyzico Ödeme Talebi Oluştur (Simülasyon)", key=f"pay_btn_{package_name}"):
-        st.success(
-            f"**{package_name}** paketi için **{total_amount:,} ₺** ({installment} taksit, "
-            f"{card_brand}) tutarında iyzico ödeme oturumu hazırlandı.".replace(",", ".")
+    btn_c1, btn_c2 = st.columns([2, 1])
+    with btn_c1:
+        if st.button("iyzico Ödeme Talebi Oluştur (Simülasyon)", key=f"pay_btn_{package_name}"):
+            target_tier = get_tier_by_id(tier_id) if tier_id else next(
+                (t for t in SUBSCRIPTION_TIERS if t["name"] == package_name), SUBSCRIPTION_TIERS[1]
+            )
+            st.session_state.selected_tier_id = target_tier["id"]
+            sync_plan_quotas(target_tier, force_reset=True)
+            st.success(
+                f"**{package_name}** paketi için **{total_amount:,} ₺** ({installment} taksit, "
+                f"{card_brand}) tutarında iyzico ödeme oturumu hazırlandı ve paket kotası "
+                f"({target_tier['monthly_quota']:,} soru) aktifleşti.".replace(",", ".")
+            )
+    with btn_c2:
+        target_tier = get_tier_by_id(tier_id) if tier_id else next(
+            (t for t in SUBSCRIPTION_TIERS if t["name"] == package_name), SUBSCRIPTION_TIERS[1]
+        )
+        brief_docx = build_commercial_brief_docx(
+            title=f"{package_name} Özeti",
+            tier=target_tier,
+            billing_cycle=billing_cycle,
+            installment=int(installment),
+            total_amount=int(total_amount),
+            extra_notes=f"Kart Programı: {card_brand}",
+        )
+        st.download_button(
+            label="📥 Teklif / Özet DOCX",
+            data=brief_docx,
+            file_name=f"kursun_kalem_{target_tier['id']}_ozet.docx",
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            key=f"dl_brief_{package_name}",
         )
 
 
@@ -685,10 +833,12 @@ if "selected_tier_id" not in st.session_state:
 if "live_tick" not in st.session_state:
     st.session_state.live_tick = False
 
+sync_plan_quotas(get_tier_by_id(st.session_state.selected_tier_id), force_reset=False)
 api_key_ready = resolve_gemini_api_key() is not None
+active_tier_global = get_tier_by_id(st.session_state.selected_tier_id)
 
 # ==============================================================================
-# KENAR ÇUBUĞU (CUSTOM BUTTON NAVİGASYON)
+# KENAR ÇUBUĞU (CUSTOM BUTTON NAVİGASYON + AKTİF PAKET KOTA ÖZETİ)
 # ==============================================================================
 with st.sidebar:
     st.markdown(
@@ -720,6 +870,20 @@ with st.sidebar:
             st.rerun()
 
     st.markdown("---")
+    st.markdown(
+        f"""
+        <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:0.7rem 0.85rem;margin-bottom:0.75rem;">
+            <div style="font-size:0.72rem;font-weight:700;color:#64748b;text-transform:uppercase;">Aktif Paket</div>
+            <div style="font-size:0.88rem;font-weight:700;color:#0f172a;margin-top:0.1rem;">{active_tier_global['name']}</div>
+            <div style="font-size:0.78rem;color:#475569;margin-top:0.25rem;">
+                Soru Kotası: <b>{int(st.session_state.remaining_question_quota):,}</b>/{active_tier_global['monthly_quota']:,}<br>
+                Dijikoç Plan: <b>{int(st.session_state.remaining_coach_quota)}</b>/{active_tier_global['coach_quota']}
+            </div>
+        </div>
+        """.replace(",", "."),
+        unsafe_allow_html=True,
+    )
+
     if api_key_ready:
         st.success("● Sistem Aktif • 2027 LGS & Maarif Modeli")
     else:
@@ -850,32 +1014,42 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
             )
 
     if st.button("✨ Kurumsal Soru Paketi Üret", type="primary"):
-        sys_prompt = (
-            "Sen Türkiye Yüzyılı Maarif Modeli, LGS ve YKS ölçme-değerlendirme standartlarında "
-            "uzman bir Türkçe ve test yazarısın. Soruların özgün, açık, çeldiricileri güçlü, "
-            "dil bilgisi ve yazım kurallarına kusursuz uygun olmasını sağla. "
-            "Otomatik redaksiyon açıksa her sorunun sonunda kısa bir [Redaksiyon & Çeldirici Notu] ekle "
-            "ve en sonda ayrı bir 'Cevap Anahtarı ve Kısa Gerekçeler' bölümü oluştur."
-        )
-        user_prompt = (
-            f"Kurum: {institution}\n"
-            f"Branş: {branch}\n"
-            f"Sınıf Seviyesi: {grade}\n"
-            f"Öğrenme Alanı: {learning_area}\n"
-            f"Hedef Kazanım: {outcome}\n"
-            f"Bağlam / Tema / Senaryo: {context_theme}\n"
-            f"Zorluk Derecesi: {difficulty}\n"
-            f"Soru Adedi: {question_count}\n"
-            f"Otomatik Redaksiyon ve Kalite Denetimi: {'Aktif' if auto_review else 'Pasif'}\n\n"
-            "Lütfen numaralandırılmış çoktan seçmeli (A, B, C, D) özgün sorular üret."
-        )
-        try:
-            with st.spinner("Sorular üretiliyor ve kalite denetimi yapılıyor..."):
-                result = call_gemini_text(prompt=user_prompt, system_instruction=sys_prompt)
-            st.session_state.generated_test_text = result
-            st.success("Soru paketi başarıyla oluşturuldu.")
-        except Exception as exc:
-            st.error(f"Soru üretim hatası oluştu: {exc}")
+        quota_ok, quota_msg = consume_quota("question", int(question_count))
+        if not quota_ok:
+            st.error(quota_msg)
+        else:
+            sys_prompt = (
+                "Sen Türkiye Yüzyılı Maarif Modeli, LGS ve YKS ölçme-değerlendirme standartlarında "
+                "uzman bir Türkçe ve test yazarısın. Soruların özgün, açık, çeldiricileri güçlü, "
+                "dil bilgisi ve yazım kurallarına kusursuz uygun olmasını sağla. "
+                "Otomatik redaksiyon açıksa her sorunun sonunda kısa bir [Redaksiyon & Çeldirici Notu] ekle "
+                "ve en sonda ayrı bir 'Cevap Anahtarı ve Kısa Gerekçeler' bölümü oluştur."
+            )
+            user_prompt = (
+                f"Kurum: {institution}\n"
+                f"Branş: {branch}\n"
+                f"Sınıf Seviyesi: {grade}\n"
+                f"Öğrenme Alanı: {learning_area}\n"
+                f"Hedef Kazanım: {outcome}\n"
+                f"Bağlam / Tema / Senaryo: {context_theme}\n"
+                f"Zorluk Derecesi: {difficulty}\n"
+                f"Soru Adedi: {question_count}\n"
+                f"Otomatik Redaksiyon ve Kalite Denetimi: {'Aktif' if auto_review else 'Pasif'}\n\n"
+                "Lütfen numaralandırılmış çoktan seçmeli (A, B, C, D) özgün sorular üret."
+            )
+            try:
+                with st.spinner("Sorular üretiliyor ve kalite denetimi yapılıyor..."):
+                    result = call_gemini_text(prompt=user_prompt, system_instruction=sys_prompt)
+                st.session_state.generated_test_text = result
+                st.success(
+                    f"Soru paketi başarıyla oluşturuldu. Kalan soru kotası: "
+                    f"{int(st.session_state.remaining_question_quota):,}".replace(",", ".")
+                )
+            except Exception as exc:
+                st.session_state["remaining_question_quota"] = int(
+                    st.session_state.get("remaining_question_quota", 0)
+                ) + int(question_count)
+                st.error(f"Soru üretim hatası oluştu: {exc}")
 
     if st.session_state.generated_test_text:
         st.markdown("---")
@@ -966,7 +1140,7 @@ elif current_page == "Dijikoç":
         <div class="kp-kpi-card">
             <div class="kp-kpi-label">Koçluk Motoru</div>
             <div class="kp-kpi-value">Dijikoç v3</div>
-            <div class="kp-kpi-sub">Kazanım & Süre Odaklı</div>
+            <div class="kp-kpi-sub">Kalan Plan: {int(st.session_state.remaining_coach_quota)} Hak</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -1004,7 +1178,6 @@ elif current_page == "Dijikoç":
 
     st.write("")
 
-    # Hazır Senaryo Şablonları
     st.markdown("#### ⚡ Hızlı Koçluk Senaryoları")
     p_cols = st.columns(len(DIJIKOC_PRESETS) + 1)
     for idx, (preset_title, preset_data) in enumerate(DIJIKOC_PRESETS.items()):
@@ -1100,33 +1273,40 @@ elif current_page == "Dijikoç":
     )
 
     if st.button("🎯 Dijikoç Planı Oluştur", type="primary"):
-        sys_coach = (
-            "Sen 'Dijikoç' adlı, Türkiye'deki öğrenciler için çalışan üst düzey, net, "
-            "empatik ve veri odaklı bir dijital eğitim koçusun. Yanıtını başlıklarla, "
-            "madde işaretleriyle ve uygulanabilir zaman bloklarıyla kurumsal bir koçluk "
-            "raporu gibi düzenle. Şu bölümleri net oluştur:\n"
-            "1. Teşhis ve Stratejik Özet\n"
-            "2. Pazartesi–Pazar Haftalık Çalışma Planı (saat ve odak ders dağılımı)\n"
-            "3. Çeldirici & Zaman Yönetimi Protokolü\n"
-            "4. Haftalık Başarı KPI'ları ve Kontrol Listesi"
-        )
-        prompt_coach = (
-            f"Hedef Sınav / Kademe: {target_exam}\n"
-            f"Hedef Bandı: {target_goal}\n"
-            f"Haftalık Çalışma Süresi: {weekly_hours} saat\n"
-            f"Zorlanılan Dersler / Kazanımlar: {weak_topics}\n"
-            f"Koçluk Odak Alanı: {coach_focus}\n"
-            f"Mevcut Deneme / Süre Durumu: {recent_score}\n"
-            f"Detaylı Rutin & Analiz Protokolü: {'Evet' if include_routine else 'Özet'}\n\n"
-            "Lütfen öğrenciye doğrudan uygulanabilir, motive edici ve net bir Türkçe plan sun."
-        )
-        try:
-            with st.spinner("Dijikoç çalışma ve deneme stratejisi hazırlanıyor..."):
-                plan = call_gemini_text(prompt=prompt_coach, system_instruction=sys_coach)
-            st.session_state.dijikoc_plan = plan
-            st.success("Dijikoç planı başarıyla oluşturuldu.")
-        except Exception as exc:
-            st.error(f"Dijikoç planı oluşturulurken hata oluştu: {exc}")
+        quota_ok, quota_msg = consume_quota("coach", 1)
+        if not quota_ok:
+            st.error(quota_msg)
+        else:
+            sys_coach = (
+                "Sen 'Dijikoç' adlı, Türkiye'deki öğrenciler için çalışan üst düzey, net, "
+                "empatik ve veri odaklı bir dijital eğitim koçusun. Yanıtını başlıklarla, "
+                "madde işaretleriyle ve uygulanabilir zaman bloklarıyla kurumsal bir koçluk "
+                "raporu gibi düzenle. Şu bölümleri net oluştur:\n"
+                "1. Teşhis ve Stratejik Özet\n"
+                "2. Pazartesi–Pazar Haftalık Çalışma Planı (saat ve odak ders dağılımı)\n"
+                "3. Çeldirici & Zaman Yönetimi Protokolü\n"
+                "4. Haftalık Başarı KPI'ları ve Kontrol Listesi"
+            )
+            prompt_coach = (
+                f"Hedef Sınav / Kademe: {target_exam}\n"
+                f"Hedef Bandı: {target_goal}\n"
+                f"Haftalık Çalışma Süresi: {weekly_hours} saat\n"
+                f"Zorlanılan Dersler / Kazanımlar: {weak_topics}\n"
+                f"Koçluk Odak Alanı: {coach_focus}\n"
+                f"Mevcut Deneme / Süre Durumu: {recent_score}\n"
+                f"Detaylı Rutin & Analiz Protokolü: {'Evet' if include_routine else 'Özet'}\n\n"
+                "Lütfen öğrenciye doğrudan uygulanabilir, motive edici ve net bir Türkçe plan sun."
+            )
+            try:
+                with st.spinner("Dijikoç çalışma ve deneme stratejisi hazırlanıyor..."):
+                    plan = call_gemini_text(prompt=prompt_coach, system_instruction=sys_coach)
+                st.session_state.dijikoc_plan = plan
+                st.success("Dijikoç planı başarıyla oluşturuldu.")
+            except Exception as exc:
+                st.session_state["remaining_coach_quota"] = int(
+                    st.session_state.get("remaining_coach_quota", 0)
+                ) + 1
+                st.error(f"Dijikoç planı oluşturulurken hata oluştu: {exc}")
 
     st.markdown("</div>", unsafe_allow_html=True)
 
@@ -1205,10 +1385,32 @@ elif current_page == "B2B Lisans & Kurum":
             if not org_name.strip():
                 st.warning("Lütfen kurum adını girin.")
             else:
+                st.session_state["last_b2b_summary"] = (
+                    f"Kurum: {org_name} ({city}) | Yetkili: {contact_name or '-'} | "
+                    f"E-posta: {contact_email or '-'} | Koltuk: {teacher_seats} Öğretmen, "
+                    f"{student_seats} Öğrenci"
+                )
                 st.success(
                     f"**{org_name}** ({city}) için **{teacher_seats} öğretmen** ve "
                     f"**{student_seats} öğrenci** kapasiteli kurumsal lisans talebi kaydedildi."
                 )
+
+    if st.session_state.get("last_b2b_summary"):
+        b2b_tier = get_tier_by_id("b2b_kurs" if student_seats <= 300 else "b2b_kampus")
+        b2b_docx = build_commercial_brief_docx(
+            title=f"{org_name or 'Kurumsal'} Lisans Teklif Özeti",
+            tier=b2b_tier,
+            billing_cycle="Yıllık (%20 İndirim)",
+            installment=6,
+            total_amount=round(b2b_tier["monthly_price"] * 12 * 0.80),
+            extra_notes=st.session_state["last_b2b_summary"],
+        )
+        st.download_button(
+            label="📥 Kurumsal Lisans Teklifini DOCX İndir",
+            data=b2b_docx,
+            file_name="kursun_kalem_kurumsal_teklif.docx",
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
 
 # ==============================================================================
 # 7. PAKETLER & ABONELİK VİTRİNİ (12 PAKET, KARŞILAŞTIRMA MATRİSİ & IYZICO)
@@ -1252,7 +1454,8 @@ elif current_page == "Paketler & Abonelik Vitrini":
                     st.markdown(f"- {feat}")
                 if st.button("Paketi Seç", key=f"select_{tier['id']}"):
                     st.session_state.selected_tier_id = tier["id"]
-                    st.toast(f"{tier['name']} seçildi.")
+                    sync_plan_quotas(tier, force_reset=True)
+                    st.toast(f"{tier['name']} seçildi ve kotası güncellendi.")
 
     st.markdown("---")
     st.markdown("### 📊 12 Paket Karşılaştırma Matrisi")
@@ -1261,6 +1464,7 @@ elif current_page == "Paketler & Abonelik Vitrini":
             "Paket Adı": t["name"],
             "Segment": t["segment"],
             "Etiket": t["badge"],
+            "Aylık Soru Kotası": f"{t['monthly_quota']:,}".replace(",", "."),
             "Aylık Ücret (₺)": f"{t['monthly_price']:,}".replace(",", "."),
             "Öne Çıkan Kapsam": t["features"][0],
         }
@@ -1269,14 +1473,11 @@ elif current_page == "Paketler & Abonelik Vitrini":
     st.dataframe(matrix_rows, use_container_width=True, hide_index=True)
 
     st.markdown("---")
-    chosen_tier = next(
-        (t for t in SUBSCRIPTION_TIERS if t["id"] == st.session_state.selected_tier_id),
-        SUBSCRIPTION_TIERS[1],
-    )
+    chosen_tier = get_tier_by_id(st.session_state.selected_tier_id)
     chosen_name = st.selectbox(
         "Simülasyon İçin Paket Seçin",
         options=[t["name"] for t in SUBSCRIPTION_TIERS],
         index=[t["name"] for t in SUBSCRIPTION_TIERS].index(chosen_tier["name"]),
     )
     active_tier = next(t for t in SUBSCRIPTION_TIERS if t["name"] == chosen_name)
-    render_iyzico_simulator(active_tier["name"], active_tier["monthly_price"])
+    render_iyzico_simulator(active_tier["name"], active_tier["monthly_price"], active_tier["id"])
