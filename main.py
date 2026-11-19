@@ -29,7 +29,6 @@ BRAND_TAGLINE = (
 DEFAULT_MODEL = "gemini-3.8-flash"
 FALLBACK_MODEL = "gemini-2.5-flash"
 
-# 2027 Sınav Hedef Tarihleri
 LGS_2027_TARGET = datetime(2027, 6, 13, 9, 30, 0)
 YKS_2027_TARGET = datetime(2027, 6, 19, 10, 15, 0)
 
@@ -42,6 +41,33 @@ PAGES = [
     "B2B Lisans & Kurum",
     "Paketler & Abonelik Vitrini",
 ]
+
+DIJIKOC_PRESETS: Dict[str, Dict[str, Any]] = {
+    "2027 LGS Derece & Net İvmesi": {
+        "exam": "2027 LGS",
+        "hours": 18,
+        "goal": "Fen liseleri / nitelikli Anadolu liseleri bandı (465+ puan hedefi)",
+        "focus": "Deneme Net Artırma & Zaman Yönetimi",
+        "weak": "Yeni nesil paragrafta çeldirici ayıklama, cebirsel/üslü modelleme, sözel mantık hızı",
+        "status": "Orta-üst seviye; Türkçe ve Matematikte son 15 soruda süre baskısı yaşıyorum",
+    },
+    "2027 YKS TYT-AYT Disiplin Rutini": {
+        "exam": "2027 TYT - AYT",
+        "hours": 28,
+        "goal": "TYT 95+ net ve AYT alanında ilk 20 bin hedefi",
+        "focus": "Haftalık Dengeli Çalışma Programı",
+        "weak": "TYT Türkçe süre yönetimi, problem hızı, AYT konu tekrar gecikmeleri",
+        "status": "Düzenli çalışıyorum ama hafta sonu deneme analizlerini sistematik yapamıyorum",
+    },
+    "Dikkat & Çeldirici Tuzağı Temizliği": {
+        "exam": "2027 LGS",
+        "hours": 14,
+        "goal": "Dikkat hatası kaynaklı kayıpları yarıya indirmek",
+        "focus": "Dikkat ve Çeldirici Tuzağı Azaltma",
+        "weak": "Soru kökündeki 'değildir / ulaşılamaz' ifadelerini kaçırma, işlem atlama",
+        "status": "Konuyu biliyorum ama denemelerde acele edip basit hatalar yapıyorum",
+    },
+}
 
 SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
     {
@@ -269,29 +295,84 @@ st.markdown(
     """
     <style>
         .block-container {
-            padding-top: 1.2rem;
+            padding-top: 1.1rem;
             padding-bottom: 2.5rem;
+            max-width: 1320px;
         }
         .kp-hero {
-            background: linear-gradient(135deg, #1b2a4a 0%, #2c3e50 60%, #7f1d1d 100%);
+            background: linear-gradient(125deg, #0f172a 0%, #1e293b 52%, #7f1d1d 100%);
             color: #ffffff;
-            padding: 1.4rem 1.7rem;
-            border-radius: 14px;
-            margin-bottom: 1.2rem;
-            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.14);
+            padding: 1.45rem 1.75rem;
+            border-radius: 16px;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
         .kp-hero h1 {
             margin: 0;
-            font-size: 1.65rem;
+            font-size: 1.68rem;
             font-weight: 700;
             letter-spacing: 0.2px;
             color: #ffffff;
         }
         .kp-hero p {
             margin: 0.35rem 0 0 0;
-            font-size: 0.95rem;
-            color: #f1f5f9;
-            opacity: 0.95;
+            font-size: 0.94rem;
+            color: #e2e8f0;
+        }
+        .kp-studio-banner {
+            background: linear-gradient(135deg, #f8fafc 0%, #fff1f2 100%);
+            border: 1px solid #e2e8f0;
+            border-left: 5px solid #991b1b;
+            border-radius: 14px;
+            padding: 1.15rem 1.35rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+        }
+        .kp-studio-title {
+            font-size: 1.28rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin: 0;
+        }
+        .kp-studio-sub {
+            font-size: 0.9rem;
+            color: #475569;
+            margin: 0.3rem 0 0 0;
+        }
+        .kp-panel {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 1.2rem 1.3rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+        }
+        .kp-kpi-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 0.85rem 1rem;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+        }
+        .kp-kpi-label {
+            font-size: 0.74rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+        }
+        .kp-kpi-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #0f172a;
+            margin-top: 0.2rem;
+        }
+        .kp-kpi-sub {
+            font-size: 0.78rem;
+            color: #991b1b;
+            font-weight: 500;
+            margin-top: 0.15rem;
         }
         .kp-card {
             background: #ffffff;
@@ -335,7 +416,7 @@ st.markdown(
 )
 
 # ==============================================================================
-# YARDIMCI FONKSİYONLAR: API ANAHTARI, GEMINI İSTEMCİSİ VE SAYAÇ
+# YARDIMCI FONKSİYONLAR: API ANAHTARI, GEMINI İSTEMCİSİ, SAYAÇ VE DOCX
 # ==============================================================================
 def resolve_gemini_api_key() -> Optional[str]:
     """Yalnızca st.secrets veya ortam değişkenlerinden API anahtarını okur."""
@@ -503,6 +584,48 @@ def build_test_docx(
     return buffer.getvalue()
 
 
+def build_coach_docx(title_meta: str, plan_text: str) -> bytes:
+    """Dijikoç çalışma planını kurumsal DOCX belgesine çevirir."""
+    doc = Document()
+    for section in doc.sections:
+        section.top_margin = Inches(0.75)
+        section.bottom_margin = Inches(0.75)
+        section.left_margin = Inches(0.75)
+        section.right_margin = Inches(0.75)
+
+    h = doc.add_paragraph()
+    h.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    r = h.add_run(f"{BRAND_NAME.upper()} — DİJİKOÇ ÇALIŞMA PLANI")
+    r.bold = True
+    r.font.size = Pt(14)
+    r.font.color.rgb = RGBColor(15, 23, 42)
+
+    m = doc.add_paragraph()
+    mr = m.add_run(f"{title_meta}\nTarih: {datetime.now().strftime('%d.%m.%Y')}")
+    mr.font.size = Pt(9.5)
+    mr.font.color.rgb = RGBColor(71, 85, 105)
+
+    doc.add_paragraph("─" * 78)
+
+    for line in plan_text.splitlines():
+        cleaned = line.strip()
+        if not cleaned:
+            continue
+        p = doc.add_paragraph()
+        p.paragraph_format.space_after = Pt(4)
+        p.paragraph_format.line_spacing = 1.15
+        run = p.add_run(cleaned)
+        run.font.size = Pt(10.5)
+        if cleaned.startswith("#") or cleaned.endswith(":"):
+            run.bold = True
+            run.font.color.rgb = RGBColor(153, 27, 27)
+
+    buffer = io.BytesIO()
+    doc.save(buffer)
+    buffer.seek(0)
+    return buffer.getvalue()
+
+
 def render_iyzico_simulator(package_name: str, monthly_price: int) -> None:
     """iyzico taksit ve ödeme simülatörü."""
     st.markdown("### 💳 iyzico Taksit & Ödeme Simülatörü")
@@ -570,7 +693,7 @@ api_key_ready = resolve_gemini_api_key() is not None
 with st.sidebar:
     st.markdown(
         f"""
-        <div style="background:#1e293b;color:#ffffff;padding:0.85rem 1rem;border-radius:10px;margin-bottom:0.85rem;">
+        <div style="background:#0f172a;color:#ffffff;padding:0.9rem 1rem;border-radius:10px;margin-bottom:0.85rem;">
             <div style="font-weight:700;font-size:1rem;">🧭 Sistem Navigasyonu</div>
             <div style="font-size:0.78rem;color:#cbd5e1;margin-top:0.15rem;">{BRAND_NAME}</div>
         </div>
@@ -820,30 +943,119 @@ elif current_page == "Öğrenci Portalı & Çözüm":
                 st.error(f"Çözüm üretilirken hata oluştu: {exc}")
 
 # ==============================================================================
-# 4. DİJİKOÇ (AYRI SAYFA VE KOÇLUK MODÜLÜ)
+# 4. DİJİKOÇ — KURUMSAL AKILLI KOÇLUK STÜDYOSU
 # ==============================================================================
 elif current_page == "Dijikoç":
-    st.subheader("🤖 Dijikoç — Kişisel Akıllı Sınav ve Çalışma Koçu")
-    st.caption(
-        "Hedef sınavına, haftalık müsait sürene ve zayıf konularına göre özel çalışma planı, "
-        "deneme analizi ve günlük rutin oluşturur."
+    st.markdown(
+        """
+        <div class="kp-studio-banner">
+            <div class="kp-studio-title">🤖 Dijikoç — Kurumsal Akıllı Sınav & Performans Koçu</div>
+            <div class="kp-studio-sub">
+                Hedef sınavına, haftalık çalışma kapasitene ve çeldirici/zaman analizine göre
+                ölçülebilir haftalık aksiyon planı ve deneme stratejisi üretir.
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
 
-    k1, k2, k3 = st.columns(3)
-    with k1:
+    daily_avg = st.session_state.get("dk_hours", 16) / 7.0
+    k_c1, k_c2, k_c3, k_c4 = st.columns(4)
+    k_c1.markdown(
+        f"""
+        <div class="kp-kpi-card">
+            <div class="kp-kpi-label">Koçluk Motoru</div>
+            <div class="kp-kpi-value">Dijikoç v3</div>
+            <div class="kp-kpi-sub">Kazanım & Süre Odaklı</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    k_c2.markdown(
+        f"""
+        <div class="kp-kpi-card">
+            <div class="kp-kpi-label">Günlük Ortalama Tempo</div>
+            <div class="kp-kpi-value">{daily_avg:.1f} Saat</div>
+            <div class="kp-kpi-sub">Pomodoro + Tekrar Döngülü</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    k_c3.markdown(
+        """
+        <div class="kp-kpi-card">
+            <div class="kp-kpi-label">Analiz Boyutu</div>
+            <div class="kp-kpi-value">3 Katman</div>
+            <div class="kp-kpi-sub">Hız • Çeldirici • Net İvmesi</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    k_c4.markdown(
+        """
+        <div class="kp-kpi-card">
+            <div class="kp-kpi-label">Çıktı Formatı</div>
+            <div class="kp-kpi-value">Plan + DOCX</div>
+            <div class="kp-kpi-sub">İndirilebilir Çalışma Rehberi</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    st.write("")
+
+    # Hazır Senaryo Şablonları
+    st.markdown("#### ⚡ Hızlı Koçluk Senaryoları")
+    p_cols = st.columns(len(DIJIKOC_PRESETS) + 1)
+    for idx, (preset_title, preset_data) in enumerate(DIJIKOC_PRESETS.items()):
+        with p_cols[idx]:
+            if st.button(preset_title, key=f"preset_{idx}"):
+                st.session_state["dk_exam"] = preset_data["exam"]
+                st.session_state["dk_hours"] = preset_data["hours"]
+                st.session_state["dk_goal"] = preset_data["goal"]
+                st.session_state["dk_focus"] = preset_data["focus"]
+                st.session_state["dk_weak"] = preset_data["weak"]
+                st.session_state["dk_status"] = preset_data["status"]
+                st.rerun()
+    with p_cols[-1]:
+        if st.button("Planı Temizle", key="clear_dk_plan"):
+            st.session_state.dijikoc_plan = ""
+            st.rerun()
+
+    st.markdown('<div class="kp-panel">', unsafe_allow_html=True)
+    st.markdown("#### 🎯 Öğrenci Hedef ve Çalışma Profili")
+
+    r1_a, r1_b, r1_c = st.columns(3)
+    with r1_a:
         target_exam = st.selectbox(
             "Hedef Sınav / Kademe",
             ["2027 LGS", "2027 TYT - AYT", "5-7. Sınıf Akademik Gelişim"],
-            index=0,
+            index=["2027 LGS", "2027 TYT - AYT", "5-7. Sınıf Akademik Gelişim"].index(
+                st.session_state.get("dk_exam", "2027 LGS")
+            ),
+            key="dk_exam_sel",
         )
-        weekly_hours = st.slider("Haftalık Çalışma Süresi (Saat)", 4, 45, 16)
-    with k2:
-        weak_topics = st.text_area(
-            "Zorlandığın Dersler / Konular",
-            value="Paragrafta ana düşünce, üslü ifadeler, dikkat kaynaklı işlem hataları",
-            height=105,
+        st.session_state["dk_exam"] = target_exam
+
+        weekly_hours = st.slider(
+            "Haftalık Çalışma Süresi (Saat)",
+            min_value=4,
+            max_value=45,
+            value=int(st.session_state.get("dk_hours", 16)),
+            key="dk_hours_sld",
         )
-    with k3:
+        st.session_state["dk_hours"] = weekly_hours
+
+    with r1_b:
+        target_goal = st.text_input(
+            "Hedef Puan / Net / Okul Bandı",
+            value=st.session_state.get(
+                "dk_goal", "Nitelikli lise / yüksek net ve sıfıra yakın dikkat hatası"
+            ),
+            key="dk_goal_inp",
+        )
+        st.session_state["dk_goal"] = target_goal
+
         coach_focus = st.selectbox(
             "Koçluk Odak Alanı",
             [
@@ -852,39 +1064,99 @@ elif current_page == "Dijikoç":
                 "Dikkat ve Çeldirici Tuzağı Azaltma",
                 "Sınav Kaygısı & Motivasyon Rutini",
             ],
-            index=0,
+            index=[
+                "Haftalık Dengeli Çalışma Programı",
+                "Deneme Net Artırma & Zaman Yönetimi",
+                "Dikkat ve Çeldirici Tuzağı Azaltma",
+                "Sınav Kaygısı & Motivasyon Rutini",
+            ].index(st.session_state.get("dk_focus", "Haftalık Dengeli Çalışma Programı")),
+            key="dk_focus_sel",
         )
+        st.session_state["dk_focus"] = coach_focus
+
+    with r1_c:
+        weak_topics = st.text_area(
+            "Zorlandığın Dersler / Kazanımlar",
+            value=st.session_state.get(
+                "dk_weak", "Paragrafta ana düşünce, üslü ifadeler, dikkat kaynaklı işlem hataları"
+            ),
+            height=78,
+            key="dk_weak_area",
+        )
+        st.session_state["dk_weak"] = weak_topics
+
         recent_score = st.text_input(
-            "Son Deneme / Sınav Durumu",
-            value="Orta seviye, süreyi yetiştirmede zorlanıyorum",
+            "Mevcut Deneme / Süre Durumu",
+            value=st.session_state.get(
+                "dk_status", "Orta seviye, süreyi yetiştirmede zorlanıyorum"
+            ),
+            key="dk_status_inp",
         )
+        st.session_state["dk_status"] = recent_score
+
+    include_routine = st.checkbox(
+        "Günlük mikro rutin, deneme analiz protokolü ve hafta sonu kontrol listesi dahil et",
+        value=True,
+    )
 
     if st.button("🎯 Dijikoç Planı Oluştur", type="primary"):
         sys_coach = (
-            "Sen 'Dijikoç' adlı, Türkiye'deki öğrenciler için çalışan disiplinli, empatik ve "
-            "veri odaklı bir dijital eğitim koçusun. Uygulanabilir, günlere bölünmüş, "
-            "mola ve tekrar döngüleri içeren net bir çalışma planı hazırla."
+            "Sen 'Dijikoç' adlı, Türkiye'deki öğrenciler için çalışan üst düzey, net, "
+            "empatik ve veri odaklı bir dijital eğitim koçusun. Yanıtını başlıklarla, "
+            "madde işaretleriyle ve uygulanabilir zaman bloklarıyla kurumsal bir koçluk "
+            "raporu gibi düzenle. Şu bölümleri net oluştur:\n"
+            "1. Teşhis ve Stratejik Özet\n"
+            "2. Pazartesi–Pazar Haftalık Çalışma Planı (saat ve odak ders dağılımı)\n"
+            "3. Çeldirici & Zaman Yönetimi Protokolü\n"
+            "4. Haftalık Başarı KPI'ları ve Kontrol Listesi"
         )
         prompt_coach = (
-            f"Hedef: {target_exam}\n"
-            f"Haftalık Süre: {weekly_hours} saat\n"
-            f"Zorlanılan Konular: {weak_topics}\n"
-            f"Koçluk Odağı: {coach_focus}\n"
-            f"Mevcut Durum: {recent_score}\n\n"
-            "Lütfen haftalık planı, kritik uyarıları ve haftalık kontrol hedeflerini Türkçe yaz."
+            f"Hedef Sınav / Kademe: {target_exam}\n"
+            f"Hedef Bandı: {target_goal}\n"
+            f"Haftalık Çalışma Süresi: {weekly_hours} saat\n"
+            f"Zorlanılan Dersler / Kazanımlar: {weak_topics}\n"
+            f"Koçluk Odak Alanı: {coach_focus}\n"
+            f"Mevcut Deneme / Süre Durumu: {recent_score}\n"
+            f"Detaylı Rutin & Analiz Protokolü: {'Evet' if include_routine else 'Özet'}\n\n"
+            "Lütfen öğrenciye doğrudan uygulanabilir, motive edici ve net bir Türkçe plan sun."
         )
         try:
-            with st.spinner("Dijikoç çalışma planını hazırlıyor..."):
+            with st.spinner("Dijikoç çalışma ve deneme stratejisi hazırlanıyor..."):
                 plan = call_gemini_text(prompt=prompt_coach, system_instruction=sys_coach)
             st.session_state.dijikoc_plan = plan
-            st.success("Dijikoç planı hazırlandı.")
+            st.success("Dijikoç planı başarıyla oluşturuldu.")
         except Exception as exc:
             st.error(f"Dijikoç planı oluşturulurken hata oluştu: {exc}")
 
+    st.markdown("</div>", unsafe_allow_html=True)
+
     if st.session_state.dijikoc_plan:
-        st.markdown("---")
-        st.markdown("### 📅 Kişiselleştirilmiş Dijikoç Planı")
+        st.markdown('<div class="kp-panel">', unsafe_allow_html=True)
+        st.markdown("### 📅 Kişiselleştirilmiş Dijikoç Koçluk Raporu")
         st.markdown(st.session_state.dijikoc_plan)
+
+        meta_summary = (
+            f"Hedef: {target_exam} | Hedef Bandı: {target_goal} | "
+            f"Haftalık Süre: {weekly_hours} Saat | Odak: {coach_focus}"
+        )
+        docx_coach = build_coach_docx(meta_summary, st.session_state.dijikoc_plan)
+
+        d_col1, d_col2 = st.columns(2)
+        with d_col1:
+            st.download_button(
+                label="📥 Koçluk Planını DOCX İndir",
+                data=docx_coach,
+                file_name="dijikoc_calisma_plani.docx",
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            )
+        with d_col2:
+            st.download_button(
+                label="📄 Planı Metin (.txt) İndir",
+                data=st.session_state.dijikoc_plan.encode("utf-8"),
+                file_name="dijikoc_calisma_plani.txt",
+                mime="text/plain",
+            )
+        st.markdown("</div>", unsafe_allow_html=True)
 
 # ==============================================================================
 # 5. VELİ TAKİP PANELİ
