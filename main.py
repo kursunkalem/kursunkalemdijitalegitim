@@ -23,9 +23,7 @@ st.set_page_config(
 )
 
 BRAND_NAME = "Kurşun Kalem Dijital Eğitim"
-BRAND_TAGLINE = (
-    "Geleceği yazan dijital eğitim • Profesyonel Soru Fabrikası, Dijimentor & Akıllı Öğrenci Portalı"
-)
+BRAND_TAGLINE = "KURŞUN KALEM DİJİTAL EĞİTİM- Geleceği Yazan Dijital Eğitim"
 DEFAULT_MODEL = "gemini-3.8-flash"
 FALLBACK_MODEL = "gemini-2.5-flash"
 
