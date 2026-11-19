@@ -86,24 +86,16 @@ SCHOOL_BACKPACK_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26
       <stop offset="100%" stop-color="#0f172a"/>
     </linearGradient>
   </defs>
-  <!-- Taşıma askısı -->
   <path d="M 98 56 Q 130 20 162 56" fill="none" stroke="#1e293b" stroke-width="10" stroke-linecap="round"/>
-  <!-- Omuz askıları -->
   <path d="M 88 64 C 58 95, 54 165, 66 245" fill="none" stroke="url(#strapGrad)" stroke-width="16" stroke-linecap="round"/>
   <path d="M 172 64 C 202 95, 206 165, 194 245" fill="none" stroke="url(#strapGrad)" stroke-width="16" stroke-linecap="round"/>
-  <!-- Ana sırt çantası gövdesi -->
   <rect x="64" y="56" width="132" height="205" rx="34" fill="url(#bagBody)" stroke="#0f172a" stroke-width="4"/>
-  <!-- Üst kapak şeridi -->
   <path d="M 68 92 Q 130 116 192 92 L 192 78 Q 130 56 68 78 Z" fill="#334155" opacity="0.55"/>
-  <!-- Ön cep (sepet gözü) -->
   <rect x="80" y="138" width="100" height="98" rx="22" fill="url(#bagPocket)" stroke="#fef3c7" stroke-width="2.5"/>
-  <!-- Cep fermuar çizgisi -->
   <path d="M 88 152 Q 130 166 172 152" fill="none" stroke="#0f172a" stroke-width="3" stroke-dasharray="6,4"/>
-  <!-- Cep üstündeki okul rozeti -->
   <circle cx="130" cy="186" r="22" fill="#ffffff" stroke="#0f172a" stroke-width="2.5"/>
   <text x="130" y="184" text-anchor="middle" font-family="Plus Jakarta Sans, Arial, sans-serif" font-size="9" font-weight="800" fill="#0f172a">ÇANTA</text>
   <text x="130" y="196" text-anchor="middle" font-family="Plus Jakarta Sans, Arial, sans-serif" font-size="8" font-weight="700" fill="#881337">PAKETLER</text>
-  <!-- Alt taban güçlendirme -->
   <rect x="72" y="242" width="116" height="20" rx="10" fill="#090d16"/>
 </svg>"""
 
@@ -180,11 +172,6 @@ DIJIMENTOR_PRESETS: Dict[str, Dict[str, Any]] = {
         "branch": "Türkçe",
         "grade": "8. Sınıf (LGS)",
         "topic": "Sözel Mantık & Muhakeme ve Çeldirici Analizi",
-        "brief": (
-            "2027 LGS hedefi için hazırlanan yoğun net ivmesi senaryosu: "
-            "Haftada 20 saatlik çalışma düzeninde paragraf/sözel mantık hızı, "
-            "cebirsel modelleme ve deneme sonrası yanlış-çeldirici defteri odaklı aksiyon planı."
-        ),
     },
     "2027 YKS TYT-AYT Disiplin Rutini": {
         "exam": "2027 TYT - AYT",
@@ -196,10 +183,6 @@ DIJIMENTOR_PRESETS: Dict[str, Dict[str, Any]] = {
         "branch": "Türkçe",
         "grade": "11-12. Sınıf (YKS)",
         "topic": "TYT Paragraf Hızı, Çeldirici Eleme & AYT Tekrar Döngüsü",
-        "brief": (
-            "2027 TYT-AYT derece senaryosu: Haftada 30 saatlik dengeli bloklarla "
-            "TYT okuma-anlama hızı, AYT konu tekrar döngüsü ve haftalık branş/genel deneme analiz rutini."
-        ),
     },
     "Dikkat & Çeldirici Tuzağı Temizliği": {
         "exam": "2027 LGS",
@@ -211,10 +194,6 @@ DIJIMENTOR_PRESETS: Dict[str, Dict[str, Any]] = {
         "branch": "Türkçe",
         "grade": "8. Sınıf (LGS)",
         "topic": "Soru Kökü Analizi, Çeldirici Tuzağı ve Dikkat Odaklı Okuma",
-        "brief": (
-            "Dikkat ve çeldirici temizliği senaryosu: Soru kökünü iki aşamalı okuma, "
-            "çeldirici şıkları kanıtla eleme ve işlem/öncül kontrol listesiyle net kayıplarını önleme planı."
-        ),
     },
 }
 
@@ -857,43 +836,26 @@ def get_tier_by_id(tier_id: str) -> Dict[str, Any]:
     return next((t for t in SUBSCRIPTION_TIERS if t["id"] == tier_id), SUBSCRIPTION_TIERS[1])
 
 
-def get_bag_items() -> Dict[str, int]:
-    """Okul sırt çantasındaki {tier_id: adet} eşleşmesini döndürür."""
-    raw_bag = st.session_state.get("backpack_cart")
-    if not isinstance(raw_bag, dict) or not raw_bag:
+def ensure_bag_initialized() -> None:
+    """Sepet sözlüğünü yalnızca ilk oturum açılışında başlatır; kullanıcı boşaltırsa yeniden doldurmaz."""
+    if "backpack_cart" not in st.session_state or not isinstance(st.session_state["backpack_cart"], dict):
         default_id = st.session_state.get("selected_tier_id", SUBSCRIPTION_TIERS[1]["id"])
         st.session_state["backpack_cart"] = {default_id: 1}
-        return st.session_state["backpack_cart"]
-    return {k: int(v) for k, v in raw_bag.items() if int(v) > 0}
 
 
-def add_tier_to_bag(tier_id: str, qty: int = 1) -> None:
-    """Paketi okul sırt çantasına (sepete) ekler ve aktif seçimi günceller."""
-    bag = dict(get_bag_items())
-    bag[tier_id] = bag.get(tier_id, 0) + max(1, int(qty))
-    st.session_state["backpack_cart"] = bag
-    st.session_state["selected_tier_id"] = tier_id
-    sync_plan_quotas(get_bag_summary(), force_reset=True)
-
-
-def update_bag_qty(tier_id: str, delta: int) -> None:
-    """Çantadaki paketin adedini artırır veya azaltır; 0 olursa kaldırır."""
-    bag = dict(get_bag_items())
-    new_qty = bag.get(tier_id, 0) + delta
-    if new_qty <= 0:
-        bag.pop(tier_id, None)
-    else:
-        bag[tier_id] = new_qty
-    st.session_state["backpack_cart"] = bag
-    if bag:
-        st.session_state["selected_tier_id"] = next(iter(bag.keys()))
-    sync_plan_quotas(get_bag_summary(), force_reset=True)
-
-
-def clear_bag() -> None:
-    """Okul sırt çantasını boşaltır."""
-    st.session_state["backpack_cart"] = {}
-    sync_plan_quotas(get_bag_summary(), force_reset=True)
+def get_bag_items() -> Dict[str, int]:
+    """Okul sırt çantasındaki {tier_id: adet} eşleşmesini döndürür."""
+    ensure_bag_initialized()
+    cleaned: Dict[str, int] = {}
+    for k, v in st.session_state["backpack_cart"].items():
+        try:
+            qty = int(v)
+        except Exception:
+            qty = 0
+        if qty > 0:
+            cleaned[str(k)] = qty
+    st.session_state["backpack_cart"] = cleaned
+    return cleaned
 
 
 def get_bag_summary() -> Dict[str, Any]:
@@ -953,11 +915,6 @@ def get_bag_summary() -> Dict[str, Any]:
         "coach_quota": total_coach_quota,
         "total_count": total_count,
         "entries": entries,
-        "features": [
-            f"Çantadaki {total_count} paket için toplam aylık {total_monthly_quota:,} soru kotası".replace(",", "."),
-            f"Toplam aylık {total_coach_quota} Dijimentor çalışma planı hakkı",
-            "Kurumsal logolu DOCX test, plan ve teklif çıktısı",
-        ],
     }
 
 
@@ -968,6 +925,43 @@ def sync_plan_quotas(summary: Dict[str, Any], force_reset: bool = False) -> None
         st.session_state["quota_tier_id"] = sig
         st.session_state["remaining_question_quota"] = int(summary["monthly_quota"])
         st.session_state["remaining_coach_quota"] = int(summary["coach_quota"])
+
+
+def cb_add_tier_to_bag(tier_id: str, qty: int = 1) -> None:
+    """Callback: Paketi okul sırt çantasına (sepete) ekler ve kotaları günceller."""
+    bag = dict(get_bag_items())
+    bag[tier_id] = bag.get(tier_id, 0) + max(1, int(qty))
+    st.session_state["backpack_cart"] = bag
+    st.session_state["selected_tier_id"] = tier_id
+    sync_plan_quotas(get_bag_summary(), force_reset=True)
+    tier = get_tier_by_id(tier_id)
+    record_activity("Sırt Çantası", f"{tier['name']} çantaya eklendi")
+
+
+def cb_update_bag_qty(tier_id: str, delta: int) -> None:
+    """Callback: Çantadaki paketin adedini artırır/azaltır veya 0 ise tamamen siler."""
+    bag = dict(get_bag_items())
+    if tier_id not in bag:
+        return
+    new_qty = bag[tier_id] + delta
+    tier = get_tier_by_id(tier_id)
+    if new_qty <= 0:
+        del bag[tier_id]
+        record_activity("Sırt Çantası", f"{tier['name']} çantadan çıkarıldı")
+    else:
+        bag[tier_id] = new_qty
+        record_activity("Sırt Çantası", f"{tier['name']} adedi {new_qty} yapıldı")
+    st.session_state["backpack_cart"] = bag
+    if bag:
+        st.session_state["selected_tier_id"] = next(iter(bag.keys()))
+    sync_plan_quotas(get_bag_summary(), force_reset=True)
+
+
+def cb_clear_bag() -> None:
+    """Callback: Okul sırt çantasını tamamen boşaltır."""
+    st.session_state["backpack_cart"] = {}
+    sync_plan_quotas(get_bag_summary(), force_reset=True)
+    record_activity("Sırt Çantası", "Çantadaki tüm paketler silindi")
 
 
 def consume_quota(kind: str, amount: int = 1) -> Tuple[bool, str]:
@@ -1358,27 +1352,40 @@ def render_school_backpack_panel() -> Dict[str, Any]:
                         unsafe_allow_html=True,
                     )
                 with c_minus:
-                    if st.button("−", key=f"bag_minus_{t['id']}", use_container_width=True):
-                        update_bag_qty(t["id"], -1)
-                        st.rerun()
+                    st.button(
+                        "−",
+                        key=f"bag_minus_{t['id']}",
+                        use_container_width=True,
+                        on_click=cb_update_bag_qty,
+                        args=(t["id"], -1),
+                    )
                 with c_plus:
-                    if st.button("+", key=f"bag_plus_{t['id']}", use_container_width=True):
-                        update_bag_qty(t["id"], +1)
-                        st.rerun()
+                    st.button(
+                        "+",
+                        key=f"bag_plus_{t['id']}",
+                        use_container_width=True,
+                        on_click=cb_update_bag_qty,
+                        args=(t["id"], +1),
+                    )
                 with c_rem:
-                    if st.button("Çıkar", key=f"bag_del_{t['id']}", use_container_width=True):
-                        update_bag_qty(t["id"], -qty)
-                        st.rerun()
+                    st.button(
+                        "Çıkar",
+                        key=f"bag_del_{t['id']}",
+                        use_container_width=True,
+                        on_click=cb_update_bag_qty,
+                        args=(t["id"], -qty),
+                    )
 
             m1, m2, m3 = st.columns(3)
             m1.metric("Çanta Aylık Toplam", f"{summary['monthly_price']:,} ₺".replace(",", "."))
             m2.metric("Toplam Aylık Soru", f"{summary['monthly_quota']:,}".replace(",", "."))
             m3.metric("Toplam Dijimentor Plan", f"{summary['coach_quota']} / Ay")
 
-            if st.button("🗑️ Çantayı Boşalt", key="bag_clear_all"):
-                clear_bag()
-                record_activity("Sırt Çantası", "Çantadaki paketler temizlendi")
-                st.rerun()
+            st.button(
+                "🗑️ Çantayı Boşalt",
+                key="bag_clear_all",
+                on_click=cb_clear_bag,
+            )
 
     st.markdown("</div>", unsafe_allow_html=True)
     return summary
@@ -1478,8 +1485,9 @@ if "dijimentor_plan" not in st.session_state:
     st.session_state.dijimentor_plan = ""
 if "selected_tier_id" not in st.session_state:
     st.session_state.selected_tier_id = SUBSCRIPTION_TIERS[1]["id"]
-if "backpack_cart" not in st.session_state:
-    st.session_state.backpack_cart = {SUBSCRIPTION_TIERS[1]["id"]: 1}
+
+ensure_bag_initialized()
+
 if "live_tick" not in st.session_state:
     st.session_state.live_tick = False
 if "portal_question_draft" not in st.session_state:
@@ -2449,10 +2457,13 @@ elif current_page == "Paketler & Abonelik Vitrini":
                 )
                 for feat in tier["features"]:
                     st.markdown(f"- {feat}")
-                if st.button("🎒 Çantaya Ekle", key=f"select_{tier['id']}", use_container_width=True):
-                    add_tier_to_bag(tier["id"], 1)
-                    record_activity("Sırt Çantası", f"{tier['name']} çantaya eklendi")
-                    st.rerun()
+                st.button(
+                    "🎒 Çantaya Ekle",
+                    key=f"select_{tier['id']}",
+                    use_container_width=True,
+                    on_click=cb_add_tier_to_bag,
+                    args=(tier["id"], 1),
+                )
 
     st.markdown("---")
     st.markdown("### 📊 12 Paket Karşılaştırma Matrisi")
