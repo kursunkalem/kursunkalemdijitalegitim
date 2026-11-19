@@ -11,8 +11,6 @@ from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from pypdf import PdfReader
 
-API_KEY = "AQ.Ab8RN6Ln16aqw1zeiFjrpBNsDE9rLkAwtjet6QfCfMam4Uzu6w"
-
 st.set_page_config(
     page_title="Kurşun Kalem Dijital Eğitim - Geleceği Yazan Dijital Eğitim",
     page_icon="✏️",
@@ -20,13 +18,30 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+def get_gemini_api_key() -> str:
+    try:
+        if "GEMINI_API_KEY" in st.secrets and st.secrets["GEMINI_API_KEY"]:
+            return str(st.secrets["GEMINI_API_KEY"]).strip()
+    except Exception:
+        pass
+    env_key = os.getenv("GEMINI_API_KEY", "").strip()
+    if env_key:
+        return env_key
+    session_key = st.session_state.get("runtime_gemini_api_key", "").strip()
+    if session_key:
+        return session_key
+    return ""
+
+API_KEY = get_gemini_api_key()
+
 # --- TEMİZ VE MODERN SİSTEM CSS ---
 st.markdown("""
 <style>
     section[data-testid="stSidebar"] {
         background-color: #f8fafc;
         border-right: 1px solid #e2e8f0;
-        width: 300px !important;
+        min-width: 280px !important;
+        max-width: 310px !important;
     }
     section[data-testid="stSidebar"] .block-container {
         padding-top: 1.2rem;
@@ -231,6 +246,12 @@ def save_arsiv(yeni_test):
     except:
         pass
 
+def get_genai_client():
+    key = get_gemini_api_key()
+    if not key:
+        raise ValueError("Geçerli bir Gemini API anahtarı bulunamadı. Lütfen Streamlit Secrets (GEMINI_API_KEY) veya API Ayarları bölümünden anahtar girin.")
+    return genai.Client(api_key=key)
+
 # --- SİSTEM NAVİGASYONU (BUTON TABANLI TEMİZ MENÜ) ---
 if "ana_modul" not in st.session_state:
     st.session_state["ana_modul"] = "🏠 Ana Sayfa & 2027 LGS'ye Geri Sayım"
@@ -263,9 +284,21 @@ with st.sidebar:
             st.session_state["ana_modul"] = deger
             st.rerun()
 
-    st.markdown("""
+    with st.expander("🔑 Gemini API Anahtarı", expanded=not bool(API_KEY)):
+        girilen_key = st.text_input(
+            "API Key (AIza...)",
+            value=st.session_state.get("runtime_gemini_api_key", ""),
+            type="password",
+            placeholder="AIzaSy..."
+        )
+        if st.button("Anahtarı Uygula", use_container_width=True):
+            st.session_state["runtime_gemini_api_key"] = girilen_key.strip()
+            st.rerun()
+
+    durum_metni = "🟢 Sistem Aktif" if get_gemini_api_key() else "🟡 API Anahtarı Bekleniyor"
+    st.markdown(f"""
         <div class="sb-status">
-            <strong>🟢 Sistem Aktif</strong> • 2027 LGS & Maarif Modeli
+            <strong>{durum_metni}</strong> • 2027 LGS & Maarif Modeli
         </div>
     """, unsafe_allow_html=True)
 
@@ -426,7 +459,7 @@ elif ana_modul == "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)":
 
                 elif dosya_uzantisi in ["jpg", "jpeg", "png"]:
                     with st.spinner("Görsel yapay zeka ile taranıyor ve metne dönüştürülüyor..."):
-                        client = genai.Client(api_key=API_KEY)
+                        client = get_genai_client()
                         dosya_bytes = yuklenen_dosya.getvalue()
 
                         image_resp = client.models.generate_content(
@@ -527,7 +560,7 @@ elif ana_modul == "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)":
             else:
                 with st.spinner("Kurşun Kalem Asistanı soruları hazırlıyor..."):
                     try:
-                        client = genai.Client(api_key=API_KEY)
+                        client = get_genai_client()
                         asistan_prompt = (
                             "Sen Kurşun Kalem Dijital Eğitim'in uzman yapay zeka eğitim asistanısın. "
                             "Kullanıcının doğal dilde verdiği komutu analiz et ve Türkiye Yüzyılı Maarif Modeli'ne uygun, "
@@ -597,7 +630,7 @@ elif ana_modul == "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)":
             else:
                 with st.spinner("Baş Editör ve Redaktör metni inceliyor ve Maarif Modeli standartlarına göre yeniden yapılandırıyor..."):
                     try:
-                        client = genai.Client(api_key=API_KEY)
+                        client = get_genai_client()
                         editor_system_prompt = (
                             "Sen kıdemli bir Eğitim Yayıncılığı Baş Editörü ve Baş Redaktörüsün. "
                             "Aşağıdaki eğitim çerçevesine ve Maarif Modeli esaslarına tam bağlı kalarak metni profesyonelce redakte et:\n"
@@ -663,7 +696,7 @@ elif ana_modul == "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)":
         )
 
         def toplu_soru_uret(brans, sinif, kazanim, tema, zorluk, adet, validator_aktif):
-            client = genai.Client(api_key=API_KEY)
+            client = get_genai_client()
             kullanici_istegi = (
                 f"Kriterler:\n- Branş: {brans}\n- Sınıf: {sinif}\n- Kazanım: {kazanim}\n"
                 f"- Tema/Bağlam: {tema}\n- Zorluk: {zorluk}\n- Üretilecek Soru Adedi: {adet}\n"
@@ -775,8 +808,8 @@ elif ana_modul == "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)":
             return buffer
 
         if uret_butonu:
-            if not API_KEY:
-                st.error("API anahtarı tanımlı değil.")
+            if not get_gemini_api_key():
+                st.error("Geçerli bir Gemini API anahtarı tanımlı değil.")
             elif not tema_girdisi.strip():
                 st.warning("Lütfen bir bağlam veya tema girin.")
             else:
@@ -888,7 +921,7 @@ elif ana_modul == "🎓 Öğrenci Portalı & Soru Çözüm":
             else:
                 with st.spinner("Akıllı Koç analiz yapıyor ve sana özel strateji hazırlıyor..."):
                     try:
-                        client = genai.Client(api_key=API_KEY)
+                        client = get_genai_client()
                         koc_prompt = (
                             "Sen Kurşun Kalem Dijital Eğitim'in 'Geleceği yazan dijital eğitim' felsefesine bağlı; "
                             "ultra akıllı, motive edici ve nokta atışı taktikler veren LGS Eğitim Koçusun. "
