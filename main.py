@@ -1,5 +1,3 @@
-Tamam, hiçbir parça bırakmadan **tüm `main.py` kodunu** en güncel haliyle (en üstte yalnızca `"Ana Sayfa"`, 4 ana kategorili Veli Bilgilendirme & Otomatik Mesaj Merkezi, profesyonel/yüksek kontrastlı Paketler & Abonelik Vitrini, Okul Sırt Çantası sepeti, iyzico simülatörü ve logolu DOCX üretimi) tek parça halinde veriyorum. Doğrudan kopyalayıp `main.py` dosyana yapıştırabilirsin:
-
 ```python
 import base64
 import html
