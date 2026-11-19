@@ -1,1530 +1,974 @@
+import io
 import os
-import json
-import sqlite3
-import datetime
-from io import BytesIO
-import streamlit.components.v1 as components
-import streamlit as st
-from google import genai
-from docx import Document
-from docx.shared import Inches, Pt, RGBColor
-from docx.enum.text import WD_ALIGN_PARAGRAPH
-from pypdf import PdfReader
+import re
+from datetime import datetime, timedelta
+from typing import Any, Dict, List, Optional, Tuple
 
+import streamlit as st
+from docx import Document
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.shared import Inches, Pt, RGBColor
+from google import genai
+from google.genai import types
+
+# ==============================================================================
+# SAYFA YAPILANDIRMASI VE KURUMSAL TEMA
+# ==============================================================================
 st.set_page_config(
-    page_title="Kurşun Kalem Dijital Eğitim - Geleceği Yazan Dijital Eğitim",
+    page_title="Kurşun Kalem Dijital Eğitim",
     page_icon="✏️",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
 
-def get_gemini_api_key() -> str:
-    try:
-        if "GEMINI_API_KEY" in st.secrets and st.secrets["GEMINI_API_KEY"]:
-            return str(st.secrets["GEMINI_API_KEY"]).strip()
-    except Exception:
-        pass
-    return os.getenv("GEMINI_API_KEY", "").strip()
+BRAND_NAME = "Kurşun Kalem Dijital Eğitim"
+BRAND_TAGLINE = "Geleceği Yazan Dijital Eğitim • Profesyonel Soru Fabrikası & Akıllı Öğrenci Portalı"
+# 2027 LGS Hedef Tarihi: 13 Haziran 2027
+LGS_2027_TARGET = datetime(2027, 6, 13, 9, 30, 0)
+YKS_2027_TARGET = datetime(2027, 6, 19, 10, 15, 0)
 
-def get_genai_client():
-    key = get_gemini_api_key()
-    if not key:
-        raise ValueError("GEMINI_API_KEY bulunamadı. Streamlit Secrets veya ortam değişkenine GEMINI_API_KEY tanımlayın.")
-    return genai.Client(api_key=key)
-
-# --- TEMİZ VE MODERN SİSTEM CSS ---
-st.markdown("""
-<style>
-    section[data-testid="stSidebar"] {
-        background-color: #f8fafc;
-        border-right: 1px solid #e2e8f0;
-        min-width: 280px !important;
-        max-width: 310px !important;
-    }
-    section[data-testid="stSidebar"] .block-container {
-        padding-top: 1.2rem;
-        padding-left: 0.9rem;
-        padding-right: 0.9rem;
-        padding-bottom: 1.5rem;
-    }
-
-    /* Sidebar Başlık Kartı */
-    .sb-brand {
-        background: #1e293b;
-        color: #ffffff;
-        border-radius: 12px;
-        padding: 14px 15px;
-        margin-bottom: 14px;
-        border-bottom: 3px solid #f59e0b;
-    }
-    .sb-brand-title {
-        font-size: 1rem;
-        font-weight: 800;
-        margin: 0;
-        letter-spacing: 0.2px;
-    }
-    .sb-brand-sub {
-        font-size: 0.75rem;
-        color: #cbd5e1;
-        margin-top: 3px;
-    }
-
-    /* Sidebar Butonlarını Menü Kartı Gibi Stilize Etme */
-    section[data-testid="stSidebar"] .stButton > button {
-        width: 100%;
-        text-align: left !important;
-        justify-content: flex-start !important;
-        background-color: #ffffff;
-        color: #1e293b;
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
-        padding: 10px 14px;
-        font-weight: 600;
-        font-size: 0.86rem;
-        transition: all 0.18s ease;
-        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-    }
-    section[data-testid="stSidebar"] .stButton > button:hover {
-        background-color: #f1f5f9;
-        border-color: #cbd5e1;
-        color: #0f172a;
-    }
-    section[data-testid="stSidebar"] .stButton > button[kind="primary"] {
-        background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
-        color: #ffffff !important;
-        border: 1px solid #1e293b !important;
-        border-left: 4px solid #f59e0b !important;
-        box-shadow: 0 4px 10px rgba(30, 41, 59, 0.18) !important;
-    }
-
-    .sb-status {
-        margin-top: 14px;
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-radius: 10px;
-        padding: 10px 12px;
-        font-size: 0.76rem;
-        color: #475569;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-def kurumsal_logo_goster():
-    st.markdown("""
-        <div style="display: flex; align-items: center; gap: 12px; background: linear-gradient(135deg, #2c3e50, #34495e); padding: 15px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-            <div style="background: #e74c3c; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: white; font-weight: bold; border: 2px solid #f39c12;">✏️</div>
-            <div>
-                <h2 style="color: white; margin: 0; font-size: 20px; font-family: sans-serif;">KURŞUN KALEM DİJİTAL EĞİTİM</h2>
-                <p style="color: #f1c40f; margin: 0; font-size: 13px; font-weight: 600;">Geleceği yazan dijital eğitim • Profesyonel Soru Fabrikası & Akıllı Öğrenci Portalı</p>
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
-
-MAARIF_EGITIM_CERCEVESI = """
-TÜRKİYE YÜZYILI MAARİF MODELİ ORTAK EĞİTİM VE YETKİNLİK ÇERÇEVESİ:
-1. Erdem-Değer-Eylem Bütünlüğü: Öğrencilerin bilgelik, erdem ve ahlaki olgunluğa ulaşması; edinilen bilgilerin eyleme ve karaktere dönüştürülmesi.
-2. Beceriler Çerçevesi: Zihinsel beceriler (analiz, sentez, eleştirel düşünme, problem çözme), sosyal-duygusal beceriler ve eylem becerileri.
-3. Okuryazarlık Türleri: Bilgi, dijital, finansal, sanat, vatandaşlık ve sürdürülebilirlik okuryazarlığı.
-4. Soru ve Ölçme Standartları: Ezbere dayalı sorulardan uzak; bağlam kurabilen, günlük hayatla ilişkilendirilmiş, mantık-muhakeme, veri okuryazarlığı ve metinler arası sentez yeteneğini ölçen beceri temelli yapılar.
-"""
-
-def init_db():
-    conn = sqlite3.connect("okul.db")
-    c = conn.cursor()
-    c.execute("""
-        CREATE TABLE IF NOT EXISTS ogrenciler (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            isim TEXT,
-            puan INTEGER,
-            cozulen_soru INTEGER,
-            dogru_sayisi INTEGER
-        )
-    """)
-    c.execute("SELECT COUNT(*) FROM ogrenciler")
-    if c.fetchone()[0] == 0:
-        ornekler = [
-            ("Kürşat Kurşun", 450, 45, 41),
-            ("Burak Aygören", 380, 40, 34),
-            ("Elif Öztürk", 520, 55, 50),
-            ("Kullanıcı Öğrenci", 120, 12, 10)
-        ]
-        c.executemany("INSERT INTO ogrenciler (isim, puan, cozulen_soru, dogru_sayisi) VALUES (?, ?, ?, ?)", ornekler)
-    conn.commit()
-    conn.close()
-
-init_db()
-
-@st.cache_data
-def load_kazanimlar():
-    dosya_adi = "kazanimlar.json"
-    varsayilan_veri = {
-        "Türkçe": {
-            "5. Sınıf": {
-                "Okuma ve Anlama": [
-                    "T.5.1.1. Bağlamdan yararlanarak bilmediği kelime gruplarının anlamını tahmin eder.",
-                    "T.5.1.7. Metinle ilgili soruları cevaplar.",
-                    "T.5.1.12. Grafik, tablo ve çizelgeyle sunulan bilgileri yorumlar."
-                ]
-            },
-            "6. Sınıf": {
-                "Okuma ve Anlama": [
-                    "T.6.1.4. Metindeki ana düşünceyi / ana duyguyu belirler.",
-                    "T.6.1.8. Metindeki yardımcı düşünceleri tespit eder."
-                ]
-            },
-            "7. Sınıf": {
-                "Okuma ve Anlama": [
-                    "T.7.1.3. Deyim ve atasözlerinin metne katkısını kavrar.",
-                    "T.7.1.9. Metnin anlatım biçimlerini belirler."
-                ]
-            },
-            "8. Sınıf (LGS / Beceri Temelli)": {
-                "Okuma, Mantık ve Muhakeme": [
-                    "T.8.1.5. Metindeki söz sanatlarını tespit ederek işlevlerini kavrar.",
-                    "T.8.1.11. Grafik, tablo ve çizelgeyle sunulan verileri yorumlayarak mantık-muhakeme yapar.",
-                    "T.8.1.18. Farklı kaynaklardan alınan metinler arasında sentez ve karşılaştırma yapar."
-                ]
-            }
-        },
-        "Matematik": {
-            "8. Sınıf (LGS / Beceri Temelli)": {
-                "Sayılar ve İşlemler": [
-                    "M.8.1.1. Verilen pozitif tam sayıların pozitif tam sayı çarpanlarını bulur.",
-                    "M.8.1.2. İki doğal sayının en büyük ortak bölenini (EBOB) ve en küçük ortak katını (EKOK) hesaplar."
-                ]
-            }
-        }
-    }
-    if not os.path.exists(dosya_adi):
-        try:
-            with open(dosya_adi, "w", encoding="utf-8") as f:
-                json.dump(varsayilan_veri, f, ensure_ascii=False, indent=2)
-        except:
-            pass
-    try:
-        with open(dosya_adi, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except:
-        return varsayilan_veri
-
-kazanim_db = load_kazanimlar()
-
-def load_referanslar():
-    dosya_adi = "referans_sorular.json"
-    if not os.path.exists(dosya_adi):
-        try:
-            with open(dosya_adi, "w", encoding="utf-8") as f:
-                json.dump([], f, ensure_ascii=False, indent=2)
-        except:
-            pass
-    try:
-        with open(dosya_adi, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except:
-        return []
-
-referans_havuzu = load_referanslar()
-
-def load_arsiv():
-    dosya_adi = "soru_arsivi.json"
-    if not os.path.exists(dosya_adi):
-        return []
-    try:
-        with open(dosya_adi, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except:
-        return []
-
-def save_arsiv(yeni_test):
-    arsiv = load_arsiv()
-    arsiv.insert(0, yeni_test)
-    try:
-        with open("soru_arsivi.json", "w", encoding="utf-8") as f:
-            json.dump(arsiv[:20], f, ensure_ascii=False, indent=2)
-    except:
-        pass
-
-# --- SİSTEM NAVİGASYONU (BUTON TABANLI TEMİZ MENÜ) ---
-if "ana_modul" not in st.session_state:
-    st.session_state["ana_modul"] = "🏠 Ana Sayfa & 2027 LGS'ye Geri Sayım"
-
-menuler = [
-    ("🏠 Ana Sayfa & Geri Sayım", "🏠 Ana Sayfa & 2027 LGS'ye Geri Sayım"),
-    ("🛠️ Soru & Redaksiyon Fabrikası", "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)"),
-    ("🎓 Öğrenci Portalı & Çözüm", "🎓 Öğrenci Portalı & Soru Çözüm"),
-    ("👪 Veli Takip Paneli", "👪 Veli Takip Paneli"),
-    ("🏢 B2B Lisans & Kurum", "🏢 B2B Lisans & Kurum Yönetimi"),
-    ("💎 Paketler & Abonelik Vitrini", "💎 Paketler & Abonelik Vitrini")
+PAGES = [
+    "Ana Sayfa & Geri Sayım",
+    "Soru & Redaksiyon Fabrikası",
+    "Öğrenci Portalı & Çözüm",
+    "Dijikoç",
+    "Veli Takip Paneli",
+    "B2B Lisans & Kurum",
+    "Paketler & Abonelik Vitrini",
 ]
 
-with st.sidebar:
-    st.markdown("""
-        <div class="sb-brand">
-            <div class="sb-brand-title">🧭 Sistem Navigasyonu</div>
-            <div class="sb-brand-sub">Kurşun Kalem Dijital Eğitim</div>
-        </div>
-    """, unsafe_allow_html=True)
+SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
+    {
+        "id": "ogrenci_temel",
+        "segment": "Öğrenci",
+        "name": "LGS Başlangıç Dijital",
+        "monthly_price": 490,
+        "badge": "Temel",
+        "desc": "5–8. sınıf öğrencileri için günlük kazanım tekrarları ve akıllı soru çözümleri.",
+        "features": [
+            "Aylık 250 yapay zekâ destekli soru üretimi",
+            "Öğrenci Portalı & adımlı çözüm desteği",
+            "2027 LGS geri sayım ve konu takibi",
+            "Standart DOCX test çıktısı",
+        ],
+    },
+    {
+        "id": "ogrenci_pro",
+        "segment": "Öğrenci",
+        "name": "2027 LGS Hedef Pro",
+        "monthly_price": 890,
+        "badge": "Popüler",
+        "desc": "Yeni nesil muhakeme soruları, Dijikoç birebir çalışma planı ve veli raporu.",
+        "features": [
+            "Aylık 1.000 yapay zekâ soru ve redaksiyon hakkı",
+            "Dijikoç haftalık akıllı çalışma programı",
+            "Veli Takip Paneli canlı bildirimleri",
+            "2 sütunlu LGS kitapçık DOCX çıktısı",
+        ],
+    },
+    {
+        "id": "ogrenci_elit",
+        "segment": "Öğrenci",
+        "name": "LGS Tam Donanım Elit",
+        "monthly_price": 1390,
+        "badge": "Kapsamlı",
+        "desc": "Sınırsıza yakın soru üretimi, yoğun redaksiyon denetimi ve özel koçluk senaryoları.",
+        "features": [
+            "Aylık 2.500 soru üretimi + otomatik redaksiyon",
+            "Dijikoç günlük deneme analizi & çeldirici raporu",
+            "Veli Takip Paneli + haftalık özet bülteni",
+            "Özel kurum/öğrenci başlıklı DOCX testler",
+        ],
+    },
+    {
+        "id": "yks_sayisal",
+        "segment": "YKS",
+        "name": "YKS MF (Sayısal) Akademi",
+        "monthly_price": 990,
+        "badge": "TYT + AYT",
+        "desc": "TYT ve AYT Matematik, Fizik, Kimya, Biyoloji ve Türkçe odaklı ileri hazırlık paketi.",
+        "features": [
+            "TYT & AYT kazanım ve ÖSYM tarzı soru üretimi",
+            "Dijikoç net artırma ve süre yönetimi koçu",
+            "Konu bazlı hata defteri ve çözüm desteği",
+            "2 sütunlu deneme/test DOCX çıktısı",
+        ],
+    },
+    {
+        "id": "yks_ea_sozel",
+        "segment": "YKS",
+        "name": "YKS EA & Sözel Atölye",
+        "monthly_price": 940,
+        "badge": "TYT + AYT",
+        "desc": "Türk Dili ve Edebiyatı, Tarih, Coğrafya, Matematik ve paragraf analizi paketi.",
+        "features": [
+            "Paragraf, edebiyat ve sosyal bilimler soru fabrikası",
+            "Dijikoç deneme stratejisi ve okuma hızı koçu",
+            "Detaylı çeldirici ve kazanım eşleştirme",
+            "Düzenlenebilir DOCX çalışma kağıtları",
+        ],
+    },
+    {
+        "id": "yks_vip",
+        "segment": "YKS",
+        "name": "YKS Derece VIP",
+        "monthly_price": 1590,
+        "badge": "VIP",
+        "desc": "Yoğun deneme analizi, kişiselleştirilmiş Dijikoç ve yüksek soru üretim kotası.",
+        "features": [
+            "Aylık 3.000 soru üretimi ve kalite denetimi",
+            "Dijikoç birebir hedef üniversite & net simülasyonu",
+            "Veli/danışman görünümü ve gelişim grafikleri",
+            "Kurumsal standartta DOCX kitapçık çıktısı",
+        ],
+    },
+    {
+        "id": "veli_aile",
+        "segment": "Veli",
+        "name": "Aile Takip & Rehberlik",
+        "monthly_price": 590,
+        "badge": "Veli Odaklı",
+        "desc": "Çocuğunuzun çalışma düzenini, deneme ivmesini ve eksik kazanımlarını şeffaf izleyin.",
+        "features": [
+            "Veli Takip Paneli haftalık performans özeti",
+            "Dijikoç çalışma disiplini ve motivasyon planı",
+            "Eksik kazanım uyarıları ve öneri listesi",
+            "1 öğrenci profili dahil",
+        ],
+    },
+    {
+        "id": "veli_coklu",
+        "segment": "Veli",
+        "name": "Çoklu Kardeş Aile Paketi",
+        "monthly_price": 990,
+        "badge": "2 Öğrenci",
+        "desc": "İki kardeş için ayrı sınıf/sınav seviyelerinde takip, soru üretimi ve Dijikoç desteği.",
+        "features": [
+            "2 ayrı öğrenci profili (5–12. sınıf / LGS & YKS)",
+            "Aylık 1.500 ortak soru üretim kotası",
+            "Veli Takip Paneli karşılaştırmalı görünüm",
+            "DOCX test indirme ve yazdırma desteği",
+        ],
+    },
+    {
+        "id": "b2b_ogretmen",
+        "segment": "Kurum / B2B",
+        "name": "Öğretmen & Zümre Stüdyosu",
+        "monthly_price": 1790,
+        "badge": "Zümre",
+        "desc": "Branş öğretmenleri ve zümre başkanları için hızlı kazanım testi ve redaksiyon aracı.",
+        "features": [
+            "Aylık 4.000 soru üretimi + otomatik redaksiyon",
+            "Türkiye Yüzyılı Maarif Modeli kazanım uyumu",
+            "2 sütunlu LGS kitapçık DOCX çıktısı",
+            "5 öğretmen koltuğu",
+        ],
+    },
+    {
+        "id": "b2b_kurs",
+        "segment": "Kurum / B2B",
+        "name": "Etüt Merkezi & Kurs Paketi",
+        "monthly_price": 4490,
+        "badge": "Kurumsal",
+        "desc": "Kurs merkezleri ve butik okullar için ölçeklenebilir soru fabrikası ve öğrenci portalı.",
+        "features": [
+            "Aylık 12.000 soru üretimi ve toplu test hazırlama",
+            "Öğrenci Portalı, Dijikoç ve Veli Paneli erişimi",
+            "Kurum logolu/başlıklı DOCX sınav çıktıları",
+            "25 öğretmen + 250 öğrenci hesabı",
+        ],
+    },
+    {
+        "id": "b2b_kampus",
+        "segment": "Kurum / B2B",
+        "name": "Okul & Kampüs Lisansı",
+        "monthly_price": 9900,
+        "badge": "Kampüs",
+        "desc": "Tüm kademelerde standart ölçme-değerlendirme ve akıllı koçluk altyapısı.",
+        "features": [
+            "Aylık 35.000 soru üretimi + öncelikli redaksiyon",
+            "Tüm modüllerde kurumsal yetkilendirme",
+            "Zümre ve idareci raporlama ekranları",
+            "Sınırsız test çıktısı & özel lisans desteği",
+        ],
+    },
+    {
+        "id": "b2b_ozel",
+        "segment": "Kurum / B2B",
+        "name": "Kurumsal Zincir & Yayınevi",
+        "monthly_price": 19900,
+        "badge": "Enterprise",
+        "desc": "Çok şubeli eğitim kurumları ve içerik ekipleri için özel kapasite ve entegrasyon.",
+        "features": [
+            "Özel yüksek hacimli soru üretim kotası",
+            "Özel editörlük ve çeldirici kalite standartları",
+            "Kurumsal onboarding ve teknik destek",
+            "Çoklu kampüs yönetimi",
+        ],
+    },
+]
 
-    for etiket, deger in menuler:
-        aktif_mi = (st.session_state["ana_modul"] == deger)
-        if st.button(
-            etiket,
-            key=f"nav_{deger}",
-            type="primary" if aktif_mi else "secondary",
-            use_container_width=True
-        ):
-            st.session_state["ana_modul"] = deger
-            st.rerun()
+CURRICULUM_TOPICS: Dict[str, Dict[str, List[str]]] = {
+    "Türkçe": {
+        "Okuma ve Anlama": [
+            "T.5.1.1. Bağlamdan yararlanarak bilmediği kelime gruplarının anlamını tahmin etme",
+            "T.6.1.4. Metindeki ana düşünce ve yardımcı düşünceleri belirleme",
+            "T.7.1.6. Metinler arası karşılaştırma yapma ve çıkarımda bulunma",
+            "T.8.1.9. Sözel mantık ve muhakeme gerektiren metinleri analiz etme",
+        ],
+        "Dil Bilgisi ve Yazım": [
+            "Fiilimsiler ve cümle ögeleri ilişkisi",
+            "Yazım kuralları ve noktalama işaretlerinin anlamı belirlemedeki işlevi",
+            "Cümlede anlam ve anlatım bozukluklarının tespiti",
+        ],
+    },
+    "Matematik": {
+        "Sayılar ve İşlemler": [
+            "Çarpanlar ve katlar, EBOB-EKOK problem modellemeleri",
+            "Üslü ve kareköklü ifadelerde akıl yürütme ve tahmin",
+            "Cebirsel ifadeler, özdeşlikler ve doğrusal denklemler",
+        ],
+        "Geometri ve Veri Analizi": [
+            "Üçgenler, eşlik-benzerlik ve dönüşüm geometrisi",
+            "Olasılık ve istatistiksel veri yorumlama",
+        ],
+    },
+    "Fen Bilimleri": {
+        "Fiziksel ve Kimyasal Süreçler": [
+            "Mevsimlerin oluşumu ve iklim hareketleri",
+            "DNA, genetik kod ve kalıtım problemleri",
+            "Basınç, madde ve endüstri uygulamaları",
+        ],
+        "Canlılar ve Enerji": [
+            "Basit makineler ve enerji dönüşümleri",
+            "Elektrik yükleri ve elektrik enerjisi",
+        ],
+    },
+    "Sosyal Bilgiler / İnkılap Tarihi": {
+        "Tarih ve Kültür": [
+            "Bir Kahraman Doğuyor ve Millî Uyanış süreci",
+            "Millî Birlik ve Çağdaş Türkiye",
+            "Birey, toplum ve aktif vatandaşlık",
+        ],
+    },
+    "İngilizce": {
+        "Okuma ve İletişim": [
+            "Friendship, Teen Life ve In the Kitchen bağlamsal okuma",
+            "On the Phone, The Internet ve Tourism akıl yürütme",
+        ],
+    },
+}
 
-    durum_metni = "🟢 Sistem Aktif" if get_gemini_api_key() else "🟡 GEMINI_API_KEY Bekleniyor"
-    st.markdown(f"""
-        <div class="sb-status">
-            <strong>{durum_metni}</strong> • 2027 LGS & Maarif Modeli
-        </div>
-    """, unsafe_allow_html=True)
-
-ana_modul = st.session_state["ana_modul"]
-
-# --- ANA SAYFA & GERİ SAYIM ---
-if ana_modul == "🏠 Ana Sayfa & 2027 LGS'ye Geri Sayım":
-    kurumsal_logo_goster()
-    st.title("📚 Kurşun Kalem Dijital Eğitim Platformuna Hoş Geldiniz")
-    st.markdown("İlkokuldan YKS'ye uzanan, yapay zeka destekli Türkiye'nin en akıllı soru ve koçluk ekosistemi.")
-
-    st.markdown("### ⏳ 2027 LGS'ye Geri Sayım (13 Haziran 2027)")
-
-    timer_html = """
-    <div style="display: flex; gap: 20px; font-family: sans-serif; margin-bottom: 20px;">
-        <div style="background: #f8f9fa; border: 1px solid #e0e0e0; padding: 15px 25px; border-radius: 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex: 1;">
-            <div style="font-size: 12px; color: #666; font-weight: 600; text-transform: uppercase;">📅 Gün</div>
-            <div id="days" style="font-size: 32px; font-weight: bold; color: #2c3e50; margin-top: 5px;">0</div>
-        </div>
-        <div style="background: #f8f9fa; border: 1px solid #e0e0e0; padding: 15px 25px; border-radius: 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex: 1;">
-            <div style="font-size: 12px; color: #666; font-weight: 600; text-transform: uppercase;">⏰ Saat</div>
-            <div id="hours" style="font-size: 32px; font-weight: bold; color: #2c3e50; margin-top: 5px;">0</div>
-        </div>
-        <div style="background: #f8f9fa; border: 1px solid #e0e0e0; padding: 15px 25px; border-radius: 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex: 1;">
-            <div style="font-size: 12px; color: #666; font-weight: 600; text-transform: uppercase;">⏱️ Dakika</div>
-            <div id="minutes" style="font-size: 32px; font-weight: bold; color: #2c3e50; margin-top: 5px;">0</div>
-        </div>
-        <div style="background: #f8f9fa; border: 1px solid #e0e0e0; padding: 15px 25px; border-radius: 10px; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); flex: 1;">
-            <div style="font-size: 12px; color: #666; font-weight: 600; text-transform: uppercase;">⚡ Saniye</div>
-            <div id="seconds" style="font-size: 32px; font-weight: bold; color: #e74c3c; margin-top: 5px;">0</div>
-        </div>
-    </div>
-
-    <script>
-        const targetDate = new Date("June 13, 2027 09:30:00").getTime();
-
-        function updateTimer() {
-            const now = new Date().getTime();
-            const distance = targetDate - now;
-
-            if (distance < 0) {
-                document.getElementById("days").innerText = "0";
-                document.getElementById("hours").innerText = "0";
-                document.getElementById("minutes").innerText = "0";
-                document.getElementById("seconds").innerText = "0";
-                return;
-            }
-
-            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-            document.getElementById("days").innerText = days;
-            document.getElementById("hours").innerText = hours;
-            document.getElementById("minutes").innerText = minutes;
-            document.getElementById("seconds").innerText = seconds;
-        }
-
-        setInterval(updateTimer, 1000);
-        updateTimer();
-    </script>
+st.markdown(
     """
-    components.html(timer_html, height=110)
-
-    st.markdown("---")
-
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        st.metric(label="Üretilen Soru Havuzu", value="142,500+", delta="+1,200 bugün")
-    with col2:
-        st.metric(label="Aktif Öğrenci/Veli", value="18,420", delta="+340 bu hafta")
-    with col3:
-        st.metric(label="B2B Anlaşmalı Kurum", value="48", delta="4 Yeni")
-    with col4:
-        st.metric(label="Çözülen Soru Sayısı", value="2.4 Milyon", delta="%98 Başarı")
-
-    st.markdown("---")
-    st.subheader("💡 Platform Özellikleri")
-    col_a, col_b, col_c = st.columns(3)
-    with col_a:
-        st.markdown("### 🎯 Soru Fabrikası")
-        st.write("MEB formatına uygun saniyeler içinde yeni nesil soru üretin ve veritabanına kaydedin.")
-    with col_b:
-        st.markdown("### 📄 Profesyonel Word Çıktısı")
-        st.write("Soru havuzundaki soruları tek tıkla 2 sütunlu, yayıncı kalitesinde .docx test kağıtlarına dönüştürün.")
-    with col_c:
-        st.markdown("### 📊 Veli & Kurum Paneli")
-        st.write("Öğrenci gelişimini takip edin, kurumsal lisanslarla okulları sisteme dahil edin.")
-
-# --- YAZAR / SORU FABRİKASI PANELİ ---
-elif ana_modul == "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)":
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
-        "🎯 Soru Üretici",
-        "✍️ Profesyonel Redaktör & Editör",
-        "🤖 Akıllı Komut (Asistan)",
-        "📚 Geçmiş Arşivi",
-        "➕ Soru Ekle",
-        "📄 Çoklu Format Dosya Yükle",
-        "⚙️ Havuz Yönetimi"
-    ])
-
-    with tab7:
-        kurumsal_logo_goster()
-        st.header("Mevcut Referans Soru & Dosya Havuzu")
-        if not referans_havuzu:
-            st.info("Henüz havuza eklenmiş referans soru veya dosya bulunmuyor.")
-        else:
-            for idx, ref in enumerate(referans_havuzu):
-                with st.expander(f"Kayıt {idx + 1} - {ref.get('brans', 'Türkçe')} / {ref.get('sinif', '')} ({ref.get('kazanim', '')[:40]}...)"):
-                    st.write(f"**İçerik / Öncül Metin:** {ref.get('baglam_metni')}")
-                    st.write(f"**Soru / Başlık:** {ref.get('soru_koku')}")
-                    st.write(f"**Doğru Cevap:** {ref.get('dogru_cevap')}")
-
-            if st.button("🗑️ Tüm Referans ve Dosya Havuzunu Temizle", type="secondary"):
-                try:
-                    with open("referans_sorular.json", "w", encoding="utf-8") as f:
-                        json.dump([], f, ensure_ascii=False, indent=2)
-                    st.success("Referans havuzu sıfırlandı.")
-                    st.rerun()
-                except Exception as e:
-                    st.error(f"Sıfırlama hatası: {e}")
-
-    with tab6:
-        kurumsal_logo_goster()
-        st.header("📄 / 🖼️ PDF, Word (.docx) veya Görsel (JPEG/PNG) ile Soru Kaynağı Yükle")
-        st.markdown("Elindeki deneme sınavı PDF, Word belgesi ya da sınav fotoğrafını buraya yükle. Program içeriği otomatik olarak okuyup yapay zekanın referans havuzuna işleyecektir.")
-
-        yuklenen_dosya = st.file_uploader("Dosya Seçin", type=["pdf", "docx", "jpg", "jpeg", "png"])
-
-        col_p1, col_p2 = st.columns(2)
-        with col_p1:
-            p_brans = st.selectbox("Kaynak Branşı", list(kazanim_db.keys()), key="p_brans")
-        with col_p2:
-            p_sinif = st.selectbox("Sınıf Seviyesi", ["5. Sınıf", "6. Sınıf", "7. Sınıf", "8. Sınıf (LGS / Beceri Temelli)"], key="p_sinif")
-
-        p_kazanim = st.text_input("Hedef Kazanım veya Konu Açıklaması", value="Genel Deneme Analizi ve Beceri Temelli Soru Standardı")
-
-        if yuklenen_dosya is not None:
-            dosya_uzantisi = yuklenen_dosya.name.split('.')[-1].lower()
-            cikti_metni = ""
-
-            try:
-                if dosya_uzantisi == "pdf":
-                    reader = PdfReader(yuklenen_dosya)
-                    for page in reader.pages:
-                        metin = page.extract_text()
-                        if metin:
-                            cikti_metni += metin + "\n"
-                    st.success(f"PDF başarıyla okundu! Toplam {len(reader.pages)} sayfa metin çıkarıldı.")
-
-                elif dosya_uzantisi == "docx":
-                    doc_file = Document(yuklenen_dosya)
-                    for p in doc_file.paragraphs:
-                        if p.text:
-                            cikti_metni += p.text + "\n"
-                    st.success("Word belgesi başarıyla okundu!")
-
-                elif dosya_uzantisi in ["jpg", "jpeg", "png"]:
-                    with st.spinner("Görsel yapay zeka ile taranıyor ve metne dönüştürülüyor..."):
-                        client = get_genai_client()
-                        dosya_bytes = yuklenen_dosya.getvalue()
-
-                        image_resp = client.models.generate_content(
-                            model="gemini-3.8-flash",
-                            contents=[
-                                {
-                                    "inline_data": {
-                                        "mime_type": f"image/{'jpeg' if dosya_uzantisi in ['jpg', 'jpeg'] else 'png'}",
-                                        "data": dosya_bytes
-                                    }
-                                },
-                                "Bu görseldeki tüm test sorularını, bağlam metinlerini, seçenekleri ve soru köklerini eksiksiz olarak metne dök."
-                            ]
-                        )
-                        cikti_metni = image_resp.text
-                        st.success("Görsel başarıyla tarandı ve metne dönüştürüldü!")
-
-                if cikti_metni:
-                    with st.expander("📖 Okunan Dosya / Görsel İçeriğini Önizle"):
-                        st.text_area("Çıkarılan İçerik Metni", cikti_metni[:2500] + ("..." if len(cikti_metni) > 2500 else ""), height=200)
-
-                    if st.button("📥 İçeriği Referans Havuzuna İşle", type="primary"):
-                        yeni_referans = {
-                            "brans": p_brans, "sinif": p_sinif, "kazanim": p_kazanim,
-                            "baglam_metni": f"[{dosya_uzantisi.upper()} DOSYA/GÖRSEL KAYNAĞI]\n{cikti_metni[:4000]}",
-                            "soru_koku": f"Yüklenen {dosya_uzantisi.upper()} dosyasındaki kurumsal soru tarzı ve standartları",
-                            "sik_a": "Referans", "sik_b": "Referans", "sik_c": "Referans", "sik_d": "Referans", "dogru_cevap": "A"
-                        }
-                        mevcut_veriler = load_referanslar()
-                        mevcut_veriler.append(yeni_referans)
-
-                        with open("referans_sorular.json", "w", encoding="utf-8") as f:
-                            json.dump(mevcut_veriler, f, ensure_ascii=False, indent=2)
-                        st.success("Dosya içeriği başarıyla referans havuzuna eklendi! Artık soru üretirken bu kaynak baz alınacak.")
-            except Exception as e:
-                st.error(f"Dosya işlenirken bir hata oluştu: {e}")
-
-    with tab5:
-        kurumsal_logo_goster()
-        st.header("Havuza Yeni Referans Soru Ekle")
-        with st.form("referans_form"):
-            ref_brans = st.selectbox("Branş", list(kazanim_db.keys()))
-            ref_sinif = st.selectbox("Sınıf Seviyesi", ["5. Sınıf", "6. Sınıf", "7. Sınıf", "8. Sınıf (LGS / Beceri Temelli)"])
-            ref_kazanim = st.text_input("Kazanım Açıklaması")
-            ref_baglam = st.text_area("Bağlam Metni / Senaryo / Veri")
-            ref_kok = st.text_input("Soru Kökü")
-
-            col1, col2 = st.columns(2)
-            with col1:
-                ref_a = st.text_input("A Şıkkı")
-                ref_c = st.text_input("C Şıkkı")
-            with col2:
-                ref_b = st.text_input("B Şıkkı")
-                ref_d = st.text_input("D Şıkkı")
-
-            ref_dogru = st.selectbox("Doğru Cevap", ["A", "B", "C", "D"])
-            submitted = st.form_submit_button("💾 Referans Havuzuna Kaydet")
-
-            if submitted:
-                yeni_soru = {
-                    "brans": ref_brans, "sinif": ref_sinif, "kazanim": ref_kazanim,
-                    "baglam_metni": ref_baglam, "soru_koku": ref_kok,
-                    "sik_a": ref_a, "sik_b": ref_b, "sik_c": ref_c, "sik_d": ref_d, "dogru_cevap": ref_dogru
-                }
-                mevcut_veriler = load_referanslar()
-                mevcut_veriler.append(yeni_soru)
-                try:
-                    with open("referans_sorular.json", "w", encoding="utf-8") as f:
-                        json.dump(mevcut_veriler, f, ensure_ascii=False, indent=2)
-                    st.success("Referans soru başarıyla kaydedildi!")
-                except Exception as e:
-                    st.error(f"Kayıt hatası: {e}")
-
-    with tab4:
-        kurumsal_logo_goster()
-        st.header("📚 Daha Önce Üretilen Test Arşivi")
-        arsiv_listesi = load_arsiv()
-        if not arsiv_listesi:
-            st.info("Henüz arşivde kayıtlı test bulunmuyor.")
-        else:
-            for i, test in enumerate(arsiv_listesi):
-                with st.expander(f"📁 {test.get('baslik', 'Test')} ({len(test.get('sorular', []))} Soru)"):
-                    st.write(f"**Kurum / Başlık:** {test.get('kurum')}")
-                    for s_idx, soru in enumerate(test.get('sorular', []), 1):
-                        st.markdown(f"**Soru {s_idx}:** {soru.get('soru_koku')}")
-                        st.write(f"Doğru Cevap: **{soru.get('dogru_cevap')}**")
-
-    with tab3:
-        kurumsal_logo_goster()
-        st.title("🤖 Kurşun Kalem Akıllı Asistanı")
-        st.markdown("Yapay zekaya doğal dilde komut vererek dilediğiniz kriterlerde anında soru ve test ürettirin.")
-
-        serbest_komut = st.text_area("Ne tür bir test üretmek istiyorsunuz?", placeholder="Örn: 8. sınıf fen bilimleri DNA ve genetik kod ile ilgili orta-zor seviyede 2 soru hazırla.")
-
-        if st.button("🚀 Asistanla Üret", type="primary"):
-            if not serbest_komut.strip():
-                st.warning("Lütfen bir komut yazın.")
-            else:
-                with st.spinner("Kurşun Kalem Asistanı soruları hazırlıyor..."):
-                    try:
-                        client = get_genai_client()
-                        asistan_prompt = (
-                            "Sen Kurşun Kalem Dijital Eğitim'in uzman yapay zeka eğitim asistanısın. "
-                            "Kullanıcının doğal dilde verdiği komutu analiz et ve Türkiye Yüzyılı Maarif Modeli'ne uygun, "
-                            "özgün çoktan seçmeli sorular üret. Çözüm analizi istemiyorum. "
-                            "Çıktıyı YALNIZCA geçerli bir JSON dizisi (liste) formatında (hiçbir ek metin, açıklama veya backtick eklemeden) şu yapıda ver:\n"
-                            "[\n  {\n    \"baglam_metni\": \"...\",\n    \"soru_koku\": \"...\",\n    \"sik_a\": \"...\",\n    \"sik_b\": \"...\",\n    \"sik_c\": \"...\",\n    \"sik_d\": \"...\",\n    \"dogru_cevap\": \"A/B/C/D\"\n  }\n]"
-                        )
-                        resp = client.models.generate_content(
-                            model="gemini-3.8-flash",
-                            contents=serbest_komut,
-                            config={
-                                "system_instruction": asistan_prompt,
-                                "temperature": 0.4,
-                                "max_output_tokens": 2048
-                            }
-                        )
-                        text = resp.text.strip()
-                        if text.startswith("```json"):
-                            text = text[7:]
-                        if text.endswith("```"):
-                            text = text[:-3]
-
-                        asistan_sorular = json.loads(text.strip())
-                        st.success(f"{len(asistan_sorular)} adet soru asistan tarafından başarıyla üretildi!")
-
-                        for idx, s in enumerate(asistan_sorular, 1):
-                            with st.expander(f"Asistan Soru {idx}"):
-                                if s.get("baglam_metni"):
-                                    st.write(s.get("baglam_metni"))
-                                st.markdown(f"**{s.get('soru_koku')}**")
-                                st.write(f"A) {s.get('sik_a')}")
-                                st.write(f"B) {s.get('sik_b')}")
-                                st.write(f"C) {s.get('sik_c')}")
-                                st.write(f"D) {s.get('sik_d')}")
-                                st.success(f"Doğru Cevap: {s.get('dogru_cevap')}")
-                    except Exception as e:
-                        st.error(f"Asistan üretim hatası: {e}")
-
-    with tab2:
-        kurumsal_logo_goster()
-        st.title("✍️ Profesyonel Metin Redaktörü & Editör")
-        st.markdown("Yazdığın, dışarıdan aldığın veya düzenlenmesini istediğin soru metinlerini, paragrafları veya test taslaklarını **Türkiye Yüzyılı Maarif Modeli** standartlarına, dilbilgisi kurallarına ve akademik akıcılığa göre kusursuz hale getir.")
-
-        redakte_edilecek_metin = st.text_area(
-            "Redakte ve Editörlük Yapılacak Metni / Soruyu Buraya Yapıştırın:",
-            height=250,
-            placeholder="Örn: Buraya hatalı veya geliştirilmesi gereken soru metnini, açıklamayı veya paragrafı yapıştırın..."
-        )
-
-        col_ed1, col_ed2 = st.columns(2)
-        with col_ed1:
-            editor_modu = st.selectbox(
-                "Düzenleme ve Redaksiyon Odağı",
-                [
-                    "Akademik & Maarif Modeli Dil Standartlaştırma",
-                    "Soru Kökü ve Çeldirici Kalitesini Artırma",
-                    "Yazım, Noktalama ve İmlâ Kusursuzlaştırma",
-                    "Metinler Arası Sentez ve Mantık Denetimi"
-                ]
-            )
-        with col_ed2:
-            hedef_kitle = st.selectbox("Hedef Sınıf / Seviye", ["5. Sınıf", "6. Sınıf", "7. Sınıf", "8. Sınıf (LGS Standardı)"])
-
-        if st.button("✨ Metni Profesyonelce Redakte Et", type="primary"):
-            if not redakte_edilecek_metin.strip():
-                st.warning("Lütfen redakte edilecek bir metin girin.")
-            else:
-                with st.spinner("Baş Editör ve Redaktör metni inceliyor ve Maarif Modeli standartlarına göre yeniden yapılandırıyor..."):
-                    try:
-                        client = get_genai_client()
-                        editor_system_prompt = (
-                            "Sen kıdemli bir Eğitim Yayıncılığı Baş Editörü ve Baş Redaktörüsün. "
-                            "Aşağıdaki eğitim çerçevesine ve Maarif Modeli esaslarına tam bağlı kalarak metni profesyonelce redakte et:\n"
-                            + MAARIF_EGITIM_CERCEVESI + "\n"
-                            "Görevin: Kullanıcının verdiği ham ya da kusurlu metni / soruyu; Türkçe dil kurallarına, "
-                            "akademik terminolojiye, LGS ve kazanım ölçme standartlarına göre kusursuzlaştır. "
-                            "Çıktıda önce 'Düzenlenmiş Metin / Soru' sun, ardından alt bölümde yapılan düzeltmeleri ve pedagojik gerekçeleri kısaca maddeler halinde açıkla."
-                        )
-
-                        editor_resp = client.models.generate_content(
-                            model="gemini-3.8-flash",
-                            contents=f"Odak Modu: {editor_modu}\nHedef Seviye: {hedef_kitle}\n\nHam Metin:\n{redakte_edilecek_metin}",
-                            config={
-                                "system_instruction": editor_system_prompt,
-                                "temperature": 0.4,
-                                "max_output_tokens": 2048
-                            }
-                        )
-
-                        st.success("Redaksiyon işlemi tamamlandı!")
-                        st.markdown("### 📝 Editör Onaylı Sonuç:")
-                        st.markdown(editor_resp.text)
-                    except Exception as e:
-                        st.error(f"Redaksiyon sırasında hata oluştu: {e}")
-
-    with tab1:
-        kurumsal_logo_goster()
-        st.title("🎯 Kurşun Kalem Dijital Eğitim - Soru Üretim Stüdyosu")
-        st.markdown("Türkiye Yüzyılı Maarif Modeli standartlarında, **Otomatik Redaktör ve Kalite Kontrollü** ve **2 Sütunlu LGS Kitapçık Formatında** profesyonel değerlendirme testleri oluşturun.")
-
-        with st.expander("⚙️ Test ve Kurum Parametreleri", expanded=True):
-            p_col1, p_col2, p_col3 = st.columns(3)
-            with p_col1:
-                kurum_adi = st.text_input("Kurum / Okul Adı", value="Kurşun Kalem Dijital Eğitim")
-                secilen_brans = st.selectbox("Branş Seçimi", list(kazanim_db.keys()), key="yazar_brans")
-                sinif_listesi = list(kazanim_db[secilen_brans].keys())
-                secilen_sinif = st.selectbox("Sınıf Seviyesi", sinif_listesi, key="yazar_sinif")
-            with p_col2:
-                alan_listesi = list(kazanim_db[secilen_brans][secilen_sinif].keys())
-                secilen_alan = st.selectbox("Öğrenme Alanı", alan_listesi, key="yazar_alan")
-                secilen_kazanim = st.selectbox("Hedef Kazanım", kazanim_db[secilen_brans][secilen_sinif][secilen_alan], key="yazar_kazanim")
-                tema_girdisi = st.text_input("Bağlam / Tema / Senaryo", placeholder="Örn: Sürdürülebilirlik, deney analizi...")
-            with p_col3:
-                soru_adedi = st.slider("Üretilecek Soru Adedi (Test Modu)", min_value=1, max_value=5, value=2)
-                zorluk_seviyesi = st.select_slider("Zorluk Derecesi", options=["Orta", "Orta-Zor", "İleri Düzey"], value="Orta-Zor")
-                kalite_kontrol = st.checkbox("🔍 Otomatik Soru Kalite & Redaksiyon Denetimi", value=True, help="Üretilen soruların çeldirici kalitesini ve kazanım uyumunu arka planda denetler.")
-
-            uret_butonu = st.button("✨ Kurumsal Soru Paketi Üret", type="primary", use_container_width=True)
-
-        referanslar_str = json.dumps(referans_havuzu, ensure_ascii=False, indent=2)
-        if len(referanslar_str) > 3000:
-            referanslar_str = referanslar_str[:3000] + "\n...(Kalan referanslar hız için kırpıldı)"
-
-        SYSTEM_PROMPT = (
-            f"Sen uzman bir {secilen_brans} eğitimcisi, müfredat geliştirme uzmanı ve kıdemli soru yazarısın.\n"
-            f"Görevin; {kurum_adi} akademik çizgisine ve aşağıdaki Türkiye Yüzyılı Maarif Modeli ortak çerçevesine tam uygun, "
-            "öğrencinin zihinsel becerilerini, analiz ve sentez yeteneğini geliştiren özgün çoktan seçmeli sorular üretmektir. Çözüm analizi İSTEMİYORUM.\n\n"
-            + MAARIF_EGITIM_CERCEVESI + "\n\n"
-            "Aşağıda verilen YÜKLENEN DOSYA/GÖRSEL KAYNAK verilerindeki soru kalıplarını, çeldirici niteliklerini ve metin uzunluklarını incele; benzer nitelikte özgün sorular üret.\n"
-            "Çıktıyı YALNIZCA geçerli bir JSON dizisi (liste) formatında (hiçbir ek metin, açıklama veya markdown backtick eklemeden) şu yapıda ver:\n"
-            "[\n  {\n    \"baglam_metni\": \"...\",\n    \"soru_koku\": \"...\",\n    \"sik_a\": \"...\",\n    \"sik_b\": \"...\",\n    \"sik_c\": \"...\",\n    \"sik_d\": \"...\",\n    \"dogru_cevap\": \"A/B/C/D\"\n  }\n]\n\n"
-            "REFERANS DOSYA İÇERİKLERİ:\n" + referanslar_str
-        )
-
-        def toplu_soru_uret(brans, sinif, kazanim, tema, zorluk, adet, validator_aktif):
-            client = get_genai_client()
-            kullanici_istegi = (
-                f"Kriterler:\n- Branş: {brans}\n- Sınıf: {sinif}\n- Kazanım: {kazanim}\n"
-                f"- Tema/Bağlam: {tema}\n- Zorluk: {zorluk}\n- Üretilecek Soru Adedi: {adet}\n"
-                f"Bu kriterlere uygun tam {adet} adet özgün beceri temelli soru üret ve JSON listesi olarak dön."
-            )
-
-            response = client.models.generate_content(
-                model="gemini-3.8-flash",
-                contents=kullanici_istegi,
-                config={
-                    "system_instruction": SYSTEM_PROMPT,
-                    "temperature": 0.4,
-                    "max_output_tokens": 2048
-                }
-            )
-
-            text = response.text.strip()
-            if text.startswith("```json"):
-                text = text[7:]
-            if text.endswith("```"):
-                text = text[:-3]
-            sorular = json.loads(text.strip())
-
-            if validator_aktif and sorular:
-                validator_prompt = (
-                    "Sen bir Baş Redaktör ve Kalite Kontrol Uzmanısın. Aşağıdaki soru listesini incele; "
-                    "eğer şıklarda veya soru kökünde mantık hatası, zayıf çeldirici veya kazanım uyumsuzluğu varsa düzelt. "
-                    "Çıktıyı YALNIZCA aynı JSON listesi formatında geri ver:"
-                )
-                val_resp = client.models.generate_content(
-                    model="gemini-3.8-flash",
-                    contents=json.dumps(sorular, ensure_ascii=False),
-                    config={
-                        "system_instruction": validator_prompt,
-                        "temperature": 0.3,
-                        "max_output_tokens": 2048
-                    }
-                )
-                val_text = val_resp.text.strip()
-                if val_text.startswith("```json"):
-                    val_text = val_text[7:]
-                if val_text.endswith("```"):
-                    val_text = val_text[:-3]
-                try:
-                    sorular = json.loads(val_text.strip())
-                except:
-                    pass
-
-            return sorular
-
-        def word_iki_sutunlu_olustur(kurum, brans, sinif, kazanim, soru_listesi):
-            doc = Document()
-            sections = doc.sections
-            for section in sections:
-                section.top_margin = Inches(0.8)
-                section.bottom_margin = Inches(0.8)
-                section.left_margin = Inches(0.8)
-                section.right_margin = Inches(0.8)
-
-            p_logo = doc.add_paragraph()
-            run_logo = p_logo.add_run("✏️ [ KURŞUN KALEM DİJİTAL EĞİTİM ]")
-            run_logo.bold = True
-            run_logo.font.color.rgb = RGBColor(192, 57, 43)
-            run_logo.font.size = Pt(12)
-
-            doc.add_heading(f"{kurum} - {brans} ({sinif}) Değerlendirme Testi", level=1)
-            p_info = doc.add_paragraph("Adı Soyadı: ..........................................      Sınıf/No: ............ / ............ ")
-            p_info.runs[0].italic = True
-            p_kazanim = doc.add_paragraph(f"Hedef Kazanım: {kazanim}")
-            p_kazanim.runs[0].italic = True
-            doc.add_paragraph("-" * 65)
-
-            table = doc.add_table(rows=1, cols=2)
-            table.autofit = False
-
-            table.columns[0].width = Inches(3.3)
-            table.columns[1].width = Inches(3.3)
-
-            cell_left = table.cell(0, 0)
-            cell_right = table.cell(0, 1)
-
-            for i, soru in enumerate(soru_listesi, 1):
-                target_cell = cell_left if (i % 2 != 0) else cell_right
-
-                p_sno = target_cell.add_paragraph()
-                p_sno.add_run(f"Soru {i}").bold = True
-
-                if soru.get("baglam_metni"):
-                    target_cell.add_paragraph(soru.get("baglam_metni"))
-
-                p_kok = target_cell.add_paragraph()
-                p_kok.add_run(soru.get("soru_koku", "")).bold = True
-
-                target_cell.add_paragraph(f"A) {soru.get('sik_a', '')}")
-                target_cell.add_paragraph(f"B) {soru.get('sik_b', '')}")
-                target_cell.add_paragraph(f"C) {soru.get('sik_c', '')}")
-                target_cell.add_paragraph(f"D) {soru.get('sik_d', '')}")
-                target_cell.add_paragraph("-" * 30)
-
-            doc.add_page_break()
-            doc.add_heading("Cevap Anahtarı", level=1)
-            for i, soru in enumerate(soru_listesi, 1):
-                p_cevap = doc.add_paragraph()
-                p_cevap.add_run(f"Soru {i} Doğru Cevap: {soru.get('dogru_cevap', '')}").bold = True
-
-            buffer = BytesIO()
-            doc.save(buffer)
-            buffer.seek(0)
-            return buffer
-
-        if uret_butonu:
-            if not get_gemini_api_key():
-                st.error("GEMINI_API_KEY tanımlı değil.")
-            elif not tema_girdisi.strip():
-                st.warning("Lütfen bir bağlam veya tema girin.")
-            else:
-                with st.spinner(f"{kurum_adi} standartlarında redaksiyon denetimiyle {soru_adedi} soru hazırlanıyor..."):
-                    try:
-                        uretilen_sorular = toplu_soru_uret(
-                            secilen_brans, secilen_sinif, secilen_kazanim,
-                            tema_girdisi, zorluk_seviyesi, soru_adedi, kalite_kontrol
-                        )
-                        st.session_state["toplu_sorular"] = uretilen_sorular
-                        st.session_state["test_meta"] = (kurum_adi, secilen_brans, secilen_sinif, secilen_kazanim)
-
-                        save_arsiv({
-                            "baslik": f"{secilen_brans} - {secilen_sinif} Testi",
-                            "kurum": kurum_adi,
-                            "sorular": uretilen_sorular
-                        })
-                    except Exception as e:
-                        st.error(f"Soru üretim hatası oluştu: {e}")
-
-        if "toplu_sorular" in st.session_state:
-            sorular = st.session_state["toplu_sorular"]
-            k_kurum, k_brans, k_sinif, k_kazanim = st.session_state["test_meta"]
-
-            st.success(f"✨ {len(sorular)} adet özgün soru redaksiyon ve kalite süzgecinden geçerek başarıyla üretildi!")
-
-            for idx, soru in enumerate(sorular, 1):
-                with st.expander(f"📄 Soru {idx} Önizlemesi"):
-                    if soru.get("baglam_metni"):
-                        st.write(soru.get("baglam_metni"))
-                    st.markdown(f"**{soru.get('soru_koku', '')}**")
-                    st.write(f"**A)** {soru.get('sik_a', '')}")
-                    st.write(f"**B)** {soru.get('sik_b', '')}")
-                    st.write(f"**C)** {soru.get('sik_c', '')}")
-                    st.write(f"**D)** {soru.get('sik_d', '')}")
-                    st.success(f"**Doğru Cevap:** {soru.get('dogru_cevap', '')}")
-
-            docx_buffer = word_iki_sutunlu_olustur(k_kurum, k_brans, k_sinif, k_kazanim, sorular)
-
-            safe_filename = f"{k_brans}_{k_sinif}".replace(' ', '_').replace('(', '').replace(')', '').replace('/', '_')
-            st.download_button(
-                label="📥 2 Sütunlu LGS Formatında Word (.docx) İndir",
-                data=docx_buffer,
-                file_name=f"{safe_filename}_kurumsal_test.docx",
-                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            )
-
-# --- ÖĞRENCİ PORTALI & SORU ÇÖZÜM ---
-elif ana_modul == "🎓 Öğrenci Portalı & Soru Çözüm":
-    kurumsal_logo_goster()
-    st.title("🎓 Öğrenci Portalı & Soru Çözüm Merkezi")
-    st.markdown("Veritabanındaki güncel soruları çözerek KKP puanları toplayın ve eksiklerinizi kapatın.")
-
-    ogrenci_tab1, ogrenci_tab2, ogrenci_tab3, ogrenci_tab4 = st.tabs([
-        "🎯 Soru Bankası & Test Çöz",
-        "🧠 Yapay Zeka Akıllı Koç",
-        "📊 Kişisel Gelişim Karnem",
-        "🏆 Şampiyonlar Liderlik Tablosu"
-    ])
-
-    with ogrenci_tab1:
-        st.subheader("İnteraktif Soru Çözümü")
-        arsiv_listesi = load_arsiv()
-        if not arsiv_listesi:
-            st.info("Henüz arşivde test bulunmuyor. Yazar panelinden test üreterek buraya aktarabilirsin.")
-        else:
-            secilen_test = st.selectbox("Test Seçin", [t.get('baslik') for t in arsiv_listesi])
-            secilen_test_obj = next((t for t in arsiv_listesi if t.get('baslik') == secilen_test), None)
-
-            if secilen_test_obj:
-                for idx, soru in enumerate(secilen_test_obj.get('sorular', []), 1):
-                    st.markdown("---")
-                    st.markdown(f"### Soru {idx}")
-                    if soru.get("baglam_metni"):
-                        st.write(soru.get("baglam_metni"))
-                    st.markdown(f"**{soru.get('soru_koku')}**")
-
-                    cevap_secimi = st.radio(
-                        f"Seçim (Soru {idx}):",
-                        [f"A) {soru.get('sik_a')}", f"B) {soru.get('sik_b')}", f"C) {soru.get('sik_c')}", f"D) {soru.get('sik_d')}"],
-                        key=f"ogrenci_soru_{idx}",
-                        index=None
-                    )
-
-                    if st.button(f"Cevabı Kontrol Et (Soru {idx})", key=f"btn_ogrenci_{idx}"):
-                        if cevap_secimi is None:
-                            st.warning("Şık seçiniz.")
-                        else:
-                            secilen_harf = cevap_secimi[0]
-                            dogru_harf = soru.get('dogru_cevap').strip().upper()
-                            if secilen_harf == dogru_harf:
-                                st.success(f"🎉 Tebrikler! Doğru cevap ({dogru_harf}).")
-                                conn = sqlite3.connect("okul.db")
-                                c = conn.cursor()
-                                c.execute("UPDATE ogrenciler SET puan = puan + 15, cozulen_soru = cozulen_soru + 1, dogru_sayisi = dogru_sayisi + 1 WHERE id = 4")
-                                conn.commit()
-                                conn.close()
-                            else:
-                                st.error(f"❌ Yanlış! Doğru seçenek: **{dogru_harf}**")
-
-    with ogrenci_tab2:
-        st.subheader("🧠 Kurşun Kalem Yapay Zeka Akıllı Koç")
-        st.markdown("Çözdüğün testlerin sonuçlarına göre eksiklerini analiz eden ve sana özel çalışma programı çıkaran akıllı koç asistanı.")
-
-        ogrenci_mesaji = st.text_input("Koça sorunu yaz:", placeholder="Örn: Sözel mantık sorularında çok zaman kaybediyorum, ne yapmalıyım?")
-        if st.button("🤖 Akıllı Koçtan Tavsiye Al", type="primary"):
-            if not ogrenci_mesaji.strip():
-                st.warning("Lütfen koça bir soru veya sorun yaz.")
-            else:
-                with st.spinner("Akıllı Koç analiz yapıyor ve sana özel strateji hazırlıyor..."):
-                    try:
-                        client = get_genai_client()
-                        koc_prompt = (
-                            "Sen Kurşun Kalem Dijital Eğitim'in 'Geleceği yazan dijital eğitim' felsefesine bağlı; "
-                            "ultra akıllı, motive edici ve nokta atışı taktikler veren LGS Eğitim Koçusun. "
-                            "Öğrencinin yazdığı soruya veya sorununa karşılık; ona net, pratik ve taktiksel bir rehberlik sun."
-                        )
-                        resp = client.models.generate_content(
-                            model="gemini-3.8-flash",
-                            contents=ogrenci_mesaji,
-                            config={"system_instruction": koc_prompt, "temperature": 0.5}
-                        )
-                        st.success("Akıllı Koç Tavsiyesi:")
-                        st.markdown(resp.text)
-                    except Exception as e:
-                        st.error(f"Koç yanıt üretirken hata oluştu: {e}")
-
-    with ogrenci_tab3:
-        st.subheader("📊 Kişisel Gelişim ve Başarı Karnem")
-        conn = sqlite3.connect("okul.db")
-        c = conn.cursor()
-        c.execute("SELECT puan, cozulen_soru, dogru_sayisi FROM ogrenciler WHERE id = 4")
-        veri = c.fetchone()
-        conn.close()
-
-        puan, soru_sayisi, dogru_sayisi = veri if veri else (120, 12, 10)
-        yanlis_sayisi = soru_sayisi - dogru_sayisi if soru_sayisi >= dogru_sayisi else 0
-        basari = int((dogru_sayisi / soru_sayisi) * 100) if soru_sayisi > 0 else 0
-
-        col1, col2, col3, col4 = st.columns(4)
-        col1.metric("Toplam Puan", f"{puan} P")
-        col2.metric("Çözülen Soru", f"{soru_sayisi} Soru")
-        col3.metric("Doğru / Yanlış", f"{dogru_sayisi} D / {yanlis_sayisi} Y")
-        col4.metric("Başarı Oranı", f"%{basari}")
-
-        st.markdown("---")
-        st.info("💡 **Analiz Notu:** Sözel mantıkta hızlandın fakat paragraf hızını artırmak için günde 15 paragraf sorusu çözmelisin.")
-
-    with ogrenci_tab4:
-        st.subheader("🏆 Şampiyonlar Ligi Liderlik Tablosu")
-        conn = sqlite3.connect("okul.db")
-        c = conn.cursor()
-        c.execute("SELECT isim, puan, cozulen_soru FROM ogrenciler ORDER BY puan DESC")
-        ogrenciler = c.fetchall()
-        conn.close()
-
-        tablo = []
-        for sira, (isim, p, s) in enumerate(ogrenciler, 1):
-            madalya = "🥇" if sira == 1 else ("🥈" if sira == 2 else ("🥉" if sira == 3 else "🏅"))
-            tablo.append({"Sıra": f"{madalya} {sira}", "Öğrenci": isim, "Puan": p, "Çözülen Soru": s})
-        st.table(tablo)
-
-# --- VELİ TAKİP PANELİ ---
-elif ana_modul == "👪 Veli Takip Paneli":
-    kurumsal_logo_goster()
-    st.title("👪 Veli Takip ve Performans Paneli")
-    st.markdown("Çocuğunuzun günlük çalışma saatlerini, test sonuçlarını ve kazanım eksiklerini anlık takip edin.")
-
-    student_name = st.selectbox("Öğrenci Seçin", ["Ahmet Furkan Kurşun (8. Sınıf - LGS)"])
-
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("Bu Hafta Çözülen Soru", "340 Soru", "+45 dünden")
-    with col2:
-        st.metric("Genel Başarı Oranı", "%82", "+4%")
-    with col3:
-        st.metric("Günlük Çalışma Süresi", "2 Saat 15 Dk", "Hedef: 2 Saat")
-
-    st.markdown("---")
-    st.subheader("📊 Haftalık Kazanım Analizi (Zayıf / Güçlü Alanlar)")
-    st.write("✅ **Türkçe - Fiilimsiler:** %95 (Çok İyi)")
-    st.write("⚠️ **Matematik - Kareköklü İfadeler:** %60 (Tekrar Edilmeli)")
-    st.write("🚨 **Fen - Basit Makineler:** %45 (Acil Soru Çözümü Önerilir)")
-
-    if st.button("Veli Raporunu İndir"):
-        st.success("Veli bilgilendirme raporu başarıyla hazırlandı.")
-
-# --- B2B LİSANS & KURUM YÖNETİMİ ---
-elif ana_modul == "🏢 B2B Lisans & Kurum Yönetimi":
-    kurumsal_logo_goster()
-    st.title("🏢 B2B Kurumsal Lisans & Okul Paneli")
-    st.markdown("Dershaneler, özel okullar ve kurs merkezleri için toplu öğrenci ve öğretmen lisans yönetimi.")
-
-    col1, col2 = st.columns(2)
-    with col1:
-        st.subheader("Kurum Bilgileri")
-        st.text_input("Kurum Adı", "Örnek Özel LGS Kursu")
-        st.text_input("Yetkili Adı Soyadı", "Elif Öztürk")
-        st.number_input("Aktif Öğrenci Lisans Adedi", min_value=10, max_value=1000, value=150)
-        st.button("Lisans Paketini Güncelle")
-
-    with col2:
-        st.subheader("Kurum Öğretmenleri")
-        st.write("Sisteme kayıtlı öğretmenler kendi adına soru üretebilir ve kurumsal test indirebilir.")
-        if st.button("Öğretmenleri Listele"):
-            st.json(["Uğur Hoca (Matematik)", "Adil Hoca (Türkçe)", "Zeynep Hoca (Fen Bilimleri)"])
-
-# --- PAKETLER & ABONELİK VİTRİNİ (12 PAKET + KARŞILAŞTIRMA + İYZİCO) ---
-elif ana_modul == "💎 Paketler & Abonelik Vitrini":
-    kurumsal_logo_goster()
-
-    st.markdown("""
-        <style>
-        .paket-karti {
-            background-color: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 14px;
-            padding: 20px;
-            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.05);
-            margin-bottom: 14px;
-            transition: all 0.25s ease;
-            min-height: 415px;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            position: relative;
+    <style>
+        .block-container {
+            padding-top: 1.2rem;
+            padding-bottom: 2.5rem;
         }
-        .paket-karti:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
-            border-color: #cbd5e1;
-        }
-        .paket-karti.populer {
-            border: 2px solid #f39c12;
-            background: linear-gradient(180deg, #fffbeb 0%, #ffffff 28%);
-            box-shadow: 0 8px 22px rgba(243, 156, 18, 0.16);
-        }
-        .paket-karti.vip {
-            border: 2px solid #2c3e50;
-            background: linear-gradient(180deg, #f1f5f9 0%, #ffffff 28%);
-            box-shadow: 0 8px 22px rgba(44, 62, 80, 0.14);
-        }
-        .rozet {
-            position: absolute;
-            top: -12px;
-            right: 16px;
-            background: linear-gradient(135deg, #e67e22, #f39c12);
+        .kp-hero {
+            background: linear-gradient(135deg, #1b2a4a 0%, #2c3e50 60%, #7f1d1d 100%);
             color: #ffffff;
-            font-size: 11px;
-            font-weight: 800;
-            padding: 4px 12px;
-            border-radius: 999px;
-            letter-spacing: 0.4px;
-            box-shadow: 0 2px 6px rgba(230, 126, 34, 0.35);
+            padding: 1.4rem 1.7rem;
+            border-radius: 14px;
+            margin-bottom: 1.2rem;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.14);
         }
-        .rozet.koyu {
-            background: linear-gradient(135deg, #1e293b, #334155);
-        }
-        .paket-baslik {
-            font-size: 16.5px;
-            font-weight: 800;
-            color: #1e293b;
-            margin-bottom: 6px;
-        }
-        .paket-aciklama {
-            font-size: 12.8px;
-            color: #64748b;
-            line-height: 1.45;
-            min-height: 42px;
-        }
-        .paket-liste {
-            font-size: 12.8px;
-            padding-left: 0;
-            list-style: none;
-            color: #334155;
-            margin: 10px 0;
-            line-height: 1.72;
-        }
-        .fiyat-etiketi {
-            font-size: 24px;
-            font-weight: 800;
-            color: #1e293b;
-            margin-top: 6px;
-        }
-        .taksit-bilgisi {
-            font-size: 11.8px;
-            color: #64748b;
-        }
-        .kategori-baslik {
-            background: #f1f5f9;
-            border-left: 4px solid #2c3e50;
-            padding: 9px 14px;
-            border-radius: 6px;
+        .kp-hero h1 {
+            margin: 0;
+            font-size: 1.65rem;
             font-weight: 700;
-            color: #1e293b;
-            margin: 22px 0 16px 0;
-            font-size: 15px;
+            letter-spacing: 0.2px;
+            color: #ffffff;
         }
-        .odeme-kutu {
+        .kp-hero p {
+            margin: 0.35rem 0 0 0;
+            font-size: 0.95rem;
+            color: #f1f5f9;
+            opacity: 0.95;
+        }
+        .kp-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.15rem 1.25rem;
+            margin-bottom: 0.9rem;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+        }
+        .kp-metric-box {
             background: #f8fafc;
             border: 1px solid #e2e8f0;
-            border-radius: 14px;
-            padding: 20px;
-            margin-top: 12px;
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
         }
-        </style>
-    """, unsafe_allow_html=True)
+        .kp-metric-num {
+            font-size: 1.55rem;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1.2;
+        }
+        .kp-metric-lbl {
+            font-size: 0.8rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+        .kp-dedication {
+            background: #fffbeb;
+            border-left: 4px solid #b45309;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            color: #78350f;
+            font-size: 0.9rem;
+            margin-top: 0.75rem;
+        }
+        div[data-testid="stSidebar"] .stButton > button {
+            width: 100%;
+            text-align: left;
+            justify-content: flex-start;
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            font-weight: 500;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
 
-    st.title("💎 Kurşun Kalem - Eğitim Paketleri ve Abonelik Vitrini")
-    st.markdown("🚀 *Geleceği yazan dijital eğitim* ekosistemiyle; ilkokuldan YKS'ye, deneme kulüplerinden yayınevi ve okul çözümlerine kadar 12 farklı uzmanlık paketi.")
+# ==============================================================================
+# YARDIMCI FONKSİYONLAR: API ANAHTARI VE GEMINI İSTEMCİSİ
+# ==============================================================================
+def resolve_gemini_api_key() -> Optional[str]:
+    """Yalnızca st.secrets veya ortam değişkenlerinden geçerli API anahtarını okur."""
+    key: Optional[str] = None
+    try:
+        if "GEMINI_API_KEY" in st.secrets:
+            key = str(st.secrets["GEMINI_API_KEY"]).strip()
+    except Exception:
+        key = None
 
-    paket_fiyatlari = {
-        "İlkokul (1-4. Sınıf) Temel Beceri & Okuma Paketi": 16900,
-        "Ortaokul Ara Sınıf (5-6-7. Sınıf) Gelişim Paketi": 24900,
-        "LGS 2027 Türkiye Geneli Online Deneme Kulübü (24 Deneme)": 11900,
-        "LGS 2027 Türkçe & Sözel Beceri Paketi": 34900,
-        "LGS 2027 Sayısal (Matematik & Fen) Güçlendirme Paketi": 36900,
-        "LGS 2027 Tüm Dersler VIP Tam Set": 44900,
-        "LGS 2027 Derece & Birebir Koçluk Ultra Paketi": 58900,
-        "YKS 2027 TYT Temel Yeterlilik Hız Paketi": 32900,
-        "YKS 2027 (TYT - AYT) Tam Kapsamlı Hazırlık Seti": 49900,
-        "Bağımsız Öğretmen & Yazar Stüdyosu Pro": 14900,
-        "Yayınevi & Soru Bankası Üretim Fabrikası (Enterprise)": 39900,
-        "Kurumsal Okul & Kurs Lisansı (B2B)": 59900
+    if not key:
+        env_val = os.environ.get("GEMINI_API_KEY", "").strip()
+        if env_val:
+            key = env_val
+
+    return key if key else None
+
+
+def get_gemini_client() -> genai.Client:
+    """API anahtarını doğrulayarak google.genai Client nesnesi döndürür."""
+    api_key = resolve_gemini_api_key()
+    if not api_key:
+        raise RuntimeError(
+            "GEMINI_API_KEY bulunamadı. Lütfen Streamlit Secrets veya ortam "
+            "değişkenlerinde GEMINI_API_KEY tanımlayın."
+        )
+    return genai.Client(api_key=api_key)
+
+
+def call_gemini_text(prompt: str, system_instruction: str, model: str = "gemini-2.5-flash") -> str:
+    """Gemini API üzerinden metin üretir."""
+    client = get_gemini_client()
+    response = client.models.generate_content(
+        model=model,
+        contents=prompt,
+        config=types.GenerateContentConfig(
+            system_instruction=system_instruction,
+            temperature=0.7,
+        ),
+    )
+    text = getattr(response, "text", None)
+    if not text:
+        raise RuntimeError("Modelden boş yanıt döndü.")
+    return text.strip()
+
+
+def format_countdown(target: datetime) -> Tuple[int, int, int, int]:
+    """Hedef tarihe kalan gün, saat, dakika ve saniyeyi döndürür."""
+    now = datetime.now()
+    delta = target - now
+    if delta.total_seconds() <= 0:
+        return 0, 0, 0, 0
+    total_seconds = int(delta.total_seconds())
+    days = total_seconds // 86400
+    hours = (total_seconds % 86400) // 3600
+    minutes = (total_seconds % 3600) // 60
+    seconds = total_seconds % 60
+    return days, hours, minutes, seconds
+
+
+def build_test_docx(
+    institution: str,
+    branch: str,
+    grade: str,
+    learning_area: str,
+    outcome: str,
+    context_theme: str,
+    generated_content: str,
+) -> bytes:
+    """Üretilen soruları kurumsal başlıklı DOCX dosyasına dönüştürür."""
+    doc = Document()
+
+    for section in doc.sections:
+        section.top_margin = Inches(0.75)
+        section.bottom_margin = Inches(0.75)
+        section.left_margin = Inches(0.75)
+        section.right_margin = Inches(0.75)
+
+    title_p = doc.add_paragraph()
+    title_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    title_run = title_p.add_run(f"{institution.upper()} — DEĞERLENDİRME TESTİ")
+    title_run.bold = True
+    title_run.font.size = Pt(14)
+    title_run.font.color.rgb = RGBColor(27, 42, 74)
+
+    sub_p = doc.add_paragraph()
+    sub_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    sub_run = sub_p.add_run(
+        f"Branş: {branch}  |  Sınıf: {grade}  |  Öğrenme Alanı: {learning_area}"
+    )
+    sub_run.font.size = Pt(10)
+    sub_run.font.color.rgb = RGBColor(71, 85, 105)
+
+    meta_p = doc.add_paragraph()
+    meta_run = meta_p.add_run(
+        f"Hedef Kazanım: {outcome}\nBağlam / Tema: {context_theme}\n"
+        f"Tarih: {datetime.now().strftime('%d.%m.%Y')}"
+    )
+    meta_run.font.size = Pt(9.5)
+    meta_run.font.color.rgb = RGBColor(51, 65, 85)
+
+    doc.add_paragraph("─" * 78)
+
+    for line in generated_content.splitlines():
+        cleaned = line.strip()
+        if not cleaned:
+            continue
+        p = doc.add_paragraph()
+        p.paragraph_format.space_after = Pt(4)
+        p.paragraph_format.line_spacing = 1.15
+        run = p.add_run(cleaned)
+        run.font.size = Pt(10.5)
+        if re.match(r"^(Soru\s*\d+|Cevap\s*Anahtarı|Çözüm)", cleaned, re.IGNORECASE):
+            run.bold = True
+            run.font.color.rgb = RGBColor(127, 29, 29)
+
+    footer_p = doc.add_paragraph()
+    footer_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    footer_run = footer_p.add_run(f"\n{BRAND_NAME} • {DEDICATION_TEXT}")
+    footer_run.italic = True
+    footer_run.font.size = Pt(8.5)
+    footer_run.font.color.rgb = RGBColor(100, 116, 139)
+
+    buffer = io.BytesIO()
+    doc.save(buffer)
+    buffer.seek(0)
+    return buffer.getvalue()
+
+
+def render_iyzico_simulator(package_name: str, monthly_price: int) -> None:
+    """iyzico taksit ve ödeme simülatörü."""
+    st.markdown("### 💳 iyzico Taksit & Ödeme Simülatörü")
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        billing_cycle = st.selectbox(
+            "Dönem Seçimi",
+            ["Aylık Abonelik", "3 Aylık (%10 İndirim)", "Yıllık (%20 İndirim)"],
+            key=f"cycle_{package_name}",
+        )
+    with c2:
+        installment = st.selectbox(
+            "Taksit Sayısı (iyzico)",
+            [1, 2, 3, 6, 9, 12],
+            index=2,
+            key=f"inst_{package_name}",
+        )
+    with c3:
+        card_brand = st.selectbox(
+            "Kart Programı",
+            ["Bonus", "Maximum", "World", "Axess", "Paraf", "Diğer Banka Kartı"],
+            key=f"card_{package_name}",
+        )
+
+    if "3 Aylık" in billing_cycle:
+        total_amount = round(monthly_price * 3 * 0.90)
+    elif "Yıllık" in billing_cycle:
+        total_amount = round(monthly_price * 12 * 0.80)
+    else:
+        total_amount = monthly_price
+
+    monthly_installment = total_amount / installment
+
+    m1, m2, m3 = st.columns(3)
+    m1.metric("Toplam Tutar", f"{total_amount:,} ₺".replace(",", "."))
+    m2.metric(f"{installment} Taksit Aylık", f"{monthly_installment:,.2f} ₺".replace(",", " "))
+    m3.metric("Ödeme Altyapısı", f"iyzico • {card_brand}")
+
+    if st.button("iyzico Ödeme Talebi Oluştur (Simülasyon)", key=f"pay_btn_{package_name}"):
+        st.success(
+            f"**{package_name}** paketi için **{total_amount:,} ₺** ({installment} taksit, "
+            f"{card_brand}) tutarında iyzico ödeme oturumu hazırlandı.".replace(",", ".")
+        )
+
+
+# ==============================================================================
+# SESSION STATE BAŞLATMA
+# ==============================================================================
+if "active_page" not in st.session_state:
+    st.session_state.active_page = PAGES[0]
+if "generated_test_text" not in st.session_state:
+    st.session_state.generated_test_text = ""
+if "dijikoc_plan" not in st.session_state:
+    st.session_state.dijikoc_plan = ""
+if "selected_tier_id" not in st.session_state:
+    st.session_state.selected_tier_id = SUBSCRIPTION_TIERS[1]["id"]
+
+api_key_ready = resolve_gemini_api_key() is not None
+
+# ==============================================================================
+# KENAR ÇUBUĞU (CUSTOM BUTTON NAVİGASYON)
+# ==============================================================================
+with st.sidebar:
+    st.markdown(
+        f"""
+        <div style="background:#1e293b;color:#ffffff;padding:0.85rem 1rem;border-radius:10px;margin-bottom:0.85rem;">
+            <div style="font-weight:700;font-size:1rem;">🧭 Sistem Navigasyonu</div>
+            <div style="font-size:0.78rem;color:#cbd5e1;margin-top:0.15rem;">{BRAND_NAME}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    page_icons = {
+        "Ana Sayfa & Geri Sayım": "🏠",
+        "Soru & Redaksiyon Fabrikası": "⚙️",
+        "Öğrenci Portalı & Çözüm": "🎓",
+        "Dijikoç": "🤖",
+        "Veli Takip Paneli": "👨‍👩‍👧",
+        "B2B Lisans & Kurum": "🏫",
+        "Paketler & Abonelik Vitrini": "💎",
     }
 
-    def paket_sec(paket_adi):
-        st.session_state["secili_paket"] = paket_adi
+    for p_name in PAGES:
+        is_current = st.session_state.active_page == p_name
+        btn_type = "primary" if is_current else "secondary"
+        label = f"{page_icons.get(p_name, '•')} {p_name}"
+        if st.button(label, key=f"nav_{p_name}", type=btn_type):
+            st.session_state.active_page = p_name
+            st.rerun()
 
-    # --- KATEGORİ 1: İLKOKUL, ORTAOKUL ARA SINIF & DENEME KULÜBÜ ---
-    st.markdown('<div class="kategori-baslik">🌱 İlkokul, Ortaokul Ara Sınıf & Deneme Kulübü Paketleri</div>', unsafe_allow_html=True)
-    c1, c2, c3 = st.columns(3)
+    st.markdown("---")
+    if api_key_ready:
+        st.success("● Sistem Aktif • 2027 LGS & Maarif Modeli")
+    else:
+        st.warning("● API Anahtarı Bekleniyor (Secrets)")
 
-    with c1:
-        st.markdown("""
-            <div class="paket-karti">
-                <div>
-                    <div class="paket-baslik">🎈 İlkokul (1-4. Sınıf) Temel Beceri Paketi</div>
-                    <div class="paket-aciklama">Okuduğunu anlama, dikkat geliştirme ve temel mantık-muhakeme alışkanlığı kazandıran başlangıç paketi.</div>
-                    <hr style="margin: 10px 0; border-color: #e2e8f0;">
-                    <ul class="paket-liste">
-                        <li>✓ Seviyeye Uygun Hikâye & Paragraf Etkinlikleri</li>
-                        <li>✓ Görsel Zekâ ve Akıl Oyunları Soruları</li>
-                        <li>✓ Oyunlaştırılmış Puan & Rozet Sistemi</li>
-                        <li>✓ Veli Haftalık Gelişim Bilgilendirmesi</li>
-                        <li>✓ Maarif Modeli Temel Değerler İçerikleri</li>
-                    </ul>
-                </div>
-                <div>
-                    <div class="fiyat-etiketi">16.900 TL</div>
-                    <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 1.408 TL)</div>
-                </div>
+    st.caption(DEDICATION_TEXT)
+
+# ==============================================================================
+# ÜST KURUMSAL BANNER
+# ==============================================================================
+st.markdown(
+    f"""
+    <div class="kp-hero">
+        <h1>✏️ {BRAND_NAME.upper()}</h1>
+        <p>{BRAND_TAGLINE}</p>
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
+
+current_page = st.session_state.active_page
+
+# ==============================================================================
+# 1. ANA SAYFA & GERİ SAYIM
+# ==============================================================================
+if current_page == "Ana Sayfa & Geri Sayım":
+    st.subheader("🚀 Kurşun Kalem Dijital Eğitim Platformuna Hoş Geldiniz")
+    st.write(
+        "İlkokuldan Liseye ve YKS'ye uzanan, yapay zekâ destekli Türkiye'nin akıllı "
+        "soru fabrikası, Dijikoç ve ölçme-değerlendirme ekosistemi."
+    )
+
+    lgs_d, lgs_h, lgs_m, lgs_s = format_countdown(LGS_2027_TARGET)
+    st.markdown("#### 🏆 2027 LGS'ye Geri Sayım (13 Haziran 2027)")
+    c1, c2, c3, c4 = st.columns(4)
+    for col, val, lbl in [
+        (c1, f"{lgs_d:03d}", "GÜN"),
+        (c2, f"{lgs_h:02d}", "SAAT"),
+        (c3, f"{lgs_m:02d}", "DAKİKA"),
+        (c4, f"{lgs_s:02d}", "SANİYE"),
+    ]:
+        col.markdown(
+            f"""
+            <div class="kp-metric-box">
+                <div class="kp-metric-num">{val}</div>
+                <div class="kp-metric-lbl">{lbl}</div>
             </div>
-        """, unsafe_allow_html=True)
-        if st.button("Hemen Başla (İlkokul)", key="btn_ilk", use_container_width=True):
-            paket_sec("İlkokul (1-4. Sınıf) Temel Beceri & Okuma Paketi")
-
-    with c2:
-        st.markdown("""
-            <div class="paket-karti">
-                <div>
-                    <div class="paket-baslik">🌿 Ara Sınıf (5-6-7. Sınıf) Gelişim Paketi</div>
-                    <div class="paket-aciklama">Ortaokul temellerini sağlamlaştıran, LGS'ye erken ve stressiz hazırlık sağlayan kapsamlı takip paketi.</div>
-                    <hr style="margin: 10px 0; border-color: #e2e8f0;">
-                    <ul class="paket-liste">
-                        <li>✓ Tüm Derslerde Beceri Temelli Soru Havuzu</li>
-                        <li>✓ Haftalık Kazanım & Konu Tarama Testleri</li>
-                        <li>✓ Yapay Zeka Eksik Analiz Karnesi</li>
-                        <li>✓ Veli Takip Paneli Anlık Raporlama</li>
-                        <li>✓ Şampiyonlar Liderlik Tablosu Erişimi</li>
-                    </ul>
-                </div>
-                <div>
-                    <div class="fiyat-etiketi">24.900 TL</div>
-                    <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 2.075 TL)</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-        if st.button("Hemen Başla (Ara Sınıf)", key="btn_ara", use_container_width=True):
-            paket_sec("Ortaokul Ara Sınıf (5-6-7. Sınıf) Gelişim Paketi")
-
-    with c3:
-        st.markdown("""
-            <div class="paket-karti">
-                <div>
-                    <div class="paket-baslik">📝 LGS 2027 Türkiye Geneli Deneme Kulübü</div>
-                    <div class="paket-aciklama">Gerçek sınav provası yapmak ve Türkiye sıralamasını anlık görmek isteyenler için 24'lü deneme maratonu.</div>
-                    <hr style="margin: 10px 0; border-color: #e2e8f0;">
-                    <ul class="paket-liste">
-                        <li>✓ 24 Adet Türkiye Geneli Online LGS Denemesi</li>
-                        <li>✓ MEB & Maarif Modeli Birebir Soru Kurgu</li>
-                        <li>✓ Detaylı Kazanım & Konu Eksik Karnesi</li>
-                        <li>✓ Yüzdelik Dilim & İl/İlçe Sıralama Analizi</li>
-                        <li>✓ İndirilebilir 2 Sütunlu PDF/Word Kitapçık</li>
-                    </ul>
-                </div>
-                <div>
-                    <div class="fiyat-etiketi">11.900 TL</div>
-                    <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 991 TL)</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-        if st.button("Deneme Kulübüne Katıl", key="btn_deneme", use_container_width=True):
-            paket_sec("LGS 2027 Türkiye Geneli Online Deneme Kulübü (24 Deneme)")
-
-    # --- KATEGORİ 2: LGS 2027 BRANŞ & TAM KAPSAMLI HAZIRLIK PAKETLERİ ---
-    st.markdown('<div class="kategori-baslik">🎯 LGS 2027 Branş & Tam Kapsamlı Hazırlık Paketleri</div>', unsafe_allow_html=True)
-    c4, c5, c6 = st.columns(3)
-
-    with c4:
-        st.markdown("""
-            <div class="paket-karti">
-                <div>
-                    <div class="paket-baslik">📖 LGS 2027 Türkçe & Sözel Beceri Paketi</div>
-                    <div class="paket-aciklama">Sözel mantık, görsel yorumlama ve uzun paragraf sorularında tam isabet hedefleyenler için özel paket.</div>
-                    <hr style="margin: 10px 0; border-color: #e2e8f0;">
-                    <ul class="paket-liste">
-                        <li>✓ Sınırsız Özgün Sözel Mantık Soru Üretimi</li>
-                        <li>✓ Kişiselleştirilmiş Paragraf Hız Kampı</li>
-                        <li>✓ İnkılap, Din ve İngilizce Beceri Testleri</li>
-                        <li>✓ 2 Sütunlu LGS Word (.docx) Test Çıktısı</li>
-                        <li>✓ 7/24 AI Sözel Strateji Asistanı</li>
-                    </ul>
-                </div>
-                <div>
-                    <div class="fiyat-etiketi">34.900 TL</div>
-                    <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 2.908 TL)</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-        if st.button("Hemen Al (LGS Sözel)", key="btn_lgs_soz", use_container_width=True):
-            paket_sec("LGS 2027 Türkçe & Sözel Beceri Paketi")
-
-    with c5:
-        st.markdown("""
-            <div class="paket-karti">
-                <div>
-                    <div class="paket-baslik">📐 LGS 2027 Sayısal Güçlendirme Paketi</div>
-                    <div class="paket-aciklama">Matematik ve Fen Bilimlerinde yeni nesil problem çözme ve veri analizi becerisini zirveye taşıyan paket.</div>
-                    <hr style="margin: 10px 0; border-color: #e2e8f0;">
-                    <ul class="paket-liste">
-                        <li>✓ Yeni Nesil Matematik & Fen Soru Fabrikası</li>
-                        <li>✓ Adım Adım Görsel & Tablo Yorumlama</li>
-                        <li>✓ Kişisel Hata Defteri & Tekrar Testleri</li>
-                        <li>✓ Kazanım Bazlı Eksik Kapatma Modülü</li>
-                        <li>✓ 7/24 AI Sayısal Taktik Koçu</li>
-                    </ul>
-                </div>
-                <div>
-                    <div class="fiyat-etiketi">36.900 TL</div>
-                    <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 3.075 TL)</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-        if st.button("Hemen Al (LGS Sayısal)", key="btn_lgs_say", use_container_width=True):
-            paket_sec("LGS 2027 Sayısal (Matematik & Fen) Güçlendirme Paketi")
-
-    with c6:
-        st.markdown("""
-            <div class="paket-karti populer">
-                <div class="rozet">⭐ EN ÇOK TERCİH EDİLEN</div>
-                <div>
-                    <div class="paket-baslik">🚀 LGS 2027 Tüm Dersler VIP Tam Set</div>
-                    <div class="paket-aciklama">Tüm sözel ve sayısal derslerde eksiksiz içerik, sınırsız AI soru ve tam koçluk desteği sunan ana paket.</div>
-                    <hr style="margin: 10px 0; border-color: #fde68a;">
-                    <ul class="paket-liste">
-                        <li>✓ Tüm Branşlarda Sınırsız AI Soru Fabrikası</li>
-                        <li>✓ 140.000+ Beceri Temelli Soru Havuzu</li>
-                        <li>✓ 7/24 Yapay Zeka Akıllı Koçluk & Program</li>
-                        <li>✓ 24'lü Türkiye Geneli Deneme Kulübü Dahil</li>
-                        <li>✓ Birebir Deneme Analizi & Veli Raporlama</li>
-                    </ul>
-                </div>
-                <div>
-                    <div class="fiyat-etiketi">44.900 TL</div>
-                    <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 3.741 TL)</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-        if st.button("🔥 VIP Tam Seti Seç", key="btn_lgs_vip", type="primary", use_container_width=True):
-            paket_sec("LGS 2027 Tüm Dersler VIP Tam Set")
-
-    # --- KATEGORİ 3: DERECE KOÇLUĞU & YKS 2027 PAKETLERİ ---
-    st.markdown('<div class="kategori-baslik">🏆 LGS Derece Koçluğu & YKS 2027 Üniversite Hazırlık Paketleri</div>', unsafe_allow_html=True)
-    c7, c8, c9 = st.columns(3)
-
-    with c7:
-        st.markdown("""
-            <div class="paket-karti vip">
-                <div class="rozet koyu">👑 %1 DİLİM HEDEFİ</div>
-                <div>
-                    <div class="paket-baslik">👑 LGS 2027 Derece & Birebir Koçluk Ultra</div>
-                    <div class="paket-aciklama">Fen ve Proje Liselerini hedefleyen öğrenciler için haftalık canlı mentorluk ve özel soru programı.</div>
-                    <hr style="margin: 10px 0; border-color: #cbd5e1;">
-                    <ul class="paket-liste">
-                        <li>✓ VIP Tam Set'teki Tüm Özellikler Dahil</li>
-                        <li>✓ Haftalık Birebir Eğitim Koçu Görüşmesi</li>
-                        <li>✓ Öğrenciye Özel Haftalık Soru Fasikülü</li>
-                        <li>✓ Veliye Özel Aylık Akademik Strateji Toplantısı</li>
-                        <li>✓ Sınav Kaygısı & Zaman Yönetimi Mentorluğu</li>
-                    </ul>
-                </div>
-                <div>
-                    <div class="fiyat-etiketi">58.900 TL</div>
-                    <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 4.908 TL)</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-        if st.button("Derece Paketini Seç", key="btn_derece", use_container_width=True):
-            paket_sec("LGS 2027 Derece & Birebir Koçluk Ultra Paketi")
-
-    with c8:
-        st.markdown("""
-            <div class="paket-karti">
-                <div>
-                    <div class="paket-baslik">⚡ YKS 2027 TYT Temel Yeterlilik Paketi</div>
-                    <div class="paket-aciklama">11 ve 12. sınıf öğrencileri için TYT Paragraf, Problem ve Fen-Sosyal hızlandırma programı.</div>
-                    <hr style="margin: 10px 0; border-color: #e2e8f0;">
-                    <ul class="paket-liste">
-                        <li>✓ ÖSYM Tarzı Paragraf & Problem Üreticisi</li>
-                        <li>✓ Süre Tutmalı TYT Branş Denemeleri</li>
-                        <li>✓ Kişisel Net Artış & Konu Takip Grafiği</li>
-                        <li>✓ Akıllı Koç ile Günlük Soru Hedef Takibi</li>
-                        <li>✓ Çıkmış Soru Benzeri Özgün Tarama Testleri</li>
-                    </ul>
-                </div>
-                <div>
-                    <div class="fiyat-etiketi">32.900 TL</div>
-                    <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 2.741 TL)</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-        if st.button("Hemen Al (YKS TYT)", key="btn_yks_tyt", use_container_width=True):
-            paket_sec("YKS 2027 TYT Temel Yeterlilik Hız Paketi")
-
-    with c9:
-        st.markdown("""
-            <div class="paket-karti">
-                <div>
-                    <div class="paket-baslik">🎓 YKS 2027 (TYT - AYT) Tam Hazırlık Seti</div>
-                    <div class="paket-aciklama">Sayısal, Eşit Ağırlık ve Sözel alanlarda üniversite hedefi için tam kapsamlı AI hazırlık ekosistemi.</div>
-                    <hr style="margin: 10px 0; border-color: #e2e8f0;">
-                    <ul class="paket-liste">
-                        <li>✓ TYT + AYT Tüm Branşlarda Sınırsız AI Soru</li>
-                        <li>✓ Alan Bazlı (SAY / EA / SÖZ) Akıllı Denemeler</li>
-                        <li>✓ Konu Bazlı Derinlik & Eksik Analiz Karnesi</li>
-                        <li>✓ 7/24 AI Sınav Koçu & Tercih Rehberliği</li>
-                        <li>✓ İndirilebilir 2 Sütunlu Baskı Kalitesi Testler</li>
-                    </ul>
-                </div>
-                <div>
-                    <div class="fiyat-etiketi">49.900 TL</div>
-                    <div class="taksit-bilgisi">Peşin Fiyatına 12 Taksit (Ayda 4.158 TL)</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-        if st.button("Hemen Al (YKS Tam Set)", key="btn_yks_tam", use_container_width=True):
-            paket_sec("YKS 2027 (TYT - AYT) Tam Kapsamlı Hazırlık Seti")
-
-    # --- KATEGORİ 4: YAZAR, ÖĞRETMEN, YAYINEVİ & KURUMSAL B2B LİSANSLAR ---
-    st.markdown('<div class="kategori-baslik">🏛️ Yazar, Öğretmen, Yayınevi & Kurumsal B2B Lisanslar</div>', unsafe_allow_html=True)
-    c10, c11, c12 = st.columns(3)
-
-    with c10:
-        st.markdown("""
-            <div class="paket-karti">
-                <div>
-                    <div class="paket-baslik">✍️ Öğretmen & Yazar Stüdyosu Pro</div>
-                    <div class="paket-aciklama">Bireysel öğretmenler ve soru yazarları için yapay zeka destekli hızlı soru ve yaprak test stüdyosu.</div>
-                    <hr style="margin: 10px 0; border-color: #e2e8f0;">
-                    <ul class="paket-liste">
-                        <li>✓ Sınırsız Maarif Modeli Soru Üreticisi</li>
-                        <li>✓ Baş Editör & Otomatik Redaksiyon Denetimi</li>
-                        <li>✓ PDF / Word / Görselden Soru Dönüştürme</li>
-                        <li>✓ 2 Sütunlu Yayıncı Kalitesinde .docx Çıktısı</li>
-                        <li>✓ Kişisel Soru Arşivi & Telif Yönetimi</li>
-                    </ul>
-                </div>
-                <div>
-                    <div class="fiyat-etiketi">14.900 TL / Yıl</div>
-                    <div class="taksit-bilgisi">Öğretmenlere Özel 12 Taksit İmkânı</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-        if st.button("Yazar Lisansı Al", key="btn_yazar_pro", use_container_width=True):
-            paket_sec("Bağımsız Öğretmen & Yazar Stüdyosu Pro")
-
-    with c11:
-        st.markdown("""
-            <div class="paket-karti">
-                <div>
-                    <div class="paket-baslik">📚 Yayınevi Soru Fabrikası (Enterprise)</div>
-                    <div class="paket-aciklama">Soru bankası, fasikül ve kurumsal deneme üreten yayınevleri için çoklu editör ve redaksiyon altyapısı.</div>
-                    <hr style="margin: 10px 0; border-color: #e2e8f0;">
-                    <ul class="paket-liste">
-                        <li>✓ 10 Yazar & Baş Editör Eşzamanlı Erişimi</li>
-                        <li>✓ Toplu Kitapçık & Fasikül Dizgi Çıktısı (.docx)</li>
-                        <li>✓ Gelişmiş Çeldirici & Kazanım Kalite Denetimi</li>
-                        <li>✓ Yayınevi Özel Referans Havuzu Eğitimi</li>
-                        <li>✓ Tam Telif & Ticari Baskı Kullanım Hakkı</li>
-                    </ul>
-                </div>
-                <div>
-                    <div class="fiyat-etiketi">39.900 TL / Yıl</div>
-                    <div class="taksit-bilgisi">Kurumsal Faturalı Yayıncı Lisansı</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-        if st.button("Yayınevi Lisansı Seç", key="btn_yayinevi", use_container_width=True):
-            paket_sec("Yayınevi & Soru Bankası Üretim Fabrikası (Enterprise)")
-
-    with c12:
-        st.markdown("""
-            <div class="paket-karti">
-                <div>
-                    <div class="paket-baslik">🏢 Kurumsal Okul & Kurs Lisansı (B2B)</div>
-                    <div class="paket-aciklama">Özel okullar, kolejler ve kurs merkezleri için toplu öğrenci, öğretmen ve şube yönetim ekosistemi.</div>
-                    <hr style="margin: 10px 0; border-color: #e2e8f0;">
-                    <ul class="paket-liste">
-                        <li>✓ Kuruma Özel Logo & Kapaklı Test Çıktısı</li>
-                        <li>✓ Sınırsız Öğretmen & Öğrenci Alt Hesabı</li>
-                        <li>✓ Şube Bazlı Başarı & Deneme Analizi</li>
-                        <li>✓ Veli Bilgilendirme & Raporlama Altyapısı</li>
-                        <li>✓ 7/24 Öncelikli Kurumsal Teknik Destek</li>
-                    </ul>
-                </div>
-                <div>
-                    <div class="fiyat-etiketi">59.900 TL / Yıl</div>
-                    <div class="taksit-bilgisi">Kurumsal Faturalı Okul / Kurs Paketi</div>
-                </div>
-            </div>
-        """, unsafe_allow_html=True)
-        if st.button("Kurumsal Başvuru Yap", key="btn_b2b", use_container_width=True):
-            paket_sec("Kurumsal Okul & Kurs Lisansı (B2B)")
-
-    # --- PAKET KARŞILAŞTIRMA TABLOSU ---
-    st.markdown('<div class="kategori-baslik">📊 Hızlı Paket Karşılaştırma Tablosu</div>', unsafe_allow_html=True)
-    karsilastirma_verisi = [
-        {
-            "Özellik / Modül": "AI Soru Fabrikası",
-            "İlkokul & Ara Sınıf": "Müfredat Uyumlu",
-            "LGS Branş (Sözel/Sayısal)": "Branş Odaklı Sınırsız",
-            "LGS VIP & Derece": "Tüm Dersler Sınırsız",
-            "YKS (TYT / AYT)": "ÖSYM Formatı Sınırsız",
-            "Yazar & Yayınevi": "Tam Yetki + Redaktör",
-            "Kurumsal B2B": "Kurum Geneli Sınırsız"
-        },
-        {
-            "Özellik / Modül": "2 Sütunlu .docx Kitapçık",
-            "İlkokul & Ara Sınıf": "Temel Test",
-            "LGS Branş (Sözel/Sayısal)": "✅",
-            "LGS VIP & Derece": "✅",
-            "YKS (TYT / AYT)": "✅",
-            "Yazar & Yayınevi": "✅ (Yayıncı Dizgi)",
-            "Kurumsal B2B": "✅ (Kurum Logolu)"
-        },
-        {
-            "Özellik / Modül": "7/24 AI Akıllı Koçluk",
-            "İlkokul & Ara Sınıf": "Temel Takip",
-            "LGS Branş (Sözel/Sayısal)": "Branş Koçu",
-            "LGS VIP & Derece": "Tam Koç + Canlı Mentor",
-            "YKS (TYT / AYT)": "Tam Koç + Net Takip",
-            "Yazar & Yayınevi": "Baş Editör Asistanı",
-            "Kurumsal B2B": "Şube & Öğrenci Analizi"
-        },
-        {
-            "Özellik / Modül": "Türkiye Geneli Denemeler",
-            "İlkokul & Ara Sınıf": "Dönem Sonu",
-            "LGS Branş (Sözel/Sayısal)": "Branş Denemeleri",
-            "LGS VIP & Derece": "24 Deneme Dahil",
-            "YKS (TYT / AYT)": "TYT-AYT Deneme Serisi",
-            "Yazar & Yayınevi": "Deneme Üretim Modülü",
-            "Kurumsal B2B": "Kurum İçi & Geneli"
-        }
-    ]
-    st.dataframe(karsilastirma_verisi, use_container_width=True, hide_index=True)
-
-    # --- İYZİCO GÜVENLİ ÖDEME & TAKSİT HESAPLAMA ---
-    st.markdown('<div class="kategori-baslik">💳 iyzico ile Güvenli Ödeme & Taksit Planlayıcı</div>', unsafe_allow_html=True)
-
-    if "secili_paket" not in st.session_state or st.session_state["secili_paket"] not in paket_fiyatlari:
-        st.session_state["secili_paket"] = "LGS 2027 Tüm Dersler VIP Tam Set"
-
-    st.markdown('<div class="odeme-kutu">', unsafe_allow_html=True)
-    od_col1, od_col2 = st.columns([1.2, 1])
-
-    with od_col1:
-        secilen_paket_adi = st.selectbox(
-            "Ödeme Yapılacak Paketi Seçin",
-            list(paket_fiyatlari.keys()),
-            index=list(paket_fiyatlari.keys()).index(st.session_state["secili_paket"])
-        )
-        st.session_state["secili_paket"] = secilen_paket_adi
-
-        taksit_sayisi = st.select_slider(
-            "Taksit Seçeneği (iyzico Sanal POS)",
-            options=[1, 3, 6, 9, 12],
-            value=12
+            """,
+            unsafe_allow_html=True,
         )
 
-        indirim_kodu = st.text_input("İndirim / Öğretmen / Kurum Kodu (İsteğe Bağlı)", placeholder="Örn: KURSUNKALEM2027 veya YAZAR20")
+    yks_d, yks_h, _, _ = format_countdown(YKS_2027_TARGET)
+    st.caption(f"2027 YKS (19 Haziran 2027) için kalan süre: **{yks_d} gün {yks_h} saat**")
 
-        ana_tutar = paket_fiyatlari[secilen_paket_adi]
-        kod = indirim_kodu.strip().upper()
-        indirim_orani = 0.20 if kod == "YAZAR20" else (0.10 if kod in ["KURSUNKALEM2027", "LGS2027", "YKS2027"] else 0.0)
-        net_tutar = int(ana_tutar * (1 - indirim_orani))
-        aylik_taksit = net_tutar / taksit_sayisi
+    st.markdown("---")
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Üretilen Soru Havuzu", "142.500+", "+1.200 bugün")
+    m2.metric("Aktif Öğrenci / Veli", "18.420", "+340 bu hafta")
+    m3.metric("B2B Anlaşmalı Kurum", "48", "+4 Yeni")
+    m4.metric("Çözülen Soru Sayısı", "2.4 Milyon", "%98 Başarı")
 
-        st.markdown("#### Katılımcı / Kurum Bilgileri")
-        ad_soyad = st.text_input("Ad Soyad / Kurum Yetkilisi", placeholder="Örn: Kürşat Han Kurşun")
-        eposta = st.text_input("E-posta Adresi", placeholder="ornek@alanadi.com.tr")
-        telefon = st.text_input("Telefon Numarası", placeholder="05XX XXX XX XX")
+    st.markdown("### 💡 Platform Modülleri")
+    f1, f2, f3 = st.columns(3)
+    with f1:
+        st.markdown(
+            """
+            <div class="kp-card">
+                <h4>⚙️ Soru & Redaksiyon Fabrikası</h4>
+                <p>Türkiye Yüzyılı Maarif Modeli kazanımlarına uygun, çeldirici analizi yapılmış
+                özgün sorular üretin ve DOCX formatında indirin.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with f2:
+        st.markdown(
+            """
+            <div class="kp-card">
+                <h4>🤖 Dijikoç Akıllı Rehberlik</h4>
+                <p>Öğrencinin hedef sınavına, zayıf kazanımlarına ve haftalık temposuna göre
+                kişiselleştirilmiş çalışma ve deneme stratejisi sunar.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with f3:
+        st.markdown(
+            """
+            <div class="kp-card">
+                <h4>🏫 Veli & Kurum Ekosistemi</h4>
+                <p>Veli takip raporları, zümre ve kurum lisansları ile 12 kademeli abonelik
+                yapısını tek merkezden yönetin.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
-    with od_col2:
-        st.markdown("#### 💰 Ödeme Özeti")
-        st.info(f"**Seçilen Paket:** {secilen_paket_adi}")
-        st.write(f"**Liste Fiyatı:** {ana_tutar:,.0f} TL".replace(",", "."))
-        if indirim_orani > 0:
-            st.success(f"**İndirim Uygulandı (%{int(indirim_orani*100)}):** -{(ana_tutar - net_tutar):,.0f} TL".replace(",", "."))
-        st.markdown(f"### Net Tutar: **{net_tutar:,.0f} TL**".replace(",", "."))
-        st.markdown(f"**Taksit Planı:** {taksit_sayisi} Taksit × **{aylik_taksit:,.2f} TL / Ay**".replace(",", "."))
-        st.caption("🔒 256-bit SSL & iyzico güvencesiyle ödeme altyapısı entegrasyonuna hazırdır.")
+    st.markdown(f'<div class="kp-dedication">{DEDICATION_TEXT}</div>', unsafe_allow_html=True)
 
-        if st.button("🔒 iyzico ile Güvenli Ödemeyi Başlat", type="primary", use_container_width=True):
-            if not ad_soyad.strip() or not eposta.strip():
-                st.warning("Lütfen ödeme kaydı için Ad Soyad ve E-posta alanlarını doldurun.")
+# ==============================================================================
+# 2. SORU & REDAKSİYON FABRİKASI
+# ==============================================================================
+elif current_page == "Soru & Redaksiyon Fabrikası":
+    st.subheader("⚙️ Kurşun Kalem Dijital Eğitim - Soru Üretim Stüdyosu")
+    st.caption(
+        "Türkiye Yüzyılı Maarif Modeli standartlarında, Otomatik Redaktör ve Kalite Kontrollü "
+        "değerlendirme testleri oluşturun."
+    )
+
+    with st.expander("📋 Test ve Kurum Parametreleri", expanded=True):
+        r1c1, r1c2, r1c3 = st.columns(3)
+        with r1c1:
+            institution = st.text_input("Kurum / Okul Adı", value=BRAND_NAME)
+            branch = st.selectbox("Branş Seçimi", list(CURRICULUM_TOPICS.keys()), index=0)
+            grade = st.selectbox(
+                "Sınıf Seviyesi",
+                ["5. Sınıf", "6. Sınıf", "7. Sınıf", "8. Sınıf (LGS)", "9-10. Sınıf", "11-12. Sınıf (YKS)"],
+                index=0,
+            )
+        with r1c2:
+            areas = list(CURRICULUM_TOPICS[branch].keys())
+            learning_area = st.selectbox("Öğrenme Alanı", areas, index=0)
+            outcomes = CURRICULUM_TOPICS[branch][learning_area]
+            outcome = st.selectbox("Hedef Kazanım", outcomes, index=0)
+            context_theme = st.text_input("Bağlam / Tema / Senaryo", value="HAYAT")
+        with r1c3:
+            question_count = st.slider("Üretilecek Soru Adedi (Test Modu)", 1, 10, 3)
+            difficulty = st.select_slider(
+                "Zorluk Derecesi",
+                options=["Kolay", "Orta", "Orta-Zor", "Zor (LGS/ÖSYM)"],
+                value="Orta-Zor",
+            )
+            auto_review = st.checkbox(
+                "Otomatik Soru Kalite & Redaksiyon Denetimi",
+                value=True,
+            )
+
+    if st.button("✨ Kurumsal Soru Paketi Üret", type="primary"):
+        sys_prompt = (
+            "Sen Türkiye Yüzyılı Maarif Modeli, LGS ve YKS ölçme-değerlendirme standartlarında "
+            "uzman bir Türkçe ve test yazarısın. Soruların özgün, açık, çeldiricileri güçlü, "
+            "dil bilgisi ve yazım kurallarına kusursuz uygun olmasını sağla. "
+            "Otomatik redaksiyon açıksa her sorunun sonunda kısa bir [Redaksiyon & Çeldirici Notu] ekle "
+            "ve en sonda ayrı bir 'Cevap Anahtarı ve Kısa Gerekçeler' bölümü oluştur."
+        )
+        user_prompt = (
+            f"Kurum: {institution}\n"
+            f"Branş: {branch}\n"
+            f"Sınıf Seviyesi: {grade}\n"
+            f"Öğrenme Alanı: {learning_area}\n"
+            f"Hedef Kazanım: {outcome}\n"
+            f"Bağlam / Tema / Senaryo: {context_theme}\n"
+            f"Zorluk Derecesi: {difficulty}\n"
+            f"Soru Adedi: {question_count}\n"
+            f"Otomatik Redaksiyon ve Kalite Denetimi: {'Aktif' if auto_review else 'Pasif'}\n\n"
+            "Lütfen numaralandırılmış çoktan seçmeli (A, B, C, D) özgün sorular üret."
+        )
+        try:
+            with st.spinner("Sorular üretiliyor ve kalite denetimi yapılıyor..."):
+                result = call_gemini_text(prompt=user_prompt, system_instruction=sys_prompt)
+            st.session_state.generated_test_text = result
+            st.success("Soru paketi başarıyla oluşturuldu.")
+        except Exception as exc:
+            st.error(f"Soru üretim hatası oluştu: {exc}")
+
+    if st.session_state.generated_test_text:
+        st.markdown("---")
+        st.markdown("### 📄 Üretilen Test ve Redaksiyon Çıktısı")
+        st.markdown(st.session_state.generated_test_text)
+
+        docx_bytes = build_test_docx(
+            institution=institution,
+            branch=branch,
+            grade=grade,
+            learning_area=learning_area,
+            outcome=outcome,
+            context_theme=context_theme,
+            generated_content=st.session_state.generated_test_text,
+        )
+        st.download_button(
+            label="📥 Testi DOCX Olarak İndir",
+            data=docx_bytes,
+            file_name=f"kursun_kalem_{branch.lower().replace(' ', '_')}_test.docx",
+            mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        )
+
+# ==============================================================================
+# 3. ÖĞRENCİ PORTALI & ÇÖZÜM
+# ==============================================================================
+elif current_page == "Öğrenci Portalı & Çözüm":
+    st.subheader("🎓 Öğrenci Portalı & Adımlı Çözüm Asistanı")
+    st.write("Takıldığın soruyu veya konuyu gir; adım adım yönlendirme ve çözüm stratejisi al.")
+
+    col_l, col_r = st.columns([2, 1])
+    with col_l:
+        student_question = st.text_area(
+            "Çözümünü İncelemek İstediğin Soru Metni",
+            height=160,
+            placeholder="Soru kökünü, verilen öncülleri ve şıkları buraya yapıştır...",
+        )
+    with col_r:
+        hint_mode = st.radio(
+            "Yardım Düzeyi",
+            ["Önce İpucu Ver (Kendim Çözeyim)", "Adım Adım Çözümü Göster"],
+            index=0,
+        )
+        student_attempt = st.text_input("Senin Tahminin / Şıkkın", placeholder="Örn: C şıkkı, çünkü...")
+
+    if st.button("🔍 Çözüm Rehberi Oluştur", type="primary"):
+        if not student_question.strip():
+            st.warning("Lütfen önce bir soru metni girin.")
+        else:
+            sys_inst = (
+                "Sen sabırlı, pedagojik ve teşvik edici bir eğitim koçusun. "
+                "Öğrenciye doğrudan ezberletmek yerine mantığını kavratacak şekilde açıkla."
+            )
+            prompt = (
+                f"Soru:\n{student_question}\n\n"
+                f"Öğrencinin Denemesi: {student_attempt or 'Belirtilmedi'}\n"
+                f"Yardım Düzeyi: {hint_mode}\n\n"
+                "Lütfen Türkçe olarak net ve anlaşılır yanıt ver."
+            )
+            try:
+                with st.spinner("Çözüm rehberi hazırlanıyor..."):
+                    ans = call_gemini_text(prompt=prompt, system_instruction=sys_inst)
+                st.markdown("#### 💡 Çözüm Analizi")
+                st.markdown(ans)
+            except Exception as exc:
+                st.error(f"Çözüm üretilirken hata oluştu: {exc}")
+
+# ==============================================================================
+# 4. DİJİKOÇ (AYRI SAYFA VE KOÇLUK MODÜLÜ)
+# ==============================================================================
+elif current_page == "Dijikoç":
+    st.subheader("🤖 Dijikoç — Kişisel Akıllı Sınav ve Çalışma Koçu")
+    st.caption(
+        "Hedef sınavına, haftalık müsait sürene ve zayıf konularına göre özel çalışma planı, "
+        "deneme analizi ve günlük rutin oluşturur."
+    )
+
+    k1, k2, k3 = st.columns(3)
+    with k1:
+        target_exam = st.selectbox(
+            "Hedef Sınav / Kademe",
+            ["2027 LGS", "2027 TYT - AYT", "5-7. Sınıf Akademik Gelişim"],
+            index=0,
+        )
+        weekly_hours = st.slider("Haftalık Çalışma Süresi (Saat)", 4, 45, 16)
+    with k2:
+        weak_topics = st.text_area(
+            "Zorlandığın Dersler / Konular",
+            value="Paragrafta ana düşünce, üslü ifadeler, dikkat kaynaklı işlem hataları",
+            height=105,
+        )
+    with k3:
+        coach_focus = st.selectbox(
+            "Koçluk Odak Alanı",
+            [
+                "Haftalık Dengeli Çalışma Programı",
+                "Deneme Net Artırma & Zaman Yönetimi",
+                "Dikkat ve Çeldirici Tuzağı Azaltma",
+                "Sınav Kaygısı & Motivasyon Rutini",
+            ],
+            index=0,
+        )
+        recent_score = st.text_input("Son Deneme / Sınav Durumu", value="Orta seviye, süreyi yetiştirmede zorlanıyorum")
+
+    if st.button("🎯 Dijikoç Planı Oluştur", type="primary"):
+        sys_coach = (
+            "Sen 'Dijikoç' adlı, Türkiye'deki öğrenciler için çalışan disiplinli, empatik ve "
+            "veri odaklı bir dijital eğitim koçusun. Uygulanabilir, günlere bölünmüş, "
+            "mola ve tekrar döngüleri içeren net bir çalışma planı hazırla."
+        )
+        prompt_coach = (
+            f"Hedef: {target_exam}\n"
+            f"Haftalık Süre: {weekly_hours} saat\n"
+            f"Zorlanılan Konular: {weak_topics}\n"
+            f"Koçluk Odağı: {coach_focus}\n"
+            f"Mevcut Durum: {recent_score}\n\n"
+            "Lütfen haftalık planı, kritik uyarıları ve haftalık kontrol hedeflerini Türkçe yaz."
+        )
+        try:
+            with st.spinner("Dijikoç çalışma planını hazırlıyor..."):
+                plan = call_gemini_text(prompt=prompt_coach, system_instruction=sys_coach)
+            st.session_state.dijikoc_plan = plan
+            st.success("Dijikoç planı hazırlandı.")
+        except Exception as exc:
+            st.error(f"Dijikoç planı oluşturulurken hata oluştu: {exc}")
+
+    if st.session_state.dijikoc_plan:
+        st.markdown("---")
+        st.markdown("### 📅 Kişiselleştirilmiş Dijikoç Planı")
+        st.markdown(st.session_state.dijikoc_plan)
+
+# ==============================================================================
+# 5. VELİ TAKİP PANELİ
+# ==============================================================================
+elif current_page == "Veli Takip Paneli":
+    st.subheader("👨‍👩‍👧 Veli Takip Paneli")
+    st.write("Öğrencinin haftalık çalışma düzeni, soru çözümü ve kazanım ilerleme özeti.")
+
+    v1, v2, v3 = st.columns(3)
+    v1.metric("Bu Hafta Çözülen Soru", "340 Soru", "+18% geçen haftaya göre")
+    v2.metric("Ortalama Doğruluk", "%81", "+4 puan")
+    v3.metric("Dijikoç Plan Uyumu", "%88", "6 / 7 gün aktif")
+
+    st.markdown("#### Kazanım Bazlı Görünüm")
+    st.progress(0.84, text="Okuma ve Anlama — %84")
+    st.progress(0.72, text="Sayısal Muhakeme ve Problem Çözme — %72")
+    st.progress(0.90, text="Düzenli Tekrar ve Ödev Tamamlama — %90")
+
+# ==============================================================================
+# 6. B2B LİSANS & KURUM
+# ==============================================================================
+elif current_page == "B2B Lisans & Kurum":
+    st.subheader("🏫 B2B Lisans & Kurum Yönetimi")
+    st.write(
+        "Okullar, kurs merkezleri ve eğitim kurumları için toplu soru üretimi, zümre "
+        "kalite denetimi ve kurumsal lisanslama çözümleri."
+    )
+
+    with st.form("b2b_inquiry_form"):
+        c1, c2 = st.columns(2)
+        with c1:
+            org_name = st.text_input("Kurum / Okul Adı")
+            city = st.text_input("İl / İlçe", value="İstanbul")
+            teacher_seats = st.number_input("Öğretmen / Editör Koltuk Sayısı", min_value=1, max_value=500, value=15)
+        with c2:
+            student_seats = st.number_input("Öğrenci Hesap Sayısı", min_value=10, max_value=10000, value=250)
+            contact_name = st.text_input("Yetkili Adı Soyadı")
+            contact_email = st.text_input("Kurumsal E-posta")
+
+        submitted = st.form_submit_button("Kurumsal Lisans Teklifi Hazırla")
+        if submitted:
+            if not org_name.strip():
+                st.warning("Lütfen kurum adını girin.")
             else:
                 st.success(
-                    f"✅ **{secilen_paket_adi}** ({net_tutar:,.0f} TL • {taksit_sayisi} Taksit) için ödeme talebi oluşturuldu! "
-                    f"Bilgilendirme **{eposta}** adresine gönderilecektir.".replace(",", ".")
+                    f"**{org_name}** ({city}) için **{teacher_seats} öğretmen** ve "
+                    f"**{student_seats} öğrenci** kapasiteli kurumsal lisans talebi kaydedildi."
                 )
 
-    st.markdown('</div>', unsafe_allow_html=True)
+# ==============================================================================
+# 7. PAKETLER & ABONELİK VİTRİNİ (12 PAKET, KARŞILAŞTIRMA MATRİSİ & IYZICO)
+# ==============================================================================
+elif current_page == "Paketler & Abonelik Vitrini":
+    st.subheader("💎 Paketler & Abonelik Vitrini (12 Paket)")
+    st.write("İhtiyacınıza uygun öğrenci, YKS, veli veya kurumsal paketi seçin ve iyzico taksitlerini inceleyin.")
 
-# --- ALT BİLGİ ---
-st.markdown("---")
-st.caption("© 2026 Kurşun Kalem Dijital Eğitim Teknolojileri | Tüm hakları saklıdır.")
+    selected_segment = st.segmented_control(
+        "Segment Filtresi",
+        options=["Tümü", "Öğrenci", "YKS", "Veli", "Kurum / B2B"],
+        default="Tümü",
+    )
+
+    filtered_tiers = (
+        SUBSCRIPTION_TIERS
+        if not selected_segment or selected_segment == "Tümü"
+        else [t for t in SUBSCRIPTION_TIERS if t["segment"] == selected_segment]
+    )
+
+    for row_start in range(0, len(filtered_tiers), 3):
+        cols = st.columns(3)
+        for idx, tier in enumerate(filtered_tiers[row_start : row_start + 3]):
+            with cols[idx]:
+                st.markdown(
+                    f"""
+                    <div class="kp-card">
+                        <div style="font-size:0.78rem;color:#64748b;font-weight:600;">
+                            {tier["segment"].upper()} • {tier["badge"]}
+                        </div>
+                        <h4 style="margin:0.25rem 0;">{tier["name"]}</h4>
+                        <div style="font-size:1.35rem;font-weight:700;color:#7f1d1d;margin-bottom:0.4rem;">
+                            {tier["monthly_price"]:,} ₺ <span style="font-size:0.8rem;font-weight:400;color:#64748b;">/ ay</span>
+                        </div>
+                        <p style="font-size:0.86rem;color:#475569;">{tier["desc"]}</p>
+                    </div>
+                    """.replace(",", "."),
+                    unsafe_allow_html=True,
+                )
+                for feat in tier["features"]:
+                    st.markdown(f"- {feat}")
+                if st.button("Paketi Seç", key=f"select_{tier['id']}"):
+                    st.session_state.selected_tier_id = tier["id"]
+                    st.toast(f"{tier['name']} seçildi.")
+
+    st.markdown("---")
+    st.markdown("### 📊 12 Paket Karşılaştırma Matrisi")
+    matrix_rows = [
+        {
+            "Paket Adı": t["name"],
+            "Segment": t["segment"],
+            "Etiket": t["badge"],
+            "Aylık Ücret (₺)": f"{t['monthly_price']:,}".replace(",", "."),
+            "Öne Çıkan Kapsam": t["features"][0],
+        }
+        for t in SUBSCRIPTION_TIERS
+    ]
+    st.dataframe(matrix_rows, use_container_width=True, hide_index=True)
+
+    st.markdown("---")
+    chosen_tier = next(
+        (t for t in SUBSCRIPTION_TIERS if t["id"] == st.session_state.selected_tier_id),
+        SUBSCRIPTION_TIERS[1],
+    )
+    chosen_name = st.selectbox(
+        "Simülasyon İçin Paket Seçin",
+        options=[t["name"] for t in SUBSCRIPTION_TIERS],
+        index=[t["name"] for t in SUBSCRIPTION_TIERS].index(chosen_tier["name"]),
+    )
+    active_tier = next(t for t in SUBSCRIPTION_TIERS if t["name"] == chosen_name)
+    render_iyzico_simulator(active_tier["name"], active_tier["monthly_price"])
