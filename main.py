@@ -28,7 +28,7 @@ BRAND_TAGLINE = "KURŞUN KALEM DİJİTAL EĞİTİM- Geleceği Yazan Dijital Eği
 DEFAULT_MODEL = "gemini-3.8-flash"
 FALLBACK_MODEL = "gemini-2.5-flash"
 
-# Kalıcı Gömülü Kurumsal Logo (SVG -> Base64 / PNG/JPEG uyumlu byte akışı)
+# Kalıcı Gömülü Kurumsal Logo (SVG -> Base64 / PNG uyumlu byte akışı)
 EMBEDDED_LOGO_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
     <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -76,7 +76,7 @@ def get_embedded_logo_svg_data_uri() -> str:
 
 
 def get_embedded_logo_png_bytes() -> Optional[bytes]:
-    """Gömülü logoyu DOCX belgesine eklemek için PNG/SVG baytı üretir."""
+    """Gömülü logoyu DOCX belgesine eklemek için PNG baytı üretir."""
     try:
         import cairosvg  # type: ignore
 
@@ -101,27 +101,49 @@ PAGES = [
 DIJIMENTOR_PRESETS: Dict[str, Dict[str, Any]] = {
     "2027 LGS Derece & Net İvmesi": {
         "exam": "2027 LGS",
-        "hours": 18,
-        "goal": "Fen liseleri / nitelikli Anadolu liseleri bandı (465+ puan hedefi)",
+        "hours": 20,
+        "goal": "Fen liseleri ve nitelikli Anadolu liseleri bandı (470+ puan ve 82+ net hedefi)",
         "focus": "Deneme Net Artırma & Zaman Yönetimi",
-        "weak": "Yeni nesil paragrafta çeldirici ayıklama, cebirsel/üslü modelleme, sözel mantık hızı",
-        "status": "Orta-üst seviye; Türkçe ve Matematikte son 15 soruda süre baskısı yaşıyorum",
+        "weak": "Sözel mantık ve muhakeme metinleri, cebirsel ifadeler ve çarpanlar-katlar yeni nesil problemleri, süre baskısı altında çeldirici ayıklama",
+        "status": "Orta-üst seviye; Türkçe ve Matematikte son 15 soruda süre baskısı yaşıyor ve deneme analizini haftalık sistematik yapamıyor",
+        "branch": "Türkçe",
+        "grade": "8. Sınıf (LGS)",
+        "topic": "Sözel Mantık & Muhakeme ve Çeldirici Analizi",
+        "brief": (
+            "2027 LGS hedefi için hazırlanan yoğun net ivmesi senaryosu: "
+            "Haftada 20 saatlik çalışma düzeninde paragraf/sözel mantık hızı, "
+            "cebirsel modelleme ve deneme sonrası yanlış-çeldirici defteri odaklı aksiyon planı."
+        ),
     },
     "2027 YKS TYT-AYT Disiplin Rutini": {
         "exam": "2027 TYT - AYT",
-        "hours": 28,
-        "goal": "TYT 95+ net ve AYT alanında ilk 20 bin hedefi",
+        "hours": 30,
+        "goal": "TYT 98+ net ve AYT alanında ilk 15 bin derece hedefi",
         "focus": "Haftalık Dengeli Çalışma Programı",
-        "weak": "TYT Türkçe süre yönetimi, problem hızı, AYT konu tekrar gecikmeleri",
-        "status": "Düzenli çalışıyorum ama hafta sonu deneme analizlerini sistematik yapamıyorum",
+        "weak": "TYT Türkçe paragraf süresi ve anlam-yorum çeldiricileri, problem kurma hızı, AYT konu tekrar gecikmeleri ve deneme tempo dalgalanması",
+        "status": "Düzenli çalışma alışkanlığı var ancak TYT süresini verimli bölme ve hafta sonu deneme analizlerini puan/net aksiyonuna çevirme konusunda gelişime açık",
+        "branch": "Türkçe",
+        "grade": "11-12. Sınıf (YKS)",
+        "topic": "TYT Paragraf Hızı, Çeldirici Eleme & AYT Tekrar Döngüsü",
+        "brief": (
+            "2027 TYT-AYT derece senaryosu: Haftada 30 saatlik dengeli bloklarla "
+            "TYT okuma-anlama hızı, AYT konu tekrar döngüsü ve haftalık branş/genel deneme analiz rutini."
+        ),
     },
     "Dikkat & Çeldirici Tuzağı Temizliği": {
         "exam": "2027 LGS",
-        "hours": 14,
-        "goal": "Dikkat hatası kaynaklı kayıpları yarıya indirmek",
+        "hours": 16,
+        "goal": "Dikkat ve okuma kaynaklı net kayıplarını %70 azaltmak ve istikrarlı net artışı sağlamak",
         "focus": "Dikkat ve Çeldirici Tuzağı Azaltma",
-        "weak": "Soru kökündeki 'değildir / ulaşılamaz' ifadelerini kaçırma, işlem atlama",
-        "status": "Konuyu biliyorum ama denemelerde acele edip basit hatalar yapıyorum",
+        "weak": "Soru kökündeki 'ulaşılamaz / çıkarılamaz / değildir' ifadelerini kaçırma, öncül atlama ve çeldirici şıklara erken yönelme",
+        "status": "Konu bilgisi yeterli olmasına rağmen hızlı okuma ve aceleci işaretleme nedeniyle bildiği sorularda hata yapıyor",
+        "branch": "Türkçe",
+        "grade": "8. Sınıf (LGS)",
+        "topic": "Soru Kökü Analizi, Çeldirici Tuzağı ve Dikkat Odaklı Okuma",
+        "brief": (
+            "Dikkat ve çeldirici temizliği senaryosu: Soru kökünü iki aşamalı okuma, "
+            "çeldirici şıkları kanıtla eleme ve işlem/öncül kontrol listesiyle net kayıplarını önleme planı."
+        ),
     },
 }
 
@@ -493,14 +515,6 @@ st.markdown(
             margin: 0.28rem 0 0 0;
             line-height: 1.45;
         }
-        .kp-panel {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 14px;
-            padding: 1.25rem 1.4rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 4px 16px rgba(15, 23, 42, 0.035);
-        }
         .kp-kpi-card {
             background: #ffffff;
             border: 1px solid #e2e8f0;
@@ -591,6 +605,9 @@ st.markdown(
             border-radius: 8px;
             padding: 0.5rem 0.75rem;
             font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
         .stButton > button {
             border-radius: 8px;
@@ -1334,15 +1351,27 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
     if st.session_state.get("factory_focus_topic"):
         st.info(f"Dijimentor'dan aktarılan odak konu: **{st.session_state['factory_focus_topic']}**")
 
+    grade_options = ["5. Sınıf", "6. Sınıf", "7. Sınıf", "8. Sınıf (LGS)", "9-10. Sınıf", "11-12. Sınıf (YKS)"]
+    default_branch = st.session_state.get("factory_branch", "Türkçe")
+    if default_branch not in CURRICULUM_TOPICS:
+        default_branch = "Türkçe"
+    default_grade = st.session_state.get("factory_grade", "5. Sınıf")
+    if default_grade not in grade_options:
+        default_grade = "5. Sınıf"
+
     with st.expander("📋 Test ve Kurum Parametreleri", expanded=True):
         r1c1, r1c2, r1c3 = st.columns(3)
         with r1c1:
             institution = st.text_input("Kurum / Okul Adı", value=BRAND_NAME)
-            branch = st.selectbox("Branş Seçimi", list(CURRICULUM_TOPICS.keys()), index=0)
+            branch = st.selectbox(
+                "Branş Seçimi",
+                list(CURRICULUM_TOPICS.keys()),
+                index=list(CURRICULUM_TOPICS.keys()).index(default_branch),
+            )
             grade = st.selectbox(
                 "Sınıf Seviyesi",
-                ["5. Sınıf", "6. Sınıf", "7. Sınıf", "8. Sınıf (LGS)", "9-10. Sınıf", "11-12. Sınıf (YKS)"],
-                index=0,
+                grade_options,
+                index=grade_options.index(default_grade),
             )
         with r1c2:
             areas = list(CURRICULUM_TOPICS[branch].keys())
@@ -1504,559 +1533,4 @@ elif current_page == "Öğrenci Portalı & Çözüm":
 
                     result_rows.append(
                         {
-                            "Soru": f"Soru {q['num']}",
-                            "Senin Yanıtın": u_ans,
-                            "Doğru Cevap": c_ans or "Belirtilmedi",
-                            "Durum": status_txt,
-                        }
-                    )
-
-                graded_total = correct_cnt + wrong_cnt
-                net_score = max(0.0, correct_cnt - (wrong_cnt / 3.0))
-                accuracy = (correct_cnt / graded_total * 100.0) if graded_total > 0 else 0.0
-
-                st.session_state["last_exam_report"] = {
-                    "correct": correct_cnt,
-                    "wrong": wrong_cnt,
-                    "net": net_score,
-                    "accuracy": accuracy,
-                    "rows": result_rows,
-                    "first_wrong": wrong_questions[0]["full_text"] if wrong_questions else "",
-                }
-                record_activity(
-                    "Mini Deneme",
-                    f"{correct_cnt}D {wrong_cnt}Y • {net_score:.2f} Net (%{accuracy:.0f})",
-                )
-
-            report = st.session_state.get("last_exam_report")
-            if report:
-                st.markdown("---")
-                r1, r2, r3, r4 = st.columns(4)
-                r1.metric("Doğru Sayısı", f"{report['correct']} Soru")
-                r2.metric("Yanlış Sayısı", f"{report['wrong']} Soru")
-                r3.metric("Hesaplanan Net (3Y=1D)", f"{report['net']:.2f} Net")
-                r4.metric("Başarı Oranı", f"%{report['accuracy']:.1f}")
-
-                st.dataframe(report["rows"], use_container_width=True, hide_index=True)
-
-                if report.get("first_wrong"):
-                    if st.button("🔍 Yanlış Yaptığım İlk Soruyu Çözüm Rehberine Aktar"):
-                        st.session_state["portal_question_draft"] = report["first_wrong"]
-                        st.toast("Yanlış soru Adımlı Çözüm Asistanı sekmesine aktarıldı.")
-                        st.rerun()
-
-    with tab_hint:
-        col_l, col_r = st.columns([2, 1])
-        with col_l:
-            default_q = st.session_state.get("portal_question_draft", "")
-            student_question = st.text_area(
-                "Çözümünü İncelemek İstediğin Soru Metni",
-                value=default_q,
-                height=160,
-                placeholder="Soru kökünü, verilen öncülleri ve şıkları buraya yapıştır...",
-            )
-        with col_r:
-            hint_mode = st.radio(
-                "Yardım Düzeyi",
-                ["Önce İpucu Ver (Kendim Çözeyim)", "Adım Adım Çözümü Göster"],
-                index=0,
-            )
-            student_attempt = st.text_input("Senin Tahminin / Şıkkın", placeholder="Örn: C şıkkı, çünkü...")
-
-        if st.button("🔍 Çözüm Rehberi Oluştur", type="primary", key="btn_solve_guide"):
-            if not student_question.strip():
-                st.warning("Lütfen önce bir soru metni girin.")
-            else:
-                sys_inst = (
-                    "Sen sabırlı, pedagojik ve teşvik edici bir eğitim mentorusun. "
-                    "Öğrenciye doğrudan ezberletmek yerine mantığını kavratacak şekilde açıkla."
-                )
-                prompt = (
-                    f"Soru:\n{student_question}\n\n"
-                    f"Öğrencinin Denemesi: {student_attempt or 'Belirtilmedi'}\n"
-                    f"Yardım Düzeyi: {hint_mode}\n\n"
-                    "Lütfen Türkçe olarak net ve anlaşılır yanıt ver."
-                )
-                try:
-                    with st.spinner("Çözüm rehberi hazırlanıyor..."):
-                        ans = call_gemini_text(prompt=prompt, system_instruction=sys_inst)
-                    record_activity("Çözüm Asistanı", f"{hint_mode} üretildi")
-                    st.markdown("#### 💡 Çözüm Analizi")
-                    st.markdown(ans)
-                except Exception as exc:
-                    st.error(f"Çözüm üretilirken hata oluştu: {exc}")
-
-# ==============================================================================
-# 4. DİJİMENTOR — KURUMSAL AKILLI MENTORLUK STÜDYOSU
-# ==============================================================================
-elif current_page == "Dijimentor":
-    st.markdown(
-        """
-        <div class="kp-studio-banner">
-            <div class="kp-studio-title">🤖 Dijimentor — Kurumsal Akıllı Sınav & Performans Mentorluğu</div>
-            <div class="kp-studio-sub">
-                Hedef sınavına, haftalık çalışma kapasitene ve çeldirici/zaman analizine göre
-                ölçülebilir haftalık aksiyon planı ve deneme stratejisi üretir.
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    current_hours = int(st.session_state.get("dk_hours", 16))
-    daily_avg = current_hours / 7.0
-    k_c1, k_c2, k_c3, k_c4 = st.columns(4)
-    k_c1.markdown(
-        f"""
-        <div class="kp-kpi-card">
-            <div class="kp-kpi-label">Mentorluk Motoru</div>
-            <div class="kp-kpi-value">Dijimentor v3</div>
-            <div class="kp-kpi-sub">Kalan Plan: {int(st.session_state.remaining_coach_quota)} Hak</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    k_c2.markdown(
-        f"""
-        <div class="kp-kpi-card">
-            <div class="kp-kpi-label">Günlük Ortalama Tempo</div>
-            <div class="kp-kpi-value">{daily_avg:.1f} Saat</div>
-            <div class="kp-kpi-sub">Haftalık Toplam: {current_hours} Saat</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    k_c3.markdown(
-        """
-        <div class="kp-kpi-card">
-            <div class="kp-kpi-label">Analiz Boyutu</div>
-            <div class="kp-kpi-value">3 Katman</div>
-            <div class="kp-kpi-sub">Hız • Çeldirici • Net İvmesi</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    k_c4.markdown(
-        """
-        <div class="kp-kpi-card">
-            <div class="kp-kpi-label">Çıktı Formatı</div>
-            <div class="kp-kpi-value">Plan + DOCX</div>
-            <div class="kp-kpi-sub">İndirilebilir Çalışma Rehberi</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    st.write("")
-
-    st.markdown("#### ⚡ Hızlı Mentorluk Senaryoları")
-    p_cols = st.columns(len(DIJIMENTOR_PRESETS) + 1)
-    for idx, (preset_title, preset_data) in enumerate(DIJIMENTOR_PRESETS.items()):
-        with p_cols[idx]:
-            if st.button(preset_title, key=f"preset_{idx}", use_container_width=True):
-                st.session_state["dk_exam"] = preset_data["exam"]
-                st.session_state["dk_hours"] = preset_data["hours"]
-                st.session_state["dk_goal"] = preset_data["goal"]
-                st.session_state["dk_focus"] = preset_data["focus"]
-                st.session_state["dk_weak"] = preset_data["weak"]
-                st.session_state["dk_status"] = preset_data["status"]
-                st.rerun()
-    with p_cols[-1]:
-        if st.button("Planı Temizle", key="clear_dk_plan", use_container_width=True):
-            st.session_state.dijimentor_plan = ""
-            st.rerun()
-
-    st.write("")
-    st.markdown('<div class="kp-panel">', unsafe_allow_html=True)
-    st.markdown("#### 🎯 Öğrenci Hedef ve Çalışma Profili")
-
-    r1_a, r1_b, r1_c = st.columns(3)
-    with r1_a:
-        target_exam = st.selectbox(
-            "Hedef Sınav / Kademe",
-            ["2027 LGS", "2027 TYT - AYT", "5-7. Sınıf Akademik Gelişim"],
-            index=["2027 LGS", "2027 TYT - AYT", "5-7. Sınıf Akademik Gelişim"].index(
-                st.session_state.get("dk_exam", "2027 LGS")
-            ),
-            key="dk_exam_sel",
-        )
-        st.session_state["dk_exam"] = target_exam
-
-        weekly_hours = st.slider(
-            "Haftalık Çalışma Süresi (Saat)",
-            min_value=4,
-            max_value=45,
-            value=current_hours,
-            key="dk_hours_sld",
-        )
-        st.session_state["dk_hours"] = weekly_hours
-
-    with r1_b:
-        target_goal = st.text_input(
-            "Hedef Puan / Net / Okul Bandı",
-            value=st.session_state.get(
-                "dk_goal", "Nitelikli lise / yüksek net ve sıfıra yakın dikkat hatası"
-            ),
-            key="dk_goal_inp",
-        )
-        st.session_state["dk_goal"] = target_goal
-
-        coach_focus = st.selectbox(
-            "Mentorluk Odak Alanı",
-            [
-                "Haftalık Dengeli Çalışma Programı",
-                "Deneme Net Artırma & Zaman Yönetimi",
-                "Dikkat ve Çeldirici Tuzağı Azaltma",
-                "Sınav Kaygısı & Motivasyon Rutini",
-            ],
-            index=[
-                "Haftalık Dengeli Çalışma Programı",
-                "Deneme Net Artırma & Zaman Yönetimi",
-                "Dikkat ve Çeldirici Tuzağı Azaltma",
-                "Sınav Kaygısı & Motivasyon Rutini",
-            ].index(st.session_state.get("dk_focus", "Haftalık Dengeli Çalışma Programı")),
-            key="dk_focus_sel",
-        )
-        st.session_state["dk_focus"] = coach_focus
-
-    with r1_c:
-        weak_topics = st.text_area(
-            "Zorlandığın Dersler / Kazanımlar",
-            value=st.session_state.get(
-                "dk_weak", "Paragrafta ana düşünce, üslü ifadeler, dikkat kaynaklı işlem hataları"
-            ),
-            height=82,
-            key="dk_weak_area",
-        )
-        st.session_state["dk_weak"] = weak_topics
-
-        recent_score = st.text_input(
-            "Mevcut Deneme / Süre Durumu",
-            value=st.session_state.get(
-                "dk_status", "Orta seviye, süreyi yetiştirmede zorlanıyorum"
-            ),
-            key="dk_status_inp",
-        )
-        st.session_state["dk_status"] = recent_score
-
-    q_hrs = round(weekly_hours * 0.45, 1)
-    r_hrs = round(weekly_hours * 0.30, 1)
-    a_hrs = round(weekly_hours * 0.25, 1)
-    st.markdown(
-        f"""
-        <div style="margin-top:0.5rem;padding-top:0.75rem;border-top:1px solid #f1f5f9;">
-            <div style="font-size:0.76rem;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.4px;">
-                Önerilen Haftalık Kapasite Dağılımı ({weekly_hours} Saat)
-            </div>
-            <div class="kp-dist-bar">
-                <div style="width:45%;background:#0f172a;" title="Soru & Muhakeme Pratiği"></div>
-                <div style="width:30%;background:#881337;" title="Konu Tekrarı & Kazanım"></div>
-                <div style="width:25%;background:#475569;" title="Deneme & Çeldirici Analizi"></div>
-            </div>
-            <div class="kp-dist-legend">
-                <span>■ Soru & Muhakeme: <b>{q_hrs} sa</b> (%45)</span>
-                <span>■ Konu Tekrarı: <b>{r_hrs} sa</b> (%30)</span>
-                <span>■ Deneme & Analiz: <b>{a_hrs} sa</b> (%25)</span>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    st.write("")
-    include_routine = st.checkbox(
-        "Günlük mikro rutin, deneme analiz protokolü ve hafta sonu kontrol listesi dahil et",
-        value=True,
-    )
-
-    if st.button("🎯 Dijimentor Planı Oluştur", type="primary"):
-        quota_ok, quota_msg = consume_quota("coach", 1)
-        if not quota_ok:
-            st.error(quota_msg)
-        else:
-            sys_coach = (
-                "Sen 'Dijimentor' adlı, Türkiye'deki öğrenciler için çalışan üst düzey, net, "
-                "empatik ve veri odaklı bir dijital eğitim mentorusun. Yanıtını başlıklarla, "
-                "madde işaretleriyle ve uygulanabilir zaman bloklarıyla kurumsal bir mentorluk "
-                "raporu gibi düzenle. Şu bölümleri net oluştur:\n"
-                "1. Teşhis ve Stratejik Özet\n"
-                "2. Pazartesi–Pazar Haftalık Çalışma Planı (saat ve odak ders dağılımı)\n"
-                "3. Çeldirici & Zaman Yönetimi Protokolü\n"
-                "4. Haftalık Başarı KPI'ları ve Kontrol Listesi"
-            )
-            prompt_coach = (
-                f"Hedef Sınav / Kademe: {target_exam}\n"
-                f"Hedef Bandı: {target_goal}\n"
-                f"Haftalık Çalışma Süresi: {weekly_hours} saat\n"
-                f"Zorlanılan Dersler / Kazanımlar: {weak_topics}\n"
-                f"Mentorluk Odak Alanı: {coach_focus}\n"
-                f"Mevcut Deneme / Süre Durumu: {recent_score}\n"
-                f"Detaylı Rutin & Analiz Protokolü: {'Evet' if include_routine else 'Özet'}\n\n"
-                "Lütfen öğrenciye doğrudan uygulanabilir, motive edici ve net bir Türkçe plan sun."
-            )
-            try:
-                with st.spinner("Dijimentor çalışma ve deneme stratejisi hazırlanıyor..."):
-                    plan = call_gemini_text(prompt=prompt_coach, system_instruction=sys_coach)
-                st.session_state.dijimentor_plan = plan
-                record_activity("Dijimentor", f"{target_exam} • {weekly_hours} saatlik plan üretildi")
-                st.success("Dijimentor planı başarıyla oluşturuldu.")
-            except Exception as exc:
-                st.session_state["remaining_coach_quota"] = int(
-                    st.session_state.get("remaining_coach_quota", 0)
-                ) + 1
-                st.error(f"Dijimentor planı oluşturulurken hata oluştu: {exc}")
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    if st.session_state.dijimentor_plan:
-        st.markdown('<div class="kp-panel">', unsafe_allow_html=True)
-        st.markdown("### 📅 Kişiselleştirilmiş Dijimentor Mentorluk Raporu")
-        st.markdown(st.session_state.dijimentor_plan)
-
-        meta_summary = (
-            f"Hedef: {target_exam} | Hedef Bandı: {target_goal} | "
-            f"Haftalık Süre: {weekly_hours} Saat | Odak: {coach_focus}"
-        )
-        docx_coach = build_coach_docx(meta_summary, st.session_state.dijimentor_plan)
-
-        d_col1, d_col2, d_col3 = st.columns(3)
-        with d_col1:
-            st.download_button(
-                label="📥 Mentorluk Planını DOCX İndir",
-                data=docx_coach,
-                file_name="dijimentor_calisma_plani.docx",
-                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                use_container_width=True,
-            )
-        with d_col2:
-            st.download_button(
-                label="📄 Planı Metin (.txt) İndir",
-                data=st.session_state.dijimentor_plan.encode("utf-8"),
-                file_name="dijimentor_calisma_plani.txt",
-                mime="text/plain",
-                use_container_width=True,
-            )
-        with d_col3:
-            if st.button("⚙️ Zayıf Konulardan Soru Üret →", use_container_width=True):
-                st.session_state["factory_focus_topic"] = weak_topics.split(",")[0].strip()
-                navigate_to("Soru & Redaksiyon Fabrikası")
-        st.markdown("</div>", unsafe_allow_html=True)
-
-# ==============================================================================
-# 5. VELİ TAKİP PANELİ + PERFORMANS GRAFİKLERİ
-# ==============================================================================
-elif current_page == "Veli Takip Paneli":
-    st.subheader("👨‍👩‍👧 Veli Takip Paneli")
-    st.write("Öğrencinin haftalık çalışma düzeni, soru çözümü ve kazanım ilerleme özeti.")
-
-    v1, v2, v3 = st.columns(3)
-    v1.metric("Bu Hafta Çözülen Soru", "340 Soru", "+18% geçen haftaya göre")
-    v2.metric("Ortalama Doğruluk", "%81", "+4 puan")
-    v3.metric("Dijimentor Plan Uyumu", "%88", "6 / 7 gün aktif")
-
-    st.markdown("#### Kazanım Bazlı Görünüm")
-    st.progress(0.84, text="Okuma ve Anlama — %84")
-    st.progress(0.72, text="Sayısal Muhakeme ve Problem Çözme — %72")
-    st.progress(0.90, text="Düzenli Tekrar ve Ödev Tamamlama — %90")
-
-    g_col1, g_col2 = st.columns(2)
-    with g_col1:
-        st.markdown("#### 📈 Haftalık Doğruluk İvmesi (%)")
-        st.area_chart(
-            {"1. Hafta": 71, "2. Hafta": 74, "3. Hafta": 77, "4. Hafta": 81},
-            height=190,
-        )
-    with g_col2:
-        st.markdown("#### 📊 Ders Bazlı Başarı Oranı (%)")
-        st.bar_chart(
-            {"Türkçe": 84, "Matematik": 72, "Fen": 82, "Sosyal": 86, "İngilizce": 79},
-            height=190,
-        )
-
-# ==============================================================================
-# 6. B2B LİSANS & KURUM + ZÜMRE SORU DAĞITIMI & RAPORLAMA SİMÜLASYONU
-# ==============================================================================
-elif current_page == "B2B Lisans & Kurum":
-    st.subheader("🏫 B2B Lisans & Kurum Yönetimi")
-    st.write(
-        "Okullar, kurs merkezleri ve eğitim kurumları için toplu soru üretimi, zümre "
-        "kapasite dağıtımı ve kurumsal lisanslama çözümleri."
-    )
-
-    tab_b2b_form, tab_b2b_zumre = st.tabs(
-        ["📋 Kurumsal Lisans Teklif Stüdyosu", "📊 Zümre Soru Dağıtımı & Kurumsal Rapor"]
-    )
-
-    with tab_b2b_form:
-        with st.form("b2b_inquiry_form"):
-            c1, c2 = st.columns(2)
-            with c1:
-                org_name = st.text_input("Kurum / Okul Adı", value="Özel Kurşun Kalem Akademi")
-                city = st.text_input("İl / İlçe", value="İstanbul")
-                teacher_seats = st.number_input(
-                    "Öğretmen / Editör Koltuk Sayısı", min_value=1, max_value=500, value=15
-                )
-            with c2:
-                student_seats = st.number_input(
-                    "Öğrenci Hesap Sayısı", min_value=10, max_value=10000, value=250
-                )
-                contact_name = st.text_input("Yetkili Adı Soyadı")
-                contact_email = st.text_input("Kurumsal E-posta")
-
-            submitted = st.form_submit_button("Kurumsal Lisans Teklifi Hazırla")
-            if submitted:
-                if not org_name.strip():
-                    st.warning("Lütfen kurum adını girin.")
-                else:
-                    st.session_state["last_b2b_summary"] = (
-                        f"Kurum: {org_name} ({city}) | Yetkili: {contact_name or '-'} | "
-                        f"E-posta: {contact_email or '-'} | Koltuk: {teacher_seats} Öğretmen, "
-                        f"{student_seats} Öğrenci"
-                    )
-                    st.session_state["b2b_org_cache"] = {
-                        "org": org_name,
-                        "teachers": int(teacher_seats),
-                        "students": int(student_seats),
-                    }
-                    record_activity("B2B Lisans", f"{org_name} teklif taslağı hazırlandı")
-                    st.success(
-                        f"**{org_name}** ({city}) için **{teacher_seats} öğretmen** ve "
-                        f"**{student_seats} öğrenci** kapasiteli kurumsal lisans talebi kaydedildi."
-                    )
-
-        if st.session_state.get("last_b2b_summary"):
-            b2b_tier = get_tier_by_id("b2b_kurs" if student_seats <= 300 else "b2b_kampus")
-            b2b_docx = build_commercial_brief_docx(
-                title=f"{org_name or 'Kurumsal'} Lisans Teklif Özeti",
-                tier=b2b_tier,
-                billing_cycle="Yıllık (%20 İndirim)",
-                installment=6,
-                total_amount=round(b2b_tier["monthly_price"] * 12 * 0.80),
-                extra_notes=st.session_state["last_b2b_summary"],
-            )
-            st.download_button(
-                label="📥 Kurumsal Lisans Teklifini DOCX İndir",
-                data=b2b_docx,
-                file_name="kursun_kalem_kurumsal_teklif.docx",
-                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            )
-
-    with tab_b2b_zumre:
-        org_cache = st.session_state.get(
-            "b2b_org_cache", {"org": "Özel Kurşun Kalem Akademi", "teachers": 15, "students": 250}
-        )
-        recommended_tier = get_tier_by_id(
-            "b2b_kurs" if org_cache["students"] <= 300 else "b2b_kampus"
-        )
-        total_q = recommended_tier["monthly_quota"]
-
-        bk1, bk2, bk3, bk4 = st.columns(4)
-        bk1.metric("Kurum Profili", org_cache["org"])
-        bk2.metric("Aylık Soru Havuzu", f"{total_q:,}".replace(",", "."))
-        bk3.metric("Öğretmen Başına Kota", f"{total_q // max(1, org_cache['teachers']):,} Soru".replace(",", "."))
-        bk4.metric("Öğrenci Başına Test", f"{total_q // max(1, org_cache['students'])} Soru / Ay")
-
-        st.markdown("#### 📐 Branş Zümreleri Arası Soru Kotası Dağılımı")
-        dist_ratios = {
-            "Türkçe & Edebiyat Zümresi": 0.28,
-            "Matematik & Geometri Zümresi": 0.30,
-            "Fen Bilimleri Zümresi": 0.22,
-            "Sosyal Bilimler & İnkılap Zümresi": 0.12,
-            "Yabancı Dil (İngilizce) Zümresi": 0.08,
-        }
-        zumre_rows = []
-        chart_map: Dict[str, int] = {}
-        for z_name, ratio in dist_ratios.items():
-            allocated = int(round(total_q * ratio))
-            short_lbl = z_name.split(" ")[0]
-            chart_map[short_lbl] = allocated
-            zumre_rows.append(
-                {
-                    "Zümre Birimi": z_name,
-                    "Pay (%)": f"%{int(ratio * 100)}",
-                    "Aylık Soru Kotası": f"{allocated:,}".replace(",", "."),
-                    "Haftalık Deneme Hedefi": f"{max(1, allocated // 80)} Kitapçık",
-                    "Redaksiyon Standardı": "Maarif Modeli • Çift Kontrol",
-                }
-            )
-
-        zc1, zc2 = st.columns([3, 2])
-        with zc1:
-            st.dataframe(zumre_rows, use_container_width=True, hide_index=True)
-        with zc2:
-            st.bar_chart(chart_map, height=225)
-
-# ==============================================================================
-# 7. PAKETLER & ABONELİK VİTRİNİ (12 PAKET, KARŞILAŞTIRMA MATRİSİ & IYZICO)
-# ==============================================================================
-elif current_page == "Paketler & Abonelik Vitrini":
-    st.subheader("💎 Paketler & Abonelik Vitrini (12 Paket)")
-    st.write("İhtiyacınıza uygun öğrenci, YKS, veli veya kurumsal paketi seçin ve iyzico taksitlerini inceleyin.")
-
-    selected_segment = st.segmented_control(
-        "Segment Filtresi",
-        options=["Tümü", "Öğrenci", "YKS", "Veli", "Kurum / B2B"],
-        default="Tümü",
-    )
-
-    filtered_tiers = (
-        SUBSCRIPTION_TIERS
-        if not selected_segment or selected_segment == "Tümü"
-        else [t for t in SUBSCRIPTION_TIERS if t["segment"] == selected_segment]
-    )
-
-    for row_start in range(0, len(filtered_tiers), 3):
-        cols = st.columns(3)
-        for idx, tier in enumerate(filtered_tiers[row_start : row_start + 3]):
-            with cols[idx]:
-                st.markdown(
-                    f"""
-                    <div class="kp-card">
-                        <div style="font-size:0.78rem;color:#64748b;font-weight:600;">
-                            {tier["segment"].upper()} • {tier["badge"]}
-                        </div>
-                        <h4 style="margin:0.25rem 0;">{tier["name"]}</h4>
-                        <div style="font-size:1.35rem;font-weight:700;color:#7f1d1d;margin-bottom:0.4rem;">
-                            {tier["monthly_price"]:,} ₺ <span style="font-size:0.8rem;font-weight:400;color:#64748b;">/ ay</span>
-                        </div>
-                        <p style="font-size:0.86rem;color:#475569;">{tier["desc"]}</p>
-                    </div>
-                    """.replace(",", "."),
-                    unsafe_allow_html=True,
-                )
-                for feat in tier["features"]:
-                    st.markdown(f"- {feat}")
-                if st.button("Paketi Seç", key=f"select_{tier['id']}"):
-                    st.session_state.selected_tier_id = tier["id"]
-                    sync_plan_quotas(tier, force_reset=True)
-                    record_activity("Abonelik", f"{tier['name']} paketi aktifleşti")
-                    st.toast(f"{tier['name']} seçildi ve kotası güncellendi.")
-
-    st.markdown("---")
-    st.markdown("### 📊 12 Paket Karşılaştırma Matrisi")
-    matrix_rows = [
-        {
-            "Paket Adı": t["name"],
-            "Segment": t["segment"],
-            "Etiket": t["badge"],
-            "Aylık Soru Kotası": f"{t['monthly_quota']:,}".replace(",", "."),
-            "Aylık Ücret (₺)": f"{t['monthly_price']:,}".replace(",", "."),
-            "Öne Çıkan Kapsam": t["features"][0],
-        }
-        for t in SUBSCRIPTION_TIERS
-    ]
-    st.dataframe(matrix_rows, use_container_width=True, hide_index=True)
-
-    st.markdown("---")
-    chosen_tier = get_tier_by_id(st.session_state.selected_tier_id)
-    chosen_name = st.selectbox(
-        "Simülasyon İçin Paket Seçin",
-        options=[t["name"] for t in SUBSCRIPTION_TIERS],
-        index=[t["name"] for t in SUBSCRIPTION_TIERS].index(chosen_tier["name"]),
-    )
-    active_tier = next(t for t in SUBSCRIPTION_TIERS if t["name"] == chosen_name)
-    render_iyzico_simulator(
-        active_tier["name"],
-        active_tier["monthly_price"],
-        active_tier["id"],
-    )
+                            "Soru": f"Soru
