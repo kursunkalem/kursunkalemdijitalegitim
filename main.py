@@ -16,13 +16,13 @@ from google.genai import types
 # SAYFA YAPILANDIRMASI VE KURUMSAL SABİTLER
 # ==============================================================================
 st.set_page_config(
-    page_title="Kurşun Kalem Dijital Eğitim",
+    page_title="KURŞUN KALEM DİJİTAL EĞİTİM",
     page_icon="✏️",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-BRAND_NAME = "Kurşun Kalem Dijital Eğitim"
+BRAND_NAME = "KURŞUN KALEM DİJİTAL EĞİTİM"
 BRAND_TAGLINE = "KURŞUN KALEM DİJİTAL EĞİTİM- Geleceği Yazan Dijital Eğitim"
 DEFAULT_MODEL = "gemini-3.8-flash"
 FALLBACK_MODEL = "gemini-2.5-flash"
@@ -938,7 +938,7 @@ with st.sidebar:
 st.markdown(
     f"""
     <div class="kp-hero">
-        <h1>✏️ {BRAND_NAME.upper()}</h1>
+        <h1>✏️ {BRAND_NAME}</h1>
         <p>{BRAND_TAGLINE}</p>
     </div>
     """,
