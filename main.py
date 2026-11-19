@@ -20,178 +20,78 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# --- YENİ NESİL SİSTEM NAVİGASYONU & KONTROL PANELİ CSS ---
+# --- TEMİZ VE MODERN SİSTEM CSS ---
 st.markdown("""
 <style>
-    /* Ana Kenar Çubuğu Arka Plan ve Yapısı */
     section[data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+        background-color: #f8fafc;
         border-right: 1px solid #e2e8f0;
-        width: 330px !important;
+        width: 300px !important;
     }
-
     section[data-testid="stSidebar"] .block-container {
-        padding-top: 1.25rem;
-        padding-left: 0.95rem;
-        padding-right: 0.95rem;
-        padding-bottom: 2rem;
+        padding-top: 1.2rem;
+        padding-left: 0.9rem;
+        padding-right: 0.9rem;
+        padding-bottom: 1.5rem;
     }
 
-    /* Navigasyon Üst Başlık Kartı */
-    .nav-header-card {
-        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-        border: 1px solid #334155;
-        border-radius: 14px;
-        padding: 14px 16px;
-        margin-bottom: 14px;
-        box-shadow: 0 8px 18px rgba(15, 23, 42, 0.14);
-        position: relative;
-        overflow: hidden;
-    }
-    .nav-header-card::after {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: linear-gradient(90deg, #e74c3c, #f39c12, #fbbf24);
-    }
-    .nav-brand-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-    }
-    .nav-main-title {
+    /* Sidebar Başlık Kartı */
+    .sb-brand {
+        background: #1e293b;
         color: #ffffff;
-        font-size: 0.98rem;
-        font-weight: 800;
-        letter-spacing: 0.2px;
-        margin: 0;
-    }
-    .nav-pill {
-        background: rgba(243, 156, 18, 0.18);
-        color: #fbbf24;
-        border: 1px solid rgba(251, 191, 36, 0.4);
-        font-size: 0.68rem;
-        font-weight: 700;
-        padding: 2px 8px;
-        border-radius: 999px;
-        white-space: nowrap;
-    }
-    .nav-sub-caption {
-        color: #94a3b8;
-        font-size: 0.76rem;
-        margin-top: 5px;
-        line-height: 1.35;
-    }
-
-    /* Radyo Grubunu Özel Kart Koleksiyonuna Dönüştürme */
-    section[data-testid="stSidebar"] div[role="radiogroup"] {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        margin-top: 4px;
-    }
-
-    /* Klasik Radyo Yuvarlağını Tamamen Kaldırma */
-    section[data-testid="stSidebar"] div[role="radiogroup"] > label > div:first-child {
-        display: none !important;
-    }
-
-    /* Pasif Navigasyon Kartları */
-    section[data-testid="stSidebar"] div[role="radiogroup"] > label {
-        background: #ffffff;
-        border: 1px solid #e2e8f0;
-        border-left: 4px solid #cbd5e1;
         border-radius: 12px;
-        padding: 11px 14px 11px 15px;
-        margin: 0 !important;
-        cursor: pointer;
-        transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 2px 5px rgba(15, 23, 42, 0.03);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        position: relative;
+        padding: 14px 15px;
+        margin-bottom: 14px;
+        border-bottom: 3px solid #f59e0b;
     }
-
-    section[data-testid="stSidebar"] div[role="radiogroup"] > label p {
-        font-size: 0.88rem !important;
-        font-weight: 600 !important;
-        color: #1e293b !important;
-        line-height: 1.35 !important;
-        margin: 0 !important;
-        width: 100%;
-    }
-
-    /* Kart Üzerine Gelindiğinde (Hover) */
-    section[data-testid="stSidebar"] div[role="radiogroup"] > label:hover {
-        background: #ffffff;
-        border-color: #94a3b8;
-        border-left-color: #f59e0b;
-        transform: translateX(4px);
-        box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
-    }
-
-    /* Aktif / Seçili Navigasyon Kartı */
-    section[data-testid="stSidebar"] div[role="radiogroup"] > label:has(input:checked) {
-        background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
-        border-color: #1e293b !important;
-        border-left: 5px solid #f59e0b !important;
-        transform: translateX(4px);
-        box-shadow: 0 8px 18px rgba(30, 41, 59, 0.22) !important;
-    }
-
-    section[data-testid="stSidebar"] div[role="radiogroup"] > label:has(input:checked) p {
-        color: #ffffff !important;
-        font-weight: 700 !important;
-    }
-
-    section[data-testid="stSidebar"] div[role="radiogroup"] > label:has(input:checked)::after {
-        content: "▸";
-        color: #fbbf24;
+    .sb-brand-title {
         font-size: 1rem;
         font-weight: 800;
-        margin-left: 8px;
+        margin: 0;
+        letter-spacing: 0.2px;
+    }
+    .sb-brand-sub {
+        font-size: 0.75rem;
+        color: #cbd5e1;
+        margin-top: 3px;
     }
 
-    /* Alt Durum & Modül Bilgi Kutusu */
-    .nav-footer-box {
+    /* Sidebar Butonlarını Menü Kartı Gibi Stilize Etme */
+    section[data-testid="stSidebar"] .stButton > button {
+        width: 100%;
+        text-align: left !important;
+        justify-content: flex-start !important;
+        background-color: #ffffff;
+        color: #1e293b;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-weight: 600;
+        font-size: 0.86rem;
+        transition: all 0.18s ease;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    }
+    section[data-testid="stSidebar"] .stButton > button:hover {
+        background-color: #f1f5f9;
+        border-color: #cbd5e1;
+        color: #0f172a;
+    }
+    section[data-testid="stSidebar"] .stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #1e293b 0%, #334155 100%) !important;
+        color: #ffffff !important;
+        border: 1px solid #1e293b !important;
+        border-left: 4px solid #f59e0b !important;
+        box-shadow: 0 4px 10px rgba(30, 41, 59, 0.18) !important;
+    }
+
+    .sb-status {
+        margin-top: 14px;
         background: #ffffff;
         border: 1px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 12px 14px;
-        margin-top: 14px;
-        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
-    }
-    .nav-status-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        font-size: 0.78rem;
-        font-weight: 700;
-        color: #0f172a;
-        margin-bottom: 6px;
-    }
-    .nav-live-dot {
-        display: inline-block;
-        width: 8px;
-        height: 8px;
-        background-color: #22c55e;
-        border-radius: 50%;
-        margin-right: 6px;
-        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.22);
-    }
-    .nav-active-module {
-        font-size: 0.75rem;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 0.76rem;
         color: #475569;
-        background: #f8fafc;
-        border: 1px dashed #cbd5e1;
-        border-radius: 8px;
-        padding: 7px 10px;
-        line-height: 1.35;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -331,48 +231,45 @@ def save_arsiv(yeni_test):
     except:
         pass
 
-# --- YENİ NESİL SİSTEM NAVİGASYONU ---
-st.sidebar.markdown("""
-    <div class="nav-header-card">
-        <div class="nav-brand-row">
-            <div class="nav-main-title">🧭 Sistem Navigasyonu</div>
-            <span class="nav-pill">MAARİF AI</span>
-        </div>
-        <div class="nav-sub-caption">
-            Çalışma alanları ve kontrol merkezleri arasında geçiş yapın
-        </div>
-    </div>
-""", unsafe_allow_html=True)
+# --- SİSTEM NAVİGASYONU (BUTON TABANLI TEMİZ MENÜ) ---
+if "ana_modul" not in st.session_state:
+    st.session_state["ana_modul"] = "🏠 Ana Sayfa & 2027 LGS'ye Geri Sayım"
 
-modul_aciklamalari = {
-    "🏠 Ana Sayfa & 2027 LGS'ye Geri Sayım": "Canlı sınav sayacı, platform metrikleri ve genel özet",
-    "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)": "AI soru üretimi, baş editör redaksiyonu ve 2 sütunlu .docx",
-    "🎓 Öğrenci Portalı & Soru Çözüm": "İnteraktif test çözümü, akıllı koç ve liderlik tablosu",
-    "👪 Veli Takip Paneli": "Kazanım analizi, çalışma süresi ve gelişim raporu",
-    "🏢 B2B Lisans & Kurum Yönetimi": "Okul, kurs ve öğretmen lisans kontrol merkezi",
-    "💎 Paketler & Abonelik Vitrini": "12 özel eğitim paketi, karşılaştırma ve iyzico ödeme"
-}
+menuler = [
+    ("🏠 Ana Sayfa & Geri Sayım", "🏠 Ana Sayfa & 2027 LGS'ye Geri Sayım"),
+    ("🛠️ Soru & Redaksiyon Fabrikası", "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)"),
+    ("🎓 Öğrenci Portalı & Çözüm", "🎓 Öğrenci Portalı & Soru Çözüm"),
+    ("👪 Veli Takip Paneli", "👪 Veli Takip Paneli"),
+    ("🏢 B2B Lisans & Kurum", "🏢 B2B Lisans & Kurum Yönetimi"),
+    ("💎 Paketler & Abonelik Vitrini", "💎 Paketler & Abonelik Vitrini")
+]
 
-ana_modul = st.sidebar.radio(
-    "Çalışma Alanı Seçin:",
-    list(modul_aciklamalari.keys()),
-    label_visibility="collapsed"
-)
-
-st.sidebar.markdown(f"""
-    <div class="nav-footer-box">
-        <div class="nav-status-row">
-            <span><span class="nav-live-dot"></span>Sistem Çevrimiçi</span>
-            <span style="color:#d97706;">LGS 2027</span>
+with st.sidebar:
+    st.markdown("""
+        <div class="sb-brand">
+            <div class="sb-brand-title">🧭 Sistem Navigasyonu</div>
+            <div class="sb-brand-sub">Kurşun Kalem Dijital Eğitim</div>
         </div>
-        <div class="nav-active-module">
-            <strong>Aktif Modül:</strong> {ana_modul}<br>
-            <span style="color:#64748b;">{modul_aciklamalari[ana_modul]}</span>
-        </div>
-    </div>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
 
-st.sidebar.markdown("---")
+    for etiket, deger in menuler:
+        aktif_mi = (st.session_state["ana_modul"] == deger)
+        if st.button(
+            etiket,
+            key=f"nav_{deger}",
+            type="primary" if aktif_mi else "secondary",
+            use_container_width=True
+        ):
+            st.session_state["ana_modul"] = deger
+            st.rerun()
+
+    st.markdown("""
+        <div class="sb-status">
+            <strong>🟢 Sistem Aktif</strong> • 2027 LGS & Maarif Modeli
+        </div>
+    """, unsafe_allow_html=True)
+
+ana_modul = st.session_state["ana_modul"]
 
 # --- ANA SAYFA & GERİ SAYIM ---
 if ana_modul == "🏠 Ana Sayfa & 2027 LGS'ye Geri Sayım":
@@ -380,7 +277,6 @@ if ana_modul == "🏠 Ana Sayfa & 2027 LGS'ye Geri Sayım":
     st.title("📚 Kurşun Kalem Dijital Eğitim Platformuna Hoş Geldiniz")
     st.markdown("İlkokuldan YKS'ye uzanan, yapay zeka destekli Türkiye'nin en akıllı soru ve koçluk ekosistemi.")
 
-    # --- CANLI SANİYE SANİYE AKAN LGS'YE GERİ SAYIM SAYACI ---
     st.markdown("### ⏳ 2027 LGS'ye Geri Sayım (13 Haziran 2027)")
 
     timer_html = """
@@ -732,35 +628,22 @@ elif ana_modul == "🛠️ Soru & Redaksiyon Fabrikası (Yazar Paneli)":
         st.title("🎯 Kurşun Kalem Dijital Eğitim - Soru Üretim Stüdyosu")
         st.markdown("Türkiye Yüzyılı Maarif Modeli standartlarında, **Otomatik Redaktör ve Kalite Kontrollü** ve **2 Sütunlu LGS Kitapçık Formatında** profesyonel değerlendirme testleri oluşturun.")
 
-        with st.sidebar:
-            st.markdown("""
-                <div class="nav-header-card" style="margin-top: 8px;">
-                    <div class="nav-brand-row">
-                        <div class="nav-main-title">⚙️ Test Parametreleri</div>
-                        <span class="nav-pill">STÜDYO</span>
-                    </div>
-                    <div class="nav-sub-caption">
-                        Branş, kazanım, zorluk ve çıktı ayarları
-                    </div>
-                </div>
-            """, unsafe_allow_html=True)
-
-            kurum_adi = st.text_input("Kurum / Okul Adı", value="Kurşun Kalem Dijital Eğitim")
-            secilen_brans = st.selectbox("Branş Seçimi", list(kazanim_db.keys()), key="yazar_brans")
-
-            sinif_listesi = list(kazanim_db[secilen_brans].keys())
-            secilen_sinif = st.selectbox("Sınıf Seviyesi", sinif_listesi, key="yazar_sinif")
-
-            alan_listesi = list(kazanim_db[secilen_brans][secilen_sinif].keys())
-            secilen_alan = st.selectbox("Öğrenme Alanı", alan_listesi, key="yazar_alan")
-
-            secilen_kazanim = st.selectbox("Hedef Kazanım", kazanim_db[secilen_brans][secilen_sinif][secilen_alan], key="yazar_kazanim")
-
-            soru_adedi = st.slider("Üretilecek Soru Adedi (Test Modu)", min_value=1, max_value=5, value=2)
-            zorluk_seviyesi = st.select_slider("Zorluk Derecesi", options=["Orta", "Orta-Zor", "İleri Düzey"], value="Orta-Zor")
-            tema_girdisi = st.text_input("Bağlam / Tema / Senaryo", placeholder="Örn: Sürdürülebilirlik, deney analizi...")
-
-            kalite_kontrol = st.checkbox("🔍 Otomatik Soru Kalite & Redaksiyon Denetimi", value=True, help="Üretilen soruların çeldirici kalitesini ve kazanım uyumunu arka planda denetler.")
+        with st.expander("⚙️ Test ve Kurum Parametreleri", expanded=True):
+            p_col1, p_col2, p_col3 = st.columns(3)
+            with p_col1:
+                kurum_adi = st.text_input("Kurum / Okul Adı", value="Kurşun Kalem Dijital Eğitim")
+                secilen_brans = st.selectbox("Branş Seçimi", list(kazanim_db.keys()), key="yazar_brans")
+                sinif_listesi = list(kazanim_db[secilen_brans].keys())
+                secilen_sinif = st.selectbox("Sınıf Seviyesi", sinif_listesi, key="yazar_sinif")
+            with p_col2:
+                alan_listesi = list(kazanim_db[secilen_brans][secilen_sinif].keys())
+                secilen_alan = st.selectbox("Öğrenme Alanı", alan_listesi, key="yazar_alan")
+                secilen_kazanim = st.selectbox("Hedef Kazanım", kazanim_db[secilen_brans][secilen_sinif][secilen_alan], key="yazar_kazanim")
+                tema_girdisi = st.text_input("Bağlam / Tema / Senaryo", placeholder="Örn: Sürdürülebilirlik, deney analizi...")
+            with p_col3:
+                soru_adedi = st.slider("Üretilecek Soru Adedi (Test Modu)", min_value=1, max_value=5, value=2)
+                zorluk_seviyesi = st.select_slider("Zorluk Derecesi", options=["Orta", "Orta-Zor", "İleri Düzey"], value="Orta-Zor")
+                kalite_kontrol = st.checkbox("🔍 Otomatik Soru Kalite & Redaksiyon Denetimi", value=True, help="Üretilen soruların çeldirici kalitesini ve kazanım uyumunu arka planda denetler.")
 
             uret_butonu = st.button("✨ Kurumsal Soru Paketi Üret", type="primary", use_container_width=True)
 
