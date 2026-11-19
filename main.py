@@ -73,7 +73,7 @@ EMBEDDED_LOGO_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 
 SCHOOL_BACKPACK_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 300" width="260" height="300">
   <defs>
     <linearGradient id="bagBody" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="0%" stop-color="#172c56"/>
       <stop offset="100%" stop-color="#0f172a"/>
     </linearGradient>
     <linearGradient id="bagPocket" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -85,8 +85,8 @@ SCHOOL_BACKPACK_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26
   <path d="M 88 64 C 58 95, 54 165, 66 245" fill="none" stroke="#334155" stroke-width="15" stroke-linecap="round"/>
   <path d="M 172 64 C 202 95, 206 165, 194 245" fill="none" stroke="#334155" stroke-width="15" stroke-linecap="round"/>
   <rect x="64" y="56" width="132" height="205" rx="32" fill="url(#bagBody)" stroke="#0f172a" stroke-width="3"/>
-  <path d="M 68 92 Q 130 114 192 92 L 192 78 Q 130 56 68 78 Z" fill="#475569" opacity="0.35"/>
-  <rect x="82" y="138" width="96" height="96" rx="20" fill="url(#bagPocket)" stroke="#94a3b8" stroke-width="2"/>
+  <path d="M 68 92 Q 130 114 192 92 L 192 78 Q 130 56 68 78 Z" fill="#d4af37" opacity="0.28"/>
+  <rect x="82" y="138" width="96" height="96" rx="20" fill="url(#bagPocket)" stroke="#d4af37" stroke-width="2"/>
   <circle cx="130" cy="186" r="22" fill="#ffffff" stroke="#0f172a" stroke-width="2"/>
   <text x="130" y="184" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="8.5" font-weight="800" fill="#0f172a">ÇANTA</text>
   <text x="130" y="196" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="7.5" font-weight="700" fill="#475569">PAKETLER</text>
@@ -151,6 +151,37 @@ PAGES = [
     "B2B Lisans & Kurum",
     "Paketler & Abonelik Vitrini",
 ]
+
+PAGE_DESCRIPTIONS: Dict[str, Tuple[str, str]] = {
+    "Ana Sayfa": (
+        "Genel Bakış & Sınav Telemetrisi",
+        "2027 LGS ve YKS geri sayımı, platform metrikleri, modül erişimi ve haftalık üretim akışı.",
+    ),
+    "Soru & Redaksiyon Fabrikası": (
+        "Maarif Modeli Soru & Kalite Stüdyosu",
+        "Kazanım ve çeldirici odaklı özgün sorular üretin, redaksiyon denetleyin ve DOCX olarak indirin.",
+    ),
+    "Öğrenci Portalı & Çözüm": (
+        "İnteraktif Mini Deneme & Çözüm Rehberi",
+        "Testleri şık işaretleyerek çözün, netinizi hesaplayın veya takıldığınız sorularda adımlı ipucu alın.",
+    ),
+    "Dijimentor": (
+        "Akıllı Sınav & Performans Mentorluğu",
+        "Hedef sınava, zayıf kazanımlara ve haftalık kapasiteye göre ölçülebilir çalışma planı oluşturun.",
+    ),
+    "Veli Takip Paneli": (
+        "Veli Gelişim & Bilgilendirme Merkezi",
+        "Öğrencinin haftalık soru temposunu, kazanım başarılarını izleyin ve hazır veli mesajları üretin.",
+    ),
+    "B2B Lisans & Kurum": (
+        "Kurumsal Lisans & Zümre Yönetimi",
+        "Okul ve kurs merkezleri için koltuk/kota planlaması, zümre dağılımı ve DOCX teklif çıktısı.",
+    ),
+    "Paketler & Abonelik Vitrini": (
+        "Abonelik Paketleri & Okul Sırt Çantası",
+        "Öğrenci, YKS, Veli ve Kurumsal paketleri çantanıza ekleyin, kotaları yönetin ve iyzico planını inceleyin.",
+    ),
+}
 
 DIJIMENTOR_PRESETS: Dict[str, Dict[str, Any]] = {
     "2027 LGS Derece & Net İvmesi": {
@@ -651,66 +682,79 @@ BACKPACK_DATA_URI = svg_to_data_uri(SCHOOL_BACKPACK_SVG)
 LOGO_PNG_BYTES = get_embedded_logo_png_bytes()
 
 # ==============================================================================
-# SADE, YÜKSEK KONTRASTLI KURUMSAL TASARIM (CSS)
+# KURUMSAL SAAS TASARIM SİSTEMİ (LACİVERT + ALTIN VURGULU SADE GÖRÜNÜM)
 # ==============================================================================
 st.markdown(
     """
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --kp-navy: #172C56;
+            --kp-navy-deep: #0F172A;
+            --kp-gold: #B48219;
+            --kp-gold-soft: #FEF9E7;
+            --kp-gold-border: #E6C77B;
+            --kp-bg: #F4F7FB;
+            --kp-surface: #FFFFFF;
+            --kp-border: #E2E8F0;
+            --kp-text: #0F172A;
+            --kp-muted: #475569;
+        }
 
         html, body, [class*="css"] {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            color: #0F172A;
+            color: var(--kp-text);
         }
         .stApp {
-            background-color: #F8FAFC;
+            background-color: var(--kp-bg);
         }
         [data-testid="stHeader"] {
-            background: rgba(248, 250, 252, 0.9);
+            background: rgba(244, 247, 251, 0.92);
             backdrop-filter: blur(8px);
-            border-bottom: 1px solid #E2E8F0;
+            border-bottom: 1px solid var(--kp-border);
         }
         [data-testid="stDecoration"] {
             display: none;
         }
         .block-container {
-            padding-top: 1.35rem;
+            padding-top: 1.15rem;
             padding-bottom: 4rem;
             max-width: 1240px;
         }
 
         /* Kenar Çubuğu */
         section[data-testid="stSidebar"] {
-            background-color: #FFFFFF;
-            border-right: 1px solid #E2E8F0;
+            background-color: var(--kp-surface);
+            border-right: 1px solid var(--kp-border);
         }
         .kp-sidebar-brand {
             display: flex;
             align-items: center;
-            gap: 0.7rem;
-            padding: 0.25rem 0.2rem 0.95rem 0.2rem;
-            border-bottom: 1px solid #E2E8F0;
-            margin-bottom: 0.9rem;
+            gap: 0.72rem;
+            padding: 0.2rem 0.2rem 0.9rem 0.2rem;
+            border-bottom: 1px solid var(--kp-border);
+            margin-bottom: 0.85rem;
         }
         .kp-sidebar-brand img {
-            width: 42px;
-            height: 42px;
+            width: 44px;
+            height: 44px;
             object-fit: contain;
-            border-radius: 8px;
-            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            border: 1px solid var(--kp-gold-border);
             padding: 2px;
             background: #FFFFFF;
             flex-shrink: 0;
         }
         .kp-sidebar-brand-title {
-            font-size: 0.88rem;
+            font-size: 0.9rem;
             font-weight: 700;
-            color: #0F172A;
-            line-height: 1.25;
+            color: var(--kp-navy);
+            line-height: 1.2;
         }
         .kp-sidebar-brand-sub {
-            font-size: 0.73rem;
-            color: #64748B;
+            font-size: 0.72rem;
+            color: var(--kp-muted);
             margin-top: 2px;
         }
 
@@ -719,42 +763,45 @@ st.markdown(
             text-align: left;
             justify-content: flex-start;
             border-radius: 8px;
-            padding: 0.52rem 0.78rem;
-            font-size: 0.85rem;
+            padding: 0.5rem 0.78rem;
+            font-size: 0.84rem;
             font-weight: 500;
-            border: 1px solid transparent;
+            border: none;
             background: transparent;
             color: #334155;
-            transition: all 0.15s ease;
+            transition: all 0.14s ease;
         }
         div[data-testid="stSidebar"] .stButton > button:hover {
-            background: #F1F5F9;
-            color: #0F172A;
+            background: #EEF2F7;
+            color: var(--kp-navy);
         }
         div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
-            background: #0F172A;
+            background: var(--kp-navy);
             color: #FFFFFF;
             font-weight: 600;
+            box-shadow: 0 2px 6px rgba(23, 44, 86, 0.18);
         }
 
         .kp-sidebar-meta {
             background: #F8FAFC;
-            border: 1px solid #E2E8F0;
+            border: 1px solid var(--kp-border);
+            border-left: 3px solid var(--kp-gold);
             border-radius: 10px;
             padding: 0.8rem 0.85rem;
-            margin-top: 0.9rem;
-            font-size: 0.79rem;
+            margin-top: 0.95rem;
+            font-size: 0.78rem;
             color: #334155;
-            line-height: 1.45;
+            line-height: 1.48;
         }
 
         /* Üst Kurumsal Header */
         .kp-top-header {
-            background: #FFFFFF;
-            border: 1px solid #E2E8F0;
+            background: var(--kp-surface);
+            border: 1px solid var(--kp-border);
+            border-top: 3px solid var(--kp-navy);
             border-radius: 12px;
-            padding: 1.1rem 1.4rem;
-            margin-bottom: 1.35rem;
+            padding: 1rem 1.35rem;
+            margin-bottom: 1.15rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -764,66 +811,127 @@ st.markdown(
         .kp-top-left {
             display: flex;
             align-items: center;
-            gap: 0.95rem;
+            gap: 0.9rem;
         }
         .kp-top-left img {
-            width: 50px;
-            height: 50px;
+            width: 48px;
+            height: 48px;
             object-fit: contain;
             border-radius: 10px;
-            border: 1px solid #E2E8F0;
-            padding: 3px;
+            border: 1px solid var(--kp-gold-border);
+            padding: 2px;
             background: #FFFFFF;
             flex-shrink: 0;
         }
         .kp-top-title {
-            font-size: 1.22rem;
-            font-weight: 700;
-            color: #0F172A;
+            font-size: 1.16rem;
+            font-weight: 800;
+            color: var(--kp-navy);
             letter-spacing: -0.02em;
             margin: 0;
         }
         .kp-top-sub {
-            font-size: 0.83rem;
-            color: #64748B;
-            margin: 0.12rem 0 0 0;
+            font-size: 0.81rem;
+            color: var(--kp-muted);
+            margin: 0.1rem 0 0 0;
+        }
+        .kp-header-badges {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            flex-wrap: wrap;
         }
         .kp-status-chip {
-            font-size: 0.75rem;
+            font-size: 0.74rem;
             font-weight: 600;
-            color: #0F172A;
+            color: var(--kp-navy);
             background: #F1F5F9;
-            border: 1px solid #E2E8F0;
-            padding: 0.34rem 0.72rem;
+            border: 1px solid #CBD5E1;
+            padding: 0.3rem 0.7rem;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+        .kp-gold-chip {
+            font-size: 0.74rem;
+            font-weight: 700;
+            color: #7C5308;
+            background: var(--kp-gold-soft);
+            border: 1px solid var(--kp-gold-border);
+            padding: 0.3rem 0.7rem;
             border-radius: 999px;
             white-space: nowrap;
         }
 
+        /* Sayfa Bağlam Şeridi */
+        .kp-page-strip {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.15rem 0 0.75rem 0;
+            margin-bottom: 0.85rem;
+            border-bottom: 1px solid var(--kp-border);
+        }
+        .kp-page-strip-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--kp-text);
+            letter-spacing: -0.015em;
+            margin: 0;
+        }
+        .kp-page-strip-desc {
+            font-size: 0.83rem;
+            color: var(--kp-muted);
+            margin: 0.15rem 0 0 0;
+        }
+
         /* Kartlar & Paneller */
         .kp-card, .kp-bag-shell, .kp-pkg-card, .kp-pay-box, .kp-kpi-card, .kp-metric-box, .kp-studio-banner {
-            background: #FFFFFF;
-            border: 1px solid #E2E8F0;
+            background: var(--kp-surface);
+            border: 1px solid var(--kp-border);
             border-radius: 12px;
             box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
         }
         .kp-card, .kp-bag-shell, .kp-pkg-card, .kp-pay-box, .kp-studio-banner {
-            padding: 1.2rem 1.3rem;
+            padding: 1.15rem 1.25rem;
         }
         .kp-card {
-            margin-bottom: 0.75rem;
+            margin-bottom: 0.65rem;
         }
+        .kp-mod-card {
+            background: var(--kp-surface);
+            border: 1px solid var(--kp-border);
+            border-radius: 12px 12px 6px 6px;
+            padding: 1.15rem 1.25rem 1rem 1.25rem;
+            min-height: 126px;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+        }
+        .kp-mod-title {
+            font-weight: 700;
+            font-size: 0.98rem;
+            color: var(--kp-navy);
+            margin-bottom: 0.35rem;
+        }
+        .kp-mod-desc {
+            font-size: 0.83rem;
+            color: var(--kp-muted);
+            line-height: 1.45;
+            margin: 0;
+        }
+
         .kp-studio-banner {
             margin-bottom: 1.1rem;
+            border-left: 4px solid var(--kp-gold);
         }
         .kp-studio-title {
-            font-size: 1.18rem;
+            font-size: 1.16rem;
             font-weight: 700;
-            color: #0F172A;
+            color: var(--kp-navy);
             margin: 0;
         }
         .kp-studio-sub {
-            font-size: 0.86rem;
-            color: #475569;
+            font-size: 0.85rem;
+            color: var(--kp-muted);
             margin: 0.25rem 0 0 0;
             line-height: 1.45;
         }
@@ -831,41 +939,42 @@ st.markdown(
             padding: 0.95rem 1.05rem;
         }
         .kp-kpi-label {
-            font-size: 0.72rem;
-            font-weight: 600;
+            font-size: 0.71rem;
+            font-weight: 700;
             color: #64748B;
             text-transform: uppercase;
             letter-spacing: 0.04em;
         }
         .kp-kpi-value {
-            font-size: 1.3rem;
+            font-size: 1.28rem;
             font-weight: 700;
-            color: #0F172A;
-            margin-top: 0.22rem;
+            color: var(--kp-navy);
+            margin-top: 0.2rem;
         }
         .kp-kpi-sub {
             font-size: 0.77rem;
-            color: #475569;
-            margin-top: 0.18rem;
+            color: var(--kp-muted);
+            margin-top: 0.16rem;
         }
 
         .kp-metric-box {
             padding: 1rem;
             text-align: center;
+            border-bottom: 3px solid var(--kp-navy);
         }
         .kp-metric-num {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #0F172A;
+            font-size: 1.52rem;
+            font-weight: 800;
+            color: var(--kp-navy);
             line-height: 1.2;
         }
         .kp-metric-lbl {
-            font-size: 0.75rem;
+            font-size: 0.73rem;
             color: #64748B;
             margin-top: 0.25rem;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-weight: 600;
+            letter-spacing: 0.06em;
+            font-weight: 700;
         }
 
         /* Çanta Görseli & Satırları */
@@ -874,7 +983,7 @@ st.markdown(
         }
         .kp-bag-visual {
             background: #F8FAFC;
-            border: 1px solid #E2E8F0;
+            border: 1px solid var(--kp-border);
             border-radius: 12px;
             padding: 0.95rem;
             display: flex;
@@ -889,7 +998,7 @@ st.markdown(
         }
         .kp-bag-count-pill {
             margin-top: 0.45rem;
-            background: #0F172A;
+            background: var(--kp-navy);
             color: #FFFFFF;
             font-size: 0.75rem;
             font-weight: 600;
@@ -898,19 +1007,19 @@ st.markdown(
         }
         .kp-bag-item-chip {
             background: #F8FAFC;
-            border: 1px solid #E2E8F0;
+            border: 1px solid var(--kp-border);
             border-radius: 10px;
             padding: 0.6rem 0.85rem;
             margin-bottom: 0.45rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            color: #0F172A;
+            color: var(--kp-text);
         }
 
         /* Paket Kartları */
         .kp-pkg-card {
-            margin-bottom: 0.7rem;
+            margin-bottom: 0.65rem;
         }
         .kp-pkg-top {
             display: flex;
@@ -921,29 +1030,30 @@ st.markdown(
         .kp-pkg-seg {
             font-size: 0.72rem;
             font-weight: 600;
-            color: #334155;
-            background: #F1F5F9;
+            color: var(--kp-navy);
+            background: #EEF2F7;
             padding: 0.2rem 0.6rem;
             border-radius: 6px;
         }
         .kp-pkg-badge {
             font-size: 0.72rem;
-            font-weight: 600;
-            color: #0F172A;
-            background: #E2E8F0;
+            font-weight: 700;
+            color: #7C5308;
+            background: var(--kp-gold-soft);
+            border: 1px solid var(--kp-gold-border);
             padding: 0.2rem 0.6rem;
             border-radius: 6px;
         }
         .kp-pkg-title {
-            font-size: 1.04rem;
+            font-size: 1.03rem;
             font-weight: 700;
-            color: #0F172A;
+            color: var(--kp-navy);
             margin: 0.6rem 0 0.2rem 0;
         }
         .kp-pkg-price {
             font-size: 1.38rem;
-            font-weight: 700;
-            color: #0F172A;
+            font-weight: 800;
+            color: var(--kp-text);
             margin-bottom: 0.45rem;
         }
         .kp-pkg-price span {
@@ -952,8 +1062,8 @@ st.markdown(
             color: #64748B;
         }
         .kp-pkg-desc {
-            font-size: 0.84rem;
-            color: #475569;
+            font-size: 0.83rem;
+            color: var(--kp-muted);
             line-height: 1.45;
             margin-bottom: 0.75rem;
             min-height: 3.3rem;
@@ -962,10 +1072,10 @@ st.markdown(
             list-style: none;
             padding: 0.7rem 0 0 0;
             margin: 0;
-            border-top: 1px solid #E2E8F0;
+            border-top: 1px solid var(--kp-border);
         }
         .kp-pkg-feats li {
-            font-size: 0.81rem;
+            font-size: 0.8rem;
             color: #334155;
             padding: 0.18rem 0;
         }
@@ -983,7 +1093,7 @@ st.markdown(
             flex-wrap: wrap;
             gap: 1rem;
             font-size: 0.78rem;
-            color: #475569;
+            color: var(--kp-muted);
         }
 
         /* Yüksek Kontrastlı Form Alanları & Butonlar */
@@ -991,7 +1101,7 @@ st.markdown(
         div[data-testid="stNumberInput"] input,
         div[data-testid="stTextArea"] textarea {
             background-color: #FFFFFF !important;
-            color: #0F172A !important;
+            color: var(--kp-text) !important;
             border: 1px solid #CBD5E1 !important;
             border-radius: 8px !important;
             font-size: 0.88rem !important;
@@ -999,38 +1109,38 @@ st.markdown(
         div[data-testid="stTextInput"] input:focus,
         div[data-testid="stNumberInput"] input:focus,
         div[data-testid="stTextArea"] textarea:focus {
-            border-color: #0F172A !important;
-            box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.08) !important;
+            border-color: var(--kp-navy) !important;
+            box-shadow: 0 0 0 2px rgba(23, 44, 86, 0.1) !important;
         }
         div[data-testid="stSelectbox"] > div > div {
             background-color: #FFFFFF !important;
             border: 1px solid #CBD5E1 !important;
             border-radius: 8px !important;
-            color: #0F172A !important;
+            color: var(--kp-text) !important;
         }
 
         .stButton > button {
             border-radius: 8px;
             font-weight: 600;
-            font-size: 0.86rem;
-            padding: 0.48rem 0.95rem;
+            font-size: 0.85rem;
+            padding: 0.46rem 0.9rem;
             border: 1px solid #CBD5E1;
             background-color: #FFFFFF;
-            color: #0F172A;
-            transition: all 0.15s ease;
+            color: var(--kp-navy);
+            transition: all 0.14s ease;
         }
         .stButton > button:hover {
-            border-color: #94A3B8;
+            border-color: var(--kp-navy);
             background-color: #F1F5F9;
         }
         .stButton > button[kind="primary"] {
-            background-color: #0F172A;
-            border-color: #0F172A;
+            background-color: var(--kp-navy);
+            border-color: var(--kp-navy);
             color: #FFFFFF;
         }
         .stButton > button[kind="primary"]:hover {
-            background-color: #1E293B;
-            border-color: #1E293B;
+            background-color: #1E3A70;
+            border-color: #1E3A70;
         }
     </style>
     """,
@@ -1412,6 +1522,25 @@ def render_countdown_boxes(target: datetime) -> None:
         )
 
 
+def render_page_strip(page_name: str) -> None:
+    """Aktif sayfa için üst header tekrarı olmadan sade bağlam başlığı çizer."""
+    title, desc = PAGE_DESCRIPTIONS.get(
+        page_name,
+        (page_name, "Kurşun Kalem Dijital Eğitim çalışma alanı."),
+    )
+    st.markdown(
+        f"""
+        <div class="kp-page-strip">
+            <div>
+                <h2 class="kp-page-strip-title">{html.escape(title)}</h2>
+                <p class="kp-page-strip-desc">{html.escape(desc)}</p>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def build_test_docx(
     institution: str,
     branch: str,
@@ -1670,7 +1799,7 @@ def render_school_backpack_panel() -> Dict[str, Any]:
                                     Adet: <b>{qty}</b> • Soru: <b>{entry['line_quota']:,}/ay</b> • Dijimentor: <b>{entry['line_coach']}/ay</b>
                                 </div>
                             </div>
-                            <div style="font-weight:700;font-size:0.92rem;color:#0F172A;white-space:nowrap;">
+                            <div style="font-weight:700;font-size:0.92rem;color:#172C56;white-space:nowrap;">
                                 {entry['line_price']:,} ₺/ay
                             </div>
                         </div>
@@ -2046,9 +2175,9 @@ with st.sidebar:
     st.markdown(
         f"""
         <div class="kp-sidebar-meta">
-            <div style="font-weight:700;color:#0F172A;margin-bottom:0.2rem;">Okul Sırt Çantası</div>
+            <div style="font-weight:700;color:#172C56;margin-bottom:0.2rem;">Aktif Kota &amp; Çanta</div>
             <div>{bag_summary_global['total_count']} Paket • {bag_summary_global['monthly_price']:,} ₺/ay</div>
-            <div style="color:#64748B;margin-top:0.25rem;">
+            <div style="color:#475569;margin-top:0.25rem;">
                 Soru: <b>{int(st.session_state.remaining_question_quota):,}</b> / {bag_summary_global['monthly_quota']:,}<br>
                 Dijimentor: <b>{int(st.session_state.remaining_coach_quota)}</b> / {bag_summary_global['coach_quota']}
             </div>
@@ -2076,24 +2205,22 @@ st.markdown(
                 <p class="kp-top-sub">{BRAND_TAGLINE}</p>
             </div>
         </div>
-        <div class="kp-status-chip">2027 LGS &amp; Maarif Modeli</div>
+        <div class="kp-header-badges">
+            <span class="kp-gold-chip">2027 LGS &amp; YKS</span>
+            <span class="kp-status-chip">Maarif Modeli</span>
+        </div>
     </div>
     """,
     unsafe_allow_html=True,
 )
 
 current_page = st.session_state.active_page
+render_page_strip(current_page)
 
 # ==============================================================================
 # 1. ANA SAYFA
 # ==============================================================================
 if current_page == "Ana Sayfa":
-    st.subheader("Ana Sayfa")
-    st.write(
-        "İlkokuldan Liseye ve YKS'ye uzanan, yapay zekâ destekli soru fabrikası, "
-        "Dijimentor ve ölçme-değerlendirme ekosistemi."
-    )
-
     head_col, toggle_col = st.columns([3, 1])
     with head_col:
         st.markdown("#### 2027 LGS Geri Sayım (13 Haziran 2027)")
@@ -2120,9 +2247,9 @@ if current_page == "Ana Sayfa":
     with f1:
         st.markdown(
             """
-            <div class="kp-card">
-                <div style="font-weight:700;font-size:1rem;color:#0F172A;">Soru &amp; Redaksiyon Fabrikası</div>
-                <p style="font-size:0.85rem;color:#475569;margin:0.4rem 0 0 0;">
+            <div class="kp-mod-card">
+                <div class="kp-mod-title">Soru &amp; Redaksiyon Fabrikası</div>
+                <p class="kp-mod-desc">
                     Maarif Modeli kazanımlarına uygun, çeldirici analizi yapılmış
                     özgün sorular üretin ve DOCX formatında indirin.
                 </p>
@@ -2135,9 +2262,9 @@ if current_page == "Ana Sayfa":
     with f2:
         st.markdown(
             """
-            <div class="kp-card">
-                <div style="font-weight:700;font-size:1rem;color:#0F172A;">Dijimentor Rehberlik</div>
-                <p style="font-size:0.85rem;color:#475569;margin:0.4rem 0 0 0;">
+            <div class="kp-mod-card">
+                <div class="kp-mod-title">Dijimentor Rehberlik</div>
+                <p class="kp-mod-desc">
                     Hedef sınava, zayıf kazanımlara ve haftalık kapasiteye göre
                     ölçülebilir çalışma ve deneme planı oluşturun.
                 </p>
@@ -2150,9 +2277,9 @@ if current_page == "Ana Sayfa":
     with f3:
         st.markdown(
             """
-            <div class="kp-card">
-                <div style="font-weight:700;font-size:1rem;color:#0F172A;">Paketler &amp; Abonelik Vitrini</div>
-                <p style="font-size:0.85rem;color:#475569;margin:0.4rem 0 0 0;">
+            <div class="kp-mod-card">
+                <div class="kp-mod-title">Paketler &amp; Abonelik Vitrini</div>
+                <p class="kp-mod-desc">
                     Öğrenci, YKS, Veli ve Kurumsal paketleri Okul Sırt Çantasına
                     ekleyin ve iyzico taksit seçeneklerini inceleyin.
                 </p>
@@ -2176,13 +2303,13 @@ if current_page == "Ana Sayfa":
             "Cmt": 25900,
             "Paz": 24800,
         }
-        st.area_chart(telemetry_data, height=205)
+        st.area_chart(telemetry_data, color="#172C56", height=210)
     with ana_r:
         st.markdown("#### Son Aktiviteler")
         for item in st.session_state.get("activity_log", [])[:5]:
             st.markdown(
                 f"""
-                <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:10px;padding:0.6rem 0.8rem;margin-bottom:0.45rem;">
+                <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-left:3px solid #B48219;border-radius:10px;padding:0.58rem 0.8rem;margin-bottom:0.45rem;">
                     <div style="font-size:0.72rem;font-weight:600;color:#64748B;">{item['time']} • {item['module']}</div>
                     <div style="font-size:0.83rem;color:#0F172A;margin-top:0.12rem;">{item['summary']}</div>
                 </div>
@@ -2198,12 +2325,6 @@ if current_page == "Ana Sayfa":
 # 2. SORU & REDAKSİYON FABRİKASI
 # ==============================================================================
 elif current_page == "Soru & Redaksiyon Fabrikası":
-    st.subheader("Soru & Redaksiyon Fabrikası")
-    st.caption(
-        "Türkiye Yüzyılı Maarif Modeli standartlarında, Otomatik Redaktör ve Kalite Kontrollü "
-        "değerlendirme testleri oluşturun."
-    )
-
     if st.session_state.get("factory_focus_topic"):
         st.info(f"Dijimentor'dan aktarılan odak konu: **{st.session_state['factory_focus_topic']}**")
 
@@ -2311,676 +2432,4 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
                 use_container_width=True,
             )
         with act_c2:
-            if st.button("Mini Deneme Olarak Çöz", use_container_width=True):
-                st.session_state["portal_exam_source"] = st.session_state.generated_test_text
-                record_activity("Köprü", "Test Öğrenci Portalı mini denemesine aktarıldı")
-                navigate_to("Öğrenci Portalı & Çözüm")
-        with act_c3:
-            if st.button("İlk Soruyu Çözüm Rehberine Gönder", use_container_width=True):
-                parsed_q = parse_quiz_questions(st.session_state.generated_test_text)
-                st.session_state["portal_question_draft"] = (
-                    parsed_q[0]["full_text"] if parsed_q else st.session_state.generated_test_text[:1000]
-                )
-                navigate_to("Öğrenci Portalı & Çözüm")
-
-# ==============================================================================
-# 3. ÖĞRENCİ PORTALI & ÇÖZÜM
-# ==============================================================================
-elif current_page == "Öğrenci Portalı & Çözüm":
-    st.subheader("Öğrenci Portalı & Çözüm")
-    st.write(
-        "Üretilen soruları otomatik cevap anahtarı kontrollü mini deneme olarak çözebilir veya "
-        "takıldığın soruyu adım adım mentorluk rehberiyle analiz edebilirsin."
-    )
-
-    tab_exam, tab_hint = st.tabs(["İnteraktif Mini Deneme & Net Analizi", "Adımlı Çözüm Asistanı"])
-
-    with tab_exam:
-        exam_source = st.text_area(
-            "Deneme Soru Metni (Soru Fabrikasından otomatik gelir veya buraya yapıştır)",
-            value=st.session_state.get("portal_exam_source") or st.session_state.get("generated_test_text", ""),
-            height=130,
-            placeholder="Soru 1) ... A) ... B) ... C) ... D) ... Cevap Anahtarı: 1-B",
-        )
-        st.session_state["portal_exam_source"] = exam_source
-        questions = parse_quiz_questions(exam_source)
-
-        if not questions:
-            st.info(
-                "Etkileşimli şık işaretleyebilmek için **Soru & Redaksiyon Fabrikası** sayfasından "
-                "bir test üretin veya 'Soru 1 ... A) ... B) ... C) ... D) ...' biçiminde sorular yapıştırın."
-            )
-        else:
-            st.markdown(f"#### Aktif Mini Deneme ({len(questions)} Soru)")
-            user_answers: Dict[int, str] = {}
-            for idx, q in enumerate(questions):
-                with st.container(border=True):
-                    st.markdown(q["stem"])
-                    opts = list(q["options"].keys())
-                    chosen = st.radio(
-                        f"Soru {q['num']} Yanıtın",
-                        options=opts,
-                        format_func=lambda k, o_map=q["options"]: f"{k}) {o_map[k]}",
-                        horizontal=True,
-                        key=f"mini_q_{idx}",
-                    )
-                    user_answers[idx] = chosen
-
-            if st.button("Denemeyi Bitir ve Netimi Hesapla", type="primary"):
-                correct_cnt = 0
-                wrong_cnt = 0
-                ungraded_cnt = 0
-                wrong_questions: List[Dict[str, Any]] = []
-                result_rows: List[Dict[str, str]] = []
-
-                for idx, q in enumerate(questions):
-                    u_ans = user_answers[idx]
-                    c_ans = q.get("correct")
-                    if not c_ans:
-                        ungraded_cnt += 1
-                        status_txt = "Anahtar Yok"
-                    elif u_ans == c_ans:
-                        correct_cnt += 1
-                        status_txt = "Doğru"
-                    else:
-                        wrong_cnt += 1
-                        wrong_questions.append(q)
-                        status_txt = "Yanlış"
-
-                    result_rows.append(
-                        {
-                            "Soru": f"Soru {q['num']}",
-                            "Senin Yanıtın": u_ans,
-                            "Doğru Cevap": c_ans or "Belirtilmedi",
-                            "Durum": status_txt,
-                        }
-                    )
-
-                graded_total = correct_cnt + wrong_cnt
-                net_score = max(0.0, correct_cnt - (wrong_cnt / 3.0))
-                accuracy = (correct_cnt / graded_total * 100.0) if graded_total > 0 else 0.0
-
-                st.session_state["last_exam_report"] = {
-                    "correct": correct_cnt,
-                    "wrong": wrong_cnt,
-                    "net": net_score,
-                    "accuracy": accuracy,
-                    "rows": result_rows,
-                    "first_wrong": wrong_questions[0]["full_text"] if wrong_questions else "",
-                }
-                record_activity(
-                    "Mini Deneme",
-                    f"{correct_cnt}D {wrong_cnt}Y • {net_score:.2f} Net (%{accuracy:.0f})",
-                )
-
-            report = st.session_state.get("last_exam_report")
-            if report:
-                st.markdown("---")
-                r1, r2, r3, r4 = st.columns(4)
-                r1.metric("Doğru Sayısı", f"{report['correct']} Soru")
-                r2.metric("Yanlış Sayısı", f"{report['wrong']} Soru")
-                r3.metric("Hesaplanan Net (3Y=1D)", f"{report['net']:.2f} Net")
-                r4.metric("Başarı Oranı", f"%{report['accuracy']:.1f}")
-
-                st.dataframe(report["rows"], use_container_width=True, hide_index=True)
-
-                if report.get("first_wrong"):
-                    if st.button("Yanlış Yaptığım İlk Soruyu Çözüm Rehberine Aktar"):
-                        st.session_state["portal_question_draft"] = report["first_wrong"]
-                        st.toast("Yanlış soru Adımlı Çözüm Asistanı sekmesine aktarıldı.")
-                        st.rerun()
-
-    with tab_hint:
-        col_l, col_r = st.columns([2, 1])
-        with col_l:
-            default_q = st.session_state.get("portal_question_draft", "")
-            student_question = st.text_area(
-                "Çözümünü İncelemek İstediğin Soru Metni",
-                value=default_q,
-                height=160,
-                placeholder="Soru kökünü, verilen öncülleri ve şıkları buraya yapıştır...",
-            )
-        with col_r:
-            hint_mode = st.radio(
-                "Yardım Düzeyi",
-                ["Önce İpucu Ver (Kendim Çözeyim)", "Adım Adım Çözümü Göster"],
-                index=0,
-            )
-            student_attempt = st.text_input("Senin Tahminin / Şıkkın", placeholder="Örn: C şıkkı, çünkü...")
-
-        if st.button("Çözüm Rehberi Oluştur", type="primary", key="btn_solve_guide"):
-            if not student_question.strip():
-                st.warning("Lütfen önce bir soru metni girin.")
-            else:
-                sys_inst = (
-                    "Sen sabırlı, pedagojik ve teşvik edici bir eğitim mentorusun. "
-                    "Öğrenciye doğrudan ezberletmek yerine mantığını kavratacak şekilde açıkla."
-                )
-                prompt = (
-                    f"Soru:\n{student_question}\n\n"
-                    f"Öğrencinin Denemesi: {student_attempt or 'Belirtilmedi'}\n"
-                    f"Yardım Düzeyi: {hint_mode}\n\n"
-                    "Lütfen Türkçe olarak net ve anlaşılır yanıt ver."
-                )
-                try:
-                    with st.spinner("Çözüm rehberi hazırlanıyor..."):
-                        ans = call_gemini_text(prompt=prompt, system_instruction=sys_inst)
-                    record_activity("Çözüm Asistanı", f"{hint_mode} üretildi")
-                    st.markdown("#### Çözüm Analizi")
-                    st.markdown(ans)
-                except Exception as exc:
-                    st.error(f"Çözüm üretilirken hata oluştu: {exc}")
-
-# ==============================================================================
-# 4. DİJİMENTOR
-# ==============================================================================
-elif current_page == "Dijimentor":
-    st.markdown(
-        """
-        <div class="kp-studio-banner">
-            <div class="kp-studio-title">Dijimentor — Akıllı Sınav &amp; Performans Mentorluğu</div>
-            <div class="kp-studio-sub">
-                Hedef sınavına, haftalık çalışma kapasitene ve çeldirici/zaman analizine göre
-                ölçülebilir haftalık aksiyon planı ve deneme stratejisi üretir.
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    current_hours = int(st.session_state.get("dk_hours", 16))
-    daily_avg = current_hours / 7.0
-    k_c1, k_c2, k_c3, k_c4 = st.columns(4)
-    k_c1.markdown(
-        f"""
-        <div class="kp-kpi-card">
-            <div class="kp-kpi-label">Mentorluk Motoru</div>
-            <div class="kp-kpi-value">Dijimentor v3</div>
-            <div class="kp-kpi-sub">Kalan Plan: {int(st.session_state.remaining_coach_quota)} Hak</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    k_c2.markdown(
-        f"""
-        <div class="kp-kpi-card">
-            <div class="kp-kpi-label">Günlük Ortalama Tempo</div>
-            <div class="kp-kpi-value">{daily_avg:.1f} Saat</div>
-            <div class="kp-kpi-sub">Haftalık Toplam: {current_hours} Saat</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    k_c3.markdown(
-        """
-        <div class="kp-kpi-card">
-            <div class="kp-kpi-label">Analiz Boyutu</div>
-            <div class="kp-kpi-value">3 Katman</div>
-            <div class="kp-kpi-sub">Hız • Çeldirici • Net İvmesi</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    k_c4.markdown(
-        """
-        <div class="kp-kpi-card">
-            <div class="kp-kpi-label">Çıktı Formatı</div>
-            <div class="kp-kpi-value">Plan + DOCX</div>
-            <div class="kp-kpi-sub">İndirilebilir Çalışma Rehberi</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    st.write("")
-    st.markdown("#### Hızlı Mentorluk Senaryoları")
-    p_cols = st.columns(len(DIJIMENTOR_PRESETS) + 1)
-    for idx, (preset_title, preset_data) in enumerate(DIJIMENTOR_PRESETS.items()):
-        with p_cols[idx]:
-            if st.button(preset_title, key=f"preset_{idx}", use_container_width=True):
-                st.session_state["dk_exam"] = preset_data["exam"]
-                st.session_state["dk_hours"] = preset_data["hours"]
-                st.session_state["dk_goal"] = preset_data["goal"]
-                st.session_state["dk_focus"] = preset_data["focus"]
-                st.session_state["dk_weak"] = preset_data["weak"]
-                st.session_state["dk_status"] = preset_data["status"]
-                st.session_state["dk_active_preset"] = preset_title
-                st.session_state["factory_focus_topic"] = preset_data["topic"]
-                st.session_state["factory_branch"] = preset_data["branch"]
-                st.session_state["factory_grade"] = preset_data["grade"]
-                record_activity(
-                    "Dijimentor Yönlendirme",
-                    f"{preset_title} seçildi ve Soru Fabrikasına yönlendirildi",
-                )
-                navigate_to("Soru & Redaksiyon Fabrikası")
-    with p_cols[-1]:
-        if st.button("Planı Temizle", key="clear_dk_plan", use_container_width=True):
-            st.session_state.dijimentor_plan = ""
-            st.session_state["dk_active_preset"] = ""
-            st.rerun()
-
-    st.markdown("---")
-    st.markdown("#### Öğrenci Hedef ve Çalışma Profili")
-
-    r1_a, r1_b, r1_c = st.columns(3)
-    with r1_a:
-        target_exam = st.selectbox(
-            "Hedef Sınav / Kademe",
-            ["2027 LGS", "2027 TYT - AYT", "5-7. Sınıf Akademik Gelişim"],
-            index=["2027 LGS", "2027 TYT - AYT", "5-7. Sınıf Akademik Gelişim"].index(
-                st.session_state.get("dk_exam", "2027 LGS")
-            ),
-            key="dk_exam_sel",
-        )
-        st.session_state["dk_exam"] = target_exam
-
-        weekly_hours = st.slider(
-            "Haftalık Çalışma Süresi (Saat)",
-            min_value=4,
-            max_value=45,
-            value=current_hours,
-            key="dk_hours_sld",
-        )
-        st.session_state["dk_hours"] = weekly_hours
-
-    with r1_b:
-        target_goal = st.text_input(
-            "Hedef Puan / Net / Okul Bandı",
-            value=st.session_state.get(
-                "dk_goal", "Nitelikli lise / yüksek net ve sıfıra yakın dikkat hatası"
-            ),
-            key="dk_goal_inp",
-        )
-        st.session_state["dk_goal"] = target_goal
-
-        coach_focus = st.selectbox(
-            "Mentorluk Odak Alanı",
-            [
-                "Haftalık Dengeli Çalışma Programı",
-                "Deneme Net Artırma & Zaman Yönetimi",
-                "Dikkat ve Çeldirici Tuzağı Azaltma",
-                "Sınav Kaygısı & Motivasyon Rutini",
-            ],
-            index=[
-                "Haftalık Dengeli Çalışma Programı",
-                "Deneme Net Artırma & Zaman Yönetimi",
-                "Dikkat ve Çeldirici Tuzağı Azaltma",
-                "Sınav Kaygısı & Motivasyon Rutini",
-            ].index(st.session_state.get("dk_focus", "Haftalık Dengeli Çalışma Programı")),
-            key="dk_focus_sel",
-        )
-        st.session_state["dk_focus"] = coach_focus
-
-    with r1_c:
-        weak_topics = st.text_area(
-            "Zorlandığın Dersler / Kazanımlar",
-            value=st.session_state.get(
-                "dk_weak", "Paragrafta ana düşünce, üslü ifadeler, dikkat kaynaklı işlem hataları"
-            ),
-            height=82,
-            key="dk_weak_area",
-        )
-        st.session_state["dk_weak"] = weak_topics
-
-        recent_score = st.text_input(
-            "Mevcut Deneme / Süre Durumu",
-            value=st.session_state.get(
-                "dk_status", "Orta seviye, süreyi yetiştirmede zorlanıyorum"
-            ),
-            key="dk_status_inp",
-        )
-        st.session_state["dk_status"] = recent_score
-
-    q_hrs = round(weekly_hours * 0.45, 1)
-    r_hrs = round(weekly_hours * 0.30, 1)
-    a_hrs = round(weekly_hours * 0.25, 1)
-    st.markdown(
-        f"""
-        <div style="margin-top:0.65rem;padding-top:0.75rem;border-top:1px solid #E2E8F0;">
-            <div style="font-size:0.75rem;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.04em;">
-                Önerilen Haftalık Kapasite Dağılımı ({weekly_hours} Saat)
-            </div>
-            <div class="kp-dist-bar">
-                <div style="width:45%;background:#0F172A;"></div>
-                <div style="width:30%;background:#475569;"></div>
-                <div style="width:25%;background:#94A3B8;"></div>
-            </div>
-            <div class="kp-dist-legend">
-                <span>Soru &amp; Muhakeme: <b>{q_hrs} sa</b> (%45)</span>
-                <span>Konu Tekrarı: <b>{r_hrs} sa</b> (%30)</span>
-                <span>Deneme &amp; Analiz: <b>{a_hrs} sa</b> (%25)</span>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    st.write("")
-    include_routine = st.checkbox(
-        "Günlük mikro rutin, deneme analiz protokolü ve hafta sonu kontrol listesi dahil et",
-        value=True,
-    )
-
-    if st.button("Dijimentor Planı Oluştur", type="primary"):
-        quota_ok, quota_msg = consume_quota("coach", 1)
-        if not quota_ok:
-            st.error(quota_msg)
-        else:
-            sys_coach = (
-                "Sen 'Dijimentor' adlı, Türkiye'deki öğrenciler için çalışan üst düzey, net, "
-                "empatik ve veri odaklı bir dijital eğitim mentorusun. Yanıtını başlıklarla, "
-                "madde işaretleriyle ve uygulanabilir zaman bloklarıyla kurumsal bir mentorluk "
-                "raporu gibi düzenle. Şu bölümleri net oluştur:\n"
-                "1. Teşhis ve Stratejik Özet\n"
-                "2. Pazartesi–Pazar Haftalık Çalışma Planı (saat ve odak ders dağılımı)\n"
-                "3. Çeldirici & Zaman Yönetimi Protokolü\n"
-                "4. Haftalık Başarı KPI'ları ve Kontrol Listesi"
-            )
-            prompt_coach = (
-                f"Hedef Sınav / Kademe: {target_exam}\n"
-                f"Hedef Bandı: {target_goal}\n"
-                f"Haftalık Çalışma Süresi: {weekly_hours} saat\n"
-                f"Zorlanılan Dersler / Kazanımlar: {weak_topics}\n"
-                f"Mentorluk Odak Alanı: {coach_focus}\n"
-                f"Mevcut Deneme / Süre Durumu: {recent_score}\n"
-                f"Detaylı Rutin & Analiz Protokolü: {'Evet' if include_routine else 'Özet'}\n\n"
-                "Lütfen öğrenciye doğrudan uygulanabilir, motive edici ve net bir Türkçe plan sun."
-            )
-            try:
-                with st.spinner("Dijimentor çalışma ve deneme stratejisi hazırlanıyor..."):
-                    plan = call_gemini_text(prompt=prompt_coach, system_instruction=sys_coach)
-                st.session_state.dijimentor_plan = plan
-                record_activity("Dijimentor", f"{target_exam} • {weekly_hours} saatlik plan üretildi")
-                st.success("Dijimentor planı başarıyla oluşturuldu.")
-            except Exception as exc:
-                st.session_state["remaining_coach_quota"] = int(
-                    st.session_state.get("remaining_coach_quota", 0)
-                ) + 1
-                st.error(f"Dijimentor planı oluşturulurken hata oluştu: {exc}")
-
-    if st.session_state.dijimentor_plan:
-        st.markdown("---")
-        st.markdown("### Kişiselleştirilmiş Dijimentor Mentorluk Raporu")
-        st.markdown(st.session_state.dijimentor_plan)
-
-        meta_summary = (
-            f"Hedef: {target_exam} | Hedef Bandı: {target_goal} | "
-            f"Haftalık Süre: {weekly_hours} Saat | Odak: {coach_focus}"
-        )
-        docx_coach = build_coach_docx(meta_summary, st.session_state.dijimentor_plan)
-        txt_report = (
-            f"{BRAND_NAME}\n"
-            f"{meta_summary}\n"
-            f"Tarih: {datetime.now().strftime('%d.%m.%Y')}\n"
-            f"{'=' * 60}\n\n"
-            f"{st.session_state.dijimentor_plan}"
-        )
-
-        d_col1, d_col2, d_col3 = st.columns(3)
-        with d_col1:
-            st.download_button(
-                label="Mentorluk Planını DOCX İndir",
-                data=docx_coach,
-                file_name="dijimentor_calisma_plani.docx",
-                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                use_container_width=True,
-            )
-        with d_col2:
-            st.download_button(
-                label="Planı Metin (.txt) İndir",
-                data=txt_report.encode("utf-8"),
-                file_name="dijimentor_calisma_plani.txt",
-                mime="text/plain",
-                use_container_width=True,
-            )
-        with d_col3:
-            if st.button("Zayıf Konulardan Soru Üret", use_container_width=True):
-                st.session_state["factory_focus_topic"] = weak_topics.split(",")[0].strip()
-                navigate_to("Soru & Redaksiyon Fabrikası")
-
-# ==============================================================================
-# 5. VELİ TAKİP PANELİ
-# ==============================================================================
-elif current_page == "Veli Takip Paneli":
-    st.subheader("Veli Takip Paneli")
-    st.write("Öğrencinin haftalık çalışma düzeni, soru çözümü ve kazanım ilerleme özeti.")
-
-    v1, v2, v3 = st.columns(3)
-    v1.metric("Bu Hafta Çözülen Soru", "340 Soru", "+18% geçen haftaya göre")
-    v2.metric("Ortalama Doğruluk", "%81", "+4 puan")
-    v3.metric("Dijimentor Plan Uyumu", "%88", "6 / 7 gün aktif")
-
-    st.markdown("#### Kazanım Bazlı Görünüm")
-    st.progress(0.84, text="Okuma ve Anlama — %84")
-    st.progress(0.72, text="Sayısal Muhakeme ve Problem Çözme — %72")
-    st.progress(0.90, text="Düzenli Tekrar ve Ödev Tamamlama — %90")
-
-    g_col1, g_col2 = st.columns(2)
-    with g_col1:
-        st.markdown("#### Haftalık Doğruluk İvmesi (%)")
-        st.area_chart(
-            {"1. Hafta": 71, "2. Hafta": 74, "3. Hafta": 77, "4. Hafta": 81},
-            height=190,
-        )
-    with g_col2:
-        st.markdown("#### Ders Bazlı Başarı Oranı (%)")
-        st.bar_chart(
-            {"Türkçe": 84, "Matematik": 72, "Fen": 82, "Sosyal": 86, "İngilizce": 79},
-            height=190,
-        )
-
-    render_parent_notification_center()
-
-# ==============================================================================
-# 6. B2B LİSANS & KURUM
-# ==============================================================================
-elif current_page == "B2B Lisans & Kurum":
-    st.subheader("B2B Lisans & Kurum Yönetimi")
-    st.write(
-        "Okullar, kurs merkezleri ve eğitim kurumları için toplu soru üretimi, zümre "
-        "kapasite dağıtımı ve kurumsal lisanslama çözümleri."
-    )
-
-    tab_b2b_form, tab_b2b_zumre = st.tabs(
-        ["Kurumsal Lisans Teklif Stüdyosu", "Zümre Soru Dağıtımı & Kurumsal Rapor"]
-    )
-
-    with tab_b2b_form:
-        with st.form("b2b_inquiry_form"):
-            c1, c2 = st.columns(2)
-            with c1:
-                org_name = st.text_input("Kurum / Okul Adı", value="Özel Kurşun Kalem Akademi")
-                city = st.text_input("İl / İlçe", value="İstanbul")
-                teacher_seats = st.number_input(
-                    "Öğretmen / Editör Koltuk Sayısı", min_value=1, max_value=500, value=15
-                )
-            with c2:
-                student_seats = st.number_input(
-                    "Öğrenci Hesap Sayısı", min_value=10, max_value=10000, value=250
-                )
-                contact_name = st.text_input("Yetkili Adı Soyadı")
-                contact_email = st.text_input("Kurumsal E-posta")
-
-            submitted = st.form_submit_button("Kurumsal Lisans Teklifi Hazırla", type="primary")
-            if submitted:
-                if not org_name.strip():
-                    st.warning("Lütfen kurum adını girin.")
-                else:
-                    st.session_state["last_b2b_summary"] = (
-                        f"Kurum: {org_name} ({city}) | Yetkili: {contact_name or '-'} | "
-                        f"E-posta: {contact_email or '-'} | Koltuk: {teacher_seats} Öğretmen, "
-                        f"{student_seats} Öğrenci"
-                    )
-                    st.session_state["b2b_org_cache"] = {
-                        "org": org_name,
-                        "teachers": int(teacher_seats),
-                        "students": int(student_seats),
-                    }
-                    record_activity("B2B Lisans", f"{org_name} teklif taslağı hazırlandı")
-                    st.success(
-                        f"**{org_name}** ({city}) için **{teacher_seats} öğretmen** ve "
-                        f"**{student_seats} öğrenci** kapasiteli kurumsal lisans talebi kaydedildi."
-                    )
-
-        if st.session_state.get("last_b2b_summary"):
-            b2b_tier = get_tier_by_id("b2b_kurs" if student_seats <= 300 else "b2b_kampus")
-            b2b_summary = {
-                "name": b2b_tier["name"],
-                "total_count": 1,
-                "monthly_price": b2b_tier["monthly_price"],
-                "monthly_quota": b2b_tier["monthly_quota"],
-                "coach_quota": b2b_tier["coach_quota"],
-                "entries": [
-                    {
-                        "tier": b2b_tier,
-                        "qty": 1,
-                        "line_price": b2b_tier["monthly_price"],
-                        "line_quota": b2b_tier["monthly_quota"],
-                        "line_coach": b2b_tier["coach_quota"],
-                    }
-                ],
-            }
-            b2b_docx = build_commercial_brief_docx(
-                title=f"{org_name or 'Kurumsal'} Lisans Teklif Özeti",
-                summary=b2b_summary,
-                billing_cycle="Yıllık (%20 İndirim)",
-                installment=6,
-                total_amount=round(b2b_tier["monthly_price"] * 12 * 0.80),
-                extra_notes=st.session_state["last_b2b_summary"],
-            )
-            st.download_button(
-                label="Kurumsal Lisans Teklifini DOCX İndir",
-                data=b2b_docx,
-                file_name="kursun_kalem_kurumsal_teklif.docx",
-                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            )
-
-    with tab_b2b_zumre:
-        org_cache = st.session_state.get(
-            "b2b_org_cache", {"org": "Özel Kurşun Kalem Akademi", "teachers": 15, "students": 250}
-        )
-        recommended_tier = get_tier_by_id(
-            "b2b_kurs" if org_cache["students"] <= 300 else "b2b_kampus"
-        )
-        total_q = recommended_tier["monthly_quota"]
-
-        bk1, bk2, bk3, bk4 = st.columns(4)
-        bk1.metric("Kurum Profili", org_cache["org"])
-        bk2.metric("Aylık Soru Havuzu", f"{total_q:,}".replace(",", "."))
-        bk3.metric("Öğretmen Başına Kota", f"{total_q // max(1, org_cache['teachers']):,} Soru".replace(",", "."))
-        bk4.metric("Öğrenci Başına Test", f"{total_q // max(1, org_cache['students'])} Soru / Ay")
-
-        st.markdown("#### Branş Zümreleri Arası Soru Kotası Dağılımı")
-        dist_ratios = {
-            "Türkçe & Edebiyat Zümresi": 0.28,
-            "Matematik & Geometri Zümresi": 0.30,
-            "Fen Bilimleri Zümresi": 0.22,
-            "Sosyal Bilimler & İnkılap Zümresi": 0.12,
-            "Yabancı Dil (İngilizce) Zümresi": 0.08,
-        }
-        zumre_rows = []
-        chart_map: Dict[str, int] = {}
-        for z_name, ratio in dist_ratios.items():
-            allocated = int(round(total_q * ratio))
-            short_lbl = z_name.split(" ")[0]
-            chart_map[short_lbl] = allocated
-            zumre_rows.append(
-                {
-                    "Zümre Birimi": z_name,
-                    "Pay (%)": f"%{int(ratio * 100)}",
-                    "Aylık Soru Kotası": f"{allocated:,}".replace(",", "."),
-                    "Haftalık Deneme Hedefi": f"{max(1, allocated // 80)} Kitapçık",
-                    "Redaksiyon Standardı": "Maarif Modeli • Çift Kontrol",
-                }
-            )
-
-        zc1, zc2 = st.columns([3, 2])
-        with zc1:
-            st.dataframe(zumre_rows, use_container_width=True, hide_index=True)
-        with zc2:
-            st.bar_chart(chart_map, height=225)
-
-# ==============================================================================
-# 7. PAKETLER & ABONELİK VİTRİNİ
-# ==============================================================================
-elif current_page == "Paketler & Abonelik Vitrini":
-    total_pkg_count = len(SUBSCRIPTION_TIERS)
-    st.subheader(f"Paketler & Abonelik Vitrini ({total_pkg_count} Paket)")
-    st.write(
-        "Öğrenci, YKS, Veli ve Kurumsal segmentlerindeki paketleri Okul Sırt Çantanıza "
-        "ekleyin, adetleri yönetin ve iyzico taksit seçenekleriyle kotalarınızı aktifleyin."
-    )
-
-    current_bag = get_bag_items()
-    active_bag_summary = render_school_backpack_panel()
-
-    st.markdown("#### Segment Filtresi")
-    selected_segment = st.segmented_control(
-        "Segment Filtresi",
-        options=["Tümü", "Öğrenci", "YKS", "Veli", "Kurum / B2B"],
-        default="Tümü",
-        label_visibility="collapsed",
-    )
-
-    filtered_tiers = (
-        SUBSCRIPTION_TIERS
-        if not selected_segment or selected_segment == "Tümü"
-        else [t for t in SUBSCRIPTION_TIERS if t["segment"] == selected_segment]
-    )
-
-    for row_start in range(0, len(filtered_tiers), 3):
-        cols = st.columns(3)
-        for idx, tier in enumerate(filtered_tiers[row_start : row_start + 3]):
-            with cols[idx]:
-                in_bag_qty = current_bag.get(tier["id"], 0)
-                bag_tag = f" • Çantada: {in_bag_qty}" if in_bag_qty > 0 else ""
-                feats_li = "".join([f"<li>• {html.escape(feat)}</li>" for feat in tier["features"]])
-                st.markdown(
-                    f"""
-                    <div class="kp-pkg-card">
-                        <div class="kp-pkg-top">
-                            <span class="kp-pkg-seg">{html.escape(tier["segment"])}</span>
-                            <span class="kp-pkg-badge">{html.escape(tier["badge"])}{html.escape(bag_tag)}</span>
-                        </div>
-                        <div class="kp-pkg-title">{html.escape(tier["name"])}</div>
-                        <div class="kp-pkg-price">
-                            {tier["monthly_price"]:,} ₺ <span>/ ay</span>
-                        </div>
-                        <div class="kp-pkg-desc">{html.escape(tier["desc"])}</div>
-                        <ul class="kp-pkg-feats">{feats_li}</ul>
-                    </div>
-                    """.replace(",", "."),
-                    unsafe_allow_html=True,
-                )
-                st.button(
-                    "Çantaya Ekle",
-                    key=f"select_{tier['id']}",
-                    type="primary" if in_bag_qty > 0 else "secondary",
-                    use_container_width=True,
-                    on_click=cb_add_tier_to_bag,
-                    args=(tier["id"], 1),
-                )
-
-    st.markdown("---")
-    st.markdown(f"#### {total_pkg_count} Paket Karşılaştırma Matrisi")
-    matrix_rows = [
-        {
-            "Paket Adı": t["name"],
-            "Segment": t["segment"],
-            "Etiket": t["badge"],
-            "Çantadaki Adet": current_bag.get(t["id"], 0),
-            "Aylık Soru Kotası": f"{t['monthly_quota']:,}".replace(",", "."),
-            "Dijimentor Plan": f"{t['coach_quota']}/ay",
-            "Aylık Ücret (₺)": f"{t['monthly_price']:,}".replace(",", "."),
-            "Öne Çıkan Kapsam": t["features"][0],
-        }
-        for t in SUBSCRIPTION_TIERS
-    ]
-    st.dataframe(matrix_rows, use_container_width=True, hide_index=True)
-
-    st.markdown("---")
-    render_iyzico_simulator(
-        package_name=active_bag_summary["name"],
-        monthly_price=active_bag_summary["monthly_price"],
-        summary=active_bag_summary,
-    )
+            if st.button("Mini Deneme Olarak Çöz", use_container
