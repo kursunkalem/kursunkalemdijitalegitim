@@ -155,11 +155,10 @@ PAGES = [
     "Veli Takip Paneli",
     "B2B Lisans & Kurum",
     "Paketler & Abonelik Vitrini",
-]
-
 PAGE_DESCRIPTIONS: Dict[str, Tuple[str, str]] = {
-  st.subheader("Genel Bakış & Sınav Durumu")
-st.caption("2027 LGS ve YKS geri sayımı, çalışma verileri, modüller ve haftalık ilerleme.")
+    "Ana Sayfa": (
+        "Genel Bakış & Sınav Durumu",
+        "2027 LGS ve YKS geri sayımı, çalışma verileri, modüller ve haftalık ilerleme.",
     ),
     "Soru & Redaksiyon Fabrikası": (
         "Maarif Modeli Soru & Kalite Stüdyosu",
