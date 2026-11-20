@@ -684,7 +684,7 @@ BACKPACK_DATA_URI = svg_to_data_uri(SCHOOL_BACKPACK_SVG)
 LOGO_PNG_BYTES = get_embedded_logo_png_bytes()
 
 # ==============================================================================
-# KURUMSAL SAAS TASARIM SİSTEMİ (LACİVERT + ALTIN VURGULU SADE GÖRÜNÜM)
+# KURUMSAL SAAS TASARIM SİSTEMİ (LACİVERT + ALTIN + FERAH ZEMİN PALETİ)
 # ==============================================================================
 st.markdown(
     """
@@ -692,14 +692,16 @@ st.markdown(
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
         :root {
-            --kp-navy: #172C56;
-            --kp-navy-deep: #0F172A;
-            --kp-gold: #B48219;
-            --kp-gold-soft: #FEF9E7;
-            --kp-gold-border: #E6C77B;
-            --kp-bg: #F4F7FB;
+            --kp-navy: #162B54;
+            --kp-navy-hover: #1E3A6E;
+            --kp-navy-soft: #EBF0F8;
+            --kp-gold: #C48F1B;
+            --kp-gold-soft: #FFFBEB;
+            --kp-gold-border: #E8C97A;
+            --kp-bg: #F5F7FA;
             --kp-surface: #FFFFFF;
-            --kp-border: #E2E8F0;
+            --kp-surface-alt: #F9FBFD;
+            --kp-border: #DCE3EC;
             --kp-text: #0F172A;
             --kp-muted: #475569;
         }
@@ -712,7 +714,7 @@ st.markdown(
             background-color: var(--kp-bg);
         }
         [data-testid="stHeader"] {
-            background: rgba(244, 247, 251, 0.92);
+            background: rgba(245, 247, 250, 0.94);
             backdrop-filter: blur(8px);
             border-bottom: 1px solid var(--kp-border);
         }
@@ -749,7 +751,7 @@ st.markdown(
             flex-shrink: 0;
         }
         .kp-sidebar-brand-title {
-            font-size: 0.9rem;
+            font-size: 0.92rem;
             font-weight: 700;
             color: var(--kp-navy);
             line-height: 1.2;
@@ -768,24 +770,26 @@ st.markdown(
             padding: 0.5rem 0.78rem;
             font-size: 0.84rem;
             font-weight: 500;
-            border: none;
+            border: 1px solid transparent;
             background: transparent;
             color: #334155;
             transition: all 0.14s ease;
         }
         div[data-testid="stSidebar"] .stButton > button:hover {
-            background: #EEF2F7;
+            background: var(--kp-navy-soft);
             color: var(--kp-navy);
+            border-color: #CBD5E1;
         }
         div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
             background: var(--kp-navy);
             color: #FFFFFF;
+            border-color: var(--kp-navy);
             font-weight: 600;
-            box-shadow: 0 2px 6px rgba(23, 44, 86, 0.18);
+            box-shadow: 0 2px 6px rgba(22, 43, 84, 0.16);
         }
 
         .kp-sidebar-meta {
-            background: #F8FAFC;
+            background: var(--kp-surface-alt);
             border: 1px solid var(--kp-border);
             border-left: 3px solid var(--kp-gold);
             border-radius: 10px;
@@ -833,9 +837,9 @@ st.markdown(
             margin: 0;
         }
         .kp-top-sub {
-            font-size: 0.81rem;
-            color: var(--kp-muted);
-            margin: 0.1rem 0 0 0;
+            font-size: 0.82rem;
+            color: #334155;
+            margin: 0.14rem 0 0 0;
         }
         .kp-header-badges {
             display: flex;
@@ -847,19 +851,19 @@ st.markdown(
             font-size: 0.74rem;
             font-weight: 600;
             color: var(--kp-navy);
-            background: #F1F5F9;
-            border: 1px solid #CBD5E1;
-            padding: 0.3rem 0.7rem;
+            background: var(--kp-navy-soft);
+            border: 1px solid #C6D4E8;
+            padding: 0.3rem 0.72rem;
             border-radius: 999px;
             white-space: nowrap;
         }
         .kp-gold-chip {
             font-size: 0.74rem;
             font-weight: 700;
-            color: #7C5308;
+            color: #7D5606;
             background: var(--kp-gold-soft);
             border: 1px solid var(--kp-gold-border);
-            padding: 0.3rem 0.7rem;
+            padding: 0.3rem 0.72rem;
             border-radius: 999px;
             white-space: nowrap;
         }
@@ -877,7 +881,7 @@ st.markdown(
         .kp-page-strip-title {
             font-size: 1.25rem;
             font-weight: 700;
-            color: var(--kp-text);
+            color: var(--kp-navy);
             letter-spacing: -0.015em;
             margin: 0;
         }
@@ -885,6 +889,20 @@ st.markdown(
             font-size: 0.83rem;
             color: var(--kp-muted);
             margin: 0.15rem 0 0 0;
+        }
+
+        /* Sekmeler (stTabs) Kurumsal Renkleri */
+        button[data-baseweb="tab"] {
+            color: #475569 !important;
+            font-weight: 600 !important;
+            font-size: 0.88rem !important;
+        }
+        button[data-baseweb="tab"][aria-selected="true"] {
+            color: var(--kp-navy) !important;
+        }
+        div[data-baseweb="tab-highlight"] {
+            background-color: var(--kp-navy) !important;
+            height: 2.5px !important;
         }
 
         /* Kartlar & Paneller */
@@ -984,7 +1002,7 @@ st.markdown(
             margin-bottom: 1.2rem;
         }
         .kp-bag-visual {
-            background: #F8FAFC;
+            background: var(--kp-surface-alt);
             border: 1px solid var(--kp-border);
             border-radius: 12px;
             padding: 0.95rem;
@@ -1008,7 +1026,7 @@ st.markdown(
             border-radius: 999px;
         }
         .kp-bag-item-chip {
-            background: #F8FAFC;
+            background: var(--kp-surface-alt);
             border: 1px solid var(--kp-border);
             border-radius: 10px;
             padding: 0.6rem 0.85rem;
@@ -1033,14 +1051,14 @@ st.markdown(
             font-size: 0.72rem;
             font-weight: 600;
             color: var(--kp-navy);
-            background: #EEF2F7;
+            background: var(--kp-navy-soft);
             padding: 0.2rem 0.6rem;
             border-radius: 6px;
         }
         .kp-pkg-badge {
             font-size: 0.72rem;
             font-weight: 700;
-            color: #7C5308;
+            color: #7D5606;
             background: var(--kp-gold-soft);
             border: 1px solid var(--kp-gold-border);
             padding: 0.2rem 0.6rem;
@@ -1098,7 +1116,7 @@ st.markdown(
             color: var(--kp-muted);
         }
 
-        /* Yüksek Kontrastlı Form Alanları & Butonlar */
+        /* Yüksek Kontrastlı Form Alanları & Kurumsal Butonlar */
         div[data-testid="stTextInput"] input,
         div[data-testid="stNumberInput"] input,
         div[data-testid="stTextArea"] textarea {
@@ -1108,11 +1126,16 @@ st.markdown(
             border-radius: 8px !important;
             font-size: 0.88rem !important;
         }
+        div[data-testid="stNumberInput"] button {
+            background-color: #F8FAFC !important;
+            color: var(--kp-navy) !important;
+            border-color: #CBD5E1 !important;
+        }
         div[data-testid="stTextInput"] input:focus,
         div[data-testid="stNumberInput"] input:focus,
         div[data-testid="stTextArea"] textarea:focus {
             border-color: var(--kp-navy) !important;
-            box-shadow: 0 0 0 2px rgba(23, 44, 86, 0.1) !important;
+            box-shadow: 0 0 0 2px rgba(22, 43, 84, 0.12) !important;
         }
         div[data-testid="stSelectbox"] > div > div {
             background-color: #FFFFFF !important;
@@ -1121,28 +1144,33 @@ st.markdown(
             color: var(--kp-text) !important;
         }
 
-        .stButton > button {
+        .stButton > button,
+        div[data-testid="stFormSubmitButton"] > button {
             border-radius: 8px;
             font-weight: 600;
             font-size: 0.85rem;
-            padding: 0.46rem 0.9rem;
+            padding: 0.5rem 0.95rem;
             border: 1px solid #CBD5E1;
             background-color: #FFFFFF;
             color: var(--kp-navy);
             transition: all 0.14s ease;
         }
-        .stButton > button:hover {
+        .stButton > button:hover,
+        div[data-testid="stFormSubmitButton"] > button:hover {
             border-color: var(--kp-navy);
-            background-color: #F1F5F9;
+            background-color: var(--kp-navy-soft);
         }
-        .stButton > button[kind="primary"] {
-            background-color: var(--kp-navy);
-            border-color: var(--kp-navy);
-            color: #FFFFFF;
+        .stButton > button[kind="primary"],
+        div[data-testid="stFormSubmitButton"] > button[kind="primary"] {
+            background-color: var(--kp-navy) !important;
+            border-color: var(--kp-navy) !important;
+            color: #FFFFFF !important;
         }
-        .stButton > button[kind="primary"]:hover {
-            background-color: #1E3A70;
-            border-color: #1E3A70;
+        .stButton > button[kind="primary"]:hover,
+        div[data-testid="stFormSubmitButton"] > button[kind="primary"]:hover {
+            background-color: var(--kp-navy-hover) !important;
+            border-color: var(--kp-navy-hover) !important;
+            color: #FFFFFF !important;
         }
     </style>
     """,
@@ -1935,7 +1963,7 @@ def render_school_backpack_panel() -> Dict[str, Any]:
                                     Adet: <b>{qty}</b> • Soru: <b>{entry['line_quota']:,}/ay</b> • Dijimentor: <b>{entry['line_coach']}/ay</b>
                                 </div>
                             </div>
-                            <div style="font-weight:700;font-size:0.92rem;color:#172C56;white-space:nowrap;">
+                            <div style="font-weight:700;font-size:0.92rem;color:#162B54;white-space:nowrap;">
                                 {entry['line_price']:,} ₺/ay
                             </div>
                         </div>
@@ -2114,7 +2142,7 @@ def render_iyzico_simulator(
         if pay_url:
             st.markdown(
                 f'<div style="margin-top:0.75rem;"><a href="{html.escape(str(pay_url))}" target="_blank">'
-                f'<button style="background:#172C56;color:#FFFFFF;border:none;border-radius:8px;'
+                f'<button style="background:#162B54;color:#FFFFFF;border:none;border-radius:8px;'
                 f'padding:0.55rem 1.15rem;font-weight:600;cursor:pointer;">'
                 f'Güvenli iyzico Ödeme Sayfasını Aç</button></a></div>',
                 unsafe_allow_html=True,
@@ -2364,7 +2392,7 @@ with st.sidebar:
     st.markdown(
         f"""
         <div class="kp-sidebar-meta">
-            <div style="font-weight:700;color:#172C56;margin-bottom:0.2rem;">Aktif Kota &amp; Çanta</div>
+            <div style="font-weight:700;color:#162B54;margin-bottom:0.2rem;">Aktif Kota &amp; Çanta</div>
             <div>{bag_summary_global['total_count']} Paket • {bag_summary_global['monthly_price']:,} ₺/ay</div>
             <div style="color:#475569;margin-top:0.25rem;">
                 Soru: <b>{int(st.session_state.remaining_question_quota):,}</b> / {bag_summary_global['monthly_quota']:,}<br>
@@ -2492,13 +2520,13 @@ if current_page == "Ana Sayfa":
             "Cmt": 25900,
             "Paz": 24800,
         }
-        st.area_chart(telemetry_data, color="#172C56", height=210)
+        st.area_chart(telemetry_data, color="#162B54", height=210)
     with ana_r:
         st.markdown("#### Son Aktiviteler")
         for item in st.session_state.get("activity_log", [])[:5]:
             st.markdown(
                 f"""
-                <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-left:3px solid #B48219;border-radius:10px;padding:0.58rem 0.8rem;margin-bottom:0.45rem;">
+                <div style="background:#FFFFFF;border:1px solid #DCE3EC;border-left:3px solid #C48F1B;border-radius:10px;padding:0.58rem 0.8rem;margin-bottom:0.45rem;">
                     <div style="font-size:0.72rem;font-weight:600;color:#64748B;">{item['time']} • {item['module']}</div>
                     <div style="font-size:0.83rem;color:#0F172A;margin-top:0.12rem;">{item['summary']}</div>
                 </div>
@@ -2940,13 +2968,13 @@ elif current_page == "Dijimentor":
     a_hrs = round(weekly_hours * 0.25, 1)
     st.markdown(
         f"""
-        <div style="margin-top:0.65rem;padding-top:0.75rem;border-top:1px solid #E2E8F0;">
+        <div style="margin-top:0.65rem;padding-top:0.75rem;border-top:1px solid #DCE3EC;">
             <div style="font-size:0.75rem;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.04em;">
                 Önerilen Haftalık Kapasite Dağılımı ({weekly_hours} Saat)
             </div>
             <div class="kp-dist-bar">
-                <div style="width:45%;background:#172C56;"></div>
-                <div style="width:30%;background:#B48219;"></div>
+                <div style="width:45%;background:#162B54;"></div>
+                <div style="width:30%;background:#C48F1B;"></div>
                 <div style="width:25%;background:#94A3B8;"></div>
             </div>
             <div class="kp-dist-legend">
@@ -3061,14 +3089,14 @@ elif current_page == "Veli Takip Paneli":
         st.markdown("#### Haftalık Doğruluk İvmesi (%)")
         st.area_chart(
             {"1. Hafta": 71, "2. Hafta": 74, "3. Hafta": 77, "4. Hafta": 81},
-            color="#172C56",
+            color="#162B54",
             height=190,
         )
     with g_col2:
         st.markdown("#### Ders Bazlı Başarı Oranı (%)")
         st.bar_chart(
             {"Türkçe": 84, "Matematik": 72, "Fen": 82, "Sosyal": 86, "İngilizce": 79},
-            color="#172C56",
+            color="#162B54",
             height=190,
         )
 
@@ -3195,7 +3223,7 @@ elif current_page == "B2B Lisans & Kurum":
         with zc1:
             st.dataframe(zumre_rows, use_container_width=True, hide_index=True)
         with zc2:
-            st.bar_chart(chart_map, color="#172C56", height=225)
+            st.bar_chart(chart_map, color="#162B54", height=225)
 
 # ==============================================================================
 # 7. PAKETLER & ABONELİK VİTRİNİ
