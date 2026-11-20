@@ -1,12 +1,14 @@
 import base64
 import html
 import io
+import json
 import os
 import re
 import time
 from datetime import datetime, timedelta
 from typing import Any, Dict, List, Optional, Tuple
 
+import iyzipay
 import streamlit as st
 from docx import Document
 from docx.enum.text import WD_ALIGN_PARAGRAPH
@@ -1180,6 +1182,140 @@ def resolve_gemini_api_key() -> Optional[str]:
     return key if key else None
 
 
+def resolve_iyzico_config() -> Tuple[str, str, str]:
+    """iyzico API anahtarlarını ve base_url değerini st.secrets veya ortam değişkenlerinden okur."""
+    api_key = ""
+    secret_key = ""
+    base_url = "https://sandbox-api.iyzipay.com"
+
+    try:
+        if "iyzico" in st.secrets:
+            sec = st.secrets["iyzico"]
+            api_key = str(sec.get("api_key", "")).strip()
+            secret_key = str(sec.get("secret_key", "")).strip()
+            base_url = str(sec.get("base_url", base_url)).strip()
+    except Exception:
+        pass
+
+    if not api_key:
+        for k_name in ("IYZICO_API_KEY", "IYSU_API_KEY"):
+            val = os.environ.get(k_name, "").strip()
+            if val:
+                api_key = val
+                break
+            try:
+                if k_name in st.secrets:
+                    api_key = str(st.secrets[k_name]).strip()
+                    if api_key:
+                        break
+            except Exception:
+                pass
+
+    if not secret_key:
+        for s_name in ("IYZICO_SECRET_KEY", "IYSU_SECRET_KEY"):
+            val = os.environ.get(s_name, "").strip()
+            if val:
+                secret_key = val
+                break
+            try:
+                if s_name in st.secrets:
+                    secret_key = str(st.secrets[s_name]).strip()
+                    if secret_key:
+                        break
+            except Exception:
+                pass
+
+    env_url = os.environ.get("IYZICO_BASE_URL", "").strip()
+    if env_url:
+        base_url = env_url
+    else:
+        try:
+            if "IYZICO_BASE_URL" in st.secrets and str(st.secrets["IYZICO_BASE_URL"]).strip():
+                base_url = str(st.secrets["IYZICO_BASE_URL"]).strip()
+        except Exception:
+            pass
+
+    return api_key, secret_key, base_url
+
+
+def initialize_iyzico_checkout(
+    buyer_name: str,
+    buyer_surname: str,
+    buyer_email: str,
+    buyer_phone: str,
+    amount_try: float,
+    basket_title: str,
+) -> Dict[str, Any]:
+    """iyzico CheckoutFormInitialize isteği oluşturur ve yanıt sözlüğünü döndürür."""
+    api_key, secret_key, base_url = resolve_iyzico_config()
+    if not api_key or not secret_key:
+        return {
+            "status": "failure",
+            "errorMessage": (
+                "IYZICO_API_KEY ve IYZICO_SECRET_KEY tanımlı değil. "
+                "Streamlit Secrets veya ortam değişkenlerine anahtarlarınızı ekleyin."
+            ),
+        }
+
+    options = {
+        "api_key": api_key,
+        "secret_key": secret_key,
+        "base_url": base_url,
+    }
+    price_str = f"{max(1.0, float(amount_try)):.2f}"
+    conv_id = f"KP-{int(time.time())}"
+    basket_id = f"B-{int(time.time())}"
+
+    request = {
+        "locale": "tr",
+        "conversationId": conv_id,
+        "price": price_str,
+        "paidPrice": price_str,
+        "currency": "TRY",
+        "basketId": basket_id,
+        "paymentGroup": "PRODUCT",
+        "callbackUrl": "https://kursunkalemdijitalokul.com.tr",
+        "enabledInstallments": [1, 2, 3, 6, 9, 12],
+        "buyer": {
+            "id": "BY_KP_01",
+            "name": buyer_name.strip() or "Kürşat Han",
+            "surname": buyer_surname.strip() or "Kurşun",
+            "gsmNumber": buyer_phone.strip() or "+905350000000",
+            "email": buyer_email.strip() or "iletisim@kursunkalemdijitalokul.com.tr",
+            "identityNumber": "74300864791",
+            "registrationAddress": "İstanbul, Türkiye",
+            "ip": "85.34.78.112",
+            "city": "Istanbul",
+            "country": "Turkey",
+        },
+        "shippingAddress": {
+            "contactName": f"{buyer_name.strip() or 'Kürşat Han'} {buyer_surname.strip() or 'Kurşun'}",
+            "city": "Istanbul",
+            "country": "Turkey",
+            "address": "İstanbul, Türkiye",
+        },
+        "billingAddress": {
+            "contactName": f"{buyer_name.strip() or 'Kürşat Han'} {buyer_surname.strip() or 'Kurşun'}",
+            "city": "Istanbul",
+            "country": "Turkey",
+            "address": "İstanbul, Türkiye",
+        },
+        "basketItems": [
+            {
+                "id": "BI_KP_101",
+                "name": basket_title[:120],
+                "category1": "Dijital Eğitim",
+                "itemType": "VIRTUAL",
+                "price": price_str,
+            }
+        ],
+    }
+
+    checkout_form_initialize = iyzipay.CheckoutFormInitialize().create(request, options)
+    raw_res = checkout_form_initialize.read().decode("utf-8")
+    return json.loads(raw_res)
+
+
 def get_gemini_client() -> genai.Client:
     """API anahtarını doğrulayarak google.genai Client nesnesi döndürür."""
     api_key = resolve_gemini_api_key()
@@ -1846,7 +1982,7 @@ def render_iyzico_simulator(
     monthly_price: int,
     summary: Optional[Dict[str, Any]] = None,
 ) -> None:
-    """Kurumsal görünümde iyzico taksit, dönem indirimi ve teklif çıktısı paneli."""
+    """Kurumsal görünümde iyzico taksit, dönem indirimi, gerçek API Checkout Form ve teklif çıktısı paneli."""
     bag_summary = summary if summary is not None else get_bag_summary()
     effective_monthly = (
         int(bag_summary["monthly_price"]) if bag_summary["total_count"] > 0 else int(monthly_price)
@@ -1859,7 +1995,7 @@ def render_iyzico_simulator(
 
     st.markdown('<div class="kp-pay-box">', unsafe_allow_html=True)
     st.markdown("#### iyzico Taksit & Ödeme Simülatörü")
-    st.caption("Dönem avantajı ve taksit planına göre tutarı hesaplayın, kotaları aktifleyin veya DOCX özet indirin.")
+    st.caption("Dönem avantajı ve taksit planına göre tutarı hesaplayın, iyzico ödeme formu başlatın veya DOCX özet indirin.")
 
     c1, c2, c3 = st.columns(3)
     with c1:
@@ -1898,25 +2034,62 @@ def render_iyzico_simulator(
     m3.metric("Ödeme Altyapısı", f"iyzico • {card_brand}")
 
     st.markdown("<div style='margin:0.65rem 0;'></div>", unsafe_allow_html=True)
-    btn_c1, btn_c2 = st.columns([2.2, 1])
+    b_col1, b_col2, b_col3 = st.columns(3)
+    with b_col1:
+        buyer_name = st.text_input("Ad", value="Kürşat Han", key=f"iyz_name_{display_label}")
+    with b_col2:
+        buyer_surname = st.text_input("Soyad", value="Kurşun", key=f"iyz_surname_{display_label}")
+    with b_col3:
+        buyer_email = st.text_input("E-posta", value="iletisim@kursunkalemdijitalokul.com.tr", key=f"iyz_email_{display_label}")
+
+    btn_c1, btn_c2, btn_c3 = st.columns([1.8, 1.8, 1.1])
     with btn_c1:
         if st.button(
-            "iyzico Ödeme Talebi Oluştur (Simülasyon)",
-            key=f"pay_btn_{display_label}",
+            "iyzico Ödeme Formu Başlat (API)",
+            key=f"iyz_live_btn_{display_label}",
             type="primary",
+            use_container_width=True,
+        ):
+            if total_amount <= 0:
+                st.warning("Ödeme başlatmak için önce çantanıza en az bir paket ekleyin.")
+            else:
+                with st.spinner("iyzico ödeme formu oluşturuluyor..."):
+                    res_dict = initialize_iyzico_checkout(
+                        buyer_name=buyer_name,
+                        buyer_surname=buyer_surname,
+                        buyer_email=buyer_email,
+                        buyer_phone="+905350000000",
+                        amount_try=float(total_amount),
+                        basket_title=f"{BRAND_NAME} - {display_label} ({billing_cycle})",
+                    )
+                if res_dict.get("status") == "success":
+                    sync_plan_quotas(bag_summary, force_reset=True)
+                    record_activity(
+                        "iyzico API",
+                        f"{display_label} ({total_amount:,} ₺) ödeme formu açıldı".replace(",", "."),
+                    )
+                    st.session_state["iyzico_last_response"] = res_dict
+                    st.success("iyzico ödeme formu başarıyla oluşturuldu!")
+                else:
+                    st.error(f"iyzico yanıtı: {res_dict.get('errorMessage', 'Bilinmeyen hata')}")
+
+    with btn_c2:
+        if st.button(
+            "Simülasyon ile Kota Aktifleştir",
+            key=f"pay_btn_{display_label}",
             use_container_width=True,
         ):
             sync_plan_quotas(bag_summary, force_reset=True)
             record_activity(
-                "iyzico Ödeme",
+                "iyzico Simülasyon",
                 f"{display_label} ({total_amount:,} ₺) aktiflendi".replace(",", "."),
             )
             st.success(
                 f"**{display_label}** için **{total_amount:,} ₺** ({installment} taksit, "
-                f"{card_brand}) tutarında iyzico ödeme oturumu hazırlandı ve toplam kota "
-                f"({bag_summary['monthly_quota']:,} soru) aktifleşti.".replace(",", ".")
+                f"{card_brand}) tutarında kota ({bag_summary['monthly_quota']:,} soru) aktifleşti.".replace(",", ".")
             )
-    with btn_c2:
+
+    with btn_c3:
         brief_docx = build_commercial_brief_docx(
             title=f"{display_label} Özeti",
             summary=bag_summary,
@@ -1926,13 +2099,29 @@ def render_iyzico_simulator(
             extra_notes=f"Kart Programı: {card_brand}",
         )
         st.download_button(
-            label="Özet DOCX İndir",
+            label="Özet DOCX",
             data=brief_docx,
             file_name="kursun_kalem_sirt_cantasi_ozet.docx",
             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             key=f"dl_brief_{display_label}",
             use_container_width=True,
         )
+
+    iyz_res = st.session_state.get("iyzico_last_response")
+    if isinstance(iyz_res, dict) and iyz_res.get("status") == "success":
+        pay_url = iyz_res.get("paymentPageUrl")
+        form_html = iyz_res.get("checkoutFormContent")
+        if pay_url:
+            st.markdown(
+                f'<div style="margin-top:0.75rem;"><a href="{html.escape(str(pay_url))}" target="_blank">'
+                f'<button style="background:#172C56;color:#FFFFFF;border:none;border-radius:8px;'
+                f'padding:0.55rem 1.15rem;font-weight:600;cursor:pointer;">'
+                f'Güvenli iyzico Ödeme Sayfasını Aç</button></a></div>',
+                unsafe_allow_html=True,
+            )
+        if form_html:
+            st.components.v1.html(str(form_html), height=460, scrolling=True)
+
     st.markdown("</div>", unsafe_allow_html=True)
 
 
