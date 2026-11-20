@@ -3716,18 +3716,7 @@ st.markdown(
     <style>
         .kp-digital-office-badge {
             position: fixed;
-            right: 170px;
-            bottom: 14px;
-            background: #162B54;
-            color: #FFFFFF;
-            border: 1px solid #C48F1B;
-            border-radius: 8px;
-            padding: 6px 14px;
-            font-size: 0.78rem;
-            font-weight: 600;
-            z-index: 999999;
-            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
-            white-space: nowrap;
+            ...
         }
     </style>
     <div class="kp-digital-office-badge">Kurşun&amp;Aygören Dijital Ofis</div>
