@@ -3709,28 +3709,36 @@ elif current_page == "Paketler & Abonelik Vitrini":
     )
 
 # ==============================================================================
-# KURŞUN&AYGÖREN DİJİTAL OFİS İMZASI
+# KURŞUN&AYGÖREN DİJİTAL OFİS İMZASI (SAYFA EN ALTI - BİTİŞİK EL YAZISI)
 # ==============================================================================
 st.markdown(
     """
     <style>
-        .kp-digital-office-badge {
-            position: fixed;
-            right: 170px;
-            bottom: 14px;
-            background: #162B54;
-            color: #FFFFFF;
-            border: 1px solid #C48F1B;
-            border-radius: 8px;
-            padding: 6px 14px;
-            font-size: 0.78rem;
-            font-weight: 600;
-            z-index: 999999;
-            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
+        @import url('https://fonts.googleapis.com/css2?family=Allura&family=Pacifico&display=swap');
+
+        .kp-digital-office-footer {
+            width: 100%;
+            margin-top: 2.5rem;
+            padding-top: 0.85rem;
+            padding-right: 176px;
+            border-top: 1px solid #DCE3EC;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+        .kp-digital-office-signature {
+            font-family: 'Pacifico', 'Allura', cursive;
+            font-size: 1.25rem;
+            font-weight: 400;
+            line-height: 1.3;
+            letter-spacing: 0.01em;
+            color: #162B54;
             white-space: nowrap;
         }
     </style>
-    <div class="kp-digital-office-badge">Kurşun&amp;Aygören Dijital Ofis</div>
+    <div class="kp-digital-office-footer">
+        <div class="kp-digital-office-signature">Kurşun&amp;Aygören Dijital Ofis</div>
+    </div>
     """,
     unsafe_allow_html=True,
 )
