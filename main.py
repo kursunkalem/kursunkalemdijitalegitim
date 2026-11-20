@@ -3086,7 +3086,7 @@ elif current_page == "B2B Lisans & Kurum":
         with st.form("b2b_inquiry_form"):
             c1, c2 = st.columns(2)
             with c1:
-                org_name = st.text_input("Kurum / Okul Adı", value="Özel Kurşun Kalem Akademi")
+                org_name = st.text_input("Kurum / Okul Adı", value="Burak Aygören Akademi")
                 city = st.text_input("İl / İlçe", value="İstanbul")
                 teacher_seats = st.number_input(
                     "Öğretmen / Editör Koltuk Sayısı", min_value=1, max_value=500, value=15
@@ -3154,7 +3154,7 @@ elif current_page == "B2B Lisans & Kurum":
 
     with tab_b2b_zumre:
         org_cache = st.session_state.get(
-            "b2b_org_cache", {"org": "Özel Kurşun Kalem Akademi", "teachers": 15, "students": 250}
+            "b2b_org_cache", {"org": "Burak Aygören Akademi", "teachers": 15, "students": 250}
         )
         recommended_tier = get_tier_by_id(
             "b2b_kurs" if org_cache["students"] <= 300 else "b2b_kampus"
