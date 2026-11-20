@@ -6,6 +6,7 @@ import os
 import re
 import time
 from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 import iyzipay
@@ -27,9 +28,11 @@ st.set_page_config(
 )
 
 BRAND_NAME = "KURŞUN KALEM DİJİTAL OKUL"
+BRAND_SHORT = "Kurşun Kalem"
 BRAND_TAGLINE = "Dijital Eğitim, Ölçme-Değerlendirme ve Akıllı Mentorluk Platformu"
-DEFAULT_MODEL = "gemini-3.8-flash"
-FALLBACK_MODEL = "gemini-2.5-flash"
+DEFAULT_MODEL = "gemini-2.5-flash"
+FALLBACK_MODEL = "gemini-2.5-pro"
+STATE_FILE_PATH = Path(".kursun_kalem_state.json")
 
 # Kalıcı Gömülü Kurumsal Logo
 EMBEDDED_LOGO_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
@@ -161,15 +164,15 @@ PAGE_DESCRIPTIONS: Dict[str, Tuple[str, str]] = {
     ),
     "Soru & Redaksiyon Fabrikası": (
         "Maarif Modeli Soru & Kalite Stüdyosu",
-        "Kazanım ve çeldirici odaklı özgün sorular üretin, redaksiyon denetleyin ve DOCX olarak indirin.",
+        "Kazanım, çeldirici ve soru kökü kalitesi odaklı özgün testler üretin, redaksiyon denetleyin ve DOCX olarak indirin.",
     ),
     "Öğrenci Portalı & Çözüm": (
         "İnteraktif Mini Deneme & Çözüm Rehberi",
-        "Testleri şık işaretleyerek çözün, netinizi hesaplayın veya takıldığınız sorularda adımlı ipucu alın.",
+        "Testleri şık işaretleyerek çözün, netinizi hesaplayın ve yanlış veya zorlandığınız sorularda adımlı rehber alın.",
     ),
     "Dijimentor": (
         "Akıllı Sınav & Performans Mentorluğu",
-        "Hedef sınava, zayıf kazanımlara ve haftalık kapasiteye göre ölçülebilir çalışma planı oluşturun.",
+        "Hedef sınava, zayıf kazanımlara ve haftalık kapasiteye göre ölçülebilir çalışma ve deneme planı oluşturun.",
     ),
     "Veli Takip Paneli": (
         "Veli Gelişim & Bilgilendirme Merkezi",
@@ -1178,8 +1181,84 @@ st.markdown(
 )
 
 # ==============================================================================
-# YARDIMCI FONKSİYONLAR
+# YARDIMCI FONKSİYONLAR & KALICI DURUM YÖNETİMİ
 # ==============================================================================
+def _default_parent_stats() -> Dict[str, Any]:
+    return {
+        "student_name": "Ege Yılmaz",
+        "grade": "8. Sınıf (LGS)",
+        "parent_name": "Selin Yılmaz",
+        "parent_phone": "+905551234567",
+        "parent_email": "veli@ornek.com",
+        "weekly_solved": 340,
+        "correct": 275,
+        "wrong": 45,
+        "blank": 20,
+        "mentor_completion": 88,
+        "strong_topic": "Okuma ve Anlama (%84)",
+        "weak_topic": "Sayısal Muhakeme ve Problem Çözme",
+        "next_exam_date": (datetime.now() + timedelta(days=5)).strftime("%d.%m.%Y"),
+        "next_exam_name": "Türkiye Geneli LGS Deneme Sınavı",
+    }
+
+
+def _default_parent_announcements() -> List[Dict[str, str]]:
+    now_str = datetime.now().strftime("%d.%m.%Y %H:%M")
+    return [
+        {
+            "category": "1. Akademik İlerleme ve Başarı Takibi",
+            "subtopic": "Haftalık Soru ve Net Özeti",
+            "body": "Bu hafta 340 soru çözüldü ve %81 ortalama doğruluk sağlandı.",
+            "date": now_str,
+        },
+        {
+            "category": "2. Çalışma Disiplini ve Dijimentor Takibi",
+            "subtopic": "Dijimentor Çalışma Planı Uyumu",
+            "body": "Dijimentor haftalık çalışma planına %88 oranında uyum sağlandı.",
+            "date": now_str,
+        },
+    ]
+
+
+def _default_activity_log() -> List[Dict[str, str]]:
+    return [
+        {"time": "09:15:00", "module": "Soru Fabrikası", "summary": "8. Sınıf LGS Muhakeme seti hazır"},
+        {"time": "10:42:18", "module": "Dijimentor", "summary": "Haftalık çeldirici & tempo analizi aktif"},
+    ]
+
+
+def load_persisted_state() -> Dict[str, Any]:
+    """Diskteki platform durumu dosyasını güvenli biçimde okur."""
+    if not STATE_FILE_PATH.exists():
+        return {}
+    try:
+        raw = STATE_FILE_PATH.read_text(encoding="utf-8")
+        data = json.loads(raw)
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
+
+
+def save_persisted_state() -> None:
+    """Kritik kullanıcı/kurum verilerini diske yazar."""
+    payload = {
+        "backpack_cart": st.session_state.get("backpack_cart", {}),
+        "selected_tier_id": st.session_state.get("selected_tier_id", SUBSCRIPTION_TIERS[1]["id"]),
+        "remaining_question_quota": st.session_state.get("remaining_question_quota"),
+        "remaining_coach_quota": st.session_state.get("remaining_coach_quota"),
+        "quota_tier_id": st.session_state.get("quota_tier_id"),
+        "parent_student_stats": st.session_state.get("parent_student_stats", _default_parent_stats()),
+        "parent_announcements": st.session_state.get("parent_announcements", _default_parent_announcements()),
+        "activity_log": st.session_state.get("activity_log", _default_activity_log()),
+        "b2b_org_cache": st.session_state.get("b2b_org_cache"),
+        "last_b2b_summary": st.session_state.get("last_b2b_summary", ""),
+    }
+    try:
+        STATE_FILE_PATH.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    except Exception:
+        pass
+
+
 def attach_logo_to_doc(doc: Document, width_in: float = 1.15) -> None:
     """Mümkünse gömülü logoyu DOCX belgesinin üst kısmına ortalanmış olarak ekler."""
     if not LOGO_PNG_BYTES:
@@ -1362,7 +1441,7 @@ def call_gemini_text(
 ) -> str:
     """Gemini API üzerinden metin üretir; 503/429 yoğunluk ve 404 hatalarında tekrar dener ve yedek modele geçer."""
     client = get_gemini_client()
-    candidate_models = [model, FALLBACK_MODEL, "gemini-2.5-pro"]
+    candidate_models = [model, FALLBACK_MODEL, "gemini-2.0-flash"]
     deduped_models: List[str] = []
     for m in candidate_models:
         if m and m not in deduped_models:
@@ -1409,7 +1488,7 @@ def navigate_to(page_name: str) -> None:
 
 
 def record_activity(module_name: str, summary: str) -> None:
-    """Oturum içi aktivite akışına kayıt ekler."""
+    """Oturum içi aktivite akışına kayıt ekler ve diske kaydeder."""
     logs: List[Dict[str, str]] = st.session_state.setdefault("activity_log", [])
     logs.insert(
         0,
@@ -1419,7 +1498,8 @@ def record_activity(module_name: str, summary: str) -> None:
             "summary": summary,
         },
     )
-    st.session_state["activity_log"] = logs[:12]
+    st.session_state["activity_log"] = logs[:15]
+    save_persisted_state()
 
 
 def get_tier_by_id(tier_id: str) -> Dict[str, Any]:
@@ -1512,10 +1592,16 @@ def get_bag_summary() -> Dict[str, Any]:
 def sync_plan_quotas(summary: Dict[str, Any], force_reset: bool = False) -> None:
     """Çantadaki toplam kotalara göre oturum kotalarını eşitler."""
     sig = f"{summary['total_count']}:{summary['monthly_quota']}:{summary['coach_quota']}"
-    if force_reset or st.session_state.get("quota_tier_id") != sig:
+    if (
+        force_reset
+        or st.session_state.get("quota_tier_id") != sig
+        or "remaining_question_quota" not in st.session_state
+        or "remaining_coach_quota" not in st.session_state
+    ):
         st.session_state["quota_tier_id"] = sig
         st.session_state["remaining_question_quota"] = int(summary["monthly_quota"])
         st.session_state["remaining_coach_quota"] = int(summary["coach_quota"])
+        save_persisted_state()
 
 
 def cb_add_tier_to_bag(tier_id: str, qty: int = 1) -> None:
@@ -1568,6 +1654,7 @@ def consume_quota(kind: str, amount: int = 1) -> Tuple[bool, str]:
                 f"(Kalan: {rem}, İstenen: {amount}). Paketler vitrininden paket ekleyebilirsiniz."
             )
         st.session_state["remaining_question_quota"] = rem - amount
+        save_persisted_state()
         return True, ""
 
     rem_c = int(st.session_state.get("remaining_coach_quota", 0))
@@ -1577,11 +1664,12 @@ def consume_quota(kind: str, amount: int = 1) -> Tuple[bool, str]:
             f"(Kalan: {rem_c}). Paketler vitrininden paket ekleyebilirsiniz."
         )
     st.session_state["remaining_coach_quota"] = rem_c - amount
+    save_persisted_state()
     return True, ""
 
 
 def extract_answer_key(raw_text: str) -> Dict[int, str]:
-    """Metindeki 'Cevap Anahtarı' bölümünden {soru_no: 'A'|'B'|'C'|'D'} haritası çıkarır."""
+    """Metindeki 'Cevap Anahtarı' veya satır içi cevap ifadelerinden {soru_no: 'A'|'B'|'C'|'D'} haritası çıkarır."""
     if not raw_text.strip():
         return {}
 
@@ -1592,6 +1680,7 @@ def extract_answer_key(raw_text: str) -> Dict[int, str]:
     patterns = [
         r"(?:Soru\s*)?(\d+)\s*[\.\-\:\)]\s*\**\s*([A-D])\b",
         r"(\d+)\s*\.\s*Soru\s*[\:\-\)]\s*\**\s*([A-D])\b",
+        r"\b(\d+)\s*[-–—]\s*([A-D])\b",
     ]
     for pat in patterns:
         for m in re.finditer(pat, search_space, flags=re.IGNORECASE):
@@ -1610,12 +1699,16 @@ def parse_quiz_questions(raw_text: str) -> List[Dict[str, Any]]:
 
     answer_map = extract_answer_key(raw_text)
     main_body = re.split(r"(?:^|\n)#*\s*Cevap\s*Anahtar", raw_text, maxsplit=1, flags=re.IGNORECASE)[0]
-    blocks = re.split(r"(?=(?:^|\n)#*\s*Soru\s*\d+)", main_body.strip(), flags=re.IGNORECASE)
+    blocks = re.split(
+        r"(?=(?:^|\n)#*\s*(?:Soru\s*\d+|(?:\d+\s*[\.\)])))",
+        main_body.strip(),
+        flags=re.IGNORECASE,
+    )
     parsed: List[Dict[str, Any]] = []
 
     for block in blocks:
         text = block.strip()
-        num_match = re.match(r"^#*\s*Soru\s*(\d+)", text, flags=re.IGNORECASE)
+        num_match = re.match(r"^#*\s*(?:Soru\s*)?(\d+)\b", text, flags=re.IGNORECASE)
         if not num_match:
             continue
         q_num = int(num_match.group(1))
@@ -1625,7 +1718,7 @@ def parse_quiz_questions(raw_text: str) -> List[Dict[str, Any]]:
         current_opt: Optional[str] = None
 
         for ln in lines:
-            if re.match(r"^\[?Redaksiyon", ln, flags=re.IGNORECASE):
+            if re.match(r"^\[?(?:Redaksiyon|Çözüm|Cevap)", ln, flags=re.IGNORECASE):
                 continue
             opt_match = re.match(r"^[\-\*\s]*([A-D])\s*[\)\.\:]\s*(.+)$", ln, flags=re.IGNORECASE)
             if opt_match:
@@ -1730,7 +1823,7 @@ def build_test_docx(
     title_run = title_p.add_run(f"{institution.upper()} — DEĞERLENDİRME TESTİ")
     title_run.bold = True
     title_run.font.size = Pt(14)
-    title_run.font.color.rgb = RGBColor(15, 23, 42)
+    title_run.font.color.rgb = RGBColor(22, 43, 84)
 
     sub_p = doc.add_paragraph()
     sub_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -1761,7 +1854,7 @@ def build_test_docx(
         run.font.size = Pt(10.5)
         if re.match(r"^(Soru\s*\d+|Cevap\s*Anahtarı|Çözüm)", cleaned, re.IGNORECASE):
             run.bold = True
-            run.font.color.rgb = RGBColor(15, 23, 42)
+            run.font.color.rgb = RGBColor(22, 43, 84)
 
     footer_p = doc.add_paragraph()
     footer_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -1792,7 +1885,7 @@ def build_coach_docx(title_meta: str, plan_text: str) -> bytes:
     r = h.add_run(f"{BRAND_NAME.upper()} — DİJİMENTOR ÇALIŞMA PLANI")
     r.bold = True
     r.font.size = Pt(14)
-    r.font.color.rgb = RGBColor(15, 23, 42)
+    r.font.color.rgb = RGBColor(22, 43, 84)
 
     m = doc.add_paragraph()
     mr = m.add_run(f"{title_meta}\nTarih: {datetime.now().strftime('%d.%m.%Y')}")
@@ -1812,7 +1905,7 @@ def build_coach_docx(title_meta: str, plan_text: str) -> bytes:
         run.font.size = Pt(10.5)
         if cleaned.startswith("#") or cleaned.endswith(":"):
             run.bold = True
-            run.font.color.rgb = RGBColor(15, 23, 42)
+            run.font.color.rgb = RGBColor(22, 43, 84)
 
     buffer = io.BytesIO()
     doc.save(buffer)
@@ -1843,7 +1936,7 @@ def build_commercial_brief_docx(
     r = h.add_run(f"{BRAND_NAME.upper()} — OKUL SIRT ÇANTASI & ABONELİK ÖZETİ")
     r.bold = True
     r.font.size = Pt(14)
-    r.font.color.rgb = RGBColor(15, 23, 42)
+    r.font.color.rgb = RGBColor(22, 43, 84)
 
     sub = doc.add_paragraph()
     sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -1881,7 +1974,7 @@ def build_commercial_brief_docx(
         run.font.size = Pt(10.5)
         if line.startswith(("Çanta Durumu", "Çantadaki Paketler", "Ek / Kurumsal Notlar")):
             run.bold = True
-            run.font.color.rgb = RGBColor(15, 23, 42)
+            run.font.color.rgb = RGBColor(22, 43, 84)
 
     buf = io.BytesIO()
     doc.save(buf)
@@ -2297,12 +2390,16 @@ def render_parent_notification_center() -> None:
                         "weak_topic": wk_t,
                     }
                 )
+                save_persisted_state()
+                record_activity("Veli Paneli", f"{st_n} verileri güncellendi")
                 st.success("Öğrenci ve veli verileri güncellendi.")
 
 
 # ==============================================================================
-# SESSION STATE BAŞLATMA
+# SESSION STATE BAŞLATMA & KALICI VERİ YÜKLEME
 # ==============================================================================
+_persisted = load_persisted_state()
+
 if "active_page" not in st.session_state:
     st.session_state.active_page = PAGES[0]
 elif st.session_state.active_page == "Ana Sayfa & Geri Sayım":
@@ -2313,9 +2410,18 @@ if "generated_test_text" not in st.session_state:
 if "dijimentor_plan" not in st.session_state:
     st.session_state.dijimentor_plan = ""
 if "selected_tier_id" not in st.session_state:
-    st.session_state.selected_tier_id = SUBSCRIPTION_TIERS[1]["id"]
+    st.session_state.selected_tier_id = _persisted.get("selected_tier_id", SUBSCRIPTION_TIERS[1]["id"])
+if "backpack_cart" not in st.session_state and isinstance(_persisted.get("backpack_cart"), dict):
+    st.session_state["backpack_cart"] = dict(_persisted["backpack_cart"])
 
 ensure_bag_initialized()
+
+if "quota_tier_id" not in st.session_state and _persisted.get("quota_tier_id"):
+    st.session_state["quota_tier_id"] = _persisted["quota_tier_id"]
+if "remaining_question_quota" not in st.session_state and _persisted.get("remaining_question_quota") is not None:
+    st.session_state["remaining_question_quota"] = int(_persisted["remaining_question_quota"])
+if "remaining_coach_quota" not in st.session_state and _persisted.get("remaining_coach_quota") is not None:
+    st.session_state["remaining_coach_quota"] = int(_persisted["remaining_coach_quota"])
 
 if "live_tick" not in st.session_state:
     st.session_state.live_tick = False
@@ -2324,42 +2430,21 @@ if "portal_question_draft" not in st.session_state:
 if "portal_exam_source" not in st.session_state:
     st.session_state.portal_exam_source = ""
 if "activity_log" not in st.session_state:
-    st.session_state.activity_log = [
-        {"time": "09:15:00", "module": "Soru Fabrikası", "summary": "8. Sınıf LGS Muhakeme seti hazır"},
-        {"time": "10:42:18", "module": "Dijimentor", "summary": "Haftalık çeldirici & tempo analizi aktif"},
-    ]
+    p_logs = _persisted.get("activity_log")
+    st.session_state.activity_log = p_logs if isinstance(p_logs, list) and p_logs else _default_activity_log()
 if "parent_student_stats" not in st.session_state:
-    st.session_state.parent_student_stats = {
-        "student_name": "Ege Yılmaz",
-        "grade": "8. Sınıf (LGS)",
-        "parent_name": "Selin Yılmaz",
-        "parent_phone": "+905551234567",
-        "parent_email": "veli@ornek.com",
-        "weekly_solved": 340,
-        "correct": 275,
-        "wrong": 45,
-        "blank": 20,
-        "mentor_completion": 88,
-        "strong_topic": "Okuma ve Anlama (%84)",
-        "weak_topic": "Sayısal Muhakeme ve Problem Çözme",
-        "next_exam_date": (datetime.now() + timedelta(days=5)).strftime("%d.%m.%Y"),
-        "next_exam_name": "Türkiye Geneli LGS Deneme Sınavı",
-    }
+    p_stats = _persisted.get("parent_student_stats")
+    merged_stats = _default_parent_stats()
+    if isinstance(p_stats, dict):
+        merged_stats.update(p_stats)
+    st.session_state.parent_student_stats = merged_stats
 if "parent_announcements" not in st.session_state:
-    st.session_state.parent_announcements = [
-        {
-            "category": "1. Akademik İlerleme ve Başarı Takibi",
-            "subtopic": "Haftalık Soru ve Net Özeti",
-            "body": "Bu hafta 340 soru çözüldü ve %81 ortalama doğruluk sağlandı.",
-            "date": datetime.now().strftime("%d.%m.%Y %H:%M"),
-        },
-        {
-            "category": "2. Çalışma Disiplini ve Dijimentor Takibi",
-            "subtopic": "Dijimentor Çalışma Planı Uyumu",
-            "body": "Dijimentor haftalık çalışma planına %88 oranında uyum sağlandı.",
-            "date": datetime.now().strftime("%d.%m.%Y %H:%M"),
-        },
-    ]
+    p_ann = _persisted.get("parent_announcements")
+    st.session_state.parent_announcements = p_ann if isinstance(p_ann, list) and p_ann else _default_parent_announcements()
+if "b2b_org_cache" not in st.session_state and isinstance(_persisted.get("b2b_org_cache"), dict):
+    st.session_state["b2b_org_cache"] = _persisted["b2b_org_cache"]
+if "last_b2b_summary" not in st.session_state and _persisted.get("last_b2b_summary"):
+    st.session_state["last_b2b_summary"] = _persisted["last_b2b_summary"]
 
 bag_summary_global = get_bag_summary()
 sync_plan_quotas(bag_summary_global, force_reset=False)
@@ -2374,7 +2459,7 @@ with st.sidebar:
         <div class="kp-sidebar-brand">
             <img src="{LOGO_DATA_URI}" alt="{BRAND_NAME}"/>
             <div>
-                <div class="kp-sidebar-brand-title">Kurşun Kalem</div>
+                <div class="kp-sidebar-brand-title">{BRAND_SHORT}</div>
                 <div class="kp-sidebar-brand-sub">Dijital Okul Platformu</div>
             </div>
         </div>
@@ -2408,6 +2493,16 @@ with st.sidebar:
         st.caption("Durum: Sistem aktif")
     else:
         st.caption("Durum: API anahtarı bekleniyor")
+
+    if st.button("Oturumu Sıfırla", key="reset_session_btn", use_container_width=True):
+        try:
+            if STATE_FILE_PATH.exists():
+                STATE_FILE_PATH.unlink()
+        except Exception:
+            pass
+        for k in list(st.session_state.keys()):
+            del st.session_state[k]
+        st.rerun()
 
 # ==============================================================================
 # ÜST KURUMSAL HEADER
@@ -2527,8 +2622,8 @@ if current_page == "Ana Sayfa":
             st.markdown(
                 f"""
                 <div style="background:#FFFFFF;border:1px solid #DCE3EC;border-left:3px solid #C48F1B;border-radius:10px;padding:0.58rem 0.8rem;margin-bottom:0.45rem;">
-                    <div style="font-size:0.72rem;font-weight:600;color:#64748B;">{item['time']} • {item['module']}</div>
-                    <div style="font-size:0.83rem;color:#0F172A;margin-top:0.12rem;">{item['summary']}</div>
+                    <div style="font-size:0.72rem;font-weight:600;color:#64748B;">{html.escape(item['time'])} • {html.escape(item['module'])}</div>
+                    <div style="font-size:0.83rem;color:#0F172A;margin-top:0.12rem;">{html.escape(item['summary'])}</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -2581,6 +2676,15 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
                 options=["Kolay", "Orta", "Orta-Zor", "Zor (LGS/ÖSYM)"],
                 value="Orta-Zor",
             )
+            distractor_mode = st.selectbox(
+                "Çeldirici & Kök Stratejisi",
+                [
+                    "Muhakeme & Çeldirici Tuzağı Dengeli",
+                    "Olumsuz Kök ('Değildir / Ulaşılamaz') Odaklı",
+                    "Öncüllü & Bağlamsal Analiz Odaklı",
+                ],
+                index=0,
+            )
             auto_review = st.checkbox(
                 "Otomatik Soru Kalite & Redaksiyon Denetimi",
                 value=True,
@@ -2593,10 +2697,11 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
         else:
             sys_prompt = (
                 "Sen Türkiye Yüzyılı Maarif Modeli, LGS ve YKS ölçme-değerlendirme standartlarında "
-                "uzman bir Türkçe ve test yazarısın. Soruların özgün, açık, çeldiricileri güçlü, "
-                "dil bilgisi ve yazım kurallarına kusursuz uygun olmasını sağla. "
-                "Otomatik redaksiyon açıksa her sorunun sonunda kısa bir [Redaksiyon & Çeldirici Notu] ekle "
-                "ve en sonda mutlaka 'Cevap Anahtarı' başlığı altında '1-A', '2-C' formatında net anahtar ver."
+                "uzman bir kıdemli test editörüsün. Soruların özgün, dilbilgisi ve noktalama açısından "
+                "kusursuz, çeldiricilerinin pedagojik olarak gerekçeli olmasını sağla. "
+                "Her soruyu 'Soru 1', 'Soru 2'... şeklinde numaralandır ve şıkları 'A)', 'B)', 'C)', 'D)' "
+                "olarak yaz. Otomatik redaksiyon açıksa her sorunun sonunda kısa bir [Redaksiyon & Çeldirici Notu] "
+                "ekle ve en sonda mutlaka 'Cevap Anahtarı' başlığı altında '1-A', '2-C' formatında net anahtar ver."
             )
             user_prompt = (
                 f"Kurum: {institution}\n"
@@ -2606,6 +2711,7 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
                 f"Hedef Kazanım: {outcome}\n"
                 f"Bağlam / Tema / Senaryo: {context_theme}\n"
                 f"Zorluk Derecesi: {difficulty}\n"
+                f"Çeldirici & Kök Stratejisi: {distractor_mode}\n"
                 f"Soru Adedi: {question_count}\n"
                 f"Otomatik Redaksiyon ve Kalite Denetimi: {'Aktif' if auto_review else 'Pasif'}\n\n"
                 "Lütfen numaralandırılmış çoktan seçmeli (Soru 1, Soru 2... ve A, B, C, D şıkları) özgün sorular üret."
@@ -2623,6 +2729,7 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
                 st.session_state["remaining_question_quota"] = int(
                     st.session_state.get("remaining_question_quota", 0)
                 ) + int(question_count)
+                save_persisted_state()
                 st.error(f"Soru üretim hatası oluştu: {exc}")
 
     if st.session_state.generated_test_text:
@@ -3028,6 +3135,7 @@ elif current_page == "Dijimentor":
                 st.session_state["remaining_coach_quota"] = int(
                     st.session_state.get("remaining_coach_quota", 0)
                 ) + 1
+                save_persisted_state()
                 st.error(f"Dijimentor planı oluşturulurken hata oluştu: {exc}")
 
     if st.session_state.dijimentor_plan:
