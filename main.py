@@ -158,8 +158,7 @@ PAGES = [
 ]
 
 PAGE_DESCRIPTIONS: Dict[str, Tuple[str, str]] = {
-    "Ana Sayfa": (
-       st.subheader("Genel Bakış & Sınav Durumu")
+  st.subheader("Genel Bakış & Sınav Durumu")
 st.caption("2027 LGS ve YKS geri sayımı, çalışma verileri, modüller ve haftalık ilerleme.")
     ),
     "Soru & Redaksiyon Fabrikası": (
