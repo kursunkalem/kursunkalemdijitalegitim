@@ -726,8 +726,33 @@ st.markdown(
         }
         .block-container {
             padding-top: 1.15rem;
-            padding-bottom: 4rem;
+            padding-bottom: 4.5rem;
             max-width: 1240px;
+        }
+
+        /* Streamlit Community Cloud sağ alt rozetini gizle */
+        div[class*="viewerBadge_container"],
+        div[class*="StatusWidget"],
+        footer {
+            display: none !important;
+            visibility: hidden !important;
+        }
+
+        /* Özel Kurumsal Sağ Alt İmza */
+        .kp-custom-footer {
+            position: fixed;
+            right: 16px;
+            bottom: 12px;
+            background: #162B54;
+            color: #FFFFFF;
+            border: 1px solid #C48F1B;
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            z-index: 999999;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
+            letter-spacing: 0.02em;
         }
 
         /* Kenar Çubuğu */
@@ -3211,204 +3236,4 @@ elif current_page == "Veli Takip Paneli":
     render_parent_notification_center()
 
 # ==============================================================================
-# 6. B2B LİSANS & KURUM
-# ==============================================================================
-elif current_page == "B2B Lisans & Kurum":
-    tab_b2b_form, tab_b2b_zumre = st.tabs(
-        ["Kurumsal Lisans Teklif Stüdyosu", "Zümre Soru Dağıtımı & Kurumsal Rapor"]
-    )
-
-    with tab_b2b_form:
-        with st.form("b2b_inquiry_form"):
-            c1, c2 = st.columns(2)
-            with c1:
-                org_name = st.text_input("Kurum / Okul Adı", value="Burak Aygören Akademi")
-                city = st.text_input("İl / İlçe", value="İstanbul")
-                teacher_seats = st.number_input(
-                    "Öğretmen / Editör Koltuk Sayısı", min_value=1, max_value=500, value=15
-                )
-            with c2:
-                student_seats = st.number_input(
-                    "Öğrenci Hesap Sayısı", min_value=10, max_value=10000, value=250
-                )
-                contact_name = st.text_input("Yetkili Adı Soyadı")
-                contact_email = st.text_input("Kurumsal E-posta")
-
-            submitted = st.form_submit_button("Kurumsal Lisans Teklifi Hazırla", type="primary")
-            if submitted:
-                if not org_name.strip():
-                    st.warning("Lütfen kurum adını girin.")
-                else:
-                    st.session_state["last_b2b_summary"] = (
-                        f"Kurum: {org_name} ({city}) | Yetkili: {contact_name or '-'} | "
-                        f"E-posta: {contact_email or '-'} | Koltuk: {teacher_seats} Öğretmen, "
-                        f"{student_seats} Öğrenci"
-                    )
-                    st.session_state["b2b_org_cache"] = {
-                        "org": org_name,
-                        "teachers": int(teacher_seats),
-                        "students": int(student_seats),
-                    }
-                    record_activity("B2B Lisans", f"{org_name} teklif taslağı hazırlandı")
-                    st.success(
-                        f"**{org_name}** ({city}) için **{teacher_seats} öğretmen** ve "
-                        f"**{student_seats} öğrenci** kapasiteli kurumsal lisans talebi kaydedildi."
-                    )
-
-        if st.session_state.get("last_b2b_summary"):
-            b2b_tier = get_tier_by_id("b2b_kurs" if student_seats <= 300 else "b2b_kampus")
-            b2b_summary = {
-                "name": b2b_tier["name"],
-                "total_count": 1,
-                "monthly_price": b2b_tier["monthly_price"],
-                "monthly_quota": b2b_tier["monthly_quota"],
-                "coach_quota": b2b_tier["coach_quota"],
-                "entries": [
-                    {
-                        "tier": b2b_tier,
-                        "qty": 1,
-                        "line_price": b2b_tier["monthly_price"],
-                        "line_quota": b2b_tier["monthly_quota"],
-                        "line_coach": b2b_tier["coach_quota"],
-                    }
-                ],
-            }
-            b2b_docx = build_commercial_brief_docx(
-                title=f"{org_name or 'Kurumsal'} Lisans Teklif Özeti",
-                summary=b2b_summary,
-                billing_cycle="Yıllık (%20 İndirim)",
-                installment=6,
-                total_amount=round(b2b_tier["monthly_price"] * 12 * 0.80),
-                extra_notes=st.session_state["last_b2b_summary"],
-            )
-            st.download_button(
-                label="Kurumsal Lisans Teklifini DOCX İndir",
-                data=b2b_docx,
-                file_name="kursun_kalem_kurumsal_teklif.docx",
-                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-            )
-
-    with tab_b2b_zumre:
-        org_cache = st.session_state.get(
-            "b2b_org_cache", {"org": "Burak Aygören Akademi", "teachers": 15, "students": 250}
-        )
-        recommended_tier = get_tier_by_id(
-            "b2b_kurs" if org_cache["students"] <= 300 else "b2b_kampus"
-        )
-        total_q = recommended_tier["monthly_quota"]
-
-        bk1, bk2, bk3, bk4 = st.columns(4)
-        bk1.metric("Kurum Profili", org_cache["org"])
-        bk2.metric("Aylık Soru Havuzu", f"{total_q:,}".replace(",", "."))
-        bk3.metric("Öğretmen Başına Kota", f"{total_q // max(1, org_cache['teachers']):,} Soru".replace(",", "."))
-        bk4.metric("Öğrenci Başına Test", f"{total_q // max(1, org_cache['students'])} Soru / Ay")
-
-        st.markdown("#### Branş Zümreleri Arası Soru Kotası Dağılımı")
-        dist_ratios = {
-            "Türkçe & Edebiyat Zümresi": 0.28,
-            "Matematik & Geometri Zümresi": 0.30,
-            "Fen Bilimleri Zümresi": 0.22,
-            "Sosyal Bilimler & İnkılap Zümresi": 0.12,
-            "Yabancı Dil (İngilizce) Zümresi": 0.08,
-        }
-        zumre_rows = []
-        chart_map: Dict[str, int] = {}
-        for z_name, ratio in dist_ratios.items():
-            allocated = int(round(total_q * ratio))
-            short_lbl = z_name.split(" ")[0]
-            chart_map[short_lbl] = allocated
-            zumre_rows.append(
-                {
-                    "Zümre Birimi": z_name,
-                    "Pay (%)": f"%{int(ratio * 100)}",
-                    "Aylık Soru Kotası": f"{allocated:,}".replace(",", "."),
-                    "Haftalık Deneme Hedefi": f"{max(1, allocated // 80)} Kitapçık",
-                    "Redaksiyon Standardı": "Maarif Modeli • Çift Kontrol",
-                }
-            )
-
-        zc1, zc2 = st.columns([3, 2])
-        with zc1:
-            st.dataframe(zumre_rows, use_container_width=True, hide_index=True)
-        with zc2:
-            st.bar_chart(chart_map, color="#162B54", height=225)
-
-# ==============================================================================
-# 7. PAKETLER & ABONELİK VİTRİNİ
-# ==============================================================================
-elif current_page == "Paketler & Abonelik Vitrini":
-    total_pkg_count = len(SUBSCRIPTION_TIERS)
-
-    current_bag = get_bag_items()
-    active_bag_summary = render_school_backpack_panel()
-
-    st.markdown("#### Segment Filtresi")
-    selected_segment = st.segmented_control(
-        "Segment Filtresi",
-        options=["Tümü", "Öğrenci", "YKS", "Veli", "Kurum / B2B"],
-        default="Tümü",
-        label_visibility="collapsed",
-    )
-
-    filtered_tiers = (
-        SUBSCRIPTION_TIERS
-        if not selected_segment or selected_segment == "Tümü"
-        else [t for t in SUBSCRIPTION_TIERS if t["segment"] == selected_segment]
-    )
-
-    for row_start in range(0, len(filtered_tiers), 3):
-        cols = st.columns(3)
-        for idx, tier in enumerate(filtered_tiers[row_start : row_start + 3]):
-            with cols[idx]:
-                in_bag_qty = current_bag.get(tier["id"], 0)
-                bag_tag = f" • Çantada: {in_bag_qty}" if in_bag_qty > 0 else ""
-                feats_li = "".join([f"<li>• {html.escape(feat)}</li>" for feat in tier["features"]])
-                st.markdown(
-                    f"""
-                    <div class="kp-pkg-card">
-                        <div class="kp-pkg-top">
-                            <span class="kp-pkg-seg">{html.escape(tier["segment"])}</span>
-                            <span class="kp-pkg-badge">{html.escape(tier["badge"])}{html.escape(bag_tag)}</span>
-                        </div>
-                        <div class="kp-pkg-title">{html.escape(tier["name"])}</div>
-                        <div class="kp-pkg-price">
-                            {tier["monthly_price"]:,} ₺ <span>/ ay</span>
-                        </div>
-                        <div class="kp-pkg-desc">{html.escape(tier["desc"])}</div>
-                        <ul class="kp-pkg-feats">{feats_li}</ul>
-                    </div>
-                    """.replace(",", "."),
-                    unsafe_allow_html=True,
-                )
-                st.button(
-                    "Çantaya Ekle",
-                    key=f"select_{tier['id']}",
-                    type="primary" if in_bag_qty > 0 else "secondary",
-                    use_container_width=True,
-                    on_click=cb_add_tier_to_bag,
-                    args=(tier["id"], 1),
-                )
-
-    st.markdown("---")
-    st.markdown(f"#### {total_pkg_count} Paket Karşılaştırma Matrisi")
-    matrix_rows = [
-        {
-            "Paket Adı": t["name"],
-            "Segment": t["segment"],
-            "Etiket": t["badge"],
-            "Çantadaki Adet": current_bag.get(t["id"], 0),
-            "Aylık Soru Kotası": f"{t['monthly_quota']:,}".replace(",", "."),
-            "Dijimentor Plan": f"{t['coach_quota']}/ay",
-            "Aylık Ücret (₺)": f"{t['monthly_price']:,}".replace(",", "."),
-            "Öne Çıkan Kapsam": t["features"][0],
-        }
-        for t in SUBSCRIPTION_TIERS
-    ]
-    st.dataframe(matrix_rows, use_container_width=True, hide_index=True)
-
-    st.markdown("---")
-    render_iyzico_simulator(
-        package_name=active_bag_summary["name"],
-        monthly_price=active_bag_summary["monthly_price"],
-        summary=active_bag_summary,
-    )
+#
