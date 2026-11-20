@@ -3709,17 +3709,17 @@ elif current_page == "Paketler & Abonelik Vitrini":
     )
 
 # ==============================================================================
-# KURŞUN&AYGÖREN DİJİTAL OFİS İMZASI (SAYFA EN ALTI - EL YAZISI)
+# KURŞUN&AYGÖREN DİJİTAL OFİS İMZASI (SAYFA EN ALTI - KİBAR EL YAZISI)
 # ==============================================================================
 st.markdown(
     """
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Alex+Brush&family=Dancing+Script:wght@600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Bad+Script&family=Caveat:wght@500;600&display=swap');
 
         .kp-digital-office-footer {
             width: 100%;
-            margin-top: 2.75rem;
-            padding-top: 1rem;
+            margin-top: 2.5rem;
+            padding-top: 0.85rem;
             padding-right: 176px;
             border-top: 1px solid #DCE3EC;
             display: flex;
@@ -3727,15 +3727,12 @@ st.markdown(
             align-items: center;
         }
         .kp-digital-office-signature {
-            font-family: 'Alex Brush', 'Dancing Script', cursive;
-            font-size: 1.85rem;
-            font-weight: 600;
-            line-height: 1.15;
-            letter-spacing: 0.02em;
-            color: #162B54;
-            padding: 0.15rem 0.4rem 0.25rem 0.4rem;
-            border-bottom: 1.5px solid #C48F1B;
-            display: inline-block;
+            font-family: 'Caveat', 'Bad Script', cursive;
+            font-size: 1.32rem;
+            font-weight: 500;
+            line-height: 1.2;
+            letter-spacing: 0.015em;
+            color: #334155;
             white-space: nowrap;
         }
     </style>
