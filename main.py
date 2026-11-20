@@ -687,7 +687,7 @@ BACKPACK_DATA_URI = svg_to_data_uri(SCHOOL_BACKPACK_SVG)
 LOGO_PNG_BYTES = get_embedded_logo_png_bytes()
 
 # ==============================================================================
-# KURUMSAL SAAS TASARIM SİSTEMİ (LACİVERT + ALTIN + FERAH ZEMİN PALETİ)
+# KURUMSAL SAAS TASARIM SİSTEMİ + AÇILIŞ & MİKRO ANİMASYONLAR
 # ==============================================================================
 st.markdown(
     """
@@ -707,6 +707,133 @@ st.markdown(
             --kp-border: #DCE3EC;
             --kp-text: #0F172A;
             --kp-muted: #475569;
+            --kp-ease: cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        @keyframes kpFadeUp {
+            0% {
+                opacity: 0;
+                transform: translateY(12px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes kpSplashOverlay {
+            0% {
+                opacity: 1;
+                visibility: visible;
+            }
+            72% {
+                opacity: 1;
+                visibility: visible;
+            }
+            100% {
+                opacity: 0;
+                visibility: hidden;
+                pointer-events: none;
+            }
+        }
+
+        @keyframes kpSplashLogo {
+            0% {
+                opacity: 0;
+                transform: scale(0.84) translateY(10px);
+            }
+            35% {
+                opacity: 1;
+                transform: scale(1.02) translateY(0);
+            }
+            72% {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0.96) translateY(-8px);
+            }
+        }
+
+        @keyframes kpBarSweep {
+            0% {
+                transform: translateX(-100%);
+            }
+            55% {
+                transform: translateX(0%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        @keyframes kpPulseSoft {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(196, 143, 27, 0.24);
+            }
+            50% {
+                box-shadow: 0 0 0 6px rgba(196, 143, 27, 0);
+            }
+        }
+
+        .kp-splash-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 999999;
+            background: linear-gradient(145deg, #0E1D3B 0%, #162B54 55%, #1D376B 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            animation: kpSplashOverlay 1.45s var(--kp-ease) forwards;
+        }
+        .kp-splash-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            animation: kpSplashLogo 1.45s var(--kp-ease) forwards;
+        }
+        .kp-splash-logo {
+            width: 86px;
+            height: 86px;
+            border-radius: 20px;
+            background: #FFFFFF;
+            padding: 6px;
+            border: 2px solid #E8C97A;
+            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.32);
+            object-fit: contain;
+            margin-bottom: 0.9rem;
+        }
+        .kp-splash-title {
+            color: #FFFFFF;
+            font-size: 1.35rem;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            margin: 0;
+        }
+        .kp-splash-sub {
+            color: #FDE68A;
+            font-size: 0.8rem;
+            font-weight: 500;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-top: 0.28rem;
+        }
+        .kp-splash-track {
+            width: 190px;
+            height: 3px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.16);
+            overflow: hidden;
+            margin-top: 1.05rem;
+        }
+        .kp-splash-fill {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #E8C97A, #F6D365, #FFFFFF);
+            animation: kpBarSweep 1.15s var(--kp-ease) infinite;
         }
 
         html, body, [class*="css"] {
@@ -725,8 +852,8 @@ st.markdown(
             display: none;
         }
         .block-container {
-            padding-top: 1.05rem;
-            padding-bottom: 3.5rem;
+            padding-top: 0.95rem;
+            padding-bottom: 3rem;
             max-width: 1240px;
         }
 
@@ -736,67 +863,72 @@ st.markdown(
             border-right: 1px solid var(--kp-border);
         }
         section[data-testid="stSidebar"] .block-container {
-            padding-top: 0.9rem;
-            padding-bottom: 1.25rem;
+            padding-top: 0.75rem;
+            padding-bottom: 0.95rem;
         }
         .kp-sidebar-brand {
             display: flex;
             align-items: center;
-            gap: 0.68rem;
-            padding: 0.1rem 0.15rem 0.72rem 0.15rem;
+            gap: 0.62rem;
+            padding: 0.05rem 0.1rem 0.58rem 0.1rem;
             border-bottom: 1px solid var(--kp-border);
-            margin-bottom: 0.65rem;
+            margin-bottom: 0.5rem;
+            animation: kpFadeUp 0.45s var(--kp-ease) both;
         }
         .kp-sidebar-brand img {
-            width: 40px;
-            height: 40px;
+            width: 38px;
+            height: 38px;
             object-fit: contain;
             border-radius: 9px;
             border: 1px solid var(--kp-gold-border);
             padding: 2px;
             background: #FFFFFF;
             flex-shrink: 0;
+            transition: transform 0.25s var(--kp-ease);
+        }
+        .kp-sidebar-brand:hover img {
+            transform: scale(1.06) rotate(-2deg);
         }
         .kp-sidebar-brand-title {
-            font-size: 0.9rem;
+            font-size: 0.88rem;
             font-weight: 700;
             color: var(--kp-navy);
             line-height: 1.2;
         }
         .kp-sidebar-brand-sub {
-            font-size: 0.7rem;
+            font-size: 0.68rem;
             color: var(--kp-muted);
             margin-top: 1px;
         }
 
         div[data-testid="stSidebar"] .stButton {
-            margin-bottom: 0.18rem;
+            margin-bottom: 0.12rem;
         }
         div[data-testid="stSidebar"] .stButton > button {
             width: 100%;
             text-align: left;
             justify-content: flex-start;
             border-radius: 8px;
-            padding: 0.44rem 0.72rem;
-            font-size: 0.82rem;
+            padding: 0.36rem 0.68rem;
+            font-size: 0.8rem;
             font-weight: 500;
             border: 1px solid transparent;
             background: transparent;
             color: #334155;
             box-shadow: none;
-            transition: all 0.14s ease;
+            transition: transform 0.16s var(--kp-ease), background-color 0.16s var(--kp-ease), color 0.16s var(--kp-ease);
         }
         div[data-testid="stSidebar"] .stButton > button:hover {
             background: var(--kp-navy-soft);
             color: var(--kp-navy);
-            border-color: transparent;
+            transform: translateX(3px);
         }
         div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
             background: var(--kp-navy);
             color: #FFFFFF;
             border-color: var(--kp-navy);
             font-weight: 600;
-            box-shadow: 0 2px 6px rgba(22, 43, 84, 0.15);
+            box-shadow: 0 2px 6px rgba(22, 43, 84, 0.16);
         }
 
         .kp-sidebar-meta {
@@ -804,17 +936,18 @@ st.markdown(
             border: 1px solid var(--kp-border);
             border-left: 3px solid var(--kp-gold);
             border-radius: 9px;
-            padding: 0.65rem 0.75rem;
-            margin-top: 0.65rem;
-            font-size: 0.75rem;
+            padding: 0.52rem 0.68rem;
+            margin-top: 0.48rem;
+            font-size: 0.72rem;
             color: #334155;
-            line-height: 1.42;
+            line-height: 1.36;
+            animation: kpFadeUp 0.55s var(--kp-ease) both;
         }
         .kp-sidebar-status {
-            font-size: 0.74rem;
+            font-size: 0.71rem;
             font-weight: 500;
             color: var(--kp-muted);
-            padding: 0.25rem 0.1rem 0.45rem 0.1rem;
+            padding: 0.25rem 0.1rem 0.25rem 0.1rem;
         }
 
         /* Üst Kurumsal Header */
@@ -823,13 +956,14 @@ st.markdown(
             border: 1px solid var(--kp-border);
             border-top: 3px solid var(--kp-navy);
             border-radius: 12px;
-            padding: 0.88rem 1.25rem;
-            margin-bottom: 1.05rem;
+            padding: 0.85rem 1.25rem;
+            margin-bottom: 0.95rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 1rem;
             box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+            animation: kpFadeUp 0.45s var(--kp-ease) both;
         }
         .kp-top-left {
             display: flex;
@@ -845,6 +979,10 @@ st.markdown(
             padding: 2px;
             background: #FFFFFF;
             flex-shrink: 0;
+            transition: transform 0.25s var(--kp-ease);
+        }
+        .kp-top-header:hover .kp-top-left img {
+            transform: scale(1.05);
         }
         .kp-top-title {
             font-size: 1.02rem;
@@ -884,6 +1022,7 @@ st.markdown(
             padding: 0.26rem 0.68rem;
             border-radius: 999px;
             white-space: nowrap;
+            animation: kpPulseSoft 2.8s ease-in-out infinite;
         }
 
         /* Sayfa Bağlam Şeridi */
@@ -892,12 +1031,13 @@ st.markdown(
             align-items: baseline;
             justify-content: space-between;
             gap: 1rem;
-            padding: 0.05rem 0 0.65rem 0;
-            margin-bottom: 0.8rem;
+            padding: 0.05rem 0 0.62rem 0;
+            margin-bottom: 0.78rem;
             border-bottom: 1px solid var(--kp-border);
+            animation: kpFadeUp 0.5s var(--kp-ease) both;
         }
         .kp-page-strip-title {
-            font-size: 1.28rem;
+            font-size: 1.26rem;
             font-weight: 700;
             color: var(--kp-navy);
             letter-spacing: -0.02em;
@@ -907,16 +1047,15 @@ st.markdown(
         .kp-page-strip-desc {
             font-size: 0.82rem;
             color: var(--kp-muted);
-            margin: 0.18rem 0 0 0;
+            margin: 0.16rem 0 0 0;
         }
 
-        /* Geri Sayım Başlık & Anahtar Hizalama */
         .kp-section-inline-head {
             font-size: 0.98rem;
             font-weight: 700;
             color: var(--kp-navy);
             margin: 0;
-            padding-top: 0.35rem;
+            padding-top: 0.3rem;
         }
 
         /* Metrik Kartları (st.metric) */
@@ -926,6 +1065,13 @@ st.markdown(
             border-radius: 11px;
             padding: 0.85rem 1rem;
             box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+            animation: kpFadeUp 0.6s var(--kp-ease) both;
+            transition: transform 0.22s var(--kp-ease), box-shadow 0.22s var(--kp-ease), border-color 0.22s var(--kp-ease);
+        }
+        div[data-testid="stMetric"]:hover {
+            transform: translateY(-3px);
+            border-color: #B8C7DC;
+            box-shadow: 0 8px 18px rgba(22, 43, 84, 0.08);
         }
         div[data-testid="stMetric"] label {
             font-size: 0.75rem !important;
@@ -939,11 +1085,12 @@ st.markdown(
             letter-spacing: -0.02em;
         }
 
-        /* Sekmeler (stTabs) Kurumsal Renkleri */
+        /* Sekmeler */
         button[data-baseweb="tab"] {
             color: #475569 !important;
             font-weight: 600 !important;
             font-size: 0.88rem !important;
+            transition: color 0.16s var(--kp-ease);
         }
         button[data-baseweb="tab"][aria-selected="true"] {
             color: var(--kp-navy) !important;
@@ -959,6 +1106,8 @@ st.markdown(
             border: 1px solid var(--kp-border);
             border-radius: 12px;
             box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+            animation: kpFadeUp 0.6s var(--kp-ease) both;
+            transition: transform 0.22s var(--kp-ease), box-shadow 0.22s var(--kp-ease), border-color 0.22s var(--kp-ease);
         }
         .kp-card, .kp-bag-shell, .kp-pkg-card, .kp-pay-box, .kp-studio-banner {
             padding: 1.15rem 1.25rem;
@@ -973,6 +1122,13 @@ st.markdown(
             padding: 1.15rem 1.25rem 1rem 1.25rem;
             min-height: 124px;
             box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+            animation: kpFadeUp 0.65s var(--kp-ease) both;
+            transition: transform 0.22s var(--kp-ease), box-shadow 0.22s var(--kp-ease), border-color 0.22s var(--kp-ease);
+        }
+        .kp-mod-card:hover, .kp-metric-box:hover, .kp-pkg-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--kp-gold-border);
+            box-shadow: 0 10px 22px rgba(22, 43, 84, 0.09);
         }
         .kp-mod-title {
             font-weight: 700;
@@ -1064,6 +1220,10 @@ st.markdown(
             width: 112px;
             height: 130px;
             object-fit: contain;
+            transition: transform 0.25s var(--kp-ease);
+        }
+        .kp-bag-visual:hover img {
+            transform: scale(1.04) rotate(-2deg);
         }
         .kp-bag-count-pill {
             margin-top: 0.45rem;
@@ -1084,6 +1244,7 @@ st.markdown(
             justify-content: space-between;
             align-items: center;
             color: var(--kp-text);
+            animation: kpFadeUp 0.35s var(--kp-ease) both;
         }
 
         /* Paket Kartları */
@@ -1165,7 +1326,7 @@ st.markdown(
             color: var(--kp-muted);
         }
 
-        /* Yüksek Kontrastlı Form Alanları & Kurumsal Butonlar */
+        /* Form Alanları & Kurumsal Butonlar */
         div[data-testid="stTextInput"] input,
         div[data-testid="stNumberInput"] input,
         div[data-testid="stTextArea"] textarea {
@@ -1174,6 +1335,7 @@ st.markdown(
             border: 1px solid #CBD5E1 !important;
             border-radius: 8px !important;
             font-size: 0.88rem !important;
+            transition: border-color 0.16s var(--kp-ease), box-shadow 0.16s var(--kp-ease);
         }
         div[data-testid="stNumberInput"] button {
             background-color: #F8FAFC !important;
@@ -1202,12 +1364,17 @@ st.markdown(
             border: 1px solid #CBD5E1;
             background-color: #FFFFFF;
             color: var(--kp-navy);
-            transition: all 0.14s ease;
+            transition: transform 0.16s var(--kp-ease), background-color 0.16s var(--kp-ease), border-color 0.16s var(--kp-ease), box-shadow 0.16s var(--kp-ease);
         }
         .stButton > button:hover,
         div[data-testid="stFormSubmitButton"] > button:hover {
             border-color: var(--kp-navy);
             background-color: var(--kp-navy-soft);
+            transform: translateY(-1px);
+        }
+        .stButton > button:active,
+        div[data-testid="stFormSubmitButton"] > button:active {
+            transform: translateY(0) scale(0.99);
         }
         .stButton > button[kind="primary"],
         div[data-testid="stFormSubmitButton"] > button[kind="primary"] {
@@ -1220,6 +1387,14 @@ st.markdown(
             background-color: var(--kp-navy-hover) !important;
             border-color: var(--kp-navy-hover) !important;
             color: #FFFFFF !important;
+            box-shadow: 0 6px 14px rgba(22, 43, 84, 0.18);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation: none !important;
+                transition: none !important;
+            }
         }
     </style>
     """,
@@ -2536,6 +2711,22 @@ def render_parent_notification_center() -> None:
 # ==============================================================================
 _persisted = load_persisted_state()
 
+if "splash_played" not in st.session_state:
+    st.session_state["splash_played"] = True
+    st.markdown(
+        f"""
+        <div class="kp-splash-screen">
+            <div class="kp-splash-card">
+                <img class="kp-splash-logo" src="{LOGO_DATA_URI}" alt="{BRAND_NAME}"/>
+                <div class="kp-splash-title">{BRAND_NAME}</div>
+                <div class="kp-splash-sub">2027 LGS &amp; YKS • Maarif Modeli</div>
+                <div class="kp-splash-track"><div class="kp-splash-fill"></div></div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
 if "active_page" not in st.session_state:
     st.session_state.active_page = PAGES[0]
 elif st.session_state.active_page == "Ana Sayfa & Geri Sayım":
@@ -2616,11 +2807,11 @@ with st.sidebar:
     st.markdown(
         f"""
         <div class="kp-sidebar-meta">
-            <div style="font-weight:700;color:#162B54;margin-bottom:0.18rem;">Aktif Kota &amp; Çanta</div>
+            <div style="font-weight:700;color:#162B54;margin-bottom:0.12rem;">Aktif Kota &amp; Çanta</div>
             <div>{bag_summary_global['total_count']} Paket • {bag_summary_global['monthly_price']:,} ₺/ay</div>
-            <div style="color:#475569;margin-top:0.2rem;">
-                Soru: <b>{int(st.session_state.remaining_question_quota):,}</b> / {bag_summary_global['monthly_quota']:,}<br>
-                Dijimentor: <b>{int(st.session_state.remaining_coach_quota)}</b> / {bag_summary_global['coach_quota']}
+            <div style="color:#475569;margin-top:0.14rem;">
+                Soru: <b>{int(st.session_state.remaining_question_quota):,}</b> / {bag_summary_global['monthly_quota']:,} •
+                Mentor: <b>{int(st.session_state.remaining_coach_quota)}</b> / {bag_summary_global['coach_quota']}
             </div>
         </div>
         """.replace(",", "."),
@@ -2764,7 +2955,7 @@ if current_page == "Ana Sayfa":
         for item in st.session_state.get("activity_log", [])[:5]:
             st.markdown(
                 f"""
-                <div style="background:#FFFFFF;border:1px solid #DCE3EC;border-left:3px solid #C48F1B;border-radius:10px;padding:0.58rem 0.8rem;margin-bottom:0.45rem;">
+                <div style="background:#FFFFFF;border:1px solid #DCE3EC;border-left:3px solid #C48F1B;border-radius:10px;padding:0.58rem 0.8rem;margin-bottom:0.45rem;animation:kpFadeUp 0.55s var(--kp-ease) both;">
                     <div style="font-size:0.72rem;font-weight:600;color:#64748B;">{html.escape(item['time'])} • {html.escape(item['module'])}</div>
                     <div style="font-size:0.83rem;color:#0F172A;margin-top:0.12rem;">{html.escape(item['summary'])}</div>
                 </div>
@@ -3768,8 +3959,8 @@ st.markdown(
 
         .kp-digital-office-footer {
             width: 100%;
-            margin-top: 2.5rem;
-            padding-top: 0.85rem;
+            margin-top: 2.2rem;
+            padding-top: 0.75rem;
             padding-right: 176px;
             border-top: 1px solid #DCE3EC;
             display: flex;
