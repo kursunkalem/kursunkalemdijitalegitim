@@ -20,13 +20,13 @@ from google.genai import types
 # SAYFA YAPILANDIRMASI VE KURUMSAL SABİTLER
 # ==============================================================================
 st.set_page_config(
-    page_title="KURŞUN KALEM DİJİTAL EĞİTİM",
+    page_title="KURŞUN KALEM DİJİTAL OKUL",
     page_icon="✏️",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-BRAND_NAME = "KURŞUN KALEM DİJİTAL EĞİTİM"
+BRAND_NAME = "KURŞUN KALEM DİJİTAL OKUL"
 BRAND_TAGLINE = "Dijital Eğitim, Ölçme-Değerlendirme ve Akıllı Mentorluk Platformu"
 DEFAULT_MODEL = "gemini-3.8-flash"
 FALLBACK_MODEL = "gemini-2.5-flash"
@@ -573,26 +573,26 @@ PARENT_MESSAGE_TOPICS: Dict[str, Dict[str, Any]] = {
         "templates": {
             "Haftalık Soru ve Net Özeti": (
                 "Sayın {parent_name},\n\n"
-                "Kurşun Kalem Dijital Eğitim platformunda öğrencimiz {student_name} ({grade}) "
+                "Kurşun Kalem Dijital Okul platformunda öğrencimiz {student_name} ({grade}) "
                 "bu hafta toplam {weekly_solved} soru çözmüştür. "
                 "{correct_count} doğru, {wrong_count} yanlış ve {blank_count} boş ile "
                 "%{accuracy} başarı oranı elde edilmiştir.\n\n"
                 "Güçlü Kazanım: {strong_topic}\n"
                 "Pekiştirilmesi Önerilen Alan: {weak_topic}\n\n"
-                "Kurşun Kalem Dijital Eğitim"
+                "Kurşun Kalem Dijital Okul"
             ),
             "Türkiye Yüzyılı Maarif Modeli Kazanım Analizi": (
                 "Sayın {parent_name},\n\n"
                 "Öğrencimiz {student_name}'in Türkiye Yüzyılı Maarif Modeli beceri temelli kazanım tablosu güncellenmiştir. "
                 "'{strong_topic}' alanında güçlü bir ilerleme kaydedilirken, '{weak_topic}' kazanımında "
                 "ek pekiştirme testleri tanımlanmıştır.\n\n"
-                "Kurşun Kalem Dijital Eğitim"
+                "Kurşun Kalem Dijital Okul"
             ),
             "Deneme Sınavı ve LGS Değerlendirmesi": (
                 "Sayın {parent_name},\n\n"
                 "Öğrencimiz {student_name}'in son deneme performansında doğruluk oranı %{accuracy} seviyesindedir. "
                 "Bir sonraki deneme oturumumuz {next_exam_date} tarihinde '{next_exam_name}' adıyla yapılacaktır.\n\n"
-                "Kurşun Kalem Dijital Eğitim"
+                "Kurşun Kalem Dijital Okul"
             ),
         },
     },
@@ -607,19 +607,19 @@ PARENT_MESSAGE_TOPICS: Dict[str, Dict[str, Any]] = {
                 "Sayın {parent_name},\n\n"
                 "Öğrencimiz {student_name}, haftalık Dijimentor çalışma planının %{mentor_completion} "
                 "kısmını tamamlamıştır. Düzenli çalışma temposu net artışını desteklemektedir.\n\n"
-                "Kurşun Kalem Dijital Eğitim"
+                "Kurşun Kalem Dijital Okul"
             ),
             "Aktif Kullanım ve Düzenlilik": (
                 "Sayın {parent_name},\n\n"
                 "{student_name} bu hafta platformda düzenli soru ve mini test çözümü gerçekleştirmiştir. "
                 "Günlük kısa tekrar rutinlerinin sürdürülmesi önerilmektedir.\n\n"
-                "Kurşun Kalem Dijital Eğitim"
+                "Kurşun Kalem Dijital Okul"
             ),
             "Eksik Telafi Uyarıları": (
                 "Sayın {parent_name},\n\n"
                 "Öğrencimiz {student_name}'in '{weak_topic}' kazanımındaki telafi görevlerinin tamamlanması "
                 "konu bütünlüğü açısından önem taşımaktadır.\n\n"
-                "Kurşun Kalem Dijital Eğitim"
+                "Kurşun Kalem Dijital Okul"
             ),
         },
     },
@@ -634,19 +634,19 @@ PARENT_MESSAGE_TOPICS: Dict[str, Dict[str, Any]] = {
                 "Sayın {parent_name},\n\n"
                 "{next_exam_date} tarihinde '{next_exam_name}' sınav oturumu yapılacaktır. "
                 "Öğrencimiz {student_name}'in sınav saatinden 15 dakika önce hazır bulunmasını rica ederiz.\n\n"
-                "Kurşun Kalem Dijital Eğitim"
+                "Kurşun Kalem Dijital Okul"
             ),
             "Ödev ve Etkinlik Bilgilendirmesi": (
                 "Sayın {parent_name},\n\n"
                 "Öğrencimiz {student_name} için '{weak_topic}' ve '{strong_topic}' odaklı "
                 "haftalık çalışma görevi tanımlanmıştır.\n\n"
-                "Kurşun Kalem Dijital Eğitim"
+                "Kurşun Kalem Dijital Okul"
             ),
             "Özel Dönem Bilgilendirmeleri": (
                 "Sayın {parent_name},\n\n"
-                "Kurşun Kalem Dijital Eğitim dönemsel kamp ve kazanım tekrar programları aktif edilmiştir. "
+                "Kurşun Kalem Dijital Okul dönemsel kamp ve kazanım tekrar programları aktif edilmiştir. "
                 "Detaylara panel üzerinden ulaşabilirsiniz.\n\n"
-                "Kurşun Kalem Dijital Eğitim"
+                "Kurşun Kalem Dijital Okul"
             ),
         },
     },
@@ -661,19 +661,19 @@ PARENT_MESSAGE_TOPICS: Dict[str, Dict[str, Any]] = {
                 "Sayın {parent_name},\n\n"
                 "Öğrencimiz {student_name} hesabında {rem_questions} soru üretim kotası ve "
                 "{rem_mentor} Dijimentor plan hakkı tanımlıdır.\n\n"
-                "Kurşun Kalem Dijital Eğitim"
+                "Kurşun Kalem Dijital Okul"
             ),
             "Ödeme ve Fatura Bilgilendirmesi": (
                 "Sayın {parent_name},\n\n"
                 "Abonelik ve ödeme bilgilendirmeleri {parent_email} adresine iletilmektedir. "
                 "Her türlü soru için Veli Takip Paneli üzerinden bize ulaşabilirsiniz.\n\n"
-                "Kurşun Kalem Dijital Eğitim"
+                "Kurşun Kalem Dijital Okul"
             ),
             "Destek ve Veli-Öğretmen İletişimi": (
                 "Sayın {parent_name},\n\n"
                 "Öğrencimiz {student_name}'in gelişim süreciyle ilgili rehberlik ve öğretmen görüşmesi "
                 "taleplerinizi Veli Takip Paneli üzerinden iletebilirsiniz.\n\n"
-                "Kurşun Kalem Dijital Eğitim"
+                "Kurşun Kalem Dijital Okul"
             ),
         },
     },
@@ -1690,7 +1690,7 @@ def render_page_strip(page_name: str) -> None:
     """Aktif sayfa için üst header tekrarı olmadan sade bağlam başlığı çizer."""
     title, desc = PAGE_DESCRIPTIONS.get(
         page_name,
-        (page_name, "Kurşun Kalem Dijital Eğitim çalışma alanı."),
+        (page_name, "Kurşun Kalem Dijital Okul çalışma alanı."),
     )
     st.markdown(
         f"""
@@ -2375,7 +2375,7 @@ with st.sidebar:
             <img src="{LOGO_DATA_URI}" alt="{BRAND_NAME}"/>
             <div>
                 <div class="kp-sidebar-brand-title">Kurşun Kalem</div>
-                <div class="kp-sidebar-brand-sub">Dijital Eğitim Platformu</div>
+                <div class="kp-sidebar-brand-sub">Dijital Okul Platformu</div>
             </div>
         </div>
         """,
