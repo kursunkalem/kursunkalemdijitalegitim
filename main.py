@@ -1028,17 +1028,20 @@ st.markdown(
         /* Sayfa Bağlam Şeridi */
         .kp-page-strip {
             display: flex;
-            align-items: baseline;
+            align-items: center;
             justify-content: space-between;
             gap: 1rem;
-            padding: 0.05rem 0 0.62rem 0;
-            margin-bottom: 0.78rem;
-            border-bottom: 1px solid var(--kp-border);
+            background: var(--kp-surface);
+            border: 1px solid var(--kp-border);
+            border-radius: 12px;
+            padding: 0.9rem 1.2rem;
+            margin-bottom: 0.9rem;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
             animation: kpFadeUp 0.5s var(--kp-ease) both;
         }
         .kp-page-strip-title {
-            font-size: 1.26rem;
-            font-weight: 700;
+            font-size: 1.22rem;
+            font-weight: 800;
             color: var(--kp-navy);
             letter-spacing: -0.02em;
             margin: 0;
@@ -1047,7 +1050,7 @@ st.markdown(
         .kp-page-strip-desc {
             font-size: 0.82rem;
             color: var(--kp-muted);
-            margin: 0.16rem 0 0 0;
+            margin: 0.2rem 0 0 0;
         }
 
         .kp-section-inline-head {
@@ -1055,7 +1058,7 @@ st.markdown(
             font-weight: 700;
             color: var(--kp-navy);
             margin: 0;
-            padding-top: 0.3rem;
+            padding-top: 0.2rem;
         }
 
         /* Metrik Kartları (st.metric) */
@@ -1182,21 +1185,21 @@ st.markdown(
         }
 
         .kp-metric-box {
-            padding: 1.15rem 1rem 1.05rem 1rem;
+            padding: 1.05rem 0.75rem;
             text-align: center;
-            border-bottom: 3px solid var(--kp-navy);
         }
         .kp-metric-num {
-            font-size: 1.6rem;
+            font-size: 1.62rem;
             font-weight: 800;
             color: var(--kp-navy);
             line-height: 1.15;
             letter-spacing: -0.02em;
+            font-variant-numeric: tabular-nums;
         }
         .kp-metric-lbl {
             font-size: 0.71rem;
             color: #64748B;
-            margin-top: 0.42rem;
+            margin-top: 0.38rem;
             text-transform: uppercase;
             letter-spacing: 0.08em;
             font-weight: 700;
@@ -2863,6 +2866,9 @@ render_page_strip(current_page)
 # 1. ANA SAYFA
 # ==============================================================================
 if current_page == "Ana Sayfa":
+    yks_d, yks_h, _, _ = format_countdown(YKS_2027_TARGET)
+    lgs_d, lgs_h, lgs_m, lgs_s = format_countdown(LGS_2027_TARGET)
+
     head_col, toggle_col = st.columns([4, 1], vertical_alignment="center")
     with head_col:
         st.markdown(
@@ -2870,14 +2876,61 @@ if current_page == "Ana Sayfa":
             unsafe_allow_html=True,
         )
     with toggle_col:
-        live_counter = st.toggle("Canlı Sayaç", value=st.session_state.live_tick)
+        live_counter = st.toggle(
+            "Canlı Sayaç",
+            value=st.session_state.live_tick,
+            key="lgs_live_toggle",
+        )
         st.session_state.live_tick = live_counter
 
-    counter_placeholder = st.empty()
-    with counter_placeholder.container():
+    if not live_counter:
         render_countdown_boxes(LGS_2027_TARGET)
+    else:
+        live_html = f"""
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;font-family:Inter,sans-serif;">
+            <div style="background:#FFFFFF;border:1px solid #DCE3EC;border-radius:11px;padding:18px 12px;text-align:center;">
+                <div id="cd-days" style="font-size:26px;font-weight:800;color:#162B54;font-variant-numeric:tabular-nums;">{lgs_d:03d}</div>
+                <div style="font-size:11px;font-weight:700;color:#64748B;letter-spacing:1.2px;margin-top:6px;">GÜN</div>
+            </div>
+            <div style="background:#FFFFFF;border:1px solid #DCE3EC;border-radius:11px;padding:18px 12px;text-align:center;">
+                <div id="cd-hours" style="font-size:26px;font-weight:800;color:#162B54;font-variant-numeric:tabular-nums;">{lgs_h:02d}</div>
+                <div style="font-size:11px;font-weight:700;color:#64748B;letter-spacing:1.2px;margin-top:6px;">SAAT</div>
+            </div>
+            <div style="background:#FFFFFF;border:1px solid #DCE3EC;border-radius:11px;padding:18px 12px;text-align:center;">
+                <div id="cd-mins" style="font-size:26px;font-weight:800;color:#162B54;font-variant-numeric:tabular-nums;">{lgs_m:02d}</div>
+                <div style="font-size:11px;font-weight:700;color:#64748B;letter-spacing:1.2px;margin-top:6px;">DAKİKA</div>
+            </div>
+            <div style="background:#FFFFFF;border:1px solid #DCE3EC;border-radius:11px;padding:18px 12px;text-align:center;">
+                <div id="cd-secs" style="font-size:26px;font-weight:800;color:#162B54;font-variant-numeric:tabular-nums;">{lgs_s:02d}</div>
+                <div style="font-size:11px;font-weight:700;color:#64748B;letter-spacing:1.2px;margin-top:6px;">SANİYE</div>
+            </div>
+        </div>
+        <script>
+            (function() {{
+                const target = new Date("2027-06-13T09:30:00+03:00").getTime();
+                function updateClock() {{
+                    const diff = Math.max(0, target - Date.now());
+                    const totalSec = Math.floor(diff / 1000);
+                    const d = Math.floor(totalSec / 86400);
+                    const h = Math.floor((totalSec % 86400) / 3600);
+                    const m = Math.floor((totalSec % 3600) / 60);
+                    const s = totalSec % 60;
+                    const elD = document.getElementById("cd-days");
+                    const elH = document.getElementById("cd-hours");
+                    const elM = document.getElementById("cd-mins");
+                    const elS = document.getElementById("cd-secs");
+                    if (elD) elD.textContent = String(d).padStart(3, "0");
+                    if (elH) elH.textContent = String(h).padStart(2, "0");
+                    if (elM) elM.textContent = String(m).padStart(2, "0");
+                    if (elS) elS.textContent = String(s).padStart(2, "0");
+                }}
+                updateClock();
+                setInterval(updateClock, 1000);
+            }})();
+        </script>
+        """
+        st.components.v1.html(live_html, height=112)
 
-    yks_d, yks_h, _, _ = format_countdown(YKS_2027_TARGET)
     st.caption(f"2027 YKS (19 Haziran 2027) için kalan süre: {yks_d} gün {yks_h} saat")
 
     st.markdown("<div style='margin:0.65rem 0;'></div>", unsafe_allow_html=True)
@@ -2962,10 +3015,6 @@ if current_page == "Ana Sayfa":
                 """,
                 unsafe_allow_html=True,
             )
-
-    if st.session_state.live_tick:
-        time.sleep(1)
-        st.rerun()
 
 # ==============================================================================
 # 2. SORU & REDAKSİYON FABRİKASI
