@@ -3709,17 +3709,37 @@ elif current_page == "Paketler & Abonelik Vitrini":
     )
 
 # ==============================================================================
-# KURŞUN&AYGÖREN DİJİTAL OFİS İMZASI
+# KURŞUN&AYGÖREN DİJİTAL OFİS İMZASI (SAYFA EN ALTI)
 # ==============================================================================
 st.markdown(
     """
     <style>
+        .kp-digital-office-footer {
+            width: 100%;
+            margin-top: 2.5rem;
+            padding-top: 0.9rem;
+            padding-right: 170px;
+            border-top: 1px solid #DCE3EC;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
         .kp-digital-office-badge {
-            position: fixed;
-            ...
+            display: inline-block;
+            background: #162B54;
+            color: #FFFFFF;
+            border: 1px solid #C48F1B;
+            border-radius: 8px;
+            padding: 6px 14px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.12);
+            white-space: nowrap;
         }
     </style>
-    <div class="kp-digital-office-badge">Kurşun&amp;Aygören Dijital Ofis</div>
+    <div class="kp-digital-office-footer">
+        <div class="kp-digital-office-badge">Kurşun&amp;Aygören Dijital Ofis</div>
+    </div>
     """,
     unsafe_allow_html=True,
 )
