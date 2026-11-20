@@ -741,7 +741,7 @@ LOGO_DATA_URI = svg_to_data_uri(EMBEDDED_LOGO_SVG)
 LOGO_PNG_BYTES = get_embedded_logo_png_bytes()
 
 # ==============================================================================
-# KURUMSAL SAAS TASARIM SİSTEMİ + AÇILIŞ & MİKRO ANİMASYONLAR
+# KURUMSAL SAAS TASARIM SİSTEMİ + HERO VİTRİN & MİKRO ANİMASYONLAR
 # ==============================================================================
 st.markdown(
     """
@@ -1059,6 +1059,112 @@ st.markdown(
             padding: 0.22rem 0.6rem;
             border-radius: 6px;
             white-space: nowrap;
+        }
+
+        /* Koyulacivert Hero Vitrin (Ana Sayfa) */
+        .kp-hero-banner {
+            position: relative;
+            overflow: hidden;
+            border-radius: 14px;
+            padding: 1.45rem 1.6rem;
+            margin-bottom: 0.85rem;
+            background:
+                radial-gradient(circle at 82% 22%, rgba(246, 211, 101, 0.18), transparent 42%),
+                radial-gradient(circle at 15% 85%, rgba(59, 130, 246, 0.22), transparent 48%),
+                linear-gradient(125deg, #09152E 0%, #132A58 55%, #1A3A76 100%);
+            border: 1px solid rgba(232, 201, 122, 0.35);
+            color: #FFFFFF;
+            box-shadow: 0 12px 28px rgba(10, 22, 48, 0.16);
+            animation: kpFadeUp 0.45s var(--kp-ease) both;
+        }
+        .kp-hero-grid {
+            display: grid;
+            grid-template-columns: 1.35fr 1fr;
+            gap: 1.4rem;
+            align-items: center;
+        }
+        .kp-hero-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: #FDE68A;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(253, 230, 138, 0.28);
+            padding: 0.25rem 0.65rem;
+            border-radius: 999px;
+            margin-bottom: 0.6rem;
+        }
+        .kp-hero-title {
+            font-size: 1.68rem;
+            font-weight: 800;
+            line-height: 1.18;
+            letter-spacing: -0.02em;
+            color: #FFFFFF;
+            margin: 0 0 0.45rem 0;
+        }
+        .kp-hero-title span {
+            color: #F6D365;
+        }
+        .kp-hero-desc {
+            font-size: 0.86rem;
+            line-height: 1.5;
+            color: #DCE6F7;
+            margin: 0 0 0.85rem 0;
+            max-width: 560px;
+        }
+        .kp-hero-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+        }
+        .kp-hero-pill {
+            font-size: 0.73rem;
+            font-weight: 600;
+            color: #FFFFFF;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            padding: 0.26rem 0.65rem;
+            border-radius: 7px;
+        }
+        .kp-hero-showcase {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.65rem;
+        }
+        .kp-medallion-card {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(246, 211, 101, 0.32);
+            border-radius: 11px;
+            padding: 0.72rem 0.82rem;
+            backdrop-filter: blur(6px);
+        }
+        .kp-medallion-badge {
+            font-size: 0.66rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #F6D365;
+        }
+        .kp-medallion-val {
+            font-size: 1.24rem;
+            font-weight: 800;
+            color: #FFFFFF;
+            margin-top: 0.15rem;
+            line-height: 1.2;
+        }
+        .kp-medallion-sub {
+            font-size: 0.72rem;
+            color: #CBD5E1;
+            margin-top: 0.12rem;
+        }
+        @media (max-width: 860px) {
+            .kp-hero-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         /* Sayfa Başlık Şeridi — İnce ve Hiyerarşik */
@@ -2883,6 +2989,65 @@ render_page_strip(current_page)
 if current_page == "Ana Sayfa":
     yks_d, yks_h, _, _ = format_countdown(YKS_2027_TARGET)
     lgs_d, lgs_h, lgs_m, lgs_s = format_countdown(LGS_2027_TARGET)
+
+    st.markdown(
+        """
+        <div class="kp-hero-banner">
+            <div class="kp-hero-grid">
+                <div>
+                    <div class="kp-hero-kicker">2027 LGS &amp; YKS • Maarif Modeli Akıllı Ekosistem</div>
+                    <h2 class="kp-hero-title">Sınava Hazırlığın <span>Akıllı ve Ölçülebilir</span> Hali</h2>
+                    <p class="kp-hero-desc">
+                        Özgün soru ve çeldirici analizi, kademeli çözüm rehberi, Dijimentor tempo planlaması
+                        ve veli/kurum takibini tek platformda birleştirin.
+                    </p>
+                    <div class="kp-hero-pills">
+                        <span class="kp-hero-pill">Otomatik Redaksiyon</span>
+                        <span class="kp-hero-pill">Kazanım Net Takibi</span>
+                        <span class="kp-hero-pill">Hata Defteri</span>
+                        <span class="kp-hero-pill">DOCX Sınav Çıktısı</span>
+                    </div>
+                </div>
+                <div class="kp-hero-showcase">
+                    <div class="kp-medallion-card">
+                        <div class="kp-medallion-badge">Soru Havuzu</div>
+                        <div class="kp-medallion-val">142.500+</div>
+                        <div class="kp-medallion-sub">Maarif &amp; Yeni Nesil</div>
+                    </div>
+                    <div class="kp-medallion-card">
+                        <div class="kp-medallion-badge">Çözüm İvmesi</div>
+                        <div class="kp-medallion-val">2.4 Milyon</div>
+                        <div class="kp-medallion-sub">%98 Başarı Standardı</div>
+                    </div>
+                    <div class="kp-medallion-card">
+                        <div class="kp-medallion-badge">Aktif Topluluk</div>
+                        <div class="kp-medallion-val">18.420</div>
+                        <div class="kp-medallion-sub">Öğrenci &amp; Veli Ağı</div>
+                    </div>
+                    <div class="kp-medallion-card">
+                        <div class="kp-medallion-badge">Kurumsal B2B</div>
+                        <div class="kp-medallion-val">48 Kurum</div>
+                        <div class="kp-medallion-sub">Okul &amp; Zümre Lisansı</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    h_cta1, h_cta2, h_cta3 = st.columns(3)
+    with h_cta1:
+        if st.button("Soru Fabrikasını Başlat", key="hero_cta_factory", type="primary", use_container_width=True):
+            navigate_to("Soru & Redaksiyon Fabrikası")
+    with h_cta2:
+        if st.button("Dijimentor Planı Oluştur", key="hero_cta_mentor", use_container_width=True):
+            navigate_to("Dijimentor")
+    with h_cta3:
+        if st.button("Paketleri & Çantayı İncele", key="hero_cta_plans", use_container_width=True):
+            navigate_to("Paketler & Abonelik Vitrini")
+
+    st.markdown("<div style='margin:0.55rem 0;'></div>", unsafe_allow_html=True)
 
     head_col, toggle_col = st.columns([4, 1], vertical_alignment="center")
     with head_col:
