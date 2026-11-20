@@ -3412,7 +3412,7 @@ elif current_page == "Paketler & Abonelik Vitrini":
         monthly_price=active_bag_summary["monthly_price"],
         summary=active_bag_summary,
     )
-      # ==============================================================================
+    # ==============================================================================
 # KURŞUN&AYGÖREN DİJİTAL OFİS İMZASI
 # ==============================================================================
 st.markdown(
@@ -3420,8 +3420,8 @@ st.markdown(
     <style>
         .kp-digital-office-badge {
             position: fixed;
-            right: 16px;
-            bottom: 12px;
+            right: 170px;
+            bottom: 14px;
             background: #162B54;
             color: #FFFFFF;
             border: 1px solid #C48F1B;
@@ -3431,9 +3431,10 @@ st.markdown(
             font-weight: 600;
             z-index: 999999;
             box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
+            white-space: nowrap;
         }
     </style>
     <div class="kp-digital-office-badge">Kurşun&amp;Aygören Dijital Ofis</div>
     """,
     unsafe_allow_html=True,
-)  
+)
