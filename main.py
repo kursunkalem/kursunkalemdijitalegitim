@@ -142,11 +142,8 @@ def get_embedded_logo_png_bytes() -> Optional[bytes]:
         return out.getvalue()
     except Exception:
         return None
-
-
 LGS_2027_TARGET = datetime(2027, 6, 13, 9, 30, 0)
 YKS_2027_TARGET = datetime(2027, 6, 19, 10, 15, 0)
-
 PAGES = 
     "Ana Sayfa",
     "Soru & Redaksiyon Fabrikası",
