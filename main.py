@@ -755,10 +755,10 @@ st.markdown(
             --kp-gold: #C48F1B;
             --kp-gold-soft: #FFFBEB;
             --kp-gold-border: #E8C97A;
-            --kp-bg: #F4F6F9;
+            --kp-bg: #F1F4F8;
             --kp-surface: #FFFFFF;
-            --kp-surface-alt: #F9FBFD;
-            --kp-border: #DCE3EC;
+            --kp-surface-alt: #F8FAFC;
+            --kp-border: #E2E8F0;
             --kp-text: #0F172A;
             --kp-muted: #475569;
             --kp-ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -767,7 +767,7 @@ st.markdown(
         @keyframes kpFadeUp {
             0% {
                 opacity: 0;
-                transform: translateY(12px);
+                transform: translateY(10px);
             }
             100% {
                 opacity: 1;
@@ -819,15 +819,6 @@ st.markdown(
             }
             100% {
                 transform: translateX(100%);
-            }
-        }
-
-        @keyframes kpPulseSoft {
-            0%, 100% {
-                box-shadow: 0 0 0 0 rgba(196, 143, 27, 0.24);
-            }
-            50% {
-                box-shadow: 0 0 0 6px rgba(196, 143, 27, 0);
             }
         }
 
@@ -898,7 +889,7 @@ st.markdown(
             background-color: var(--kp-bg);
         }
         [data-testid="stHeader"] {
-            background: rgba(244, 246, 249, 0.94);
+            background: rgba(241, 244, 248, 0.92);
             backdrop-filter: blur(8px);
             border-bottom: 1px solid var(--kp-border);
         }
@@ -906,42 +897,37 @@ st.markdown(
             display: none;
         }
         .block-container {
-            padding-top: 0.95rem;
-            padding-bottom: 3rem;
-            max-width: 1240px;
+            padding-top: 0.75rem;
+            padding-bottom: 2.5rem;
+            max-width: 1260px;
         }
 
-        /* Kenar Çubuğu */
+        /* Kenar Çubuğu — Temiz, Çerçevesiz Menü */
         section[data-testid="stSidebar"] {
             background-color: var(--kp-surface);
             border-right: 1px solid var(--kp-border);
         }
         section[data-testid="stSidebar"] .block-container {
-            padding-top: 0.75rem;
-            padding-bottom: 0.95rem;
+            padding-top: 0.7rem;
+            padding-bottom: 0.85rem;
         }
         .kp-sidebar-brand {
             display: flex;
             align-items: center;
-            gap: 0.62rem;
-            padding: 0.05rem 0.1rem 0.58rem 0.1rem;
+            gap: 0.6rem;
+            padding: 0.05rem 0.1rem 0.55rem 0.1rem;
             border-bottom: 1px solid var(--kp-border);
-            margin-bottom: 0.5rem;
-            animation: kpFadeUp 0.45s var(--kp-ease) both;
+            margin-bottom: 0.45rem;
         }
         .kp-sidebar-brand img {
-            width: 38px;
-            height: 38px;
+            width: 36px;
+            height: 36px;
             object-fit: contain;
-            border-radius: 9px;
+            border-radius: 8px;
             border: 1px solid var(--kp-gold-border);
             padding: 2px;
             background: #FFFFFF;
             flex-shrink: 0;
-            transition: transform 0.25s var(--kp-ease);
-        }
-        .kp-sidebar-brand:hover img {
-            transform: scale(1.06) rotate(-2deg);
         }
         .kp-sidebar-brand-title {
             font-size: 0.88rem;
@@ -956,187 +942,177 @@ st.markdown(
         }
 
         div[data-testid="stSidebar"] .stButton {
-            margin-bottom: 0.12rem;
+            margin-bottom: 0.06rem;
         }
         div[data-testid="stSidebar"] .stButton > button {
             width: 100%;
             text-align: left;
             justify-content: flex-start;
-            border-radius: 8px;
-            padding: 0.36rem 0.68rem;
+            border-radius: 7px;
+            padding: 0.34rem 0.65rem;
             font-size: 0.8rem;
             font-weight: 500;
-            border: 1px solid transparent;
-            background: transparent;
-            color: #334155;
-            box-shadow: none;
-            transition: transform 0.16s var(--kp-ease), background-color 0.16s var(--kp-ease), color 0.16s var(--kp-ease);
+            border: none !important;
+            background: transparent !important;
+            color: #334155 !important;
+            box-shadow: none !important;
+            transition: background-color 0.15s var(--kp-ease), color 0.15s var(--kp-ease), transform 0.15s var(--kp-ease);
         }
         div[data-testid="stSidebar"] .stButton > button:hover {
-            background: var(--kp-navy-soft);
-            color: var(--kp-navy);
-            transform: translateX(3px);
+            background: var(--kp-surface-alt) !important;
+            color: var(--kp-navy) !important;
+            transform: translateX(2px);
         }
         div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
-            background: var(--kp-navy);
-            color: #FFFFFF;
-            border-color: var(--kp-navy);
-            font-weight: 600;
-            box-shadow: 0 2px 6px rgba(22, 43, 84, 0.16);
+            background: var(--kp-navy-soft) !important;
+            color: var(--kp-navy) !important;
+            font-weight: 700 !important;
+            border-left: 3px solid var(--kp-navy) !important;
+            border-radius: 0 7px 7px 0 !important;
         }
 
         .kp-sidebar-meta {
             background: var(--kp-surface-alt);
             border: 1px solid var(--kp-border);
-            border-left: 3px solid var(--kp-gold);
-            border-radius: 9px;
-            padding: 0.52rem 0.68rem;
-            margin-top: 0.48rem;
+            border-radius: 8px;
+            padding: 0.5rem 0.65rem;
+            margin-top: 0.55rem;
             font-size: 0.72rem;
             color: #334155;
-            line-height: 1.36;
-            animation: kpFadeUp 0.55s var(--kp-ease) both;
+            line-height: 1.38;
         }
         .kp-sidebar-status {
-            font-size: 0.71rem;
+            font-size: 0.7rem;
             font-weight: 500;
             color: var(--kp-muted);
-            padding: 0.25rem 0.1rem 0.25rem 0.1rem;
+            padding: 0.3rem 0.1rem 0.2rem 0.1rem;
+        }
+        div[data-testid="stSidebar"] button[kind="secondary"] {
+            border: 1px solid var(--kp-border) !important;
+            background: #FFFFFF !important;
+            text-align: center !important;
+            justify-content: center !important;
         }
 
-        /* Üst Kurumsal Header */
+        /* Üst Kurumsal Header — Tek Satır SaaS Bar */
         .kp-top-header {
             background: var(--kp-surface);
             border: 1px solid var(--kp-border);
-            border-top: 3px solid var(--kp-navy);
-            border-radius: 12px;
-            padding: 0.85rem 1.25rem;
-            margin-bottom: 0.95rem;
+            border-radius: 10px;
+            padding: 0.65rem 1.1rem;
+            margin-bottom: 0.65rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 1rem;
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-            animation: kpFadeUp 0.45s var(--kp-ease) both;
+            animation: kpFadeUp 0.4s var(--kp-ease) both;
         }
         .kp-top-left {
             display: flex;
             align-items: center;
-            gap: 0.82rem;
+            gap: 0.72rem;
         }
         .kp-top-left img {
-            width: 42px;
-            height: 42px;
+            width: 34px;
+            height: 34px;
             object-fit: contain;
-            border-radius: 9px;
+            border-radius: 7px;
             border: 1px solid var(--kp-gold-border);
             padding: 2px;
             background: #FFFFFF;
             flex-shrink: 0;
-            transition: transform 0.25s var(--kp-ease);
-        }
-        .kp-top-header:hover .kp-top-left img {
-            transform: scale(1.05);
         }
         .kp-top-title {
-            font-size: 1.02rem;
+            font-size: 0.96rem;
             font-weight: 800;
             color: var(--kp-navy);
             letter-spacing: -0.015em;
             margin: 0;
-            line-height: 1.2;
+            line-height: 1.15;
         }
         .kp-top-sub {
-            font-size: 0.78rem;
+            font-size: 0.74rem;
             color: var(--kp-muted);
-            margin: 0.16rem 0 0 0;
+            margin: 0.1rem 0 0 0;
         }
         .kp-header-badges {
             display: flex;
             align-items: center;
-            gap: 0.45rem;
+            gap: 0.4rem;
             flex-wrap: wrap;
         }
         .kp-status-chip {
-            font-size: 0.72rem;
+            font-size: 0.7rem;
             font-weight: 600;
             color: var(--kp-navy);
             background: var(--kp-navy-soft);
-            border: 1px solid #C6D4E8;
-            padding: 0.26rem 0.68rem;
-            border-radius: 999px;
+            padding: 0.22rem 0.6rem;
+            border-radius: 6px;
             white-space: nowrap;
         }
         .kp-gold-chip {
-            font-size: 0.72rem;
+            font-size: 0.7rem;
             font-weight: 700;
             color: #7D5606;
             background: var(--kp-gold-soft);
             border: 1px solid var(--kp-gold-border);
-            padding: 0.26rem 0.68rem;
-            border-radius: 999px;
+            padding: 0.22rem 0.6rem;
+            border-radius: 6px;
             white-space: nowrap;
-            animation: kpPulseSoft 2.8s ease-in-out infinite;
         }
 
-        /* Sayfa Bağlam Şeridi */
+        /* Sayfa Başlık Şeridi — İnce ve Hiyerarşik */
         .kp-page-strip {
             display: flex;
-            align-items: center;
+            align-items: baseline;
             justify-content: space-between;
             gap: 1rem;
-            background: var(--kp-surface);
-            border: 1px solid var(--kp-border);
-            border-radius: 12px;
-            padding: 0.9rem 1.2rem;
-            margin-bottom: 0.9rem;
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-            animation: kpFadeUp 0.5s var(--kp-ease) both;
+            padding: 0.2rem 0.15rem 0.65rem 0.15rem;
+            margin-bottom: 0.65rem;
+            border-bottom: 1px solid var(--kp-border);
+            animation: kpFadeUp 0.45s var(--kp-ease) both;
         }
         .kp-page-strip-title {
-            font-size: 1.22rem;
+            font-size: 1.25rem;
             font-weight: 800;
             color: var(--kp-navy);
             letter-spacing: -0.02em;
             margin: 0;
-            line-height: 1.25;
+            line-height: 1.2;
         }
         .kp-page-strip-desc {
-            font-size: 0.82rem;
+            font-size: 0.78rem;
             color: var(--kp-muted);
-            margin: 0.2rem 0 0 0;
+            margin: 0;
         }
 
         .kp-section-inline-head {
-            font-size: 0.98rem;
+            font-size: 0.86rem;
             font-weight: 700;
             color: var(--kp-navy);
             margin: 0;
-            padding-top: 0.2rem;
         }
 
         /* Metrik Kartları (st.metric) */
         div[data-testid="stMetric"] {
             background: var(--kp-surface);
             border: 1px solid var(--kp-border);
-            border-radius: 11px;
-            padding: 0.85rem 1rem;
-            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
-            animation: kpFadeUp 0.6s var(--kp-ease) both;
-            transition: transform 0.22s var(--kp-ease), box-shadow 0.22s var(--kp-ease), border-color 0.22s var(--kp-ease);
+            border-radius: 10px;
+            padding: 0.75rem 0.95rem;
+            animation: kpFadeUp 0.55s var(--kp-ease) both;
+            transition: transform 0.2s var(--kp-ease), border-color 0.2s var(--kp-ease);
         }
         div[data-testid="stMetric"]:hover {
-            transform: translateY(-3px);
-            border-color: #B8C7DC;
-            box-shadow: 0 8px 18px rgba(22, 43, 84, 0.08);
+            transform: translateY(-2px);
+            border-color: #CBD5E1;
         }
         div[data-testid="stMetric"] label {
-            font-size: 0.75rem !important;
+            font-size: 0.72rem !important;
             font-weight: 600 !important;
             color: var(--kp-muted) !important;
         }
         div[data-testid="stMetric"] [data-testid="stMetricValue"] {
-            font-size: 1.45rem !important;
+            font-size: 1.35rem !important;
             font-weight: 800 !important;
             color: var(--kp-navy) !important;
             letter-spacing: -0.02em;
@@ -1146,8 +1122,7 @@ st.markdown(
         button[data-baseweb="tab"] {
             color: #475569 !important;
             font-weight: 600 !important;
-            font-size: 0.88rem !important;
-            transition: color 0.16s var(--kp-ease);
+            font-size: 0.86rem !important;
         }
         button[data-baseweb="tab"][aria-selected="true"] {
             color: var(--kp-navy) !important;
@@ -1161,89 +1136,87 @@ st.markdown(
         .kp-card, .kp-bag-shell, .kp-pkg-card, .kp-pay-box, .kp-kpi-card, .kp-metric-box, .kp-studio-banner {
             background: var(--kp-surface);
             border: 1px solid var(--kp-border);
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-            animation: kpFadeUp 0.6s var(--kp-ease) both;
-            transition: transform 0.22s var(--kp-ease), box-shadow 0.22s var(--kp-ease), border-color 0.22s var(--kp-ease);
+            border-radius: 10px;
+            animation: kpFadeUp 0.55s var(--kp-ease) both;
+            transition: transform 0.2s var(--kp-ease), border-color 0.2s var(--kp-ease);
         }
         .kp-card, .kp-bag-shell, .kp-pkg-card, .kp-pay-box, .kp-studio-banner {
-            padding: 1.15rem 1.25rem;
+            padding: 1rem 1.15rem;
         }
         .kp-card {
-            margin-bottom: 0.65rem;
+            margin-bottom: 0.6rem;
         }
         .kp-mod-card {
             background: var(--kp-surface);
             border: 1px solid var(--kp-border);
-            border-radius: 12px 12px 6px 6px;
-            padding: 1.15rem 1.25rem 1rem 1.25rem;
-            min-height: 124px;
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
-            animation: kpFadeUp 0.65s var(--kp-ease) both;
-            transition: transform 0.22s var(--kp-ease), box-shadow 0.22s var(--kp-ease), border-color 0.22s var(--kp-ease);
+            border-radius: 10px;
+            padding: 0.9rem 1.05rem;
+            min-height: 98px;
+            margin-bottom: 0.45rem;
+            animation: kpFadeUp 0.6s var(--kp-ease) both;
+            transition: transform 0.2s var(--kp-ease), border-color 0.2s var(--kp-ease);
         }
         .kp-mod-card:hover, .kp-metric-box:hover, .kp-pkg-card:hover {
-            transform: translateY(-3px);
-            border-color: var(--kp-gold-border);
-            box-shadow: 0 10px 22px rgba(22, 43, 84, 0.09);
+            transform: translateY(-2px);
+            border-color: #CBD5E1;
         }
         .kp-mod-title {
             font-weight: 700;
-            font-size: 0.96rem;
+            font-size: 0.9rem;
             color: var(--kp-navy);
-            margin-bottom: 0.35rem;
+            margin-bottom: 0.25rem;
         }
         .kp-mod-desc {
-            font-size: 0.82rem;
+            font-size: 0.78rem;
             color: var(--kp-muted);
-            line-height: 1.48;
+            line-height: 1.42;
             margin: 0;
         }
 
         .kp-studio-banner {
-            margin-bottom: 1.1rem;
-            border-left: 4px solid var(--kp-gold);
+            margin-bottom: 1rem;
+            border-left: 3px solid var(--kp-gold);
         }
         .kp-studio-title {
-            font-size: 1.14rem;
+            font-size: 1.1rem;
             font-weight: 700;
             color: var(--kp-navy);
             margin: 0;
         }
         .kp-studio-sub {
-            font-size: 0.84rem;
+            font-size: 0.82rem;
             color: var(--kp-muted);
-            margin: 0.25rem 0 0 0;
-            line-height: 1.45;
+            margin: 0.22rem 0 0 0;
+            line-height: 1.42;
         }
         .kp-kpi-card {
-            padding: 0.95rem 1.05rem;
+            padding: 0.85rem 1rem;
         }
         .kp-kpi-label {
-            font-size: 0.71rem;
+            font-size: 0.69rem;
             font-weight: 700;
             color: #64748B;
             text-transform: uppercase;
             letter-spacing: 0.04em;
         }
         .kp-kpi-value {
-            font-size: 1.26rem;
+            font-size: 1.2rem;
             font-weight: 700;
             color: var(--kp-navy);
-            margin-top: 0.22rem;
+            margin-top: 0.2rem;
         }
         .kp-kpi-sub {
-            font-size: 0.76rem;
+            font-size: 0.74rem;
             color: var(--kp-muted);
-            margin-top: 0.16rem;
+            margin-top: 0.14rem;
         }
 
         .kp-metric-box {
-            padding: 1.05rem 0.75rem;
+            padding: 0.85rem 0.65rem;
             text-align: center;
         }
         .kp-metric-num {
-            font-size: 1.62rem;
+            font-size: 1.45rem;
             font-weight: 800;
             color: var(--kp-navy);
             line-height: 1.15;
@@ -1251,9 +1224,9 @@ st.markdown(
             font-variant-numeric: tabular-nums;
         }
         .kp-metric-lbl {
-            font-size: 0.71rem;
+            font-size: 0.68rem;
             color: #64748B;
-            margin-top: 0.38rem;
+            margin-top: 0.3rem;
             text-transform: uppercase;
             letter-spacing: 0.08em;
             font-weight: 700;
@@ -1261,13 +1234,13 @@ st.markdown(
 
         /* Çanta Görseli & Satırları */
         .kp-bag-shell {
-            margin-bottom: 1.2rem;
+            margin-bottom: 1.1rem;
         }
         .kp-bag-visual {
             background: var(--kp-surface-alt);
             border: 1px solid var(--kp-border);
-            border-radius: 12px;
-            padding: 0.95rem;
+            border-radius: 10px;
+            padding: 0.85rem;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -1283,20 +1256,20 @@ st.markdown(
             transform: scale(1.04) rotate(-2deg);
         }
         .kp-bag-count-pill {
-            margin-top: 0.45rem;
+            margin-top: 0.4rem;
             background: var(--kp-navy);
             color: #FFFFFF;
-            font-size: 0.75rem;
+            font-size: 0.73rem;
             font-weight: 600;
-            padding: 0.22rem 0.7rem;
+            padding: 0.2rem 0.65rem;
             border-radius: 999px;
         }
         .kp-bag-item-chip {
             background: var(--kp-surface-alt);
             border: 1px solid var(--kp-border);
-            border-radius: 10px;
-            padding: 0.6rem 0.85rem;
-            margin-bottom: 0.45rem;
+            border-radius: 9px;
+            padding: 0.55rem 0.8rem;
+            margin-bottom: 0.4rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -1306,7 +1279,7 @@ st.markdown(
 
         /* Paket Kartları */
         .kp-pkg-card {
-            margin-bottom: 0.65rem;
+            margin-bottom: 0.6rem;
         }
         .kp-pkg-top {
             display: flex;
@@ -1315,56 +1288,56 @@ st.markdown(
             gap: 0.5rem;
         }
         .kp-pkg-seg {
-            font-size: 0.72rem;
+            font-size: 0.7rem;
             font-weight: 600;
             color: var(--kp-navy);
             background: var(--kp-navy-soft);
-            padding: 0.2rem 0.6rem;
-            border-radius: 6px;
+            padding: 0.18rem 0.55rem;
+            border-radius: 5px;
         }
         .kp-pkg-badge {
-            font-size: 0.72rem;
+            font-size: 0.7rem;
             font-weight: 700;
             color: #7D5606;
             background: var(--kp-gold-soft);
             border: 1px solid var(--kp-gold-border);
-            padding: 0.2rem 0.6rem;
-            border-radius: 6px;
+            padding: 0.18rem 0.55rem;
+            border-radius: 5px;
         }
         .kp-pkg-title {
-            font-size: 1.03rem;
+            font-size: 1rem;
             font-weight: 700;
             color: var(--kp-navy);
-            margin: 0.6rem 0 0.2rem 0;
+            margin: 0.55rem 0 0.18rem 0;
         }
         .kp-pkg-price {
-            font-size: 1.38rem;
+            font-size: 1.32rem;
             font-weight: 800;
             color: var(--kp-text);
-            margin-bottom: 0.45rem;
+            margin-bottom: 0.4rem;
         }
         .kp-pkg-price span {
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             font-weight: 500;
             color: #64748B;
         }
         .kp-pkg-desc {
-            font-size: 0.83rem;
+            font-size: 0.81rem;
             color: var(--kp-muted);
-            line-height: 1.45;
-            margin-bottom: 0.75rem;
-            min-height: 3.3rem;
+            line-height: 1.42;
+            margin-bottom: 0.7rem;
+            min-height: 3.1rem;
         }
         .kp-pkg-feats {
             list-style: none;
-            padding: 0.7rem 0 0 0;
+            padding: 0.65rem 0 0 0;
             margin: 0;
             border-top: 1px solid var(--kp-border);
         }
         .kp-pkg-feats li {
-            font-size: 0.8rem;
+            font-size: 0.79rem;
             color: #334155;
-            padding: 0.18rem 0;
+            padding: 0.16rem 0;
         }
 
         .kp-dist-bar {
@@ -1391,19 +1364,12 @@ st.markdown(
             color: var(--kp-text) !important;
             border: 1px solid #CBD5E1 !important;
             border-radius: 8px !important;
-            font-size: 0.88rem !important;
-            transition: border-color 0.16s var(--kp-ease), box-shadow 0.16s var(--kp-ease);
+            font-size: 0.86rem !important;
         }
         div[data-testid="stNumberInput"] button {
             background-color: #F8FAFC !important;
             color: var(--kp-navy) !important;
             border-color: #CBD5E1 !important;
-        }
-        div[data-testid="stTextInput"] input:focus,
-        div[data-testid="stNumberInput"] input:focus,
-        div[data-testid="stTextArea"] textarea:focus {
-            border-color: var(--kp-navy) !important;
-            box-shadow: 0 0 0 2px rgba(22, 43, 84, 0.12) !important;
         }
         div[data-testid="stSelectbox"] > div > div {
             background-color: #FFFFFF !important;
@@ -1416,22 +1382,17 @@ st.markdown(
         div[data-testid="stFormSubmitButton"] > button {
             border-radius: 8px;
             font-weight: 600;
-            font-size: 0.83rem;
-            padding: 0.46rem 0.9rem;
+            font-size: 0.8rem;
+            padding: 0.42rem 0.8rem;
             border: 1px solid #CBD5E1;
             background-color: #FFFFFF;
             color: var(--kp-navy);
-            transition: transform 0.16s var(--kp-ease), background-color 0.16s var(--kp-ease), border-color 0.16s var(--kp-ease), box-shadow 0.16s var(--kp-ease);
+            transition: background-color 0.15s var(--kp-ease), border-color 0.15s var(--kp-ease);
         }
         .stButton > button:hover,
         div[data-testid="stFormSubmitButton"] > button:hover {
             border-color: var(--kp-navy);
             background-color: var(--kp-navy-soft);
-            transform: translateY(-1px);
-        }
-        .stButton > button:active,
-        div[data-testid="stFormSubmitButton"] > button:active {
-            transform: translateY(0) scale(0.99);
         }
         .stButton > button[kind="primary"],
         div[data-testid="stFormSubmitButton"] > button[kind="primary"] {
@@ -1444,7 +1405,6 @@ st.markdown(
             background-color: var(--kp-navy-hover) !important;
             border-color: var(--kp-navy-hover) !important;
             color: #FFFFFF !important;
-            box-shadow: 0 6px 14px rgba(22, 43, 84, 0.18);
         }
 
         @media (prefers-reduced-motion: reduce) {
@@ -2156,10 +2116,8 @@ def render_page_strip(page_name: str) -> None:
     st.markdown(
         f"""
         <div class="kp-page-strip">
-            <div>
-                <h2 class="kp-page-strip-title">{html.escape(title)}</h2>
-                <p class="kp-page-strip-desc">{html.escape(desc)}</p>
-            </div>
+            <h2 class="kp-page-strip-title">{html.escape(title)}</h2>
+            <p class="kp-page-strip-desc">{html.escape(desc)}</p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -2867,9 +2825,9 @@ with st.sidebar:
     st.markdown(
         f"""
         <div class="kp-sidebar-meta">
-            <div style="font-weight:700;color:#162B54;margin-bottom:0.12rem;">Aktif Kota &amp; Çanta</div>
+            <div style="font-weight:700;color:#162B54;margin-bottom:0.1rem;">Aktif Kota &amp; Çanta</div>
             <div>{bag_summary_global['total_count']} Paket • {bag_summary_global['monthly_price']:,} ₺/ay</div>
-            <div style="color:#475569;margin-top:0.14rem;">
+            <div style="color:#475569;margin-top:0.12rem;">
                 Soru: <b>{int(st.session_state.remaining_question_quota):,}</b> / {bag_summary_global['monthly_quota']:,} •
                 Mentor: <b>{int(st.session_state.remaining_coach_quota)}</b> / {bag_summary_global['coach_quota']}
             </div>
@@ -2944,22 +2902,22 @@ if current_page == "Ana Sayfa":
         render_countdown_boxes(LGS_2027_TARGET)
     else:
         live_html = f"""
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;font-family:Inter,sans-serif;">
-            <div style="background:#FFFFFF;border:1px solid #DCE3EC;border-radius:11px;padding:18px 12px;text-align:center;">
-                <div id="cd-days" style="font-size:26px;font-weight:800;color:#162B54;font-variant-numeric:tabular-nums;">{lgs_d:03d}</div>
-                <div style="font-size:11px;font-weight:700;color:#64748B;letter-spacing:1.2px;margin-top:6px;">GÜN</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;font-family:Inter,sans-serif;">
+            <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:10px;padding:13px 10px;text-align:center;">
+                <div id="cd-days" style="font-size:23px;font-weight:800;color:#162B54;font-variant-numeric:tabular-nums;">{lgs_d:03d}</div>
+                <div style="font-size:10.5px;font-weight:700;color:#64748B;letter-spacing:1.1px;margin-top:4px;">GÜN</div>
             </div>
-            <div style="background:#FFFFFF;border:1px solid #DCE3EC;border-radius:11px;padding:18px 12px;text-align:center;">
-                <div id="cd-hours" style="font-size:26px;font-weight:800;color:#162B54;font-variant-numeric:tabular-nums;">{lgs_h:02d}</div>
-                <div style="font-size:11px;font-weight:700;color:#64748B;letter-spacing:1.2px;margin-top:6px;">SAAT</div>
+            <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:10px;padding:13px 10px;text-align:center;">
+                <div id="cd-hours" style="font-size:23px;font-weight:800;color:#162B54;font-variant-numeric:tabular-nums;">{lgs_h:02d}</div>
+                <div style="font-size:10.5px;font-weight:700;color:#64748B;letter-spacing:1.1px;margin-top:4px;">SAAT</div>
             </div>
-            <div style="background:#FFFFFF;border:1px solid #DCE3EC;border-radius:11px;padding:18px 12px;text-align:center;">
-                <div id="cd-mins" style="font-size:26px;font-weight:800;color:#162B54;font-variant-numeric:tabular-nums;">{lgs_m:02d}</div>
-                <div style="font-size:11px;font-weight:700;color:#64748B;letter-spacing:1.2px;margin-top:6px;">DAKİKA</div>
+            <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:10px;padding:13px 10px;text-align:center;">
+                <div id="cd-mins" style="font-size:23px;font-weight:800;color:#162B54;font-variant-numeric:tabular-nums;">{lgs_m:02d}</div>
+                <div style="font-size:10.5px;font-weight:700;color:#64748B;letter-spacing:1.1px;margin-top:4px;">DAKİKA</div>
             </div>
-            <div style="background:#FFFFFF;border:1px solid #DCE3EC;border-radius:11px;padding:18px 12px;text-align:center;">
-                <div id="cd-secs" style="font-size:26px;font-weight:800;color:#162B54;font-variant-numeric:tabular-nums;">{lgs_s:02d}</div>
-                <div style="font-size:11px;font-weight:700;color:#64748B;letter-spacing:1.2px;margin-top:6px;">SANİYE</div>
+            <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:10px;padding:13px 10px;text-align:center;">
+                <div id="cd-secs" style="font-size:23px;font-weight:800;color:#162B54;font-variant-numeric:tabular-nums;">{lgs_s:02d}</div>
+                <div style="font-size:10.5px;font-weight:700;color:#64748B;letter-spacing:1.1px;margin-top:4px;">SANİYE</div>
             </div>
         </div>
         <script>
@@ -2986,18 +2944,18 @@ if current_page == "Ana Sayfa":
             }})();
         </script>
         """
-        st.components.v1.html(live_html, height=112)
+        st.components.v1.html(live_html, height=88)
 
     st.caption(f"2027 YKS (19 Haziran 2027) için kalan süre: {yks_d} gün {yks_h} saat")
 
-    st.markdown("<div style='margin:0.65rem 0;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin:0.45rem 0;'></div>", unsafe_allow_html=True)
     m1, m2, m3, m4 = st.columns(4)
     m1.metric("Üretilen Soru Havuzu", "142.500+", "+1.200 bugün")
     m2.metric("Aktif Öğrenci / Veli", "18.420", "+340 bu hafta")
     m3.metric("B2B Anlaşmalı Kurum", "48", "+4 Yeni")
     m4.metric("Çözülen Soru Sayısı", "2.4 Milyon", "%98 Başarı")
 
-    st.markdown("<div style='margin:0.85rem 0 0.25rem 0;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin:0.65rem 0 0.15rem 0;'></div>", unsafe_allow_html=True)
     st.markdown("#### Modüller")
     f1, f2, f3 = st.columns(3)
     with f1:
@@ -3059,15 +3017,15 @@ if current_page == "Ana Sayfa":
             "Cmt": 25900,
             "Paz": 24800,
         }
-        st.area_chart(telemetry_data, color="#162B54", height=210)
+        st.area_chart(telemetry_data, color="#162B54", height=200)
     with ana_r:
         st.markdown("#### Son Aktiviteler")
         for item in st.session_state.get("activity_log", [])[:5]:
             st.markdown(
                 f"""
-                <div style="background:#FFFFFF;border:1px solid #DCE3EC;border-left:3px solid #C48F1B;border-radius:10px;padding:0.58rem 0.8rem;margin-bottom:0.45rem;animation:kpFadeUp 0.55s var(--kp-ease) both;">
-                    <div style="font-size:0.72rem;font-weight:600;color:#64748B;">{html.escape(item['time'])} • {html.escape(item['module'])}</div>
-                    <div style="font-size:0.83rem;color:#0F172A;margin-top:0.12rem;">{html.escape(item['summary'])}</div>
+                <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-left:3px solid #C48F1B;border-radius:9px;padding:0.52rem 0.75rem;margin-bottom:0.4rem;">
+                    <div style="font-size:0.7rem;font-weight:600;color:#64748B;">{html.escape(item['time'])} • {html.escape(item['module'])}</div>
+                    <div style="font-size:0.81rem;color:#0F172A;margin-top:0.1rem;">{html.escape(item['summary'])}</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
@@ -3717,7 +3675,7 @@ elif current_page == "Dijimentor":
     a_hrs = round(weekly_hours * 0.25, 1)
     st.markdown(
         f"""
-        <div style="margin-top:0.65rem;padding-top:0.75rem;border-top:1px solid #DCE3EC;">
+        <div style="margin-top:0.65rem;padding-top:0.75rem;border-top:1px solid #E2E8F0;">
             <div style="font-size:0.75rem;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.04em;">
                 Önerilen Haftalık Kapasite Dağılımı ({weekly_hours} Saat)
             </div>
@@ -4068,7 +4026,7 @@ st.markdown(
             margin-top: 2.2rem;
             padding-top: 0.75rem;
             padding-right: 176px;
-            border-top: 1px solid #DCE3EC;
+            border-top: 1px solid #E2E8F0;
             display: flex;
             justify-content: flex-end;
             align-items: center;
