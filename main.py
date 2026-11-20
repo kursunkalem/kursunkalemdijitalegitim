@@ -160,7 +160,7 @@ PAGES = [
 PAGE_DESCRIPTIONS: Dict[str, Tuple[str, str]] = {
     "Ana Sayfa": (
         "Genel Bakış & Sınav Durumu",
-        "2027 LGS ve YKS geri sayımı, çalışma verileri, modüller ve haftalık ilerleme.",
+        "2027 LGS ve YKS geri sayımı, platform metrikleri ve çalışma akışı.",
     ),
     "Soru & Redaksiyon Fabrikası": (
         "Maarif Modeli Soru & Kalite Stüdyosu",
@@ -701,7 +701,7 @@ st.markdown(
             --kp-gold: #C48F1B;
             --kp-gold-soft: #FFFBEB;
             --kp-gold-border: #E8C97A;
-            --kp-bg: #F5F7FA;
+            --kp-bg: #F4F6F9;
             --kp-surface: #FFFFFF;
             --kp-surface-alt: #F9FBFD;
             --kp-border: #DCE3EC;
@@ -717,7 +717,7 @@ st.markdown(
             background-color: var(--kp-bg);
         }
         [data-testid="stHeader"] {
-            background: rgba(245, 247, 250, 0.94);
+            background: rgba(244, 246, 249, 0.94);
             backdrop-filter: blur(8px);
             border-bottom: 1px solid var(--kp-border);
         }
@@ -725,8 +725,8 @@ st.markdown(
             display: none;
         }
         .block-container {
-            padding-top: 1.15rem;
-            padding-bottom: 4rem;
+            padding-top: 1.05rem;
+            padding-bottom: 3.5rem;
             max-width: 1240px;
         }
 
@@ -735,72 +735,86 @@ st.markdown(
             background-color: var(--kp-surface);
             border-right: 1px solid var(--kp-border);
         }
+        section[data-testid="stSidebar"] .block-container {
+            padding-top: 0.9rem;
+            padding-bottom: 1.25rem;
+        }
         .kp-sidebar-brand {
             display: flex;
             align-items: center;
-            gap: 0.72rem;
-            padding: 0.2rem 0.2rem 0.9rem 0.2rem;
+            gap: 0.68rem;
+            padding: 0.1rem 0.15rem 0.72rem 0.15rem;
             border-bottom: 1px solid var(--kp-border);
-            margin-bottom: 0.85rem;
+            margin-bottom: 0.65rem;
         }
         .kp-sidebar-brand img {
-            width: 44px;
-            height: 44px;
+            width: 40px;
+            height: 40px;
             object-fit: contain;
-            border-radius: 10px;
+            border-radius: 9px;
             border: 1px solid var(--kp-gold-border);
             padding: 2px;
             background: #FFFFFF;
             flex-shrink: 0;
         }
         .kp-sidebar-brand-title {
-            font-size: 0.92rem;
+            font-size: 0.9rem;
             font-weight: 700;
             color: var(--kp-navy);
             line-height: 1.2;
         }
         .kp-sidebar-brand-sub {
-            font-size: 0.72rem;
+            font-size: 0.7rem;
             color: var(--kp-muted);
-            margin-top: 2px;
+            margin-top: 1px;
         }
 
+        div[data-testid="stSidebar"] .stButton {
+            margin-bottom: 0.18rem;
+        }
         div[data-testid="stSidebar"] .stButton > button {
             width: 100%;
             text-align: left;
             justify-content: flex-start;
             border-radius: 8px;
-            padding: 0.5rem 0.78rem;
-            font-size: 0.84rem;
+            padding: 0.44rem 0.72rem;
+            font-size: 0.82rem;
             font-weight: 500;
             border: 1px solid transparent;
             background: transparent;
             color: #334155;
+            box-shadow: none;
             transition: all 0.14s ease;
         }
         div[data-testid="stSidebar"] .stButton > button:hover {
             background: var(--kp-navy-soft);
             color: var(--kp-navy);
-            border-color: #CBD5E1;
+            border-color: transparent;
         }
         div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
             background: var(--kp-navy);
             color: #FFFFFF;
             border-color: var(--kp-navy);
             font-weight: 600;
-            box-shadow: 0 2px 6px rgba(22, 43, 84, 0.16);
+            box-shadow: 0 2px 6px rgba(22, 43, 84, 0.15);
         }
 
         .kp-sidebar-meta {
             background: var(--kp-surface-alt);
             border: 1px solid var(--kp-border);
             border-left: 3px solid var(--kp-gold);
-            border-radius: 10px;
-            padding: 0.8rem 0.85rem;
-            margin-top: 0.95rem;
-            font-size: 0.78rem;
+            border-radius: 9px;
+            padding: 0.65rem 0.75rem;
+            margin-top: 0.65rem;
+            font-size: 0.75rem;
             color: #334155;
-            line-height: 1.48;
+            line-height: 1.42;
+        }
+        .kp-sidebar-status {
+            font-size: 0.74rem;
+            font-weight: 500;
+            color: var(--kp-muted);
+            padding: 0.25rem 0.1rem 0.45rem 0.1rem;
         }
 
         /* Üst Kurumsal Header */
@@ -809,8 +823,8 @@ st.markdown(
             border: 1px solid var(--kp-border);
             border-top: 3px solid var(--kp-navy);
             border-radius: 12px;
-            padding: 1rem 1.35rem;
-            margin-bottom: 1.15rem;
+            padding: 0.88rem 1.25rem;
+            margin-bottom: 1.05rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -820,29 +834,30 @@ st.markdown(
         .kp-top-left {
             display: flex;
             align-items: center;
-            gap: 0.9rem;
+            gap: 0.82rem;
         }
         .kp-top-left img {
-            width: 48px;
-            height: 48px;
+            width: 42px;
+            height: 42px;
             object-fit: contain;
-            border-radius: 10px;
+            border-radius: 9px;
             border: 1px solid var(--kp-gold-border);
             padding: 2px;
             background: #FFFFFF;
             flex-shrink: 0;
         }
         .kp-top-title {
-            font-size: 1.16rem;
+            font-size: 1.02rem;
             font-weight: 800;
             color: var(--kp-navy);
-            letter-spacing: -0.02em;
+            letter-spacing: -0.015em;
             margin: 0;
+            line-height: 1.2;
         }
         .kp-top-sub {
-            font-size: 0.82rem;
-            color: #334155;
-            margin: 0.14rem 0 0 0;
+            font-size: 0.78rem;
+            color: var(--kp-muted);
+            margin: 0.16rem 0 0 0;
         }
         .kp-header-badges {
             display: flex;
@@ -851,22 +866,22 @@ st.markdown(
             flex-wrap: wrap;
         }
         .kp-status-chip {
-            font-size: 0.74rem;
+            font-size: 0.72rem;
             font-weight: 600;
             color: var(--kp-navy);
             background: var(--kp-navy-soft);
             border: 1px solid #C6D4E8;
-            padding: 0.3rem 0.72rem;
+            padding: 0.26rem 0.68rem;
             border-radius: 999px;
             white-space: nowrap;
         }
         .kp-gold-chip {
-            font-size: 0.74rem;
+            font-size: 0.72rem;
             font-weight: 700;
             color: #7D5606;
             background: var(--kp-gold-soft);
             border: 1px solid var(--kp-gold-border);
-            padding: 0.3rem 0.72rem;
+            padding: 0.26rem 0.68rem;
             border-radius: 999px;
             white-space: nowrap;
         }
@@ -877,21 +892,51 @@ st.markdown(
             align-items: baseline;
             justify-content: space-between;
             gap: 1rem;
-            padding: 0.15rem 0 0.75rem 0;
-            margin-bottom: 0.85rem;
+            padding: 0.05rem 0 0.65rem 0;
+            margin-bottom: 0.8rem;
             border-bottom: 1px solid var(--kp-border);
         }
         .kp-page-strip-title {
-            font-size: 1.25rem;
+            font-size: 1.28rem;
             font-weight: 700;
             color: var(--kp-navy);
-            letter-spacing: -0.015em;
+            letter-spacing: -0.02em;
             margin: 0;
+            line-height: 1.25;
         }
         .kp-page-strip-desc {
-            font-size: 0.83rem;
+            font-size: 0.82rem;
             color: var(--kp-muted);
-            margin: 0.15rem 0 0 0;
+            margin: 0.18rem 0 0 0;
+        }
+
+        /* Geri Sayım Başlık & Anahtar Hizalama */
+        .kp-section-inline-head {
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: var(--kp-navy);
+            margin: 0;
+            padding-top: 0.35rem;
+        }
+
+        /* Metrik Kartları (st.metric) */
+        div[data-testid="stMetric"] {
+            background: var(--kp-surface);
+            border: 1px solid var(--kp-border);
+            border-radius: 11px;
+            padding: 0.85rem 1rem;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+        }
+        div[data-testid="stMetric"] label {
+            font-size: 0.75rem !important;
+            font-weight: 600 !important;
+            color: var(--kp-muted) !important;
+        }
+        div[data-testid="stMetric"] [data-testid="stMetricValue"] {
+            font-size: 1.45rem !important;
+            font-weight: 800 !important;
+            color: var(--kp-navy) !important;
+            letter-spacing: -0.02em;
         }
 
         /* Sekmeler (stTabs) Kurumsal Renkleri */
@@ -926,19 +971,19 @@ st.markdown(
             border: 1px solid var(--kp-border);
             border-radius: 12px 12px 6px 6px;
             padding: 1.15rem 1.25rem 1rem 1.25rem;
-            min-height: 126px;
+            min-height: 124px;
             box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
         }
         .kp-mod-title {
             font-weight: 700;
-            font-size: 0.98rem;
+            font-size: 0.96rem;
             color: var(--kp-navy);
             margin-bottom: 0.35rem;
         }
         .kp-mod-desc {
-            font-size: 0.83rem;
+            font-size: 0.82rem;
             color: var(--kp-muted);
-            line-height: 1.45;
+            line-height: 1.48;
             margin: 0;
         }
 
@@ -947,13 +992,13 @@ st.markdown(
             border-left: 4px solid var(--kp-gold);
         }
         .kp-studio-title {
-            font-size: 1.16rem;
+            font-size: 1.14rem;
             font-weight: 700;
             color: var(--kp-navy);
             margin: 0;
         }
         .kp-studio-sub {
-            font-size: 0.85rem;
+            font-size: 0.84rem;
             color: var(--kp-muted);
             margin: 0.25rem 0 0 0;
             line-height: 1.45;
@@ -969,34 +1014,35 @@ st.markdown(
             letter-spacing: 0.04em;
         }
         .kp-kpi-value {
-            font-size: 1.28rem;
+            font-size: 1.26rem;
             font-weight: 700;
             color: var(--kp-navy);
-            margin-top: 0.2rem;
+            margin-top: 0.22rem;
         }
         .kp-kpi-sub {
-            font-size: 0.77rem;
+            font-size: 0.76rem;
             color: var(--kp-muted);
             margin-top: 0.16rem;
         }
 
         .kp-metric-box {
-            padding: 1rem;
+            padding: 1.15rem 1rem 1.05rem 1rem;
             text-align: center;
             border-bottom: 3px solid var(--kp-navy);
         }
         .kp-metric-num {
-            font-size: 1.52rem;
+            font-size: 1.6rem;
             font-weight: 800;
             color: var(--kp-navy);
-            line-height: 1.2;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
         }
         .kp-metric-lbl {
-            font-size: 0.73rem;
+            font-size: 0.71rem;
             color: #64748B;
-            margin-top: 0.25rem;
+            margin-top: 0.42rem;
             text-transform: uppercase;
-            letter-spacing: 0.06em;
+            letter-spacing: 0.08em;
             font-weight: 700;
         }
 
@@ -1151,8 +1197,8 @@ st.markdown(
         div[data-testid="stFormSubmitButton"] > button {
             border-radius: 8px;
             font-weight: 600;
-            font-size: 0.85rem;
-            padding: 0.5rem 0.95rem;
+            font-size: 0.83rem;
+            padding: 0.46rem 0.9rem;
             border: 1px solid #CBD5E1;
             background-color: #FFFFFF;
             color: var(--kp-navy);
@@ -2570,9 +2616,9 @@ with st.sidebar:
     st.markdown(
         f"""
         <div class="kp-sidebar-meta">
-            <div style="font-weight:700;color:#162B54;margin-bottom:0.2rem;">Aktif Kota &amp; Çanta</div>
+            <div style="font-weight:700;color:#162B54;margin-bottom:0.18rem;">Aktif Kota &amp; Çanta</div>
             <div>{bag_summary_global['total_count']} Paket • {bag_summary_global['monthly_price']:,} ₺/ay</div>
-            <div style="color:#475569;margin-top:0.25rem;">
+            <div style="color:#475569;margin-top:0.2rem;">
                 Soru: <b>{int(st.session_state.remaining_question_quota):,}</b> / {bag_summary_global['monthly_quota']:,}<br>
                 Dijimentor: <b>{int(st.session_state.remaining_coach_quota)}</b> / {bag_summary_global['coach_quota']}
             </div>
@@ -2581,11 +2627,11 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
-    st.markdown("<div style='margin-top:0.65rem;'></div>", unsafe_allow_html=True)
-    if api_key_ready:
-        st.caption("Durum: Sistem aktif")
-    else:
-        st.caption("Durum: API anahtarı bekleniyor")
+    status_label = "Sistem aktif" if api_key_ready else "API anahtarı bekleniyor"
+    st.markdown(
+        f'<div class="kp-sidebar-status">Durum: {html.escape(status_label)}</div>',
+        unsafe_allow_html=True,
+    )
 
     if st.button("Oturumu Sıfırla", key="reset_session_btn", use_container_width=True):
         try:
@@ -2626,9 +2672,12 @@ render_page_strip(current_page)
 # 1. ANA SAYFA
 # ==============================================================================
 if current_page == "Ana Sayfa":
-    head_col, toggle_col = st.columns([3, 1])
+    head_col, toggle_col = st.columns([4, 1], vertical_alignment="center")
     with head_col:
-        st.markdown("#### 2027 LGS Geri Sayım (13 Haziran 2027)")
+        st.markdown(
+            '<div class="kp-section-inline-head">2027 LGS Geri Sayım (13 Haziran 2027)</div>',
+            unsafe_allow_html=True,
+        )
     with toggle_col:
         live_counter = st.toggle("Canlı Sayaç", value=st.session_state.live_tick)
         st.session_state.live_tick = live_counter
@@ -2640,14 +2689,15 @@ if current_page == "Ana Sayfa":
     yks_d, yks_h, _, _ = format_countdown(YKS_2027_TARGET)
     st.caption(f"2027 YKS (19 Haziran 2027) için kalan süre: {yks_d} gün {yks_h} saat")
 
-    st.markdown("---")
+    st.markdown("<div style='margin:0.65rem 0;'></div>", unsafe_allow_html=True)
     m1, m2, m3, m4 = st.columns(4)
     m1.metric("Üretilen Soru Havuzu", "142.500+", "+1.200 bugün")
     m2.metric("Aktif Öğrenci / Veli", "18.420", "+340 bu hafta")
     m3.metric("B2B Anlaşmalı Kurum", "48", "+4 Yeni")
     m4.metric("Çözülen Soru Sayısı", "2.4 Milyon", "%98 Başarı")
 
-    st.markdown("### Modüller")
+    st.markdown("<div style='margin:0.85rem 0 0.25rem 0;'></div>", unsafe_allow_html=True)
+    st.markdown("#### Modüller")
     f1, f2, f3 = st.columns(3)
     with f1:
         st.markdown(
