@@ -30,8 +30,8 @@ st.set_page_config(
 BRAND_NAME = "KURŞUN KALEM DİJİTAL OKUL"
 BRAND_SHORT = "Kurşun Kalem"
 BRAND_TAGLINE = "Dijital Eğitim, Ölçme-Değerlendirme ve Akıllı Mentorluk Platformu"
-DEFAULT_MODEL = "gemini-3.8-flash"
-FALLBACK_MODEL = "gemini-2.5-flash"
+DEFAULT_MODEL = "gemini-2.5-flash"
+FALLBACK_MODEL = "gemini-2.5-pro"
 STATE_FILE_PATH = Path(".kursun_kalem_state.json")
 
 # Kalıcı Gömülü Kurumsal Logo
@@ -92,9 +92,9 @@ SCHOOL_BACKPACK_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26
   <rect x="64" y="56" width="132" height="205" rx="32" fill="url(#bagBody)" stroke="#0f172a" stroke-width="3"/>
   <path d="M 68 92 Q 130 114 192 92 L 192 78 Q 130 56 68 78 Z" fill="#d4af37" opacity="0.28"/>
   <rect x="82" y="138" width="96" height="96" rx="20" fill="url(#bagPocket)" stroke="#d4af37" stroke-width="2"/>
-  <circle cx="130" cy="186" r="22" fill="#ffffff" stroke="#0f172a" stroke-width="2"/>
-  <text x="130" y="184" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="8.5" font-weight="800" fill="#0f172a">ÇANTA</text>
-  <text x="130" y="196" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="7.5" font-weight="700" fill="#475569">PAKETLER</text>
+  <circle cx="130" cy="186" r="23" fill="#ffffff" stroke="#0f172a" stroke-width="2"/>
+  <text x="130" y="184" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="8" font-weight="800" fill="#0f172a">SIRT</text>
+  <text x="130" y="195" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="7.5" font-weight="700" fill="#475569">ÇANTASI</text>
   <rect x="72" y="242" width="116" height="18" rx="9" fill="#090d16"/>
 </svg>"""
 
@@ -159,8 +159,8 @@ PAGES = [
 
 PAGE_DESCRIPTIONS: Dict[str, Tuple[str, str]] = {
     "Ana Sayfa": (
-        "Genel Bakış & Sınav Telemetrisi",
-        "2027 LGS ve YKS geri sayımı, platform metrikleri, modül erişimi ve haftalık üretim akışı.",
+        "Genel Bakış & Sınav Durumu",
+        "2027 LGS ve YKS geri sayımı, çalışma verileri, modüller ve haftalık ilerleme.",
     ),
     "Soru & Redaksiyon Fabrikası": (
         "Maarif Modeli Soru & Kalite Stüdyosu",
@@ -1442,7 +1442,7 @@ def call_gemini_text(
 ) -> str:
     """Gemini API üzerinden metin üretir; 503/429 yoğunluk ve 404 hatalarında tekrar dener ve yedek modele geçer."""
     client = get_gemini_client()
-    candidate_models = [model, FALLBACK_MODEL, "gemini-2.5-pro"]
+    candidate_models = [model, FALLBACK_MODEL, "gemini-2.0-flash"]
     deduped_models: List[str] = []
     for m in candidate_models:
         if m and m not in deduped_models:
@@ -2698,7 +2698,7 @@ if current_page == "Ana Sayfa":
     st.markdown("---")
     ana_l, ana_r = st.columns([2, 1])
     with ana_l:
-        st.markdown("#### Haftalık Soru Üretim & Çözüm Telemetrisi")
+        st.markdown("#### Haftalık Soru & Çözüm İlerlemesi")
         telemetry_data = {
             "Pzt": 16800,
             "Sal": 18200,
