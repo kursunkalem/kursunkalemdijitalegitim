@@ -1252,6 +1252,7 @@ def save_persisted_state() -> None:
         "activity_log": st.session_state.get("activity_log", _default_activity_log()),
         "b2b_org_cache": st.session_state.get("b2b_org_cache"),
         "last_b2b_summary": st.session_state.get("last_b2b_summary", ""),
+        "error_notebook": st.session_state.get("error_notebook", []),
     }
     try:
         STATE_FILE_PATH.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -1742,6 +1743,95 @@ def parse_quiz_questions(raw_text: str) -> List[Dict[str, Any]]:
             )
 
     return parsed
+
+
+# ==============================================================================
+# ÖĞRENCİ PORTALI YARDIMCILARI: HATA DEFTERİ, KAZANIM NETİ & KADEMELİ İPUCU
+# ==============================================================================
+MISTAKE_REASONS = [
+    "Dikkat / Hızlı Okuma Hatası",
+    "Çeldirici Tuzağına Düşme",
+    "Kazanım / Kavram Eksikliği",
+    "İşlem / Yorum Adımı Hatası",
+    "Süre Baskısı / Yetiştirememe",
+]
+
+
+def _kp_default_outcome() -> str:
+    focus = str(st.session_state.get("factory_focus_topic", "")).strip()
+    return focus if focus else "Genel Kazanım & Muhakeme"
+
+
+def _kp_extract_outcome(q_text: str, fallback: str) -> str:
+    for line in q_text.splitlines():
+        m = re.match(
+            r"^(?:Kazanım|Konu|Beceri)\s*[:\-–]\s*(.+)$",
+            line.strip(),
+            flags=re.IGNORECASE,
+        )
+        if m and m.group(1).strip():
+            return m.group(1).strip()
+    return fallback
+
+
+def add_to_error_notebook(entry: Dict[str, Any]) -> bool:
+    """Yanlış veya boş bırakılan soruyu Hata Defteri'ne çoğaltmadan kaydeder."""
+    notebook: List[Dict[str, Any]] = st.session_state.setdefault("error_notebook", [])
+    q_key = (
+        f"{entry.get('num')}|{entry.get('status')}|"
+        f"{entry.get('outcome')}|{entry.get('stem', '')[:80]}"
+    )
+    for existing in notebook:
+        ex_key = (
+            f"{existing.get('num')}|{existing.get('status')}|"
+            f"{existing.get('outcome')}|{existing.get('stem', '')[:80]}"
+        )
+        if ex_key == q_key and not existing.get("resolved"):
+            return False
+
+    entry["id"] = f"ERR-{int(time.time() * 1000)}-{len(notebook) + 1}"
+    entry["created_at"] = datetime.now().strftime("%d.%m.%Y %H:%M")
+    entry["resolved"] = False
+    entry.setdefault("reason", "Çeldirici Tuzağına Düşme")
+    entry.setdefault("note", "")
+    notebook.insert(0, entry)
+    st.session_state["error_notebook"] = notebook
+    save_persisted_state()
+    return True
+
+
+def build_outcome_net_summary(result_rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Kazanım bazlı Doğru, Yanlış, Boş, Net (3Y=1D) ve Doğruluk (%) özeti üretir."""
+    grouped: Dict[str, Dict[str, int]] = {}
+    for row in result_rows:
+        outcome = str(row.get("Kazanım") or "Genel Kazanım")
+        status = str(row.get("Durum") or "")
+        b = grouped.setdefault(outcome, {"dogru": 0, "yanlis": 0, "bos": 0, "toplam": 0})
+        b["toplam"] += 1
+        if status == "Doğru":
+            b["dogru"] += 1
+        elif status == "Yanlış":
+            b["yanlis"] += 1
+        elif status == "Boş":
+            b["bos"] += 1
+
+    out: List[Dict[str, Any]] = []
+    for outcome, b in grouped.items():
+        net = max(0.0, b["dogru"] - (b["yanlis"] / 3.0))
+        answered = b["dogru"] + b["yanlis"]
+        acc = (b["dogru"] / answered * 100.0) if answered > 0 else 0.0
+        out.append(
+            {
+                "Kazanım / Konu": outcome,
+                "Soru": b["toplam"],
+                "Doğru": b["dogru"],
+                "Yanlış": b["yanlis"],
+                "Boş": b["bos"],
+                "Net (3Y=1D)": round(net, 2),
+                "Doğruluk": f"%{acc:.0f}",
+            }
+        )
+    return out
 
 
 def format_countdown(target: datetime) -> Tuple[int, int, int, int]:
@@ -2445,6 +2535,9 @@ if "b2b_org_cache" not in st.session_state and isinstance(_persisted.get("b2b_or
     st.session_state["b2b_org_cache"] = _persisted["b2b_org_cache"]
 if "last_b2b_summary" not in st.session_state and _persisted.get("last_b2b_summary"):
     st.session_state["last_b2b_summary"] = _persisted["last_b2b_summary"]
+if "error_notebook" not in st.session_state:
+    p_nb = _persisted.get("error_notebook")
+    st.session_state["error_notebook"] = list(p_nb) if isinstance(p_nb, list) else []
 
 bag_summary_global = get_bag_summary()
 sync_plan_quotas(bag_summary_global, force_reset=False)
@@ -2772,16 +2865,34 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
 # 3. ÖĞRENCİ PORTALI & ÇÖZÜM
 # ==============================================================================
 elif current_page == "Öğrenci Portalı & Çözüm":
-    tab_exam, tab_hint = st.tabs(["İnteraktif Mini Deneme & Net Analizi", "Adımlı Çözüm Asistanı"])
+    active_nb_count = sum(1 for x in st.session_state.get("error_notebook", []) if not x.get("resolved"))
+    tab_exam, tab_hint, tab_notebook = st.tabs(
+        [
+            "İnteraktif Mini Deneme & Kazanım Neti",
+            "Kademeli İpucu & Çözüm Asistanı",
+            f"Hata Defteri ({active_nb_count} Aktif)",
+        ]
+    )
 
     with tab_exam:
-        exam_source = st.text_area(
-            "Deneme Soru Metni (Soru Fabrikasından otomatik gelir veya buraya yapıştır)",
-            value=st.session_state.get("portal_exam_source") or st.session_state.get("generated_test_text", ""),
-            height=130,
-            placeholder="Soru 1) ... A) ... B) ... C) ... D) ... Cevap Anahtarı: 1-B",
-        )
-        st.session_state["portal_exam_source"] = exam_source
+        default_outcome = _kp_default_outcome()
+        c_src, c_out = st.columns([2.2, 1.0])
+        with c_src:
+            exam_source = st.text_area(
+                "Deneme Soru Metni (Soru Fabrikasından otomatik gelir veya buraya yapıştır)",
+                value=st.session_state.get("portal_exam_source") or st.session_state.get("generated_test_text", ""),
+                height=125,
+                placeholder="Soru 1) ... A) ... B) ... C) ... D) ... Cevap Anahtarı: 1-B",
+            )
+            st.session_state["portal_exam_source"] = exam_source
+        with c_out:
+            active_outcome = st.text_input(
+                "Varsayılan Kazanım / Konu Etiketi",
+                value=st.session_state.get("portal_default_outcome", default_outcome),
+                help="Soru metninde ayrıca 'Kazanım:' satırı varsa o öncelikli alınır.",
+            )
+            st.session_state["portal_default_outcome"] = active_outcome.strip() or default_outcome
+
         questions = parse_quiz_questions(exam_source)
 
         if not questions:
@@ -2793,29 +2904,38 @@ elif current_page == "Öğrenci Portalı & Çözüm":
             st.markdown(f"#### Aktif Mini Deneme ({len(questions)} Soru)")
             user_answers: Dict[int, str] = {}
             for idx, q in enumerate(questions):
+                q_outcome = _kp_extract_outcome(q["full_text"], st.session_state["portal_default_outcome"])
                 with st.container(border=True):
+                    st.caption(f"Kazanım: {q_outcome}")
                     st.markdown(q["stem"])
-                    opts = list(q["options"].keys())
+                    opts = list(q["options"].keys()) + ["Boş"]
                     chosen = st.radio(
                         f"Soru {q['num']} Yanıtın",
                         options=opts,
-                        format_func=lambda k, o_map=q["options"]: f"{k}) {o_map[k]}",
+                        format_func=lambda k, o_map=q["options"]: "Boş (Boş bırak)" if k == "Boş" else f"{k}) {o_map[k]}",
                         horizontal=True,
                         key=f"mini_q_{idx}",
                     )
                     user_answers[idx] = chosen
 
-            if st.button("Denemeyi Bitir ve Netimi Hesapla", type="primary"):
+            if st.button("Denemeyi Bitir, Kazanım Netini Hesapla & Hata Defterine Aktar", type="primary"):
                 correct_cnt = 0
                 wrong_cnt = 0
+                blank_cnt = 0
                 ungraded_cnt = 0
-                wrong_questions: List[Dict[str, Any]] = []
-                result_rows: List[Dict[str, str]] = []
+                added_to_nb = 0
+                wrong_or_blank_questions: List[Dict[str, Any]] = []
+                result_rows: List[Dict[str, Any]] = []
 
                 for idx, q in enumerate(questions):
                     u_ans = user_answers[idx]
                     c_ans = q.get("correct")
-                    if not c_ans:
+                    q_outcome = _kp_extract_outcome(q["full_text"], st.session_state["portal_default_outcome"])
+
+                    if u_ans == "Boş":
+                        blank_cnt += 1
+                        status_txt = "Boş"
+                    elif not c_ans:
                         ungraded_cnt += 1
                         status_txt = "Anahtar Yok"
                     elif u_ans == c_ans:
@@ -2823,92 +2943,267 @@ elif current_page == "Öğrenci Portalı & Çözüm":
                         status_txt = "Doğru"
                     else:
                         wrong_cnt += 1
-                        wrong_questions.append(q)
                         status_txt = "Yanlış"
+
+                    if status_txt in ("Yanlış", "Boş"):
+                        wrong_or_blank_questions.append(q)
+                        created = add_to_error_notebook(
+                            {
+                                "num": q["num"],
+                                "outcome": q_outcome,
+                                "status": status_txt,
+                                "user_answer": u_ans,
+                                "correct_answer": c_ans or "Belirtilmedi",
+                                "stem": q["stem"],
+                                "options": q["options"],
+                                "full_text": q["full_text"],
+                                "reason": "Süre Baskısı / Yetiştirememe" if status_txt == "Boş" else "Çeldirici Tuzağına Düşme",
+                            }
+                        )
+                        if created:
+                            added_to_nb += 1
 
                     result_rows.append(
                         {
                             "Soru": f"Soru {q['num']}",
+                            "Kazanım": q_outcome,
                             "Senin Yanıtın": u_ans,
                             "Doğru Cevap": c_ans or "Belirtilmedi",
                             "Durum": status_txt,
                         }
                     )
 
-                graded_total = correct_cnt + wrong_cnt
+                answered_total = correct_cnt + wrong_cnt
                 net_score = max(0.0, correct_cnt - (wrong_cnt / 3.0))
-                accuracy = (correct_cnt / graded_total * 100.0) if graded_total > 0 else 0.0
+                accuracy = (correct_cnt / answered_total * 100.0) if answered_total > 0 else 0.0
+                outcome_rows = build_outcome_net_summary(result_rows)
 
                 st.session_state["last_exam_report"] = {
                     "correct": correct_cnt,
                     "wrong": wrong_cnt,
+                    "blank": blank_cnt,
                     "net": net_score,
                     "accuracy": accuracy,
                     "rows": result_rows,
-                    "first_wrong": wrong_questions[0]["full_text"] if wrong_questions else "",
+                    "outcome_rows": outcome_rows,
+                    "added_to_nb": added_to_nb,
+                    "first_wrong": wrong_or_blank_questions[0]["full_text"] if wrong_or_blank_questions else "",
                 }
                 record_activity(
                     "Mini Deneme",
-                    f"{correct_cnt}D {wrong_cnt}Y • {net_score:.2f} Net (%{accuracy:.0f})",
+                    f"{correct_cnt}D {wrong_cnt}Y {blank_cnt}B • {net_score:.2f} Net (+{added_to_nb} Hata Defteri)",
                 )
+                st.rerun()
 
             report = st.session_state.get("last_exam_report")
             if report:
                 st.markdown("---")
-                r1, r2, r3, r4 = st.columns(4)
-                r1.metric("Doğru Sayısı", f"{report['correct']} Soru")
-                r2.metric("Yanlış Sayısı", f"{report['wrong']} Soru")
-                r3.metric("Hesaplanan Net (3Y=1D)", f"{report['net']:.2f} Net")
-                r4.metric("Başarı Oranı", f"%{report['accuracy']:.1f}")
+                r1, r2, r3, r4, r5 = st.columns(5)
+                r1.metric("Doğru", f"{report['correct']}")
+                r2.metric("Yanlış", f"{report['wrong']}")
+                r3.metric("Boş", f"{report['blank']}")
+                r4.metric("Net (3Y=1D)", f"{report['net']:.2f}")
+                r5.metric("Başarı", f"%{report['accuracy']:.1f}")
 
+                if report.get("added_to_nb", 0) > 0:
+                    st.success(
+                        f"**{report['added_to_nb']}** yanlış/boş soru otomatik olarak **Hata Defteri** sekmesine eklendi."
+                    )
+
+                st.markdown("#### Kazanım Bazlı Net Takibi")
+                out_rows = report.get("outcome_rows", [])
+                if out_rows:
+                    oc_l, oc_r = st.columns([1.65, 1.0])
+                    with oc_l:
+                        st.dataframe(out_rows, use_container_width=True, hide_index=True)
+                    with oc_r:
+                        net_map = {str(r["Kazanım / Konu"])[:24]: float(r["Net (3Y=1D)"]) for r in out_rows}
+                        st.bar_chart(net_map, color="#162B54", height=205)
+
+                st.markdown("#### Soru Bazlı Sonuç Tablosu")
                 st.dataframe(report["rows"], use_container_width=True, hide_index=True)
 
                 if report.get("first_wrong"):
-                    if st.button("Yanlış Yaptığım İlk Soruyu Çözüm Rehberine Aktar"):
+                    if st.button("İlk Yanlış / Boş Soruyu Kademeli İpucu Rehberine Gönder"):
                         st.session_state["portal_question_draft"] = report["first_wrong"]
-                        st.toast("Yanlış soru Adımlı Çözüm Asistanı sekmesine aktarıldı.")
+                        st.session_state["hint_step_idx"] = 1
+                        st.session_state["hint_steps_cache"] = {}
+                        st.toast("Soru Kademeli İpucu sekmesine aktarıldı.")
                         st.rerun()
 
     with tab_hint:
-        col_l, col_r = st.columns([2, 1])
+        st.markdown("#### Mantığa Götüren Kademeli İpucu Merdiveni")
+        st.caption(
+            "Önce 1. adımla başla; takıldığın yerde sonraki adıma ilerle. İstersen 4. adımda tam çözümü ve benzer tek bir pekiştirme sorusunu aç."
+        )
+        col_l, col_r = st.columns([2.0, 1.15])
         with col_l:
             default_q = st.session_state.get("portal_question_draft", "")
             student_question = st.text_area(
                 "Çözümünü İncelemek İstediğin Soru Metni",
                 value=default_q,
-                height=160,
+                height=155,
                 placeholder="Soru kökünü, verilen öncülleri ve şıkları buraya yapıştır...",
             )
+            st.session_state["portal_question_draft"] = student_question
         with col_r:
-            hint_mode = st.radio(
-                "Yardım Düzeyi",
-                ["Önce İpucu Ver (Kendim Çözeyim)", "Adım Adım Çözümü Göster"],
-                index=0,
+            step_labels = {
+                1: "1. Adım: Soru Kökü & Bağlam Farkındalığı",
+                2: "2. Adım: Kavram / Yöntem Yönlendirmesi",
+                3: "3. Adım: Çeldirici Şık Eleme Mantığı",
+                4: "4. Adım: Tam Çözüm & Benzer Tekrar Sorusu",
+            }
+            cur_step = int(st.session_state.get("hint_step_idx", 1))
+            selected_step = st.radio(
+                "İpucu Kademesi",
+                options=[1, 2, 3, 4],
+                index=max(0, min(3, cur_step - 1)),
+                format_func=lambda s: step_labels[s],
             )
+            st.session_state["hint_step_idx"] = selected_step
             student_attempt = st.text_input("Senin Tahminin / Şıkkın", placeholder="Örn: C şıkkı, çünkü...")
 
-        if st.button("Çözüm Rehberi Oluştur", type="primary", key="btn_solve_guide"):
+        b1, b2, b3 = st.columns(3)
+        with b1:
+            run_step = st.button("Bu Adımı Göster", type="primary", key="btn_solve_guide", use_container_width=True)
+        with b2:
+            if st.button("Sonraki Adıma Geç", key="btn_next_hint_step", use_container_width=True):
+                st.session_state["hint_step_idx"] = min(4, int(selected_step) + 1)
+                st.rerun()
+        with b3:
+            if st.button("Adımları Sıfırla", key="btn_reset_hint_step", use_container_width=True):
+                st.session_state["hint_step_idx"] = 1
+                st.session_state["hint_steps_cache"] = {}
+                st.rerun()
+
+        step_cache: Dict[str, str] = st.session_state.setdefault("hint_steps_cache", {})
+        q_sig = f"{hash(student_question.strip())}|{student_attempt.strip()}|{selected_step}"
+
+        if run_step:
             if not student_question.strip():
                 st.warning("Lütfen önce bir soru metni girin.")
             else:
+                step_rules = {
+                    1: (
+                        "Sadece 1. ADIM (Soru Kökü & Bağlam Farkındalığı) üret. "
+                        "Doğru şıkkı veya çözümü doğrudan söyleme. Soru kökündeki kritik ifadeleri, "
+                        "olumsuz/sınırlayıcı şartları veya öncül ilişkisini öğrenciye fark ettir."
+                    ),
+                    2: (
+                        "Sadece 2. ADIM (Kavram / Yöntem Yönlendirmesi) üret. "
+                        "Doğru şıkkı doğrudan verme. Öğrencinin hangi kuralı, ilişkiyi veya "
+                        "akıl yürütme adımıyla başlaması gerektiğini düşündürücü sorularla açıkla."
+                    ),
+                    3: (
+                        "Sadece 3. ADIM (Çeldirici Şık Eleme Mantığı) üret. "
+                        "Cazip görünen çeldiricilerin hangi eksik/fazla genellemeye veya dikkat hatasına "
+                        "dayandığını sezdir (cevabı doğrudan ilan etme)."
+                    ),
+                    4: (
+                        "4. ADIM (Tam Çözüm & Benzer Tekrar Sorusu) üret. "
+                        "Mantık adımlarını net tamamla ve bu kazanımı pekiştirmek için "
+                        "benzer mantıkta 1 kısa tekrar sorusu ekle."
+                    ),
+                }
                 sys_inst = (
-                    "Sen sabırlı, pedagojik ve teşvik edici bir eğitim mentorusun. "
-                    "Öğrenciye doğrudan ezberletmek yerine mantığını kavratacak şekilde açıkla."
+                    "Sen sabırlı, pedagojik ve ezberletmeden mantık kavratan bir eğitim mentorusun. "
+                    f"{step_rules[selected_step]}"
                 )
                 prompt = (
                     f"Soru:\n{student_question}\n\n"
-                    f"Öğrencinin Denemesi: {student_attempt or 'Belirtilmedi'}\n"
-                    f"Yardım Düzeyi: {hint_mode}\n\n"
+                    f"Öğrencinin Denemesi: {student_attempt or 'Belirtilmedi'}\n\n"
                     "Lütfen Türkçe olarak net ve anlaşılır yanıt ver."
                 )
                 try:
-                    with st.spinner("Çözüm rehberi hazırlanıyor..."):
+                    with st.spinner(f"{step_labels[selected_step]} hazırlanıyor..."):
                         ans = call_gemini_text(prompt=prompt, system_instruction=sys_inst)
-                    record_activity("Çözüm Asistanı", f"{hint_mode} üretildi")
-                    st.markdown("#### Çözüm Analizi")
-                    st.markdown(ans)
+                    step_cache[q_sig] = ans
+                    st.session_state["hint_steps_cache"] = step_cache
+                    record_activity("Kademeli İpucu", f"Adım {selected_step} üretildi")
                 except Exception as exc:
                     st.error(f"Çözüm üretilirken hata oluştu: {exc}")
+
+        if q_sig in step_cache:
+            st.markdown("#### Çözüm Analizi")
+            st.markdown(step_cache[q_sig])
+
+    with tab_notebook:
+        notebook: List[Dict[str, Any]] = st.session_state.get("error_notebook", [])
+        if not notebook:
+            st.info(
+                "Hata Defterinde henüz kayıtlı soru yok. **İnteraktif Mini Deneme** sekmesinde "
+                "bir testi bitirdiğinde yanlış veya boş sorular otomatik buraya eklenir."
+            )
+        else:
+            f1_col, f2_col, f3_col = st.columns([1.4, 1.4, 1.2])
+            with f1_col:
+                st_flt = st.selectbox("Durum Filtresi", ["Tümü (Yanlış + Boş)", "Yanlış", "Boş"], key="nb_st_flt")
+            with f2_col:
+                res_flt = st.selectbox("Görünüm", ["Çözülmemiş Sorular", "Çözülmüş Sorular", "Tümü"], key="nb_res_flt")
+            with f3_col:
+                if st.button("Defteri Temizle", key="nb_clear_btn", use_container_width=True):
+                    st.session_state["error_notebook"] = []
+                    save_persisted_state()
+                    st.rerun()
+
+            filtered_items = [
+                it
+                for it in notebook
+                if (st_flt == "Tümü (Yanlış + Boş)" or it.get("status") == st_flt)
+                and (
+                    (res_flt == "Çözülmemiş Sorular" and not it.get("resolved"))
+                    or (res_flt == "Çözülmüş Sorular" and bool(it.get("resolved")))
+                    or (res_flt == "Tümü")
+                )
+            ]
+
+            for i, it in enumerate(filtered_items):
+                with st.expander(f"Soru {it.get('num')} • {it.get('status')} • {it.get('outcome')}", expanded=(i == 0)):
+                    st.markdown(it.get("stem", ""))
+                    for opt_k, opt_v in (it.get("options") or {}).items():
+                        st.markdown(f"- **{opt_k})** {opt_v}")
+                    st.caption(
+                        f"Senin Yanıtın: **{it.get('user_answer')}** | "
+                        f"Doğru Cevap: **{it.get('correct_answer')}** | "
+                        f"Tarih: {it.get('created_at')}"
+                    )
+
+                    rc1, rc2 = st.columns([1.5, 2.0])
+                    with rc1:
+                        cur_r = it.get("reason", MISTAKE_REASONS[0])
+                        r_idx = MISTAKE_REASONS.index(cur_r) if cur_r in MISTAKE_REASONS else 0
+                        new_r = st.selectbox(
+                            "Neden Etiketi",
+                            options=MISTAKE_REASONS,
+                            index=r_idx,
+                            key=f"nb_reason_{it['id']}",
+                        )
+                        if new_r != cur_r:
+                            it["reason"] = new_r
+                            save_persisted_state()
+                    with rc2:
+                        new_n = st.text_input(
+                            "Hatırlatma Notu",
+                            value=it.get("note", ""),
+                            key=f"nb_note_{it['id']}",
+                        )
+                        if new_n != it.get("note", ""):
+                            it["note"] = new_n
+                            save_persisted_state()
+
+                    ac1, ac2 = st.columns(2)
+                    with ac1:
+                        if st.button("Kademeli İpucu ile Çöz", key=f"nb_to_hint_{it['id']}", use_container_width=True):
+                            st.session_state["portal_question_draft"] = it.get("full_text") or it.get("stem", "")
+                            st.session_state["hint_step_idx"] = 1
+                            st.session_state["hint_steps_cache"] = {}
+                            st.toast("Soru Kademeli İpucu sekmesine aktarıldı.")
+                    with ac2:
+                        btn_txt = "Tekrar Aktif Yap" if it.get("resolved") else "Öğrendim / Çözüldü"
+                        if st.button(btn_txt, key=f"nb_toggle_{it['id']}", use_container_width=True):
+                            it["resolved"] = not bool(it.get("resolved"))
+                            save_persisted_state()
+                            st.rerun()
 
 # ==============================================================================
 # 4. DİJİMENTOR
@@ -3412,7 +3707,8 @@ elif current_page == "Paketler & Abonelik Vitrini":
         monthly_price=active_bag_summary["monthly_price"],
         summary=active_bag_summary,
     )
-    # ==============================================================================
+
+# ==============================================================================
 # KURŞUN&AYGÖREN DİJİTAL OFİS İMZASI
 # ==============================================================================
 st.markdown(
