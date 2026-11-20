@@ -74,28 +74,83 @@ EMBEDDED_LOGO_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 
   </g>
 </svg>"""
 
-# Okul Sırt Çantası Görseli (SVG)
-SCHOOL_BACKPACK_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 300" width="260" height="300">
+
+def build_backpack_svg(has_books: bool) -> str:
+    """Çantada paket varsa fermuar/kapak açık ve içinden kitaplar çıkan SVG üretir."""
+    books_markup = ""
+    if has_books:
+        books_markup = """
+        <style>
+            @keyframes kpBookPop1 {
+                0% { transform: translateY(28px) rotate(-3deg); opacity: 0; }
+                100% { transform: translateY(0px) rotate(-4deg); opacity: 1; }
+            }
+            @keyframes kpBookPop2 {
+                0% { transform: translateY(32px) rotate(2deg); opacity: 0; }
+                100% { transform: translateY(0px) rotate(3deg); opacity: 1; }
+            }
+            @keyframes kpBookPop3 {
+                0% { transform: translateY(26px) rotate(0deg); opacity: 0; }
+                100% { transform: translateY(0px) rotate(0deg); opacity: 1; }
+            }
+            .kp-book-1 {
+                animation: kpBookPop1 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            }
+            .kp-book-2 {
+                animation: kpBookPop2 0.52s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            }
+            .kp-book-3 {
+                animation: kpBookPop3 0.58s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+            }
+        </style>
+        <g class="kp-book-1">
+            <rect x="84" y="28" width="26" height="46" rx="3" fill="#EF4444" stroke="#0F172A" stroke-width="2"/>
+            <line x1="89" y1="33" x2="89" y2="69" stroke="#FCA5A5" stroke-width="2"/>
+        </g>
+        <g class="kp-book-2">
+            <rect x="148" y="26" width="26" height="48" rx="3" fill="#3B82F6" stroke="#0F172A" stroke-width="2"/>
+            <line x1="153" y1="31" x2="153" y2="69" stroke="#93C5FD" stroke-width="2"/>
+        </g>
+        <g class="kp-book-3">
+            <rect x="112" y="18" width="32" height="56" rx="3" fill="#F59E0B" stroke="#0F172A" stroke-width="2"/>
+            <line x1="118" y1="24" x2="140" y2="24" stroke="#FEF3C7" stroke-width="2.5"/>
+            <line x1="118" y1="32" x2="136" y2="32" stroke="#FEF3C7" stroke-width="2"/>
+        </g>
+        """
+
+    top_opening = (
+        """
+        <ellipse cx="130" cy="64" rx="58" ry="12" fill="#090D16" stroke="#D4AF37" stroke-width="2.5"/>
+        <path d="M 74 68 Q 130 48 186 68" fill="none" stroke="#F6D365" stroke-width="2.5" stroke-dasharray="4 3"/>
+        """
+        if has_books
+        else """
+        <path d="M 72 68 Q 130 82 188 68" fill="none" stroke="#94A3B8" stroke-width="2.5"/>
+        """
+    )
+
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 300" width="260" height="300">
   <defs>
     <linearGradient id="bagBody" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#172c56"/>
-      <stop offset="100%" stop-color="#0f172a"/>
+      <stop offset="0%" stop-color="#172C56"/>
+      <stop offset="100%" stop-color="#0F172A"/>
     </linearGradient>
     <linearGradient id="bagPocket" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" stop-color="#334155"/>
-      <stop offset="100%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#1E293B"/>
     </linearGradient>
   </defs>
-  <path d="M 98 56 Q 130 20 162 56" fill="none" stroke="#0f172a" stroke-width="10" stroke-linecap="round"/>
-  <path d="M 88 64 C 58 95, 54 165, 66 245" fill="none" stroke="#334155" stroke-width="15" stroke-linecap="round"/>
-  <path d="M 172 64 C 202 95, 206 165, 194 245" fill="none" stroke="#334155" stroke-width="15" stroke-linecap="round"/>
-  <rect x="64" y="56" width="132" height="205" rx="32" fill="url(#bagBody)" stroke="#0f172a" stroke-width="3"/>
-  <path d="M 68 92 Q 130 114 192 92 L 192 78 Q 130 56 68 78 Z" fill="#d4af37" opacity="0.28"/>
-  <rect x="82" y="138" width="96" height="96" rx="20" fill="url(#bagPocket)" stroke="#d4af37" stroke-width="2"/>
-  <circle cx="130" cy="186" r="23" fill="#ffffff" stroke="#0f172a" stroke-width="2"/>
-  <text x="130" y="184" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="8" font-weight="800" fill="#0f172a">SIRT</text>
+  <path d="M 98 56 Q 130 24 162 56" fill="none" stroke="#0F172A" stroke-width="9" stroke-linecap="round"/>
+  <path d="M 88 66 C 58 96, 54 165, 66 245" fill="none" stroke="#334155" stroke-width="15" stroke-linecap="round"/>
+  <path d="M 172 66 C 202 96, 206 165, 194 245" fill="none" stroke="#334155" stroke-width="15" stroke-linecap="round"/>
+  {books_markup}
+  <rect x="64" y="64" width="132" height="197" rx="30" fill="url(#bagBody)" stroke="#0F172A" stroke-width="3"/>
+  {top_opening}
+  <rect x="82" y="138" width="96" height="96" rx="20" fill="url(#bagPocket)" stroke="#D4AF37" stroke-width="2"/>
+  <circle cx="130" cy="186" r="23" fill="#FFFFFF" stroke="#0F172A" stroke-width="2"/>
+  <text x="130" y="184" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="8" font-weight="800" fill="#0F172A">SIRT</text>
   <text x="130" y="195" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="7.5" font-weight="700" fill="#475569">ÇANTASI</text>
-  <rect x="72" y="242" width="116" height="18" rx="9" fill="#090d16"/>
+  <rect x="72" y="242" width="116" height="18" rx="9" fill="#090D16"/>
 </svg>"""
 
 
@@ -683,7 +738,6 @@ PARENT_MESSAGE_TOPICS: Dict[str, Dict[str, Any]] = {
 }
 
 LOGO_DATA_URI = svg_to_data_uri(EMBEDDED_LOGO_SVG)
-BACKPACK_DATA_URI = svg_to_data_uri(SCHOOL_BACKPACK_SVG)
 LOGO_PNG_BYTES = get_embedded_logo_png_bytes()
 
 # ==============================================================================
@@ -1220,8 +1274,8 @@ st.markdown(
             justify-content: center;
         }
         .kp-bag-visual img {
-            width: 112px;
-            height: 130px;
+            width: 118px;
+            height: 136px;
             object-fit: contain;
             transition: transform 0.25s var(--kp-ease);
         }
@@ -2318,6 +2372,9 @@ def render_school_backpack_panel() -> Dict[str, Any]:
     v_col, list_col = st.columns([1.1, 2.9])
 
     with v_col:
+        has_books = int(summary["total_count"]) > 0
+        dynamic_bag_uri = svg_to_data_uri(build_backpack_svg(has_books=has_books))
+
         chips_html = ""
         for entry in entries:
             safe_name = html.escape(entry["tier"]["name"])
@@ -2338,7 +2395,7 @@ def render_school_backpack_panel() -> Dict[str, Any]:
         st.markdown(
             f"""
             <div class="kp-bag-visual">
-                <img src="{BACKPACK_DATA_URI}" alt="Okul Sırt Çantası"/>
+                <img src="{dynamic_bag_uri}" alt="Okul Sırt Çantası"/>
                 <div class="kp-bag-count-pill">{summary['total_count']} Paket</div>
                 <div style="width:100%;margin-top:0.3rem;">{chips_html}</div>
             </div>
