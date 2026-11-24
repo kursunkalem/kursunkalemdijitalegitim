@@ -30,8 +30,8 @@ st.set_page_config(
 BRAND_NAME = "KURŞUN KALEM DİJİTAL OKUL"
 BRAND_SHORT = "Kurşun Kalem"
 BRAND_TAGLINE = "Dijital Eğitim, Ölçme-Değerlendirme ve Akıllı Mentorluk Platformu"
-DEFAULT_MODEL = "gemini-3.8-flash"
-FALLBACK_MODEL = "gemini-2.5-flash"
+DEFAULT_MODEL = "gemini-2.5-flash"
+FALLBACK_MODEL = "gemini-3.1-pro-preview"
 STATE_FILE_PATH = Path(".kursun_kalem_state.json")
 
 # Kalıcı Gömülü Kurumsal Logo
@@ -1654,7 +1654,7 @@ def call_gemini_text(
 ) -> str:
     """Gemini API üzerinden metin üretir; 503/429 yoğunluk ve 404 hatalarında tekrar dener ve yedek modele geçer."""
     client = get_gemini_client()
-    candidate_models = [model, FALLBACK_MODEL, "gemini-2.5-pro"]
+    candidate_models = [model, FALLBACK_MODEL, "gemini-2.5-flash"]
     deduped_models: List[str] = []
     for m in candidate_models:
         if m and m not in deduped_models:
