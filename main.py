@@ -30,8 +30,8 @@ st.set_page_config(
 BRAND_NAME = "KURŞUN KALEM DİJİTAL OKUL"
 BRAND_SHORT = "Kurşun Kalem"
 BRAND_TAGLINE = "Dijital Eğitim, Ölçme-Değerlendirme ve Akıllı Mentorluk Platformu"
-DEFAULT_MODEL = "gemini-2.5-flash"
-FALLBACK_MODEL = "gemini-2.5-pro"
+DEFAULT_MODEL = "gemini-3.8-flash"
+FALLBACK_MODEL = "gemini-2.5-flash"
 STATE_FILE_PATH = Path(".kursun_kalem_state.json")
 
 # Kalıcı Gömülü Kurumsal Logo
@@ -74,83 +74,28 @@ EMBEDDED_LOGO_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 
   </g>
 </svg>"""
 
-
-def build_backpack_svg(has_books: bool) -> str:
-    """Çantada paket varsa fermuar/kapak açık ve içinden kitaplar çıkan SVG üretir."""
-    books_markup = ""
-    if has_books:
-        books_markup = """
-        <style>
-            @keyframes kpBookPop1 {
-                0% { transform: translateY(28px) rotate(-3deg); opacity: 0; }
-                100% { transform: translateY(0px) rotate(-4deg); opacity: 1; }
-            }
-            @keyframes kpBookPop2 {
-                0% { transform: translateY(32px) rotate(2deg); opacity: 0; }
-                100% { transform: translateY(0px) rotate(3deg); opacity: 1; }
-            }
-            @keyframes kpBookPop3 {
-                0% { transform: translateY(26px) rotate(0deg); opacity: 0; }
-                100% { transform: translateY(0px) rotate(0deg); opacity: 1; }
-            }
-            .kp-book-1 {
-                animation: kpBookPop1 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-            }
-            .kp-book-2 {
-                animation: kpBookPop2 0.52s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-            }
-            .kp-book-3 {
-                animation: kpBookPop3 0.58s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-            }
-        </style>
-        <g class="kp-book-1">
-            <rect x="84" y="28" width="26" height="46" rx="3" fill="#EF4444" stroke="#0F172A" stroke-width="2"/>
-            <line x1="89" y1="33" x2="89" y2="69" stroke="#FCA5A5" stroke-width="2"/>
-        </g>
-        <g class="kp-book-2">
-            <rect x="148" y="26" width="26" height="48" rx="3" fill="#3B82F6" stroke="#0F172A" stroke-width="2"/>
-            <line x1="153" y1="31" x2="153" y2="69" stroke="#93C5FD" stroke-width="2"/>
-        </g>
-        <g class="kp-book-3">
-            <rect x="112" y="18" width="32" height="56" rx="3" fill="#F59E0B" stroke="#0F172A" stroke-width="2"/>
-            <line x1="118" y1="24" x2="140" y2="24" stroke="#FEF3C7" stroke-width="2.5"/>
-            <line x1="118" y1="32" x2="136" y2="32" stroke="#FEF3C7" stroke-width="2"/>
-        </g>
-        """
-
-    top_opening = (
-        """
-        <ellipse cx="130" cy="64" rx="58" ry="12" fill="#090D16" stroke="#D4AF37" stroke-width="2.5"/>
-        <path d="M 74 68 Q 130 48 186 68" fill="none" stroke="#F6D365" stroke-width="2.5" stroke-dasharray="4 3"/>
-        """
-        if has_books
-        else """
-        <path d="M 72 68 Q 130 82 188 68" fill="none" stroke="#94A3B8" stroke-width="2.5"/>
-        """
-    )
-
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 300" width="260" height="300">
+# Okul Sırt Çantası Görseli (SVG)
+SCHOOL_BACKPACK_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 300" width="260" height="300">
   <defs>
     <linearGradient id="bagBody" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#172C56"/>
-      <stop offset="100%" stop-color="#0F172A"/>
+      <stop offset="0%" stop-color="#172c56"/>
+      <stop offset="100%" stop-color="#0f172a"/>
     </linearGradient>
     <linearGradient id="bagPocket" x1="0%" y1="0%" x2="0%" y2="100%">
       <stop offset="0%" stop-color="#334155"/>
-      <stop offset="100%" stop-color="#1E293B"/>
+      <stop offset="100%" stop-color="#1e293b"/>
     </linearGradient>
   </defs>
-  <path d="M 98 56 Q 130 24 162 56" fill="none" stroke="#0F172A" stroke-width="9" stroke-linecap="round"/>
-  <path d="M 88 66 C 58 96, 54 165, 66 245" fill="none" stroke="#334155" stroke-width="15" stroke-linecap="round"/>
-  <path d="M 172 66 C 202 96, 206 165, 194 245" fill="none" stroke="#334155" stroke-width="15" stroke-linecap="round"/>
-  {books_markup}
-  <rect x="64" y="64" width="132" height="197" rx="30" fill="url(#bagBody)" stroke="#0F172A" stroke-width="3"/>
-  {top_opening}
-  <rect x="82" y="138" width="96" height="96" rx="20" fill="url(#bagPocket)" stroke="#D4AF37" stroke-width="2"/>
-  <circle cx="130" cy="186" r="23" fill="#FFFFFF" stroke="#0F172A" stroke-width="2"/>
-  <text x="130" y="184" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="8" font-weight="800" fill="#0F172A">SIRT</text>
-  <text x="130" y="195" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="7.5" font-weight="700" fill="#475569">ÇANTASI</text>
-  <rect x="72" y="242" width="116" height="18" rx="9" fill="#090D16"/>
+  <path d="M 98 56 Q 130 20 162 56" fill="none" stroke="#0f172a" stroke-width="10" stroke-linecap="round"/>
+  <path d="M 88 64 C 58 95, 54 165, 66 245" fill="none" stroke="#334155" stroke-width="15" stroke-linecap="round"/>
+  <path d="M 172 64 C 202 95, 206 165, 194 245" fill="none" stroke="#334155" stroke-width="15" stroke-linecap="round"/>
+  <rect x="64" y="56" width="132" height="205" rx="32" fill="url(#bagBody)" stroke="#0f172a" stroke-width="3"/>
+  <path d="M 68 92 Q 130 114 192 92 L 192 78 Q 130 56 68 78 Z" fill="#d4af37" opacity="0.28"/>
+  <rect x="82" y="138" width="96" height="96" rx="20" fill="url(#bagPocket)" stroke="#d4af37" stroke-width="2"/>
+  <circle cx="130" cy="186" r="22" fill="#ffffff" stroke="#0f172a" stroke-width="2"/>
+  <text x="130" y="184" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="8.5" font-weight="800" fill="#0f172a">ÇANTA</text>
+  <text x="130" y="196" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="7.5" font-weight="700" fill="#475569">PAKETLER</text>
+  <rect x="72" y="242" width="116" height="18" rx="9" fill="#090d16"/>
 </svg>"""
 
 
@@ -214,8 +159,8 @@ PAGES = [
 
 PAGE_DESCRIPTIONS: Dict[str, Tuple[str, str]] = {
     "Ana Sayfa": (
-        "Genel Bakış & Sınav Durumu",
-        "2027 LGS ve YKS geri sayımı, platform metrikleri ve çalışma akışı.",
+        "Genel Bakış & Sınav Telemetrisi",
+        "2027 LGS ve YKS geri sayımı, platform metrikleri, modül erişimi ve haftalık üretim akışı.",
     ),
     "Soru & Redaksiyon Fabrikası": (
         "Maarif Modeli Soru & Kalite Stüdyosu",
@@ -738,10 +683,11 @@ PARENT_MESSAGE_TOPICS: Dict[str, Dict[str, Any]] = {
 }
 
 LOGO_DATA_URI = svg_to_data_uri(EMBEDDED_LOGO_SVG)
+BACKPACK_DATA_URI = svg_to_data_uri(SCHOOL_BACKPACK_SVG)
 LOGO_PNG_BYTES = get_embedded_logo_png_bytes()
 
 # ==============================================================================
-# KURUMSAL SAAS TASARIM SİSTEMİ + HERO VİTRİN & MİKRO ANİMASYONLAR
+# KURUMSAL SAAS TASARIM SİSTEMİ (LACİVERT + ALTIN + FERAH ZEMİN PALETİ)
 # ==============================================================================
 st.markdown(
     """
@@ -755,130 +701,12 @@ st.markdown(
             --kp-gold: #C48F1B;
             --kp-gold-soft: #FFFBEB;
             --kp-gold-border: #E8C97A;
-            --kp-bg: #F1F4F8;
+            --kp-bg: #F5F7FA;
             --kp-surface: #FFFFFF;
-            --kp-surface-alt: #F8FAFC;
-            --kp-border: #E2E8F0;
+            --kp-surface-alt: #F9FBFD;
+            --kp-border: #DCE3EC;
             --kp-text: #0F172A;
             --kp-muted: #475569;
-            --kp-ease: cubic-bezier(0.22, 1, 0.36, 1);
-        }
-
-        @keyframes kpFadeUp {
-            0% {
-                opacity: 0;
-                transform: translateY(10px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes kpSplashOverlay {
-            0% {
-                opacity: 1;
-                visibility: visible;
-            }
-            72% {
-                opacity: 1;
-                visibility: visible;
-            }
-            100% {
-                opacity: 0;
-                visibility: hidden;
-                pointer-events: none;
-            }
-        }
-
-        @keyframes kpSplashLogo {
-            0% {
-                opacity: 0;
-                transform: scale(0.84) translateY(10px);
-            }
-            35% {
-                opacity: 1;
-                transform: scale(1.02) translateY(0);
-            }
-            72% {
-                opacity: 1;
-                transform: scale(1) translateY(0);
-            }
-            100% {
-                opacity: 0;
-                transform: scale(0.96) translateY(-8px);
-            }
-        }
-
-        @keyframes kpBarSweep {
-            0% {
-                transform: translateX(-100%);
-            }
-            55% {
-                transform: translateX(0%);
-            }
-            100% {
-                transform: translateX(100%);
-            }
-        }
-
-        .kp-splash-screen {
-            position: fixed;
-            inset: 0;
-            z-index: 999999;
-            background: linear-gradient(145deg, #0E1D3B 0%, #162B54 55%, #1D376B 100%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            animation: kpSplashOverlay 1.45s var(--kp-ease) forwards;
-        }
-        .kp-splash-card {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-            animation: kpSplashLogo 1.45s var(--kp-ease) forwards;
-        }
-        .kp-splash-logo {
-            width: 86px;
-            height: 86px;
-            border-radius: 20px;
-            background: #FFFFFF;
-            padding: 6px;
-            border: 2px solid #E8C97A;
-            box-shadow: 0 18px 40px rgba(0, 0, 0, 0.32);
-            object-fit: contain;
-            margin-bottom: 0.9rem;
-        }
-        .kp-splash-title {
-            color: #FFFFFF;
-            font-size: 1.35rem;
-            font-weight: 800;
-            letter-spacing: 0.04em;
-            margin: 0;
-        }
-        .kp-splash-sub {
-            color: #FDE68A;
-            font-size: 0.8rem;
-            font-weight: 500;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            margin-top: 0.28rem;
-        }
-        .kp-splash-track {
-            width: 190px;
-            height: 3px;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.16);
-            overflow: hidden;
-            margin-top: 1.05rem;
-        }
-        .kp-splash-fill {
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, #E8C97A, #F6D365, #FFFFFF);
-            animation: kpBarSweep 1.15s var(--kp-ease) infinite;
         }
 
         html, body, [class*="css"] {
@@ -889,7 +717,7 @@ st.markdown(
             background-color: var(--kp-bg);
         }
         [data-testid="stHeader"] {
-            background: rgba(241, 244, 248, 0.92);
+            background: rgba(245, 247, 250, 0.94);
             backdrop-filter: blur(8px);
             border-bottom: 1px solid var(--kp-border);
         }
@@ -897,338 +725,180 @@ st.markdown(
             display: none;
         }
         .block-container {
-            padding-top: 0.75rem;
-            padding-bottom: 2.5rem;
-            max-width: 1260px;
+            padding-top: 1.15rem;
+            padding-bottom: 4rem;
+            max-width: 1240px;
         }
 
-        /* Kenar Çubuğu — Temiz, Çerçevesiz Menü */
+        /* Kenar Çubuğu */
         section[data-testid="stSidebar"] {
             background-color: var(--kp-surface);
             border-right: 1px solid var(--kp-border);
         }
-        section[data-testid="stSidebar"] .block-container {
-            padding-top: 0.7rem;
-            padding-bottom: 0.85rem;
-        }
         .kp-sidebar-brand {
             display: flex;
             align-items: center;
-            gap: 0.6rem;
-            padding: 0.05rem 0.1rem 0.55rem 0.1rem;
+            gap: 0.72rem;
+            padding: 0.2rem 0.2rem 0.9rem 0.2rem;
             border-bottom: 1px solid var(--kp-border);
-            margin-bottom: 0.45rem;
+            margin-bottom: 0.85rem;
         }
         .kp-sidebar-brand img {
-            width: 36px;
-            height: 36px;
+            width: 44px;
+            height: 44px;
             object-fit: contain;
-            border-radius: 8px;
+            border-radius: 10px;
             border: 1px solid var(--kp-gold-border);
             padding: 2px;
             background: #FFFFFF;
             flex-shrink: 0;
         }
         .kp-sidebar-brand-title {
-            font-size: 0.88rem;
+            font-size: 0.92rem;
             font-weight: 700;
             color: var(--kp-navy);
             line-height: 1.2;
         }
         .kp-sidebar-brand-sub {
-            font-size: 0.68rem;
+            font-size: 0.72rem;
             color: var(--kp-muted);
-            margin-top: 1px;
+            margin-top: 2px;
         }
 
-        div[data-testid="stSidebar"] .stButton {
-            margin-bottom: 0.06rem;
-        }
         div[data-testid="stSidebar"] .stButton > button {
             width: 100%;
             text-align: left;
             justify-content: flex-start;
-            border-radius: 7px;
-            padding: 0.34rem 0.65rem;
-            font-size: 0.8rem;
+            border-radius: 8px;
+            padding: 0.5rem 0.78rem;
+            font-size: 0.84rem;
             font-weight: 500;
-            border: none !important;
-            background: transparent !important;
-            color: #334155 !important;
-            box-shadow: none !important;
-            transition: background-color 0.15s var(--kp-ease), color 0.15s var(--kp-ease), transform 0.15s var(--kp-ease);
+            border: 1px solid transparent;
+            background: transparent;
+            color: #334155;
+            transition: all 0.14s ease;
         }
         div[data-testid="stSidebar"] .stButton > button:hover {
-            background: var(--kp-surface-alt) !important;
-            color: var(--kp-navy) !important;
-            transform: translateX(2px);
+            background: var(--kp-navy-soft);
+            color: var(--kp-navy);
+            border-color: #CBD5E1;
         }
         div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
-            background: var(--kp-navy-soft) !important;
-            color: var(--kp-navy) !important;
-            font-weight: 700 !important;
-            border-left: 3px solid var(--kp-navy) !important;
-            border-radius: 0 7px 7px 0 !important;
+            background: var(--kp-navy);
+            color: #FFFFFF;
+            border-color: var(--kp-navy);
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(22, 43, 84, 0.16);
         }
 
         .kp-sidebar-meta {
             background: var(--kp-surface-alt);
             border: 1px solid var(--kp-border);
-            border-radius: 8px;
-            padding: 0.5rem 0.65rem;
-            margin-top: 0.55rem;
-            font-size: 0.72rem;
+            border-left: 3px solid var(--kp-gold);
+            border-radius: 10px;
+            padding: 0.8rem 0.85rem;
+            margin-top: 0.95rem;
+            font-size: 0.78rem;
             color: #334155;
-            line-height: 1.38;
-        }
-        .kp-sidebar-status {
-            font-size: 0.7rem;
-            font-weight: 500;
-            color: var(--kp-muted);
-            padding: 0.3rem 0.1rem 0.2rem 0.1rem;
-        }
-        div[data-testid="stSidebar"] button[kind="secondary"] {
-            border: 1px solid var(--kp-border) !important;
-            background: #FFFFFF !important;
-            text-align: center !important;
-            justify-content: center !important;
+            line-height: 1.48;
         }
 
-        /* Üst Kurumsal Header — Tek Satır SaaS Bar */
+        /* Üst Kurumsal Header */
         .kp-top-header {
             background: var(--kp-surface);
             border: 1px solid var(--kp-border);
-            border-radius: 10px;
-            padding: 0.65rem 1.1rem;
-            margin-bottom: 0.65rem;
+            border-top: 3px solid var(--kp-navy);
+            border-radius: 12px;
+            padding: 1rem 1.35rem;
+            margin-bottom: 1.15rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 1rem;
-            animation: kpFadeUp 0.4s var(--kp-ease) both;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
         }
         .kp-top-left {
             display: flex;
             align-items: center;
-            gap: 0.72rem;
+            gap: 0.9rem;
         }
         .kp-top-left img {
-            width: 34px;
-            height: 34px;
+            width: 48px;
+            height: 48px;
             object-fit: contain;
-            border-radius: 7px;
+            border-radius: 10px;
             border: 1px solid var(--kp-gold-border);
             padding: 2px;
             background: #FFFFFF;
             flex-shrink: 0;
         }
         .kp-top-title {
-            font-size: 0.96rem;
+            font-size: 1.16rem;
             font-weight: 800;
             color: var(--kp-navy);
-            letter-spacing: -0.015em;
+            letter-spacing: -0.02em;
             margin: 0;
-            line-height: 1.15;
         }
         .kp-top-sub {
-            font-size: 0.74rem;
-            color: var(--kp-muted);
-            margin: 0.1rem 0 0 0;
+            font-size: 0.82rem;
+            color: #334155;
+            margin: 0.14rem 0 0 0;
         }
         .kp-header-badges {
             display: flex;
             align-items: center;
-            gap: 0.4rem;
+            gap: 0.45rem;
             flex-wrap: wrap;
         }
         .kp-status-chip {
-            font-size: 0.7rem;
+            font-size: 0.74rem;
             font-weight: 600;
             color: var(--kp-navy);
             background: var(--kp-navy-soft);
-            padding: 0.22rem 0.6rem;
-            border-radius: 6px;
+            border: 1px solid #C6D4E8;
+            padding: 0.3rem 0.72rem;
+            border-radius: 999px;
             white-space: nowrap;
         }
         .kp-gold-chip {
-            font-size: 0.7rem;
+            font-size: 0.74rem;
             font-weight: 700;
             color: #7D5606;
             background: var(--kp-gold-soft);
             border: 1px solid var(--kp-gold-border);
-            padding: 0.22rem 0.6rem;
-            border-radius: 6px;
+            padding: 0.3rem 0.72rem;
+            border-radius: 999px;
             white-space: nowrap;
         }
 
-        /* Koyulacivert Hero Vitrin (Ana Sayfa) */
-        .kp-hero-banner {
-            position: relative;
-            overflow: hidden;
-            border-radius: 14px;
-            padding: 1.45rem 1.6rem;
-            margin-bottom: 0.85rem;
-            background:
-                radial-gradient(circle at 82% 22%, rgba(246, 211, 101, 0.18), transparent 42%),
-                radial-gradient(circle at 15% 85%, rgba(59, 130, 246, 0.22), transparent 48%),
-                linear-gradient(125deg, #09152E 0%, #132A58 55%, #1A3A76 100%);
-            border: 1px solid rgba(232, 201, 122, 0.35);
-            color: #FFFFFF;
-            box-shadow: 0 12px 28px rgba(10, 22, 48, 0.16);
-            animation: kpFadeUp 0.45s var(--kp-ease) both;
-        }
-        .kp-hero-grid {
-            display: grid;
-            grid-template-columns: 1.35fr 1fr;
-            gap: 1.4rem;
-            align-items: center;
-        }
-        .kp-hero-kicker {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            font-size: 0.7rem;
-            font-weight: 700;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            color: #FDE68A;
-            background: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(253, 230, 138, 0.28);
-            padding: 0.25rem 0.65rem;
-            border-radius: 999px;
-            margin-bottom: 0.6rem;
-        }
-        .kp-hero-title {
-            font-size: 1.68rem;
-            font-weight: 800;
-            line-height: 1.18;
-            letter-spacing: -0.02em;
-            color: #FFFFFF;
-            margin: 0 0 0.45rem 0;
-        }
-        .kp-hero-title span {
-            color: #F6D365;
-        }
-        .kp-hero-desc {
-            font-size: 0.86rem;
-            line-height: 1.5;
-            color: #DCE6F7;
-            margin: 0 0 0.85rem 0;
-            max-width: 560px;
-        }
-        .kp-hero-pills {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.45rem;
-        }
-        .kp-hero-pill {
-            font-size: 0.73rem;
-            font-weight: 600;
-            color: #FFFFFF;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            padding: 0.26rem 0.65rem;
-            border-radius: 7px;
-        }
-        .kp-hero-showcase {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 0.65rem;
-        }
-        .kp-medallion-card {
-            background: rgba(255, 255, 255, 0.07);
-            border: 1px solid rgba(246, 211, 101, 0.32);
-            border-radius: 11px;
-            padding: 0.72rem 0.82rem;
-            backdrop-filter: blur(6px);
-        }
-        .kp-medallion-badge {
-            font-size: 0.66rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: #F6D365;
-        }
-        .kp-medallion-val {
-            font-size: 1.24rem;
-            font-weight: 800;
-            color: #FFFFFF;
-            margin-top: 0.15rem;
-            line-height: 1.2;
-        }
-        .kp-medallion-sub {
-            font-size: 0.72rem;
-            color: #CBD5E1;
-            margin-top: 0.12rem;
-        }
-        @media (max-width: 860px) {
-            .kp-hero-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Sayfa Başlık Şeridi — İnce ve Hiyerarşik */
+        /* Sayfa Bağlam Şeridi */
         .kp-page-strip {
             display: flex;
             align-items: baseline;
             justify-content: space-between;
             gap: 1rem;
-            padding: 0.2rem 0.15rem 0.65rem 0.15rem;
-            margin-bottom: 0.65rem;
+            padding: 0.15rem 0 0.75rem 0;
+            margin-bottom: 0.85rem;
             border-bottom: 1px solid var(--kp-border);
-            animation: kpFadeUp 0.45s var(--kp-ease) both;
         }
         .kp-page-strip-title {
             font-size: 1.25rem;
-            font-weight: 800;
-            color: var(--kp-navy);
-            letter-spacing: -0.02em;
-            margin: 0;
-            line-height: 1.2;
-        }
-        .kp-page-strip-desc {
-            font-size: 0.78rem;
-            color: var(--kp-muted);
-            margin: 0;
-        }
-
-        .kp-section-inline-head {
-            font-size: 0.86rem;
             font-weight: 700;
             color: var(--kp-navy);
+            letter-spacing: -0.015em;
             margin: 0;
         }
-
-        /* Metrik Kartları (st.metric) */
-        div[data-testid="stMetric"] {
-            background: var(--kp-surface);
-            border: 1px solid var(--kp-border);
-            border-radius: 10px;
-            padding: 0.75rem 0.95rem;
-            animation: kpFadeUp 0.55s var(--kp-ease) both;
-            transition: transform 0.2s var(--kp-ease), border-color 0.2s var(--kp-ease);
-        }
-        div[data-testid="stMetric"]:hover {
-            transform: translateY(-2px);
-            border-color: #CBD5E1;
-        }
-        div[data-testid="stMetric"] label {
-            font-size: 0.72rem !important;
-            font-weight: 600 !important;
-            color: var(--kp-muted) !important;
-        }
-        div[data-testid="stMetric"] [data-testid="stMetricValue"] {
-            font-size: 1.35rem !important;
-            font-weight: 800 !important;
-            color: var(--kp-navy) !important;
-            letter-spacing: -0.02em;
+        .kp-page-strip-desc {
+            font-size: 0.83rem;
+            color: var(--kp-muted);
+            margin: 0.15rem 0 0 0;
         }
 
-        /* Sekmeler */
+        /* Sekmeler (stTabs) Kurumsal Renkleri */
         button[data-baseweb="tab"] {
             color: #475569 !important;
             font-weight: 600 !important;
-            font-size: 0.86rem !important;
+            font-size: 0.88rem !important;
         }
         button[data-baseweb="tab"][aria-selected="true"] {
             color: var(--kp-navy) !important;
@@ -1242,150 +912,137 @@ st.markdown(
         .kp-card, .kp-bag-shell, .kp-pkg-card, .kp-pay-box, .kp-kpi-card, .kp-metric-box, .kp-studio-banner {
             background: var(--kp-surface);
             border: 1px solid var(--kp-border);
-            border-radius: 10px;
-            animation: kpFadeUp 0.55s var(--kp-ease) both;
-            transition: transform 0.2s var(--kp-ease), border-color 0.2s var(--kp-ease);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
         }
         .kp-card, .kp-bag-shell, .kp-pkg-card, .kp-pay-box, .kp-studio-banner {
-            padding: 1rem 1.15rem;
+            padding: 1.15rem 1.25rem;
         }
         .kp-card {
-            margin-bottom: 0.6rem;
+            margin-bottom: 0.65rem;
         }
         .kp-mod-card {
             background: var(--kp-surface);
             border: 1px solid var(--kp-border);
-            border-radius: 10px;
-            padding: 0.9rem 1.05rem;
-            min-height: 98px;
-            margin-bottom: 0.45rem;
-            animation: kpFadeUp 0.6s var(--kp-ease) both;
-            transition: transform 0.2s var(--kp-ease), border-color 0.2s var(--kp-ease);
-        }
-        .kp-mod-card:hover, .kp-metric-box:hover, .kp-pkg-card:hover {
-            transform: translateY(-2px);
-            border-color: #CBD5E1;
+            border-radius: 12px 12px 6px 6px;
+            padding: 1.15rem 1.25rem 1rem 1.25rem;
+            min-height: 126px;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
         }
         .kp-mod-title {
             font-weight: 700;
-            font-size: 0.9rem;
+            font-size: 0.98rem;
             color: var(--kp-navy);
-            margin-bottom: 0.25rem;
+            margin-bottom: 0.35rem;
         }
         .kp-mod-desc {
-            font-size: 0.78rem;
+            font-size: 0.83rem;
             color: var(--kp-muted);
-            line-height: 1.42;
+            line-height: 1.45;
             margin: 0;
         }
 
         .kp-studio-banner {
-            margin-bottom: 1rem;
-            border-left: 3px solid var(--kp-gold);
+            margin-bottom: 1.1rem;
+            border-left: 4px solid var(--kp-gold);
         }
         .kp-studio-title {
-            font-size: 1.1rem;
+            font-size: 1.16rem;
             font-weight: 700;
             color: var(--kp-navy);
             margin: 0;
         }
         .kp-studio-sub {
-            font-size: 0.82rem;
+            font-size: 0.85rem;
             color: var(--kp-muted);
-            margin: 0.22rem 0 0 0;
-            line-height: 1.42;
+            margin: 0.25rem 0 0 0;
+            line-height: 1.45;
         }
         .kp-kpi-card {
-            padding: 0.85rem 1rem;
+            padding: 0.95rem 1.05rem;
         }
         .kp-kpi-label {
-            font-size: 0.69rem;
+            font-size: 0.71rem;
             font-weight: 700;
             color: #64748B;
             text-transform: uppercase;
             letter-spacing: 0.04em;
         }
         .kp-kpi-value {
-            font-size: 1.2rem;
+            font-size: 1.28rem;
             font-weight: 700;
             color: var(--kp-navy);
             margin-top: 0.2rem;
         }
         .kp-kpi-sub {
-            font-size: 0.74rem;
+            font-size: 0.77rem;
             color: var(--kp-muted);
-            margin-top: 0.14rem;
+            margin-top: 0.16rem;
         }
 
         .kp-metric-box {
-            padding: 0.85rem 0.65rem;
+            padding: 1rem;
             text-align: center;
+            border-bottom: 3px solid var(--kp-navy);
         }
         .kp-metric-num {
-            font-size: 1.45rem;
+            font-size: 1.52rem;
             font-weight: 800;
             color: var(--kp-navy);
-            line-height: 1.15;
-            letter-spacing: -0.02em;
-            font-variant-numeric: tabular-nums;
+            line-height: 1.2;
         }
         .kp-metric-lbl {
-            font-size: 0.68rem;
+            font-size: 0.73rem;
             color: #64748B;
-            margin-top: 0.3rem;
+            margin-top: 0.25rem;
             text-transform: uppercase;
-            letter-spacing: 0.08em;
+            letter-spacing: 0.06em;
             font-weight: 700;
         }
 
         /* Çanta Görseli & Satırları */
         .kp-bag-shell {
-            margin-bottom: 1.1rem;
+            margin-bottom: 1.2rem;
         }
         .kp-bag-visual {
             background: var(--kp-surface-alt);
             border: 1px solid var(--kp-border);
-            border-radius: 10px;
-            padding: 0.85rem;
+            border-radius: 12px;
+            padding: 0.95rem;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
         }
         .kp-bag-visual img {
-            width: 118px;
-            height: 136px;
+            width: 112px;
+            height: 130px;
             object-fit: contain;
-            transition: transform 0.25s var(--kp-ease);
-        }
-        .kp-bag-visual:hover img {
-            transform: scale(1.04) rotate(-2deg);
         }
         .kp-bag-count-pill {
-            margin-top: 0.4rem;
+            margin-top: 0.45rem;
             background: var(--kp-navy);
             color: #FFFFFF;
-            font-size: 0.73rem;
+            font-size: 0.75rem;
             font-weight: 600;
-            padding: 0.2rem 0.65rem;
+            padding: 0.22rem 0.7rem;
             border-radius: 999px;
         }
         .kp-bag-item-chip {
             background: var(--kp-surface-alt);
             border: 1px solid var(--kp-border);
-            border-radius: 9px;
-            padding: 0.55rem 0.8rem;
-            margin-bottom: 0.4rem;
+            border-radius: 10px;
+            padding: 0.6rem 0.85rem;
+            margin-bottom: 0.45rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             color: var(--kp-text);
-            animation: kpFadeUp 0.35s var(--kp-ease) both;
         }
 
         /* Paket Kartları */
         .kp-pkg-card {
-            margin-bottom: 0.6rem;
+            margin-bottom: 0.65rem;
         }
         .kp-pkg-top {
             display: flex;
@@ -1394,56 +1051,56 @@ st.markdown(
             gap: 0.5rem;
         }
         .kp-pkg-seg {
-            font-size: 0.7rem;
+            font-size: 0.72rem;
             font-weight: 600;
             color: var(--kp-navy);
             background: var(--kp-navy-soft);
-            padding: 0.18rem 0.55rem;
-            border-radius: 5px;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
         }
         .kp-pkg-badge {
-            font-size: 0.7rem;
+            font-size: 0.72rem;
             font-weight: 700;
             color: #7D5606;
             background: var(--kp-gold-soft);
             border: 1px solid var(--kp-gold-border);
-            padding: 0.18rem 0.55rem;
-            border-radius: 5px;
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
         }
         .kp-pkg-title {
-            font-size: 1rem;
+            font-size: 1.03rem;
             font-weight: 700;
             color: var(--kp-navy);
-            margin: 0.55rem 0 0.18rem 0;
+            margin: 0.6rem 0 0.2rem 0;
         }
         .kp-pkg-price {
-            font-size: 1.32rem;
+            font-size: 1.38rem;
             font-weight: 800;
             color: var(--kp-text);
-            margin-bottom: 0.4rem;
+            margin-bottom: 0.45rem;
         }
         .kp-pkg-price span {
-            font-size: 0.8rem;
+            font-size: 0.82rem;
             font-weight: 500;
             color: #64748B;
         }
         .kp-pkg-desc {
-            font-size: 0.81rem;
+            font-size: 0.83rem;
             color: var(--kp-muted);
-            line-height: 1.42;
-            margin-bottom: 0.7rem;
-            min-height: 3.1rem;
+            line-height: 1.45;
+            margin-bottom: 0.75rem;
+            min-height: 3.3rem;
         }
         .kp-pkg-feats {
             list-style: none;
-            padding: 0.65rem 0 0 0;
+            padding: 0.7rem 0 0 0;
             margin: 0;
             border-top: 1px solid var(--kp-border);
         }
         .kp-pkg-feats li {
-            font-size: 0.79rem;
+            font-size: 0.8rem;
             color: #334155;
-            padding: 0.16rem 0;
+            padding: 0.18rem 0;
         }
 
         .kp-dist-bar {
@@ -1462,7 +1119,7 @@ st.markdown(
             color: var(--kp-muted);
         }
 
-        /* Form Alanları & Kurumsal Butonlar */
+        /* Yüksek Kontrastlı Form Alanları & Kurumsal Butonlar */
         div[data-testid="stTextInput"] input,
         div[data-testid="stNumberInput"] input,
         div[data-testid="stTextArea"] textarea {
@@ -1470,12 +1127,18 @@ st.markdown(
             color: var(--kp-text) !important;
             border: 1px solid #CBD5E1 !important;
             border-radius: 8px !important;
-            font-size: 0.86rem !important;
+            font-size: 0.88rem !important;
         }
         div[data-testid="stNumberInput"] button {
             background-color: #F8FAFC !important;
             color: var(--kp-navy) !important;
             border-color: #CBD5E1 !important;
+        }
+        div[data-testid="stTextInput"] input:focus,
+        div[data-testid="stNumberInput"] input:focus,
+        div[data-testid="stTextArea"] textarea:focus {
+            border-color: var(--kp-navy) !important;
+            box-shadow: 0 0 0 2px rgba(22, 43, 84, 0.12) !important;
         }
         div[data-testid="stSelectbox"] > div > div {
             background-color: #FFFFFF !important;
@@ -1488,12 +1151,12 @@ st.markdown(
         div[data-testid="stFormSubmitButton"] > button {
             border-radius: 8px;
             font-weight: 600;
-            font-size: 0.8rem;
-            padding: 0.42rem 0.8rem;
+            font-size: 0.85rem;
+            padding: 0.5rem 0.95rem;
             border: 1px solid #CBD5E1;
             background-color: #FFFFFF;
             color: var(--kp-navy);
-            transition: background-color 0.15s var(--kp-ease), border-color 0.15s var(--kp-ease);
+            transition: all 0.14s ease;
         }
         .stButton > button:hover,
         div[data-testid="stFormSubmitButton"] > button:hover {
@@ -1511,13 +1174,6 @@ st.markdown(
             background-color: var(--kp-navy-hover) !important;
             border-color: var(--kp-navy-hover) !important;
             color: #FFFFFF !important;
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after {
-                animation: none !important;
-                transition: none !important;
-            }
         }
     </style>
     """,
@@ -1596,7 +1252,6 @@ def save_persisted_state() -> None:
         "activity_log": st.session_state.get("activity_log", _default_activity_log()),
         "b2b_org_cache": st.session_state.get("b2b_org_cache"),
         "last_b2b_summary": st.session_state.get("last_b2b_summary", ""),
-        "error_notebook": st.session_state.get("error_notebook", []),
     }
     try:
         STATE_FILE_PATH.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
@@ -1786,7 +1441,7 @@ def call_gemini_text(
 ) -> str:
     """Gemini API üzerinden metin üretir; 503/429 yoğunluk ve 404 hatalarında tekrar dener ve yedek modele geçer."""
     client = get_gemini_client()
-    candidate_models = [model, FALLBACK_MODEL, "gemini-2.0-flash"]
+    candidate_models = [model, FALLBACK_MODEL, "gemini-2.5-pro"]
     deduped_models: List[str] = []
     for m in candidate_models:
         if m and m not in deduped_models:
@@ -2089,95 +1744,6 @@ def parse_quiz_questions(raw_text: str) -> List[Dict[str, Any]]:
     return parsed
 
 
-# ==============================================================================
-# ÖĞRENCİ PORTALI YARDIMCILARI: HATA DEFTERİ, KAZANIM NETİ & KADEMELİ İPUCU
-# ==============================================================================
-MISTAKE_REASONS = [
-    "Dikkat / Hızlı Okuma Hatası",
-    "Çeldirici Tuzağına Düşme",
-    "Kazanım / Kavram Eksikliği",
-    "İşlem / Yorum Adımı Hatası",
-    "Süre Baskısı / Yetiştirememe",
-]
-
-
-def _kp_default_outcome() -> str:
-    focus = str(st.session_state.get("factory_focus_topic", "")).strip()
-    return focus if focus else "Genel Kazanım & Muhakeme"
-
-
-def _kp_extract_outcome(q_text: str, fallback: str) -> str:
-    for line in q_text.splitlines():
-        m = re.match(
-            r"^(?:Kazanım|Konu|Beceri)\s*[:\-–]\s*(.+)$",
-            line.strip(),
-            flags=re.IGNORECASE,
-        )
-        if m and m.group(1).strip():
-            return m.group(1).strip()
-    return fallback
-
-
-def add_to_error_notebook(entry: Dict[str, Any]) -> bool:
-    """Yanlış veya boş bırakılan soruyu Hata Defteri'ne çoğaltmadan kaydeder."""
-    notebook: List[Dict[str, Any]] = st.session_state.setdefault("error_notebook", [])
-    q_key = (
-        f"{entry.get('num')}|{entry.get('status')}|"
-        f"{entry.get('outcome')}|{entry.get('stem', '')[:80]}"
-    )
-    for existing in notebook:
-        ex_key = (
-            f"{existing.get('num')}|{existing.get('status')}|"
-            f"{existing.get('outcome')}|{existing.get('stem', '')[:80]}"
-        )
-        if ex_key == q_key and not existing.get("resolved"):
-            return False
-
-    entry["id"] = f"ERR-{int(time.time() * 1000)}-{len(notebook) + 1}"
-    entry["created_at"] = datetime.now().strftime("%d.%m.%Y %H:%M")
-    entry["resolved"] = False
-    entry.setdefault("reason", "Çeldirici Tuzağına Düşme")
-    entry.setdefault("note", "")
-    notebook.insert(0, entry)
-    st.session_state["error_notebook"] = notebook
-    save_persisted_state()
-    return True
-
-
-def build_outcome_net_summary(result_rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Kazanım bazlı Doğru, Yanlış, Boş, Net (3Y=1D) ve Doğruluk (%) özeti üretir."""
-    grouped: Dict[str, Dict[str, int]] = {}
-    for row in result_rows:
-        outcome = str(row.get("Kazanım") or "Genel Kazanım")
-        status = str(row.get("Durum") or "")
-        b = grouped.setdefault(outcome, {"dogru": 0, "yanlis": 0, "bos": 0, "toplam": 0})
-        b["toplam"] += 1
-        if status == "Doğru":
-            b["dogru"] += 1
-        elif status == "Yanlış":
-            b["yanlis"] += 1
-        elif status == "Boş":
-            b["bos"] += 1
-
-    out: List[Dict[str, Any]] = []
-    for outcome, b in grouped.items():
-        net = max(0.0, b["dogru"] - (b["yanlis"] / 3.0))
-        answered = b["dogru"] + b["yanlis"]
-        acc = (b["dogru"] / answered * 100.0) if answered > 0 else 0.0
-        out.append(
-            {
-                "Kazanım / Konu": outcome,
-                "Soru": b["toplam"],
-                "Doğru": b["dogru"],
-                "Yanlış": b["yanlis"],
-                "Boş": b["bos"],
-                "Net (3Y=1D)": round(net, 2),
-                "Doğruluk": f"%{acc:.0f}",
-            }
-        )
-    return out
-
-
 def format_countdown(target: datetime) -> Tuple[int, int, int, int]:
     """Hedef tarihe kalan gün, saat, dakika ve saniyeyi döndürür."""
     now = datetime.now()
@@ -2222,8 +1788,10 @@ def render_page_strip(page_name: str) -> None:
     st.markdown(
         f"""
         <div class="kp-page-strip">
-            <h2 class="kp-page-strip-title">{html.escape(title)}</h2>
-            <p class="kp-page-strip-desc">{html.escape(desc)}</p>
+            <div>
+                <h2 class="kp-page-strip-title">{html.escape(title)}</h2>
+                <p class="kp-page-strip-desc">{html.escape(desc)}</p>
+            </div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -2436,9 +2004,6 @@ def render_school_backpack_panel() -> Dict[str, Any]:
     v_col, list_col = st.columns([1.1, 2.9])
 
     with v_col:
-        has_books = int(summary["total_count"]) > 0
-        dynamic_bag_uri = svg_to_data_uri(build_backpack_svg(has_books=has_books))
-
         chips_html = ""
         for entry in entries:
             safe_name = html.escape(entry["tier"]["name"])
@@ -2459,7 +2024,7 @@ def render_school_backpack_panel() -> Dict[str, Any]:
         st.markdown(
             f"""
             <div class="kp-bag-visual">
-                <img src="{dynamic_bag_uri}" alt="Okul Sırt Çantası"/>
+                <img src="{BACKPACK_DATA_URI}" alt="Okul Sırt Çantası"/>
                 <div class="kp-bag-count-pill">{summary['total_count']} Paket</div>
                 <div style="width:100%;margin-top:0.3rem;">{chips_html}</div>
             </div>
@@ -2835,22 +2400,6 @@ def render_parent_notification_center() -> None:
 # ==============================================================================
 _persisted = load_persisted_state()
 
-if "splash_played" not in st.session_state:
-    st.session_state["splash_played"] = True
-    st.markdown(
-        f"""
-        <div class="kp-splash-screen">
-            <div class="kp-splash-card">
-                <img class="kp-splash-logo" src="{LOGO_DATA_URI}" alt="{BRAND_NAME}"/>
-                <div class="kp-splash-title">{BRAND_NAME}</div>
-                <div class="kp-splash-sub">2027 LGS &amp; YKS • Maarif Modeli</div>
-                <div class="kp-splash-track"><div class="kp-splash-fill"></div></div>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
 if "active_page" not in st.session_state:
     st.session_state.active_page = PAGES[0]
 elif st.session_state.active_page == "Ana Sayfa & Geri Sayım":
@@ -2896,9 +2445,6 @@ if "b2b_org_cache" not in st.session_state and isinstance(_persisted.get("b2b_or
     st.session_state["b2b_org_cache"] = _persisted["b2b_org_cache"]
 if "last_b2b_summary" not in st.session_state and _persisted.get("last_b2b_summary"):
     st.session_state["last_b2b_summary"] = _persisted["last_b2b_summary"]
-if "error_notebook" not in st.session_state:
-    p_nb = _persisted.get("error_notebook")
-    st.session_state["error_notebook"] = list(p_nb) if isinstance(p_nb, list) else []
 
 bag_summary_global = get_bag_summary()
 sync_plan_quotas(bag_summary_global, force_reset=False)
@@ -2931,22 +2477,22 @@ with st.sidebar:
     st.markdown(
         f"""
         <div class="kp-sidebar-meta">
-            <div style="font-weight:700;color:#162B54;margin-bottom:0.1rem;">Aktif Kota &amp; Çanta</div>
+            <div style="font-weight:700;color:#162B54;margin-bottom:0.2rem;">Aktif Kota &amp; Çanta</div>
             <div>{bag_summary_global['total_count']} Paket • {bag_summary_global['monthly_price']:,} ₺/ay</div>
-            <div style="color:#475569;margin-top:0.12rem;">
-                Soru: <b>{int(st.session_state.remaining_question_quota):,}</b> / {bag_summary_global['monthly_quota']:,} •
-                Mentor: <b>{int(st.session_state.remaining_coach_quota)}</b> / {bag_summary_global['coach_quota']}
+            <div style="color:#475569;margin-top:0.25rem;">
+                Soru: <b>{int(st.session_state.remaining_question_quota):,}</b> / {bag_summary_global['monthly_quota']:,}<br>
+                Dijimentor: <b>{int(st.session_state.remaining_coach_quota)}</b> / {bag_summary_global['coach_quota']}
             </div>
         </div>
         """.replace(",", "."),
         unsafe_allow_html=True,
     )
 
-    status_label = "Sistem aktif" if api_key_ready else "API anahtarı bekleniyor"
-    st.markdown(
-        f'<div class="kp-sidebar-status">Durum: {html.escape(status_label)}</div>',
-        unsafe_allow_html=True,
-    )
+    st.markdown("<div style='margin-top:0.65rem;'></div>", unsafe_allow_html=True)
+    if api_key_ready:
+        st.caption("Durum: Sistem aktif")
+    else:
+        st.caption("Durum: API anahtarı bekleniyor")
 
     if st.button("Oturumu Sıfırla", key="reset_session_btn", use_container_width=True):
         try:
@@ -2987,141 +2533,28 @@ render_page_strip(current_page)
 # 1. ANA SAYFA
 # ==============================================================================
 if current_page == "Ana Sayfa":
-    yks_d, yks_h, _, _ = format_countdown(YKS_2027_TARGET)
-    lgs_d, lgs_h, lgs_m, lgs_s = format_countdown(LGS_2027_TARGET)
-
-    st.markdown(
-        """
-        <div class="kp-hero-banner">
-            <div class="kp-hero-grid">
-                <div>
-                    <div class="kp-hero-kicker">2027 LGS &amp; YKS • Maarif Modeli Akıllı Ekosistem</div>
-                    <h2 class="kp-hero-title">Sınava Hazırlığın <span>Akıllı ve Ölçülebilir</span> Hali</h2>
-                    <p class="kp-hero-desc">
-                        Özgün soru ve çeldirici analizi, kademeli çözüm rehberi, Dijimentor tempo planlaması
-                        ve veli/kurum takibini tek platformda birleştirin.
-                    </p>
-                    <div class="kp-hero-pills">
-                        <span class="kp-hero-pill">Otomatik Redaksiyon</span>
-                        <span class="kp-hero-pill">Kazanım Net Takibi</span>
-                        <span class="kp-hero-pill">Hata Defteri</span>
-                        <span class="kp-hero-pill">DOCX Sınav Çıktısı</span>
-                    </div>
-                </div>
-                <div class="kp-hero-showcase">
-                    <div class="kp-medallion-card">
-                        <div class="kp-medallion-badge">Soru Havuzu</div>
-                        <div class="kp-medallion-val">142.500+</div>
-                        <div class="kp-medallion-sub">Maarif &amp; Yeni Nesil</div>
-                    </div>
-                    <div class="kp-medallion-card">
-                        <div class="kp-medallion-badge">Çözüm İvmesi</div>
-                        <div class="kp-medallion-val">2.4 Milyon</div>
-                        <div class="kp-medallion-sub">%98 Başarı Standardı</div>
-                    </div>
-                    <div class="kp-medallion-card">
-                        <div class="kp-medallion-badge">Aktif Topluluk</div>
-                        <div class="kp-medallion-val">18.420</div>
-                        <div class="kp-medallion-sub">Öğrenci &amp; Veli Ağı</div>
-                    </div>
-                    <div class="kp-medallion-card">
-                        <div class="kp-medallion-badge">Kurumsal B2B</div>
-                        <div class="kp-medallion-val">48 Kurum</div>
-                        <div class="kp-medallion-sub">Okul &amp; Zümre Lisansı</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    h_cta1, h_cta2, h_cta3 = st.columns(3)
-    with h_cta1:
-        if st.button("Soru Fabrikasını Başlat", key="hero_cta_factory", type="primary", use_container_width=True):
-            navigate_to("Soru & Redaksiyon Fabrikası")
-    with h_cta2:
-        if st.button("Dijimentor Planı Oluştur", key="hero_cta_mentor", use_container_width=True):
-            navigate_to("Dijimentor")
-    with h_cta3:
-        if st.button("Paketleri & Çantayı İncele", key="hero_cta_plans", use_container_width=True):
-            navigate_to("Paketler & Abonelik Vitrini")
-
-    st.markdown("<div style='margin:0.55rem 0;'></div>", unsafe_allow_html=True)
-
-    head_col, toggle_col = st.columns([4, 1], vertical_alignment="center")
+    head_col, toggle_col = st.columns([3, 1])
     with head_col:
-        st.markdown(
-            '<div class="kp-section-inline-head">2027 LGS Geri Sayım (13 Haziran 2027)</div>',
-            unsafe_allow_html=True,
-        )
+        st.markdown("#### 2027 LGS Geri Sayım (13 Haziran 2027)")
     with toggle_col:
-        live_counter = st.toggle(
-            "Canlı Sayaç",
-            value=st.session_state.live_tick,
-            key="lgs_live_toggle",
-        )
+        live_counter = st.toggle("Canlı Sayaç", value=st.session_state.live_tick)
         st.session_state.live_tick = live_counter
 
-    if not live_counter:
+    counter_placeholder = st.empty()
+    with counter_placeholder.container():
         render_countdown_boxes(LGS_2027_TARGET)
-    else:
-        live_html = f"""
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;font-family:Inter,sans-serif;">
-            <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:10px;padding:13px 10px;text-align:center;">
-                <div id="cd-days" style="font-size:23px;font-weight:800;color:#162B54;font-variant-numeric:tabular-nums;">{lgs_d:03d}</div>
-                <div style="font-size:10.5px;font-weight:700;color:#64748B;letter-spacing:1.1px;margin-top:4px;">GÜN</div>
-            </div>
-            <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:10px;padding:13px 10px;text-align:center;">
-                <div id="cd-hours" style="font-size:23px;font-weight:800;color:#162B54;font-variant-numeric:tabular-nums;">{lgs_h:02d}</div>
-                <div style="font-size:10.5px;font-weight:700;color:#64748B;letter-spacing:1.1px;margin-top:4px;">SAAT</div>
-            </div>
-            <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:10px;padding:13px 10px;text-align:center;">
-                <div id="cd-mins" style="font-size:23px;font-weight:800;color:#162B54;font-variant-numeric:tabular-nums;">{lgs_m:02d}</div>
-                <div style="font-size:10.5px;font-weight:700;color:#64748B;letter-spacing:1.1px;margin-top:4px;">DAKİKA</div>
-            </div>
-            <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-radius:10px;padding:13px 10px;text-align:center;">
-                <div id="cd-secs" style="font-size:23px;font-weight:800;color:#162B54;font-variant-numeric:tabular-nums;">{lgs_s:02d}</div>
-                <div style="font-size:10.5px;font-weight:700;color:#64748B;letter-spacing:1.1px;margin-top:4px;">SANİYE</div>
-            </div>
-        </div>
-        <script>
-            (function() {{
-                const target = new Date("2027-06-13T09:30:00+03:00").getTime();
-                function updateClock() {{
-                    const diff = Math.max(0, target - Date.now());
-                    const totalSec = Math.floor(diff / 1000);
-                    const d = Math.floor(totalSec / 86400);
-                    const h = Math.floor((totalSec % 86400) / 3600);
-                    const m = Math.floor((totalSec % 3600) / 60);
-                    const s = totalSec % 60;
-                    const elD = document.getElementById("cd-days");
-                    const elH = document.getElementById("cd-hours");
-                    const elM = document.getElementById("cd-mins");
-                    const elS = document.getElementById("cd-secs");
-                    if (elD) elD.textContent = String(d).padStart(3, "0");
-                    if (elH) elH.textContent = String(h).padStart(2, "0");
-                    if (elM) elM.textContent = String(m).padStart(2, "0");
-                    if (elS) elS.textContent = String(s).padStart(2, "0");
-                }}
-                updateClock();
-                setInterval(updateClock, 1000);
-            }})();
-        </script>
-        """
-        st.components.v1.html(live_html, height=88)
 
+    yks_d, yks_h, _, _ = format_countdown(YKS_2027_TARGET)
     st.caption(f"2027 YKS (19 Haziran 2027) için kalan süre: {yks_d} gün {yks_h} saat")
 
-    st.markdown("<div style='margin:0.45rem 0;'></div>", unsafe_allow_html=True)
+    st.markdown("---")
     m1, m2, m3, m4 = st.columns(4)
     m1.metric("Üretilen Soru Havuzu", "142.500+", "+1.200 bugün")
     m2.metric("Aktif Öğrenci / Veli", "18.420", "+340 bu hafta")
     m3.metric("B2B Anlaşmalı Kurum", "48", "+4 Yeni")
     m4.metric("Çözülen Soru Sayısı", "2.4 Milyon", "%98 Başarı")
 
-    st.markdown("<div style='margin:0.65rem 0 0.15rem 0;'></div>", unsafe_allow_html=True)
-    st.markdown("#### Modüller")
+    st.markdown("### Modüller")
     f1, f2, f3 = st.columns(3)
     with f1:
         st.markdown(
@@ -3172,7 +2605,7 @@ if current_page == "Ana Sayfa":
     st.markdown("---")
     ana_l, ana_r = st.columns([2, 1])
     with ana_l:
-        st.markdown("#### Haftalık Soru & Çözüm İlerlemesi")
+        st.markdown("#### Haftalık Soru Üretim & Çözüm Telemetrisi")
         telemetry_data = {
             "Pzt": 16800,
             "Sal": 18200,
@@ -3182,19 +2615,23 @@ if current_page == "Ana Sayfa":
             "Cmt": 25900,
             "Paz": 24800,
         }
-        st.area_chart(telemetry_data, color="#162B54", height=200)
+        st.area_chart(telemetry_data, color="#162B54", height=210)
     with ana_r:
         st.markdown("#### Son Aktiviteler")
         for item in st.session_state.get("activity_log", [])[:5]:
             st.markdown(
                 f"""
-                <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-left:3px solid #C48F1B;border-radius:9px;padding:0.52rem 0.75rem;margin-bottom:0.4rem;">
-                    <div style="font-size:0.7rem;font-weight:600;color:#64748B;">{html.escape(item['time'])} • {html.escape(item['module'])}</div>
-                    <div style="font-size:0.81rem;color:#0F172A;margin-top:0.1rem;">{html.escape(item['summary'])}</div>
+                <div style="background:#FFFFFF;border:1px solid #DCE3EC;border-left:3px solid #C48F1B;border-radius:10px;padding:0.58rem 0.8rem;margin-bottom:0.45rem;">
+                    <div style="font-size:0.72rem;font-weight:600;color:#64748B;">{html.escape(item['time'])} • {html.escape(item['module'])}</div>
+                    <div style="font-size:0.83rem;color:#0F172A;margin-top:0.12rem;">{html.escape(item['summary'])}</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
             )
+
+    if st.session_state.live_tick:
+        time.sleep(1)
+        st.rerun()
 
 # ==============================================================================
 # 2. SORU & REDAKSİYON FABRİKASI
@@ -3335,34 +2772,16 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
 # 3. ÖĞRENCİ PORTALI & ÇÖZÜM
 # ==============================================================================
 elif current_page == "Öğrenci Portalı & Çözüm":
-    active_nb_count = sum(1 for x in st.session_state.get("error_notebook", []) if not x.get("resolved"))
-    tab_exam, tab_hint, tab_notebook = st.tabs(
-        [
-            "İnteraktif Mini Deneme & Kazanım Neti",
-            "Kademeli İpucu & Çözüm Asistanı",
-            f"Hata Defteri ({active_nb_count} Aktif)",
-        ]
-    )
+    tab_exam, tab_hint = st.tabs(["İnteraktif Mini Deneme & Net Analizi", "Adımlı Çözüm Asistanı"])
 
     with tab_exam:
-        default_outcome = _kp_default_outcome()
-        c_src, c_out = st.columns([2.2, 1.0])
-        with c_src:
-            exam_source = st.text_area(
-                "Deneme Soru Metni (Soru Fabrikasından otomatik gelir veya buraya yapıştır)",
-                value=st.session_state.get("portal_exam_source") or st.session_state.get("generated_test_text", ""),
-                height=125,
-                placeholder="Soru 1) ... A) ... B) ... C) ... D) ... Cevap Anahtarı: 1-B",
-            )
-            st.session_state["portal_exam_source"] = exam_source
-        with c_out:
-            active_outcome = st.text_input(
-                "Varsayılan Kazanım / Konu Etiketi",
-                value=st.session_state.get("portal_default_outcome", default_outcome),
-                help="Soru metninde ayrıca 'Kazanım:' satırı varsa o öncelikli alınır.",
-            )
-            st.session_state["portal_default_outcome"] = active_outcome.strip() or default_outcome
-
+        exam_source = st.text_area(
+            "Deneme Soru Metni (Soru Fabrikasından otomatik gelir veya buraya yapıştır)",
+            value=st.session_state.get("portal_exam_source") or st.session_state.get("generated_test_text", ""),
+            height=130,
+            placeholder="Soru 1) ... A) ... B) ... C) ... D) ... Cevap Anahtarı: 1-B",
+        )
+        st.session_state["portal_exam_source"] = exam_source
         questions = parse_quiz_questions(exam_source)
 
         if not questions:
@@ -3374,38 +2793,29 @@ elif current_page == "Öğrenci Portalı & Çözüm":
             st.markdown(f"#### Aktif Mini Deneme ({len(questions)} Soru)")
             user_answers: Dict[int, str] = {}
             for idx, q in enumerate(questions):
-                q_outcome = _kp_extract_outcome(q["full_text"], st.session_state["portal_default_outcome"])
                 with st.container(border=True):
-                    st.caption(f"Kazanım: {q_outcome}")
                     st.markdown(q["stem"])
-                    opts = list(q["options"].keys()) + ["Boş"]
+                    opts = list(q["options"].keys())
                     chosen = st.radio(
                         f"Soru {q['num']} Yanıtın",
                         options=opts,
-                        format_func=lambda k, o_map=q["options"]: "Boş (Boş bırak)" if k == "Boş" else f"{k}) {o_map[k]}",
+                        format_func=lambda k, o_map=q["options"]: f"{k}) {o_map[k]}",
                         horizontal=True,
                         key=f"mini_q_{idx}",
                     )
                     user_answers[idx] = chosen
 
-            if st.button("Denemeyi Bitir, Kazanım Netini Hesapla & Hata Defterine Aktar", type="primary"):
+            if st.button("Denemeyi Bitir ve Netimi Hesapla", type="primary"):
                 correct_cnt = 0
                 wrong_cnt = 0
-                blank_cnt = 0
                 ungraded_cnt = 0
-                added_to_nb = 0
-                wrong_or_blank_questions: List[Dict[str, Any]] = []
-                result_rows: List[Dict[str, Any]] = []
+                wrong_questions: List[Dict[str, Any]] = []
+                result_rows: List[Dict[str, str]] = []
 
                 for idx, q in enumerate(questions):
                     u_ans = user_answers[idx]
                     c_ans = q.get("correct")
-                    q_outcome = _kp_extract_outcome(q["full_text"], st.session_state["portal_default_outcome"])
-
-                    if u_ans == "Boş":
-                        blank_cnt += 1
-                        status_txt = "Boş"
-                    elif not c_ans:
+                    if not c_ans:
                         ungraded_cnt += 1
                         status_txt = "Anahtar Yok"
                     elif u_ans == c_ans:
@@ -3413,267 +2823,92 @@ elif current_page == "Öğrenci Portalı & Çözüm":
                         status_txt = "Doğru"
                     else:
                         wrong_cnt += 1
+                        wrong_questions.append(q)
                         status_txt = "Yanlış"
-
-                    if status_txt in ("Yanlış", "Boş"):
-                        wrong_or_blank_questions.append(q)
-                        created = add_to_error_notebook(
-                            {
-                                "num": q["num"],
-                                "outcome": q_outcome,
-                                "status": status_txt,
-                                "user_answer": u_ans,
-                                "correct_answer": c_ans or "Belirtilmedi",
-                                "stem": q["stem"],
-                                "options": q["options"],
-                                "full_text": q["full_text"],
-                                "reason": "Süre Baskısı / Yetiştirememe" if status_txt == "Boş" else "Çeldirici Tuzağına Düşme",
-                            }
-                        )
-                        if created:
-                            added_to_nb += 1
 
                     result_rows.append(
                         {
                             "Soru": f"Soru {q['num']}",
-                            "Kazanım": q_outcome,
                             "Senin Yanıtın": u_ans,
                             "Doğru Cevap": c_ans or "Belirtilmedi",
                             "Durum": status_txt,
                         }
                     )
 
-                answered_total = correct_cnt + wrong_cnt
+                graded_total = correct_cnt + wrong_cnt
                 net_score = max(0.0, correct_cnt - (wrong_cnt / 3.0))
-                accuracy = (correct_cnt / answered_total * 100.0) if answered_total > 0 else 0.0
-                outcome_rows = build_outcome_net_summary(result_rows)
+                accuracy = (correct_cnt / graded_total * 100.0) if graded_total > 0 else 0.0
 
                 st.session_state["last_exam_report"] = {
                     "correct": correct_cnt,
                     "wrong": wrong_cnt,
-                    "blank": blank_cnt,
                     "net": net_score,
                     "accuracy": accuracy,
                     "rows": result_rows,
-                    "outcome_rows": outcome_rows,
-                    "added_to_nb": added_to_nb,
-                    "first_wrong": wrong_or_blank_questions[0]["full_text"] if wrong_or_blank_questions else "",
+                    "first_wrong": wrong_questions[0]["full_text"] if wrong_questions else "",
                 }
                 record_activity(
                     "Mini Deneme",
-                    f"{correct_cnt}D {wrong_cnt}Y {blank_cnt}B • {net_score:.2f} Net (+{added_to_nb} Hata Defteri)",
+                    f"{correct_cnt}D {wrong_cnt}Y • {net_score:.2f} Net (%{accuracy:.0f})",
                 )
-                st.rerun()
 
             report = st.session_state.get("last_exam_report")
             if report:
                 st.markdown("---")
-                r1, r2, r3, r4, r5 = st.columns(5)
-                r1.metric("Doğru", f"{report['correct']}")
-                r2.metric("Yanlış", f"{report['wrong']}")
-                r3.metric("Boş", f"{report['blank']}")
-                r4.metric("Net (3Y=1D)", f"{report['net']:.2f}")
-                r5.metric("Başarı", f"%{report['accuracy']:.1f}")
+                r1, r2, r3, r4 = st.columns(4)
+                r1.metric("Doğru Sayısı", f"{report['correct']} Soru")
+                r2.metric("Yanlış Sayısı", f"{report['wrong']} Soru")
+                r3.metric("Hesaplanan Net (3Y=1D)", f"{report['net']:.2f} Net")
+                r4.metric("Başarı Oranı", f"%{report['accuracy']:.1f}")
 
-                if report.get("added_to_nb", 0) > 0:
-                    st.success(
-                        f"**{report['added_to_nb']}** yanlış/boş soru otomatik olarak **Hata Defteri** sekmesine eklendi."
-                    )
-
-                st.markdown("#### Kazanım Bazlı Net Takibi")
-                out_rows = report.get("outcome_rows", [])
-                if out_rows:
-                    oc_l, oc_r = st.columns([1.65, 1.0])
-                    with oc_l:
-                        st.dataframe(out_rows, use_container_width=True, hide_index=True)
-                    with oc_r:
-                        net_map = {str(r["Kazanım / Konu"])[:24]: float(r["Net (3Y=1D)"]) for r in out_rows}
-                        st.bar_chart(net_map, color="#162B54", height=205)
-
-                st.markdown("#### Soru Bazlı Sonuç Tablosu")
                 st.dataframe(report["rows"], use_container_width=True, hide_index=True)
 
                 if report.get("first_wrong"):
-                    if st.button("İlk Yanlış / Boş Soruyu Kademeli İpucu Rehberine Gönder"):
+                    if st.button("Yanlış Yaptığım İlk Soruyu Çözüm Rehberine Aktar"):
                         st.session_state["portal_question_draft"] = report["first_wrong"]
-                        st.session_state["hint_step_idx"] = 1
-                        st.session_state["hint_steps_cache"] = {}
-                        st.toast("Soru Kademeli İpucu sekmesine aktarıldı.")
+                        st.toast("Yanlış soru Adımlı Çözüm Asistanı sekmesine aktarıldı.")
                         st.rerun()
 
     with tab_hint:
-        st.markdown("#### Mantığa Götüren Kademeli İpucu Merdiveni")
-        st.caption(
-            "Önce 1. adımla başla; takıldığın yerde sonraki adıma ilerle. İstersen 4. adımda tam çözümü ve benzer tek bir pekiştirme sorusunu aç."
-        )
-        col_l, col_r = st.columns([2.0, 1.15])
+        col_l, col_r = st.columns([2, 1])
         with col_l:
             default_q = st.session_state.get("portal_question_draft", "")
             student_question = st.text_area(
                 "Çözümünü İncelemek İstediğin Soru Metni",
                 value=default_q,
-                height=155,
+                height=160,
                 placeholder="Soru kökünü, verilen öncülleri ve şıkları buraya yapıştır...",
             )
-            st.session_state["portal_question_draft"] = student_question
         with col_r:
-            step_labels = {
-                1: "1. Adım: Soru Kökü & Bağlam Farkındalığı",
-                2: "2. Adım: Kavram / Yöntem Yönlendirmesi",
-                3: "3. Adım: Çeldirici Şık Eleme Mantığı",
-                4: "4. Adım: Tam Çözüm & Benzer Tekrar Sorusu",
-            }
-            cur_step = int(st.session_state.get("hint_step_idx", 1))
-            selected_step = st.radio(
-                "İpucu Kademesi",
-                options=[1, 2, 3, 4],
-                index=max(0, min(3, cur_step - 1)),
-                format_func=lambda s: step_labels[s],
+            hint_mode = st.radio(
+                "Yardım Düzeyi",
+                ["Önce İpucu Ver (Kendim Çözeyim)", "Adım Adım Çözümü Göster"],
+                index=0,
             )
-            st.session_state["hint_step_idx"] = selected_step
             student_attempt = st.text_input("Senin Tahminin / Şıkkın", placeholder="Örn: C şıkkı, çünkü...")
 
-        b1, b2, b3 = st.columns(3)
-        with b1:
-            run_step = st.button("Bu Adımı Göster", type="primary", key="btn_solve_guide", use_container_width=True)
-        with b2:
-            if st.button("Sonraki Adıma Geç", key="btn_next_hint_step", use_container_width=True):
-                st.session_state["hint_step_idx"] = min(4, int(selected_step) + 1)
-                st.rerun()
-        with b3:
-            if st.button("Adımları Sıfırla", key="btn_reset_hint_step", use_container_width=True):
-                st.session_state["hint_step_idx"] = 1
-                st.session_state["hint_steps_cache"] = {}
-                st.rerun()
-
-        step_cache: Dict[str, str] = st.session_state.setdefault("hint_steps_cache", {})
-        q_sig = f"{hash(student_question.strip())}|{student_attempt.strip()}|{selected_step}"
-
-        if run_step:
+        if st.button("Çözüm Rehberi Oluştur", type="primary", key="btn_solve_guide"):
             if not student_question.strip():
                 st.warning("Lütfen önce bir soru metni girin.")
             else:
-                step_rules = {
-                    1: (
-                        "Sadece 1. ADIM (Soru Kökü & Bağlam Farkındalığı) üret. "
-                        "Doğru şıkkı veya çözümü doğrudan söyleme. Soru kökündeki kritik ifadeleri, "
-                        "olumsuz/sınırlayıcı şartları veya öncül ilişkisini öğrenciye fark ettir."
-                    ),
-                    2: (
-                        "Sadece 2. ADIM (Kavram / Yöntem Yönlendirmesi) üret. "
-                        "Doğru şıkkı doğrudan verme. Öğrencinin hangi kuralı, ilişkiyi veya "
-                        "akıl yürütme adımıyla başlaması gerektiğini düşündürücü sorularla açıkla."
-                    ),
-                    3: (
-                        "Sadece 3. ADIM (Çeldirici Şık Eleme Mantığı) üret. "
-                        "Cazip görünen çeldiricilerin hangi eksik/fazla genellemeye veya dikkat hatasına "
-                        "dayandığını sezdir (cevabı doğrudan ilan etme)."
-                    ),
-                    4: (
-                        "4. ADIM (Tam Çözüm & Benzer Tekrar Sorusu) üret. "
-                        "Mantık adımlarını net tamamla ve bu kazanımı pekiştirmek için "
-                        "benzer mantıkta 1 kısa tekrar sorusu ekle."
-                    ),
-                }
                 sys_inst = (
-                    "Sen sabırlı, pedagojik ve ezberletmeden mantık kavratan bir eğitim mentorusun. "
-                    f"{step_rules[selected_step]}"
+                    "Sen sabırlı, pedagojik ve teşvik edici bir eğitim mentorusun. "
+                    "Öğrenciye doğrudan ezberletmek yerine mantığını kavratacak şekilde açıkla."
                 )
                 prompt = (
                     f"Soru:\n{student_question}\n\n"
-                    f"Öğrencinin Denemesi: {student_attempt or 'Belirtilmedi'}\n\n"
+                    f"Öğrencinin Denemesi: {student_attempt or 'Belirtilmedi'}\n"
+                    f"Yardım Düzeyi: {hint_mode}\n\n"
                     "Lütfen Türkçe olarak net ve anlaşılır yanıt ver."
                 )
                 try:
-                    with st.spinner(f"{step_labels[selected_step]} hazırlanıyor..."):
+                    with st.spinner("Çözüm rehberi hazırlanıyor..."):
                         ans = call_gemini_text(prompt=prompt, system_instruction=sys_inst)
-                    step_cache[q_sig] = ans
-                    st.session_state["hint_steps_cache"] = step_cache
-                    record_activity("Kademeli İpucu", f"Adım {selected_step} üretildi")
+                    record_activity("Çözüm Asistanı", f"{hint_mode} üretildi")
+                    st.markdown("#### Çözüm Analizi")
+                    st.markdown(ans)
                 except Exception as exc:
                     st.error(f"Çözüm üretilirken hata oluştu: {exc}")
-
-        if q_sig in step_cache:
-            st.markdown("#### Çözüm Analizi")
-            st.markdown(step_cache[q_sig])
-
-    with tab_notebook:
-        notebook: List[Dict[str, Any]] = st.session_state.get("error_notebook", [])
-        if not notebook:
-            st.info(
-                "Hata Defterinde henüz kayıtlı soru yok. **İnteraktif Mini Deneme** sekmesinde "
-                "bir testi bitirdiğinde yanlış veya boş sorular otomatik buraya eklenir."
-            )
-        else:
-            f1_col, f2_col, f3_col = st.columns([1.4, 1.4, 1.2])
-            with f1_col:
-                st_flt = st.selectbox("Durum Filtresi", ["Tümü (Yanlış + Boş)", "Yanlış", "Boş"], key="nb_st_flt")
-            with f2_col:
-                res_flt = st.selectbox("Görünüm", ["Çözülmemiş Sorular", "Çözülmüş Sorular", "Tümü"], key="nb_res_flt")
-            with f3_col:
-                if st.button("Defteri Temizle", key="nb_clear_btn", use_container_width=True):
-                    st.session_state["error_notebook"] = []
-                    save_persisted_state()
-                    st.rerun()
-
-            filtered_items = [
-                it
-                for it in notebook
-                if (st_flt == "Tümü (Yanlış + Boş)" or it.get("status") == st_flt)
-                and (
-                    (res_flt == "Çözülmemiş Sorular" and not it.get("resolved"))
-                    or (res_flt == "Çözülmüş Sorular" and bool(it.get("resolved")))
-                    or (res_flt == "Tümü")
-                )
-            ]
-
-            for i, it in enumerate(filtered_items):
-                with st.expander(f"Soru {it.get('num')} • {it.get('status')} • {it.get('outcome')}", expanded=(i == 0)):
-                    st.markdown(it.get("stem", ""))
-                    for opt_k, opt_v in (it.get("options") or {}).items():
-                        st.markdown(f"- **{opt_k})** {opt_v}")
-                    st.caption(
-                        f"Senin Yanıtın: **{it.get('user_answer')}** | "
-                        f"Doğru Cevap: **{it.get('correct_answer')}** | "
-                        f"Tarih: {it.get('created_at')}"
-                    )
-
-                    rc1, rc2 = st.columns([1.5, 2.0])
-                    with rc1:
-                        cur_r = it.get("reason", MISTAKE_REASONS[0])
-                        r_idx = MISTAKE_REASONS.index(cur_r) if cur_r in MISTAKE_REASONS else 0
-                        new_r = st.selectbox(
-                            "Neden Etiketi",
-                            options=MISTAKE_REASONS,
-                            index=r_idx,
-                            key=f"nb_reason_{it['id']}",
-                        )
-                        if new_r != cur_r:
-                            it["reason"] = new_r
-                            save_persisted_state()
-                    with rc2:
-                        new_n = st.text_input(
-                            "Hatırlatma Notu",
-                            value=it.get("note", ""),
-                            key=f"nb_note_{it['id']}",
-                        )
-                        if new_n != it.get("note", ""):
-                            it["note"] = new_n
-                            save_persisted_state()
-
-                    ac1, ac2 = st.columns(2)
-                    with ac1:
-                        if st.button("Kademeli İpucu ile Çöz", key=f"nb_to_hint_{it['id']}", use_container_width=True):
-                            st.session_state["portal_question_draft"] = it.get("full_text") or it.get("stem", "")
-                            st.session_state["hint_step_idx"] = 1
-                            st.session_state["hint_steps_cache"] = {}
-                            st.toast("Soru Kademeli İpucu sekmesine aktarıldı.")
-                    with ac2:
-                        btn_txt = "Tekrar Aktif Yap" if it.get("resolved") else "Öğrendim / Çözüldü"
-                        if st.button(btn_txt, key=f"nb_toggle_{it['id']}", use_container_width=True):
-                            it["resolved"] = not bool(it.get("resolved"))
-                            save_persisted_state()
-                            st.rerun()
 
 # ==============================================================================
 # 4. DİJİMENTOR
@@ -3840,7 +3075,7 @@ elif current_page == "Dijimentor":
     a_hrs = round(weekly_hours * 0.25, 1)
     st.markdown(
         f"""
-        <div style="margin-top:0.65rem;padding-top:0.75rem;border-top:1px solid #E2E8F0;">
+        <div style="margin-top:0.65rem;padding-top:0.75rem;border-top:1px solid #DCE3EC;">
             <div style="font-size:0.75rem;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.04em;">
                 Önerilen Haftalık Kapasite Dağılımı ({weekly_hours} Saat)
             </div>
@@ -4177,38 +3412,3 @@ elif current_page == "Paketler & Abonelik Vitrini":
         monthly_price=active_bag_summary["monthly_price"],
         summary=active_bag_summary,
     )
-
-# ==============================================================================
-# KURŞUN&AYGÖREN DİJİTAL OFİS İMZASI (SAYFA EN ALTI - BİTİŞİK EL YAZISI)
-# ==============================================================================
-st.markdown(
-    """
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Allura&family=Pacifico&display=swap');
-
-        .kp-digital-office-footer {
-            width: 100%;
-            margin-top: 2.2rem;
-            padding-top: 0.75rem;
-            padding-right: 176px;
-            border-top: 1px solid #E2E8F0;
-            display: flex;
-            justify-content: flex-end;
-            align-items: center;
-        }
-        .kp-digital-office-signature {
-            font-family: 'Pacifico', 'Allura', cursive;
-            font-size: 1.25rem;
-            font-weight: 400;
-            line-height: 1.3;
-            letter-spacing: 0.01em;
-            color: #162B54;
-            white-space: nowrap;
-        }
-    </style>
-    <div class="kp-digital-office-footer">
-        <div class="kp-digital-office-signature">Kurşun&amp;Aygören Dijital Ofis</div>
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
