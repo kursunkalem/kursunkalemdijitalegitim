@@ -194,7 +194,7 @@ PAGE_DESCRIPTIONS: Dict[str, Tuple[str, str]] = {
 }
 
 OGRENCI_RONTGEN_PROFILLERI: Dict[str, Dict[str, Any]] = {
-    "Ege Yılmaz (8-A | 2027 LGS)": {
+    "Elif Öztürk (8-A | 2027 LGS)": {
         "basari_endeksi": "%76.4",
         "basari_delta": "+4.2% (Son 2 hafta)",
         "kritik_konu": "3 Kazanım",
@@ -1398,9 +1398,9 @@ st.markdown(
 # ==============================================================================
 def _default_parent_stats() -> Dict[str, Any]:
     return {
-        "student_name": "Ege Yılmaz",
+        "student_name": "Elif Öztürk",
         "grade": "8. Sınıf (LGS)",
-        "parent_name": "Selin Yılmaz",
+        "parent_name": "Selin Öztürk",
         "parent_phone": "+905551234567",
         "parent_email": "veli@ornek.com",
         "weekly_solved": 340,
@@ -2739,6 +2739,10 @@ if "parent_student_stats" not in st.session_state:
     merged_stats = _default_parent_stats()
     if isinstance(p_stats, dict):
         merged_stats.update(p_stats)
+    if merged_stats.get("student_name") == "Ege Yılmaz":
+        merged_stats["student_name"] = "Elif Öztürk"
+    if merged_stats.get("parent_name") == "Selin Yılmaz":
+        merged_stats["parent_name"] = "Selin Öztürk"
     st.session_state.parent_student_stats = merged_stats
 if "parent_announcements" not in st.session_state:
     p_ann = _persisted.get("parent_announcements")
