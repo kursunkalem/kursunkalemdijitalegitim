@@ -1,12 +1,3 @@
-Ekran görüntüsündeki **Kurşun Kalem Dijital Okul** arayüzünü daha kurumsal, dengeli ve ferah bir **EdTech SaaS** tasarımına kavuşturmak için CSS ve düzen katmanında şu iyileştirmeleri yaptım:
-
-* **Kenar Çubuğu (`sidebar`):** Navigasyon butonlarını tam genişliğe (`width: 100%`) hizaladım, aktif sekme (`Ana Sayfa`) için lacivert kurumsal vurgu ve metin hizalamasını netleştirdim; alt kısımdaki kota kartı ve `Durum: Sistem aktif` alanının sıkışmasını önledim.
-* **Üst Header & Sayfa Başlığı:** Logo, marka başlığı ve rozetlerin dikey eksen dengesini iyileştirdim; `Genel Bakış & Sınav Telemetrisi` bölümünü daha temiz bir tipografi ve hiyerarşiyle oturttum.
-* **Geri Sayım & KPI Metrik Kartları:** `201 GÜN / 02 SAAT / 50 DAKİKA / 17 SANİYE` kutularını ve alttaki 4 metrik bloğunu (`142.500+`, `18.420`, `48`, `2.4 Milyon`) aynı görsel ritimde, ince kenarlıklı ve okunaklı kart yapısına taşıdım.
-
-Aşağıda doğrudan kopyalayıp kullanabileceğin **tek parça `main.py**` kodu yer alıyor:
-
-```python
 import base64
 import html
 import io
