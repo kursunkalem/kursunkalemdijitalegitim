@@ -1,3 +1,12 @@
+Ekran görüntüsündeki **Kurşun Kalem Dijital Okul** arayüzünü daha kurumsal, dengeli ve ferah bir **EdTech SaaS** tasarımına kavuşturmak için CSS ve düzen katmanında şu iyileştirmeleri yaptım:
+
+* **Kenar Çubuğu (`sidebar`):** Navigasyon butonlarını tam genişliğe (`width: 100%`) hizaladım, aktif sekme (`Ana Sayfa`) için lacivert kurumsal vurgu ve metin hizalamasını netleştirdim; alt kısımdaki kota kartı ve `Durum: Sistem aktif` alanının sıkışmasını önledim.
+* **Üst Header & Sayfa Başlığı:** Logo, marka başlığı ve rozetlerin dikey eksen dengesini iyileştirdim; `Genel Bakış & Sınav Telemetrisi` bölümünü daha temiz bir tipografi ve hiyerarşiyle oturttum.
+* **Geri Sayım & KPI Metrik Kartları:** `201 GÜN / 02 SAAT / 50 DAKİKA / 17 SANİYE` kutularını ve alttaki 4 metrik bloğunu (`142.500+`, `18.420`, `48`, `2.4 Milyon`) aynı görsel ritimde, ince kenarlıklı ve okunaklı kart yapısına taşıdım.
+
+Aşağıda doğrudan kopyalayıp kullanabileceğin **tek parça `main.py**` kodu yer alıyor:
+
+```python
 import base64
 import html
 import io
@@ -701,9 +710,9 @@ st.markdown(
             --kp-gold: #C48F1B;
             --kp-gold-soft: #FFFBEB;
             --kp-gold-border: #E8C97A;
-            --kp-bg: #F5F7FA;
+            --kp-bg: #F4F6FA;
             --kp-surface: #FFFFFF;
-            --kp-surface-alt: #F9FBFD;
+            --kp-surface-alt: #F8FAFC;
             --kp-border: #DCE3EC;
             --kp-text: #0F172A;
             --kp-muted: #475569;
@@ -717,7 +726,7 @@ st.markdown(
             background-color: var(--kp-bg);
         }
         [data-testid="stHeader"] {
-            background: rgba(245, 247, 250, 0.94);
+            background: rgba(244, 246, 250, 0.92);
             backdrop-filter: blur(8px);
             border-bottom: 1px solid var(--kp-border);
         }
@@ -726,7 +735,7 @@ st.markdown(
         }
         .block-container {
             padding-top: 1.15rem;
-            padding-bottom: 4rem;
+            padding-bottom: 4.5rem;
             max-width: 1240px;
         }
 
@@ -735,13 +744,16 @@ st.markdown(
             background-color: var(--kp-surface);
             border-right: 1px solid var(--kp-border);
         }
+        section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
+            gap: 0.36rem;
+        }
         .kp-sidebar-brand {
             display: flex;
             align-items: center;
             gap: 0.72rem;
-            padding: 0.2rem 0.2rem 0.9rem 0.2rem;
+            padding: 0.15rem 0.2rem 0.85rem 0.2rem;
             border-bottom: 1px solid var(--kp-border);
-            margin-bottom: 0.85rem;
+            margin-bottom: 0.65rem;
         }
         .kp-sidebar-brand img {
             width: 44px;
@@ -754,41 +766,47 @@ st.markdown(
             flex-shrink: 0;
         }
         .kp-sidebar-brand-title {
-            font-size: 0.92rem;
+            font-size: 0.95rem;
             font-weight: 700;
             color: var(--kp-navy);
             line-height: 1.2;
         }
         .kp-sidebar-brand-sub {
-            font-size: 0.72rem;
+            font-size: 0.73rem;
             color: var(--kp-muted);
             margin-top: 2px;
         }
 
-        div[data-testid="stSidebar"] .stButton > button {
+        div[data-testid="stSidebar"] .stButton {
             width: 100%;
-            text-align: left;
-            justify-content: flex-start;
-            border-radius: 8px;
-            padding: 0.5rem 0.78rem;
-            font-size: 0.84rem;
-            font-weight: 500;
-            border: 1px solid transparent;
-            background: transparent;
-            color: #334155;
-            transition: all 0.14s ease;
+        }
+        div[data-testid="stSidebar"] .stButton > button {
+            width: 100% !important;
+            display: flex !important;
+            text-align: left !important;
+            justify-content: flex-start !important;
+            align-items: center !important;
+            border-radius: 8px !important;
+            padding: 0.52rem 0.85rem !important;
+            font-size: 0.84rem !important;
+            font-weight: 500 !important;
+            border: 1px solid #E2E8F0 !important;
+            background: #FFFFFF !important;
+            color: #1E293B !important;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
+            transition: all 0.14s ease !important;
         }
         div[data-testid="stSidebar"] .stButton > button:hover {
-            background: var(--kp-navy-soft);
-            color: var(--kp-navy);
-            border-color: #CBD5E1;
+            background: var(--kp-navy-soft) !important;
+            color: var(--kp-navy) !important;
+            border-color: #BDD0E8 !important;
         }
         div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
-            background: var(--kp-navy);
-            color: #FFFFFF;
-            border-color: var(--kp-navy);
-            font-weight: 600;
-            box-shadow: 0 2px 6px rgba(22, 43, 84, 0.16);
+            background: var(--kp-navy) !important;
+            color: #FFFFFF !important;
+            border-color: var(--kp-navy) !important;
+            font-weight: 600 !important;
+            box-shadow: 0 2px 6px rgba(22, 43, 84, 0.18) !important;
         }
 
         .kp-sidebar-meta {
@@ -796,11 +814,11 @@ st.markdown(
             border: 1px solid var(--kp-border);
             border-left: 3px solid var(--kp-gold);
             border-radius: 10px;
-            padding: 0.8rem 0.85rem;
-            margin-top: 0.95rem;
-            font-size: 0.78rem;
-            color: #334155;
-            line-height: 1.48;
+            padding: 0.82rem 0.9rem;
+            margin-top: 0.7rem;
+            font-size: 0.79rem;
+            color: #1E293B;
+            line-height: 1.5;
         }
 
         /* Üst Kurumsal Header */
@@ -809,7 +827,7 @@ st.markdown(
             border: 1px solid var(--kp-border);
             border-top: 3px solid var(--kp-navy);
             border-radius: 12px;
-            padding: 1rem 1.35rem;
+            padding: 1.05rem 1.4rem;
             margin-bottom: 1.15rem;
             display: flex;
             align-items: center;
@@ -820,11 +838,11 @@ st.markdown(
         .kp-top-left {
             display: flex;
             align-items: center;
-            gap: 0.9rem;
+            gap: 0.95rem;
         }
         .kp-top-left img {
-            width: 48px;
-            height: 48px;
+            width: 50px;
+            height: 50px;
             object-fit: contain;
             border-radius: 10px;
             border: 1px solid var(--kp-gold-border);
@@ -833,21 +851,22 @@ st.markdown(
             flex-shrink: 0;
         }
         .kp-top-title {
-            font-size: 1.16rem;
+            font-size: 1.24rem;
             font-weight: 800;
             color: var(--kp-navy);
             letter-spacing: -0.02em;
+            line-height: 1.2;
             margin: 0;
         }
         .kp-top-sub {
-            font-size: 0.82rem;
+            font-size: 0.83rem;
             color: #334155;
-            margin: 0.14rem 0 0 0;
+            margin: 0.2rem 0 0 0;
         }
         .kp-header-badges {
             display: flex;
             align-items: center;
-            gap: 0.45rem;
+            gap: 0.5rem;
             flex-wrap: wrap;
         }
         .kp-status-chip {
@@ -856,7 +875,7 @@ st.markdown(
             color: var(--kp-navy);
             background: var(--kp-navy-soft);
             border: 1px solid #C6D4E8;
-            padding: 0.3rem 0.72rem;
+            padding: 0.32rem 0.76rem;
             border-radius: 999px;
             white-space: nowrap;
         }
@@ -866,7 +885,7 @@ st.markdown(
             color: #7D5606;
             background: var(--kp-gold-soft);
             border: 1px solid var(--kp-gold-border);
-            padding: 0.3rem 0.72rem;
+            padding: 0.32rem 0.76rem;
             border-radius: 999px;
             white-space: nowrap;
         }
@@ -877,21 +896,21 @@ st.markdown(
             align-items: baseline;
             justify-content: space-between;
             gap: 1rem;
-            padding: 0.15rem 0 0.75rem 0;
-            margin-bottom: 0.85rem;
+            padding: 0.1rem 0 0.78rem 0;
+            margin-bottom: 1rem;
             border-bottom: 1px solid var(--kp-border);
         }
         .kp-page-strip-title {
-            font-size: 1.25rem;
+            font-size: 1.32rem;
             font-weight: 700;
             color: var(--kp-navy);
             letter-spacing: -0.015em;
             margin: 0;
         }
         .kp-page-strip-desc {
-            font-size: 0.83rem;
+            font-size: 0.84rem;
             color: var(--kp-muted);
-            margin: 0.15rem 0 0 0;
+            margin: 0.2rem 0 0 0;
         }
 
         /* Sekmeler (stTabs) Kurumsal Renkleri */
@@ -906,6 +925,26 @@ st.markdown(
         div[data-baseweb="tab-highlight"] {
             background-color: var(--kp-navy) !important;
             height: 2.5px !important;
+        }
+
+        /* Metrik Kartları (st.metric) */
+        div[data-testid="stMetric"] {
+            background: var(--kp-surface);
+            border: 1px solid var(--kp-border);
+            border-radius: 12px;
+            padding: 0.95rem 1.1rem;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+        }
+        div[data-testid="stMetric"] [data-testid="stMetricLabel"] {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #475569;
+        }
+        div[data-testid="stMetric"] [data-testid="stMetricValue"] {
+            font-size: 1.55rem;
+            font-weight: 800;
+            color: var(--kp-navy);
+            letter-spacing: -0.02em;
         }
 
         /* Kartlar & Paneller */
@@ -981,22 +1020,28 @@ st.markdown(
         }
 
         .kp-metric-box {
-            padding: 1rem;
+            padding: 1.1rem 1rem;
             text-align: center;
             border-bottom: 3px solid var(--kp-navy);
+            transition: transform 0.14s ease, border-color 0.14s ease;
+        }
+        .kp-metric-box:hover {
+            transform: translateY(-1px);
+            border-bottom-color: var(--kp-gold);
         }
         .kp-metric-num {
-            font-size: 1.52rem;
+            font-size: 1.65rem;
             font-weight: 800;
             color: var(--kp-navy);
-            line-height: 1.2;
+            line-height: 1.15;
+            letter-spacing: -0.02em;
         }
         .kp-metric-lbl {
-            font-size: 0.73rem;
+            font-size: 0.72rem;
             color: #64748B;
-            margin-top: 0.25rem;
+            margin-top: 0.32rem;
             text-transform: uppercase;
-            letter-spacing: 0.06em;
+            letter-spacing: 0.08em;
             font-weight: 700;
         }
 
@@ -2470,7 +2515,7 @@ with st.sidebar:
     for p_name in PAGES:
         is_current = st.session_state.active_page == p_name
         btn_type = "primary" if is_current else "secondary"
-        if st.button(p_name, key=f"nav_{p_name}", type=btn_type):
+        if st.button(p_name, key=f"nav_{p_name}", type=btn_type, use_container_width=True):
             st.session_state.active_page = p_name
             st.rerun()
 
@@ -2488,7 +2533,7 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
-    st.markdown("<div style='margin-top:0.65rem;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-top:0.55rem;'></div>", unsafe_allow_html=True)
     if api_key_ready:
         st.caption("Durum: Sistem aktif")
     else:
@@ -2533,7 +2578,7 @@ render_page_strip(current_page)
 # 1. ANA SAYFA
 # ==============================================================================
 if current_page == "Ana Sayfa":
-    head_col, toggle_col = st.columns([3, 1])
+    head_col, toggle_col = st.columns([4, 1], vertical_alignment="center")
     with head_col:
         st.markdown("#### 2027 LGS Geri Sayım (13 Haziran 2027)")
     with toggle_col:
@@ -3412,3 +3457,5 @@ elif current_page == "Paketler & Abonelik Vitrini":
         monthly_price=active_bag_summary["monthly_price"],
         summary=active_bag_summary,
     )
+
+```
