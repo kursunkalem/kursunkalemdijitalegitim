@@ -1598,7 +1598,7 @@ def initialize_iyzico_checkout(
         "enabledInstallments": [1, 2, 3, 6, 9, 12],
         "buyer": {
             "id": "BY_KP_01",
-            "name": buyer_name.strip() or "Kürşat Han",
+            "name": buyer_name.strip() or "Sinan Gürbüz",
             "surname": buyer_surname.strip() or "Kurşun",
             "gsmNumber": buyer_phone.strip() or "+905350000000",
             "email": buyer_email.strip() or "iletisim@kursunkalemdijitalokul.com.tr",
@@ -1609,13 +1609,13 @@ def initialize_iyzico_checkout(
             "country": "Turkey",
         },
         "shippingAddress": {
-            "contactName": f"{buyer_name.strip() or 'Kürşat Han'} {buyer_surname.strip() or 'Kurşun'}",
+            "contactName": f"{buyer_name.strip() or 'Sinan Gürbüz'} {buyer_surname.strip() or 'Kurşun'}",
             "city": "Istanbul",
             "country": "Turkey",
             "address": "İstanbul, Türkiye",
         },
         "billingAddress": {
-            "contactName": f"{buyer_name.strip() or 'Kürşat Han'} {buyer_surname.strip() or 'Kurşun'}",
+            "contactName": f"{buyer_name.strip() or 'Sinan Gürbüz'} {buyer_surname.strip() or 'Kurşun'}",
             "city": "Istanbul",
             "country": "Turkey",
             "address": "İstanbul, Türkiye",
@@ -2370,7 +2370,7 @@ def render_iyzico_simulator(
     st.markdown("<div style='margin:0.65rem 0;'></div>", unsafe_allow_html=True)
     b_col1, b_col2, b_col3 = st.columns(3)
     with b_col1:
-        buyer_name = st.text_input("Ad", value="Kürşat Han", key=f"iyz_name_{display_label}")
+        buyer_name = st.text_input("Ad", value="Sinan Gürbüz", key=f"iyz_name_{display_label}")
     with b_col2:
         buyer_surname = st.text_input("Soyad", value="Kurşun", key=f"iyz_surname_{display_label}")
     with b_col3:
