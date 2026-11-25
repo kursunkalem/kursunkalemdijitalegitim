@@ -869,16 +869,16 @@ LOGO_PNG_BYTES = get_embedded_logo_png_bytes()
 st.markdown(
     """
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
 
         :root {
-            --kp-navy: #162B54;
-            --kp-navy-hover: #1E3A6E;
+            --kp-navy: #132852;
+            --kp-navy-hover: #1D3B75;
             --kp-navy-soft: #EBF0F8;
-            --kp-gold: #C48F1B;
+            --kp-gold: #C8921E;
             --kp-gold-soft: #FFFBEB;
             --kp-gold-border: #E8C97A;
-            --kp-bg: #F4F6FA;
+            --kp-bg: #F3F6FA;
             --kp-surface: #FFFFFF;
             --kp-surface-alt: #F8FAFC;
             --kp-border: #DCE3EC;
@@ -890,11 +890,14 @@ st.markdown(
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             color: var(--kp-text);
         }
+        h1, h2, h3, .kp-top-title, .kp-page-strip-title, .kp-pkg-title, .kp-mod-title {
+            font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+        }
         .stApp {
-            background-color: var(--kp-bg);
+            background: linear-gradient(180deg, #F5F7FB 0%, #EEF2F7 100%);
         }
         [data-testid="stHeader"] {
-            background: rgba(244, 246, 250, 0.92);
+            background: rgba(245, 247, 251, 0.92);
             backdrop-filter: blur(8px);
             border-bottom: 1px solid var(--kp-border);
         }
@@ -974,7 +977,7 @@ st.markdown(
             color: #FFFFFF !important;
             border-color: var(--kp-navy) !important;
             font-weight: 600 !important;
-            box-shadow: 0 2px 6px rgba(22, 43, 84, 0.18) !important;
+            box-shadow: 0 2px 6px rgba(19, 40, 82, 0.18) !important;
         }
 
         .kp-sidebar-meta {
@@ -991,17 +994,17 @@ st.markdown(
 
         /* Üst Kurumsal Header */
         .kp-top-header {
-            background: var(--kp-surface);
+            background: linear-gradient(120deg, #FFFFFF 0%, #F8FAFC 65%, #FFFDF7 100%);
             border: 1px solid var(--kp-border);
             border-top: 3px solid var(--kp-navy);
-            border-radius: 12px;
-            padding: 1.05rem 1.4rem;
-            margin-bottom: 1.15rem;
+            border-radius: 14px;
+            padding: 1.1rem 1.45rem;
+            margin-bottom: 1.1rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
             gap: 1rem;
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04);
         }
         .kp-top-left {
             display: flex;
@@ -1009,17 +1012,17 @@ st.markdown(
             gap: 0.95rem;
         }
         .kp-top-left img {
-            width: 50px;
-            height: 50px;
+            width: 52px;
+            height: 52px;
             object-fit: contain;
-            border-radius: 10px;
+            border-radius: 11px;
             border: 1px solid var(--kp-gold-border);
             padding: 2px;
             background: #FFFFFF;
             flex-shrink: 0;
         }
         .kp-top-title {
-            font-size: 1.24rem;
+            font-size: 1.26rem;
             font-weight: 800;
             color: var(--kp-navy);
             letter-spacing: -0.02em;
@@ -1081,6 +1084,36 @@ st.markdown(
             margin: 0.2rem 0 0 0;
         }
 
+        /* Değer Önerisi / Bilgi Şeridi */
+        .kp-value-strip {
+            background: linear-gradient(90deg, #132852 0%, #1E3A6E 70%, #27498A 100%);
+            color: #FFFFFF;
+            border-radius: 12px;
+            padding: 0.85rem 1.2rem;
+            margin-bottom: 1.15rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+            box-shadow: 0 6px 18px rgba(19, 40, 82, 0.14);
+        }
+        .kp-value-strip-item {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            font-size: 0.83rem;
+            font-weight: 500;
+            color: #F8FAFC;
+        }
+        .kp-value-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #F6D365;
+            display: inline-block;
+        }
+
         /* Sekmeler (stTabs) Kurumsal Renkleri */
         button[data-baseweb="tab"] {
             color: #475569 !important;
@@ -1101,7 +1134,7 @@ st.markdown(
             border: 1px solid var(--kp-border);
             border-radius: 12px;
             padding: 0.95rem 1.1rem;
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
         }
         div[data-testid="stMetric"] [data-testid="stMetricLabel"] {
             font-size: 0.78rem;
@@ -1119,11 +1152,11 @@ st.markdown(
         .kp-card, .kp-bag-shell, .kp-pkg-card, .kp-pay-box, .kp-kpi-card, .kp-metric-box, .kp-studio-banner {
             background: var(--kp-surface);
             border: 1px solid var(--kp-border);
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+            border-radius: 14px;
+            box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
         }
         .kp-card, .kp-bag-shell, .kp-pkg-card, .kp-pay-box, .kp-studio-banner {
-            padding: 1.15rem 1.25rem;
+            padding: 1.2rem 1.3rem;
         }
         .kp-card {
             margin-bottom: 0.65rem;
@@ -1134,7 +1167,7 @@ st.markdown(
             border-radius: 12px 12px 6px 6px;
             padding: 1.15rem 1.25rem 1rem 1.25rem;
             min-height: 126px;
-            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
         }
         .kp-mod-title {
             font-weight: 700;
@@ -1215,47 +1248,69 @@ st.markdown(
 
         /* Çanta Görseli & Satırları */
         .kp-bag-shell {
-            margin-bottom: 1.2rem;
+            margin-bottom: 1.25rem;
+            border-top: 3px solid var(--kp-gold);
         }
         .kp-bag-visual {
-            background: var(--kp-surface-alt);
-            border: 1px solid var(--kp-border);
-            border-radius: 12px;
-            padding: 0.95rem;
+            background: linear-gradient(160deg, #132852 0%, #1E3A6E 100%);
+            border: 1px solid #1E3A6E;
+            border-radius: 14px;
+            padding: 1.05rem 0.9rem;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            color: #FFFFFF;
+            box-shadow: 0 8px 20px rgba(19, 40, 82, 0.14);
         }
         .kp-bag-visual img {
-            width: 112px;
-            height: 130px;
+            width: 106px;
+            height: 122px;
             object-fit: contain;
+            filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.25));
         }
         .kp-bag-count-pill {
-            margin-top: 0.45rem;
-            background: var(--kp-navy);
-            color: #FFFFFF;
+            margin-top: 0.55rem;
+            background: rgba(255, 251, 235, 0.16);
+            color: #FDE68A;
+            border: 1px solid rgba(232, 201, 122, 0.45);
             font-size: 0.75rem;
-            font-weight: 600;
-            padding: 0.22rem 0.7rem;
+            font-weight: 700;
+            padding: 0.22rem 0.75rem;
             border-radius: 999px;
         }
         .kp-bag-item-chip {
             background: var(--kp-surface-alt);
             border: 1px solid var(--kp-border);
+            border-left: 3px solid var(--kp-navy);
             border-radius: 10px;
-            padding: 0.6rem 0.85rem;
-            margin-bottom: 0.45rem;
+            padding: 0.65rem 0.9rem;
+            margin-bottom: 0.5rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             color: var(--kp-text);
+            transition: border-color 0.14s ease, background-color 0.14s ease;
+        }
+        .kp-bag-item-chip:hover {
+            border-left-color: var(--kp-gold);
+            background: #FFFFFF;
         }
 
         /* Paket Kartları */
         .kp-pkg-card {
             margin-bottom: 0.65rem;
+            transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+        }
+        .kp-pkg-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(19, 40, 82, 0.08);
+            border-color: #C5D3E6;
+        }
+        .kp-pkg-featured {
+            border: 1.5px solid #C8921E !important;
+            background: linear-gradient(180deg, #FFFDF7 0%, #FFFFFF 35%) !important;
+            box-shadow: 0 10px 26px rgba(200, 146, 30, 0.12) !important;
         }
         .kp-pkg-top {
             display: flex;
@@ -1351,7 +1406,7 @@ st.markdown(
         div[data-testid="stNumberInput"] input:focus,
         div[data-testid="stTextArea"] textarea:focus {
             border-color: var(--kp-navy) !important;
-            box-shadow: 0 0 0 2px rgba(22, 43, 84, 0.12) !important;
+            box-shadow: 0 0 0 2px rgba(19, 40, 82, 0.12) !important;
         }
         div[data-testid="stSelectbox"] > div > div {
             background-color: #FFFFFF !important;
@@ -2036,7 +2091,7 @@ def build_test_docx(
     title_run = title_p.add_run(f"{institution.upper()} — DEĞERLENDİRME TESTİ")
     title_run.bold = True
     title_run.font.size = Pt(14)
-    title_run.font.color.rgb = RGBColor(22, 43, 84)
+    title_run.font.color.rgb = RGBColor(19, 40, 82)
 
     sub_p = doc.add_paragraph()
     sub_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -2067,7 +2122,7 @@ def build_test_docx(
         run.font.size = Pt(10.5)
         if re.match(r"^(Soru\s*\d+|Cevap\s*Anahtarı|Çözüm)", cleaned, re.IGNORECASE):
             run.bold = True
-            run.font.color.rgb = RGBColor(22, 43, 84)
+            run.font.color.rgb = RGBColor(19, 40, 82)
 
     footer_p = doc.add_paragraph()
     footer_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -2098,7 +2153,7 @@ def build_coach_docx(title_meta: str, plan_text: str) -> bytes:
     r = h.add_run(f"{BRAND_NAME.upper()} — DİJİMENTOR ÇALIŞMA PLANI")
     r.bold = True
     r.font.size = Pt(14)
-    r.font.color.rgb = RGBColor(22, 43, 84)
+    r.font.color.rgb = RGBColor(19, 40, 82)
 
     m = doc.add_paragraph()
     mr = m.add_run(f"{title_meta}\nTarih: {datetime.now().strftime('%d.%m.%Y')}")
@@ -2118,7 +2173,7 @@ def build_coach_docx(title_meta: str, plan_text: str) -> bytes:
         run.font.size = Pt(10.5)
         if cleaned.startswith("#") or cleaned.endswith(":"):
             run.bold = True
-            run.font.color.rgb = RGBColor(22, 43, 84)
+            run.font.color.rgb = RGBColor(19, 40, 82)
 
     buffer = io.BytesIO()
     doc.save(buffer)
@@ -2149,7 +2204,7 @@ def build_commercial_brief_docx(
     r = h.add_run(f"{BRAND_NAME.upper()} — OKUL SIRT ÇANTASI & ABONELİK ÖZETİ")
     r.bold = True
     r.font.size = Pt(14)
-    r.font.color.rgb = RGBColor(22, 43, 84)
+    r.font.color.rgb = RGBColor(19, 40, 82)
 
     sub = doc.add_paragraph()
     sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -2187,7 +2242,7 @@ def build_commercial_brief_docx(
         run.font.size = Pt(10.5)
         if line.startswith(("Çanta Durumu", "Çantadaki Paketler", "Ek / Kurumsal Notlar")):
             run.bold = True
-            run.font.color.rgb = RGBColor(22, 43, 84)
+            run.font.color.rgb = RGBColor(19, 40, 82)
 
     buf = io.BytesIO()
     doc.save(buf)
@@ -2204,7 +2259,7 @@ def render_school_backpack_panel() -> Dict[str, Any]:
     h_col, clr_col = st.columns([4, 1])
     with h_col:
         st.markdown("#### Okul Sırt Çantası")
-        st.caption("Seçili paketler, adet kontrolleri ve aylık toplam kota özeti.")
+        st.caption("Seçili paketler, adet kontrolleri, kota çubukları ve aylık toplam özet.")
     with clr_col:
         if entries:
             st.button(
@@ -2230,7 +2285,7 @@ def render_school_backpack_panel() -> Dict[str, Any]:
 
         if not chips_html:
             chips_html = (
-                '<div style="color:#64748B;font-size:0.78rem;margin-top:0.35rem;text-align:center;">'
+                '<div style="color:#E2E8F0;font-size:0.78rem;margin-top:0.35rem;text-align:center;">'
                 'Çanta boş</div>'
             )
 
@@ -2269,7 +2324,7 @@ def render_school_backpack_panel() -> Dict[str, Any]:
                                     Adet: <b>{qty}</b> • Soru: <b>{entry['line_quota']:,}/ay</b> • Dijimentor: <b>{entry['line_coach']}/ay</b>
                                 </div>
                             </div>
-                            <div style="font-weight:700;font-size:0.92rem;color:#162B54;white-space:nowrap;">
+                            <div style="font-weight:700;font-size:0.92rem;color:#132852;white-space:nowrap;">
                                 {entry['line_price']:,} ₺/ay
                             </div>
                         </div>
@@ -2306,6 +2361,18 @@ def render_school_backpack_panel() -> Dict[str, Any]:
             m1.metric("Aylık Toplam", f"{summary['monthly_price']:,} ₺".replace(",", "."))
             m2.metric("Aylık Soru Kotası", f"{summary['monthly_quota']:,}".replace(",", "."))
             m3.metric("Dijimentor Plan", f"{summary['coach_quota']} / Ay")
+
+            rem_q = int(st.session_state.get("remaining_question_quota", summary["monthly_quota"]))
+            rem_c = int(st.session_state.get("remaining_coach_quota", summary["coach_quota"]))
+            q_pct = min(1.0, max(0.0, rem_q / max(1, int(summary["monthly_quota"]))))
+            c_pct = min(1.0, max(0.0, rem_c / max(1, int(summary["coach_quota"]))))
+
+            st.markdown("<div style='margin-top:0.55rem;'></div>", unsafe_allow_html=True)
+            pb1, pb2 = st.columns(2)
+            with pb1:
+                st.progress(q_pct, text=f"Kullanılabilir Soru Kotası: {rem_q:,} / {summary['monthly_quota']:,}".replace(",", "."))
+            with pb2:
+                st.progress(c_pct, text=f"Kullanılabilir Dijimentor: {rem_c} / {summary['coach_quota']} Plan")
 
     st.markdown("</div>", unsafe_allow_html=True)
     return summary
@@ -2448,7 +2515,7 @@ def render_iyzico_simulator(
         if pay_url:
             st.markdown(
                 f'<div style="margin-top:0.75rem;"><a href="{html.escape(str(pay_url))}" target="_blank">'
-                f'<button style="background:#162B54;color:#FFFFFF;border:none;border-radius:8px;'
+                f'<button style="background:#132852;color:#FFFFFF;border:none;border-radius:8px;'
                 f'padding:0.55rem 1.15rem;font-weight:600;cursor:pointer;">'
                 f'Güvenli iyzico Ödeme Sayfasını Aç</button></a></div>',
                 unsafe_allow_html=True,
@@ -2512,13 +2579,13 @@ def render_student_xray_panel() -> None:
         st.dataframe(prof["kazanimlar"], use_container_width=True, hide_index=True)
     with c_col:
         st.markdown("#### Hata Kök Neden Dağılımı (%)")
-        st.bar_chart(prof["hatalar"], color="#162B54", height=225)
+        st.bar_chart(prof["hatalar"], color="#132852", height=225)
 
     st.markdown("#### Dijimentor Otomatik Telafi Reçetesi")
     st.markdown(
         f"""
         <div class="kp-card">
-            <div style="font-weight:700;color:#162B54;font-size:0.92rem;">
+            <div style="font-weight:700;color:#132852;font-size:0.92rem;">
                 {html.escape(sec_student)} — {html.escape(sec_scope)}
             </div>
             <div style="color:#334155;font-size:0.85rem;margin-top:0.4rem;line-height:1.5;">
@@ -2783,7 +2850,7 @@ with st.sidebar:
     st.markdown(
         f"""
         <div class="kp-sidebar-meta">
-            <div style="font-weight:700;color:#162B54;margin-bottom:0.2rem;">Aktif Kota &amp; Çanta</div>
+            <div style="font-weight:700;color:#132852;margin-bottom:0.2rem;">Aktif Kota &amp; Çanta</div>
             <div>{bag_summary_global['total_count']} Paket • {bag_summary_global['monthly_price']:,} ₺/ay</div>
             <div style="color:#475569;margin-top:0.25rem;">
                 Soru: <b>{int(st.session_state.remaining_question_quota):,}</b> / {bag_summary_global['monthly_quota']:,}<br>
@@ -2921,13 +2988,13 @@ if current_page == "Ana Sayfa":
             "Cmt": 25900,
             "Paz": 24800,
         }
-        st.area_chart(telemetry_data, color="#162B54", height=210)
+        st.area_chart(telemetry_data, color="#132852", height=210)
     with ana_r:
         st.markdown("#### Son Aktiviteler")
         for item in st.session_state.get("activity_log", [])[:5]:
             st.markdown(
                 f"""
-                <div style="background:#FFFFFF;border:1px solid #DCE3EC;border-left:3px solid #C48F1B;border-radius:10px;padding:0.58rem 0.8rem;margin-bottom:0.45rem;">
+                <div style="background:#FFFFFF;border:1px solid #DCE3EC;border-left:3px solid #C8921E;border-radius:10px;padding:0.58rem 0.8rem;margin-bottom:0.45rem;">
                     <div style="font-size:0.72rem;font-weight:600;color:#64748B;">{html.escape(item['time'])} • {html.escape(item['module'])}</div>
                     <div style="font-size:0.83rem;color:#0F172A;margin-top:0.12rem;">{html.escape(item['summary'])}</div>
                 </div>
@@ -3386,8 +3453,8 @@ elif current_page == "Dijimentor":
                 Önerilen Haftalık Kapasite Dağılımı ({weekly_hours} Saat)
             </div>
             <div class="kp-dist-bar">
-                <div style="width:45%;background:#162B54;"></div>
-                <div style="width:30%;background:#C48F1B;"></div>
+                <div style="width:45%;background:#132852;"></div>
+                <div style="width:30%;background:#C8921E;"></div>
                 <div style="width:25%;background:#94A3B8;"></div>
             </div>
             <div class="kp-dist-legend">
@@ -3503,14 +3570,14 @@ elif current_page == "Veli Takip Paneli":
         st.markdown("#### Haftalık Doğruluk İvmesi (%)")
         st.area_chart(
             {"1. Hafta": 71, "2. Hafta": 74, "3. Hafta": 77, "4. Hafta": 81},
-            color="#162B54",
+            color="#132852",
             height=190,
         )
     with g_col2:
         st.markdown("#### Ders Bazlı Başarı Oranı (%)")
         st.bar_chart(
             {"Türkçe": 84, "Matematik": 72, "Fen": 82, "Sosyal": 86, "İngilizce": 79},
-            color="#162B54",
+            color="#132852",
             height=190,
         )
 
@@ -3643,13 +3710,24 @@ elif current_page == "B2B Lisans & Kurum":
         with zc1:
             st.dataframe(zumre_rows, use_container_width=True, hide_index=True)
         with zc2:
-            st.bar_chart(chart_map, color="#162B54", height=225)
+            st.bar_chart(chart_map, color="#132852", height=225)
 
 # ==============================================================================
 # 8. PAKETLER & ABONELİK VİTRİNİ
 # ==============================================================================
 elif current_page == "Paketler & Abonelik Vitrini":
     total_pkg_count = len(SUBSCRIPTION_TIERS)
+
+    st.markdown(
+        """
+        <div class="kp-value-strip">
+            <div class="kp-value-strip-item"><span class="kp-value-dot"></span> Türkiye Yüzyılı Maarif Modeli Uyumlu Soru Havuzu</div>
+            <div class="kp-value-strip-item"><span class="kp-value-dot"></span> Dijimentor Haftalık Akıllı Çalışma Planı</div>
+            <div class="kp-value-strip-item"><span class="kp-value-dot"></span> iyzico Güvencesiyle 12 Taksite Varan Ödeme</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
     current_bag = get_bag_items()
     active_bag_summary = render_school_backpack_panel()
@@ -3674,10 +3752,12 @@ elif current_page == "Paketler & Abonelik Vitrini":
             with cols[idx]:
                 in_bag_qty = current_bag.get(tier["id"], 0)
                 bag_tag = f" • Çantada: {in_bag_qty}" if in_bag_qty > 0 else ""
+                is_featured = tier["badge"] in ("Popüler", "VIP", "Kampüs")
+                card_cls = "kp-pkg-card kp-pkg-featured" if is_featured else "kp-pkg-card"
                 feats_li = "".join([f"<li>• {html.escape(feat)}</li>" for feat in tier["features"]])
                 st.markdown(
                     f"""
-                    <div class="kp-pkg-card">
+                    <div class="{card_cls}">
                         <div class="kp-pkg-top">
                             <span class="kp-pkg-seg">{html.escape(tier["segment"])}</span>
                             <span class="kp-pkg-badge">{html.escape(tier["badge"])}{html.escape(bag_tag)}</span>
