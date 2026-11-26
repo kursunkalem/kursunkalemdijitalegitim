@@ -90,29 +90,69 @@ SCHOOL_BACKPACK_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26
   <rect x="72" y="242" width="116" height="18" rx="9" fill="#090d16"/>
 </svg>"""
 
-HERO_STUDENT_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 340" width="420" height="340">
+HERO_SHOWCASE_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 330" width="440" height="330">
   <defs>
-    <linearGradient id="blobGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#3B82F6"/>
-      <stop offset="100%" stop-color="#1D4ED8"/>
+    <linearGradient id="bgCardGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#EEF2FF"/>
+      <stop offset="100%" stop-color="#E0E7FF"/>
     </linearGradient>
-    <linearGradient id="sweaterGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#F59E0B"/>
+    <linearGradient id="navyBanner" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1E2952"/>
+      <stop offset="100%" stop-color="#2563EB"/>
+    </linearGradient>
+    <linearGradient id="goldBadgeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FACC15"/>
       <stop offset="100%" stop-color="#D97706"/>
     </linearGradient>
+    <linearGradient id="pencilWoodGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FDE047"/>
+      <stop offset="100%" stop-color="#EAB308"/>
+    </linearGradient>
   </defs>
-  <path d="M 110 295 C 58 265, 58 145, 118 96 C 175 48, 285 45, 335 98 C 385 152, 378 265, 315 298 C 255 328, 155 322, 110 295 Z" fill="url(#blobGrad)" opacity="0.92"/>
-  <circle cx="215" cy="128" r="38" fill="#FDE68A"/>
-  <path d="M 176 122 C 176 84, 254 84, 254 122 C 254 106, 236 96, 215 96 C 194 96, 176 106, 176 122 Z" fill="#1E293B"/>
-  <circle cx="202" cy="128" r="3.5" fill="#0F172A"/>
-  <circle cx="228" cy="128" r="3.5" fill="#0F172A"/>
-  <path d="M 203 142 Q 215 154 227 142" fill="none" stroke="#9A3412" stroke-width="3" stroke-linecap="round"/>
-  <path d="M 155 295 C 155 205, 175 170, 215 170 C 255 170, 275 205, 275 295 Z" fill="url(#sweaterGrad)"/>
-  <rect x="234" y="185" width="44" height="72" rx="8" fill="#FFFFFF" stroke="#0F172A" stroke-width="2.5"/>
-  <line x1="242" y1="200" x2="270" y2="200" stroke="#3B82F6" stroke-width="3" stroke-linecap="round"/>
-  <line x1="242" y1="212" x2="266" y2="212" stroke="#94A3B8" stroke-width="3" stroke-linecap="round"/>
-  <line x1="242" y1="224" x2="262" y2="224" stroke="#94A3B8" stroke-width="3" stroke-linecap="round"/>
-  <path d="M 142 122 L 164 114 M 136 140 L 160 138 M 148 104 L 168 100" stroke="#FACC15" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- Arka Kurumsal Vitrin Kartı -->
+  <rect x="22" y="18" width="396" height="292" rx="24" fill="url(#bgCardGrad)" stroke="#C7D2FE" stroke-width="1.5"/>
+
+  <!-- Sol Ana Panel: Akademik Ölçme & Kazanım Kartı -->
+  <rect x="44" y="42" width="214" height="244" rx="18" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5"/>
+  <rect x="44" y="42" width="214" height="58" rx="18" fill="url(#navyBanner)"/>
+  <rect x="44" y="76" width="214" height="24" fill="url(#navyBanner)"/>
+  <text x="62" y="68" font-family="Inter, Arial, sans-serif" font-size="10.5" font-weight="800" fill="#FACC15" letter-spacing="1.2">KURŞUN KALEM • 2028</text>
+  <text x="62" y="87" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="800" fill="#FFFFFF">Ölçme &amp; Redaksiyon Ofisi</text>
+
+  <!-- Kazanım ve Çeldirici Metrik Satırları -->
+  <rect x="60" y="114" width="182" height="42" rx="10" fill="#F8FAFC" stroke="#E2E8F0"/>
+  <circle cx="79" cy="135" r="8" fill="#2563EB"/>
+  <text x="94" y="132" font-family="Inter, Arial, sans-serif" font-size="10.5" font-weight="700" fill="#1E2952">Maarif Kazanım Uyumu</text>
+  <text x="94" y="146" font-family="Inter, Arial, sans-serif" font-size="9.5" font-weight="600" fill="#64748B">LGS &amp; YKS 2028 Müfredatı</text>
+
+  <rect x="60" y="164" width="182" height="42" rx="10" fill="#F8FAFC" stroke="#E2E8F0"/>
+  <circle cx="79" cy="185" r="8" fill="#4F46E5"/>
+  <text x="94" y="182" font-family="Inter, Arial, sans-serif" font-size="10.5" font-weight="700" fill="#1E2952">Çeldirici &amp; Kök Denetimi</text>
+  <text x="94" y="196" font-family="Inter, Arial, sans-serif" font-size="9.5" font-weight="600" fill="#64748B">Çift Katmanlı Editör Kontrolü</text>
+
+  <rect x="60" y="214" width="182" height="52" rx="10" fill="#EFF6FF" stroke="#BFDBFE"/>
+  <text x="74" y="233" font-family="Inter, Arial, sans-serif" font-size="9.5" font-weight="700" fill="#1D4ED8">HEDEF NET &amp; İSABET İVMESİ</text>
+  <rect x="74" y="243" width="152" height="8" rx="4" fill="#DBEAFE"/>
+  <rect x="74" y="243" width="124" height="8" rx="4" fill="#2563EB"/>
+
+  <!-- Sağ Üst: Akademik Başarı Rozeti -->
+  <rect x="276" y="42" width="120" height="114" rx="18" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5"/>
+  <circle cx="336" cy="82" r="22" fill="url(#goldBadgeGrad)"/>
+  <polygon points="336,68 340,77 350,78 342,85 345,95 336,90 327,95 330,85 322,78 332,77" fill="#1E2952"/>
+  <text x="336" y="121" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="11" font-weight="800" fill="#1E2952">2028 HEDEF</text>
+  <text x="336" y="136" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="9.5" font-weight="600" fill="#64748B">Dijimentor &amp; Röntgen</text>
+
+  <!-- Sağ Alt: Kurşun Kalem & Ofis Çantası Vurgusu -->
+  <rect x="276" y="170" width="120" height="116" rx="18" fill="#1E2952"/>
+  <g transform="translate(336, 214) rotate(-32)">
+    <rect x="-8" y="-34" width="16" height="52" rx="2" fill="url(#pencilWoodGrad)"/>
+    <rect x="-8" y="-38" width="16" height="6" rx="1.5" fill="#F43F5E"/>
+    <polygon points="-8,18 8,18 0,34" fill="#FDE68A"/>
+    <polygon points="-2.5,28 2.5,28 0,34" fill="#0F172A"/>
+  </g>
+  <text x="336" y="266" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="10" font-weight="800" fill="#FACC15" letter-spacing="0.8">KURŞUN KALEM</text>
+  <text x="336" y="279" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="8.5" font-weight="600" fill="#E2E8F0">Dijital Ofis Vitrini</text>
 </svg>"""
 
 
@@ -211,6 +251,7 @@ HERO_PILL_CHIPS: List[Dict[str, str]] = [
 KADEME_VITRIN_KARTLARI: List[Dict[str, str]] = [
     {
         "tag": "5–7. SINIF • 2028",
+        "cta": "5–7. Sınıf • Aç",
         "title": "Ortaokul & Maarif Temeli",
         "desc": "Kazanım odaklı sorular, okuma-anlama hızı ve düzenli çalışma alışkanlığı.",
         "accent": "#2563EB",
@@ -220,6 +261,7 @@ KADEME_VITRIN_KARTLARI: List[Dict[str, str]] = [
     },
     {
         "tag": "2028 LGS",
+        "cta": "2028 LGS • Aç",
         "title": "8. Sınıf LGS Hazırlık",
         "desc": "Sözel-sayısal muhakeme, çeldirici analizi ve net yükselten deneme akışı.",
         "accent": "#4F46E5",
@@ -229,6 +271,7 @@ KADEME_VITRIN_KARTLARI: List[Dict[str, str]] = [
     },
     {
         "tag": "2028 YKS",
+        "cta": "2028 YKS • Aç",
         "title": "TYT & AYT Lise Kampı",
         "desc": "Süre yönetimi, paragraf-analitik denge ve derece hedefleyen mentorluk.",
         "accent": "#7C3AED",
@@ -238,6 +281,7 @@ KADEME_VITRIN_KARTLARI: List[Dict[str, str]] = [
     },
     {
         "tag": "VELİ & KURUM • 2028",
+        "cta": "Veli & Kurum • Aç",
         "title": "Veli Takip & B2B Ofis",
         "desc": "Haftalık çalışma-soru özeti, hazır veli mesajları ve zümre kota yönetimi.",
         "accent": "#0284C7",
@@ -861,7 +905,7 @@ PARENT_MESSAGE_TOPICS: Dict[str, Dict[str, Any]] = {
 
 LOGO_DATA_URI = svg_to_data_uri(EMBEDDED_LOGO_SVG)
 BACKPACK_DATA_URI = svg_to_data_uri(SCHOOL_BACKPACK_SVG)
-HERO_STUDENT_URI = svg_to_data_uri(HERO_STUDENT_SVG)
+HERO_SHOWCASE_URI = svg_to_data_uri(HERO_SHOWCASE_SVG)
 LOGO_PNG_BYTES = get_embedded_logo_png_bytes()
 
 # ==============================================================================
@@ -2978,10 +3022,10 @@ if current_page != "Ana Sayfa":
     render_page_strip(current_page)
 
 # ==============================================================================
-# 1. ANA SAYFA (2028 KUNDUZ VİTRİN DÜZENİ + KADEME & ÖNCELİK AKIŞI)
+# 1. ANA SAYFA (2028 KUNDUZ VİTRİN DÜZENİ + KURŞUN KALEM & ROZET VİTRİNİ)
 # ==============================================================================
 if current_page == "Ana Sayfa":
-    hero_l, hero_r = st.columns([1.25, 1.0], vertical_alignment="center")
+    hero_l, hero_r = st.columns([1.22, 1.0], vertical_alignment="center")
 
     with hero_l:
         st.markdown(
@@ -3058,7 +3102,7 @@ if current_page == "Ana Sayfa":
         st.markdown(
             f"""
             <div style="text-align:center;margin-top:0.55rem;">
-                <img src="{HERO_STUDENT_URI}" alt="Kurşun Kalem Dijital Ofis 2028" style="width:100%;max-width:390px;border-radius:16px;"/>
+                <img src="{HERO_SHOWCASE_URI}" alt="Kurşun Kalem Dijital Ofis 2028 Kurumsal Vitrin" style="width:100%;max-width:420px;border-radius:16px;"/>
             </div>
             """,
             unsafe_allow_html=True,
@@ -3079,7 +3123,7 @@ if current_page == "Ana Sayfa":
                 """,
                 unsafe_allow_html=True,
             )
-            if st.button(f"{k_item['tag']} Modülüne Geç", key=f"kademe_btn_{idx}", use_container_width=True):
+            if st.button(k_item["cta"], key=f"kademe_btn_{idx}", use_container_width=True):
                 st.session_state["factory_grade"] = k_item["grade"]
                 st.session_state["factory_grade_sync"] = True
                 st.session_state["dk_exam"] = k_item["exam"]
