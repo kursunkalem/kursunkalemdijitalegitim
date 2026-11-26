@@ -1,6 +1,3 @@
-Aşağıda `FALLBACK_MODEL = "gemini-3.5-flash-lite"` güncellemesi ve tüm denenen modellerin hata detayını gösterecek şekilde güncellenmiş tek parça `main.py` kodu yer almaktadır:
-
-```python
 import base64
 import html
 import io
