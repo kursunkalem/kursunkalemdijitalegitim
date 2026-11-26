@@ -32,7 +32,7 @@ BRAND_NAME = "KURŞUN KALEM DİJİTAL OFİS"
 BRAND_SHORT = "Kurşun Kalem"
 BRAND_TAGLINE = "Dijital Ofis, Ölçme-Değerlendirme ve Akıllı Mentorluk Platformu"
 DEFAULT_MODEL = "gemini-2.5-flash"
-FALLBACK_MODEL = "gemini-3.1-pro-preview"
+FALLBACK_MODEL = "gemini-2.5-flash-lite"
 STATE_FILE_PATH = Path(".kursun_kalem_ofis_state.json")
 STATE_BACKUP_PATH = Path(".kursun_kalem_ofis_state.bak.json")
 EXTERNAL_CSS_PATH = Path("assets/style.css")
@@ -1779,7 +1779,10 @@ def call_gemini_text(
     model: str = DEFAULT_MODEL,
 ) -> str:
     client = get_gemini_client()
-    candidate_models = [model, "gemini-2.5-flash", FALLBACK_MODEL]
+    candidate_models = [DEFAULT_MODEL, FALLBACK_MODEL]
+    if model and model not in ("gemini-2.5-pro", "gemini-3.1-pro-preview"):
+        candidate_models.insert(0, model)
+
     deduped_models: List[str] = []
     for m in candidate_models:
         if m and m not in deduped_models:
