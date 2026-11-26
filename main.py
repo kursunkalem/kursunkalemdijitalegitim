@@ -158,7 +158,7 @@ PAGES = [
 PAGE_DESCRIPTIONS: Dict[str, Tuple[str, str]] = {
     "Ana Sayfa": (
         "Genel Bakış & Sınav Telemetrisi",
-        "2027 LGS ve YKS geri sayımı, platform metrikleri, modül erişimi ve haftalık üretim akışı.",
+        "Kademe seçici, 2027 LGS ve YKS geri sayımı, platform metrikleri ve öne çıkan modüller.",
     ),
     "Soru & Redaksiyon Fabrikası": (
         "Maarif Modeli Soru & Kalite Stüdyosu",
@@ -189,6 +189,45 @@ PAGE_DESCRIPTIONS: Dict[str, Tuple[str, str]] = {
         "Öğrenci, YKS, Veli ve Kurumsal paketleri çantanıza ekleyin, kotaları yönetin ve iyzico planını inceleyin.",
     ),
 }
+
+KADEME_VITRIN_KARTLARI: List[Dict[str, str]] = [
+    {
+        "tag": "5–7. SINIF",
+        "title": "Ortaokul & Maarif Temeli",
+        "desc": "Kazanım odaklı sorular, okuma-anlama hızı ve düzenli çalışma alışkanlığı.",
+        "accent": "#0284C7",
+        "grade": "7. Sınıf",
+        "exam": "5-7. Sınıf Akademik Gelişim",
+        "target_page": "Soru & Redaksiyon Fabrikası",
+    },
+    {
+        "tag": "2027 LGS",
+        "title": "8. Sınıf LGS Hazırlık",
+        "desc": "Sözel-sayısal muhakeme, çeldirici analizi ve net yükselten deneme akışı.",
+        "accent": "#EA580C",
+        "grade": "8. Sınıf (LGS)",
+        "exam": "2027 LGS",
+        "target_page": "Soru & Redaksiyon Fabrikası",
+    },
+    {
+        "tag": "2027 YKS",
+        "title": "TYT & AYT Lise Kampı",
+        "desc": "Süre yönetimi, paragraf-analitik denge ve derece hedefleyen mentorluk.",
+        "accent": "#7C3AED",
+        "grade": "11-12. Sınıf (YKS)",
+        "exam": "2027 TYT - AYT",
+        "target_page": "Dijimentor",
+    },
+    {
+        "tag": "VELİ & KURUM",
+        "title": "Veli Takip & B2B Ofis",
+        "desc": "Canlı gelişim takibi, hazır veli mesajları ve zümre kota yönetimi.",
+        "accent": "#059669",
+        "grade": "8. Sınıf (LGS)",
+        "exam": "2027 LGS",
+        "target_page": "Veli Takip Paneli",
+    },
+]
 
 OGRENCI_RONTGEN_PROFILLERI: Dict[str, Dict[str, Any]] = {
     "Elif Öztürk (8-A | 2027 LGS)": {
@@ -346,7 +385,7 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
         "monthly_price": 3290,
         "monthly_quota": 1500,
         "coach_quota": 90,
-        "badge": "Popüler",
+        "badge": "En Çok Tercih Edilen",
         "desc": "Yeni nesil muhakeme soruları, otomatik redaksiyon, Dijimentor planı ve veli raporu.",
         "features": [
             "Aylık 1.500 yapay zekâ soru ve redaksiyon hakkı",
@@ -783,7 +822,7 @@ BACKPACK_DATA_URI = svg_to_data_uri(SCHOOL_BACKPACK_SVG)
 LOGO_PNG_BYTES = get_embedded_logo_png_bytes()
 
 # ==============================================================================
-# FLASHLI AÇILIŞ & KURUMSAL OFİS TASARIM SİSTEMİ
+# TONGUÇ TARZI CANLI VİTRİN + FLASHLI AÇILIŞ TASARIM SİSTEMİ
 # ==============================================================================
 ANIMATED_OFFICE_CSS = """
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
@@ -792,11 +831,11 @@ ANIMATED_OFFICE_CSS = """
     --kp-navy: #0E2247;
     --kp-navy-2: #1B3B73;
     --kp-navy-soft: #EAF0F9;
-    --kp-gold: #C68B16;
-    --kp-gold-bright: #FDE047;
+    --kp-gold: #D97706;
+    --kp-gold-bright: #FACC15;
     --kp-gold-soft: #FFFBEB;
-    --kp-gold-border: #E6C571;
-    --kp-bg: #F3F6FA;
+    --kp-gold-border: #F59E0B;
+    --kp-bg: #F4F7FB;
     --kp-surface: #FFFFFF;
     --kp-surface-alt: #F8FAFC;
     --kp-border: #DCE3EC;
@@ -805,22 +844,16 @@ ANIMATED_OFFICE_CSS = """
 }
 
 @keyframes kpFadeSlideUp {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes kpPageFlashBurst {
     0% {
-        opacity: 0.92;
-        background: radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.98) 0%, rgba(253, 224, 71, 0.55) 28%, rgba(27, 59, 115, 0.16) 65%, transparent 100%);
+        opacity: 0.94;
+        background: radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.98) 0%, rgba(250, 204, 21, 0.56) 28%, rgba(27, 59, 115, 0.16) 65%, transparent 100%);
     }
-    28% {
+    30% {
         opacity: 0.72;
         background: radial-gradient(circle at 50% 22%, rgba(255, 255, 255, 0.85) 0%, rgba(246, 211, 101, 0.34) 42%, transparent 85%);
     }
@@ -831,20 +864,10 @@ ANIMATED_OFFICE_CSS = """
 }
 
 @keyframes kpBeamSweep {
-    0% {
-        transform: translateX(-130%) skewX(-22deg);
-        opacity: 0;
-    }
-    25% {
-        opacity: 0.85;
-    }
-    75% {
-        opacity: 0.45;
-    }
-    100% {
-        transform: translateX(240%) skewX(-22deg);
-        opacity: 0;
-    }
+    0% { transform: translateX(-130%) skewX(-22deg); opacity: 0; }
+    25% { opacity: 0.88; }
+    75% { opacity: 0.45; }
+    100% { transform: translateX(240%) skewX(-22deg); opacity: 0; }
 }
 
 @keyframes kpGoldShimmer {
@@ -858,15 +881,9 @@ ANIMATED_OFFICE_CSS = """
 }
 
 @keyframes kpPulseRing {
-    0% { box-shadow: 0 0 0 0 rgba(198, 139, 22, 0.35); }
-    70% { box-shadow: 0 0 0 8px rgba(198, 139, 22, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(198, 139, 22, 0); }
-}
-
-@keyframes kpBarSweep {
-    0% { filter: brightness(1); }
-    50% { filter: brightness(1.12); }
-    100% { filter: brightness(1); }
+    0% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.35); }
+    70% { box-shadow: 0 0 0 8px rgba(217, 119, 6, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -896,8 +913,8 @@ ANIMATED_OFFICE_CSS = """
         90deg,
         transparent 0%,
         rgba(255, 255, 255, 0.15) 25%,
-        rgba(255, 255, 255, 0.92) 50%,
-        rgba(253, 224, 71, 0.45) 72%,
+        rgba(255, 255, 255, 0.94) 50%,
+        rgba(250, 204, 21, 0.48) 72%,
         transparent 100%
     );
     filter: blur(6px);
@@ -908,14 +925,14 @@ html, body, [class*="css"] {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     color: var(--kp-text);
 }
-h1, h2, h3, .kp-top-title, .kp-page-strip-title, .kp-pkg-title, .kp-mod-title {
+h1, h2, h3, .kp-top-title, .kp-page-strip-title, .kp-pkg-title, .kp-mod-title, .kp-kademe-title {
     font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 }
 .stApp {
-    background: radial-gradient(circle at 85% 5%, #FFFDF6 0%, #F4F7FB 45%, #EBF0F7 100%);
+    background: radial-gradient(circle at 85% 5%, #FFFBEB 0%, #F4F7FB 46%, #EBF0F7 100%);
 }
 [data-testid="stHeader"] {
-    background: rgba(244, 247, 251, 0.90);
+    background: rgba(244, 247, 251, 0.92);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--kp-border);
 }
@@ -927,7 +944,7 @@ h1, h2, h3, .kp-top-title, .kp-page-strip-title, .kp-pkg-title, .kp-mod-title {
     animation: kpFadeSlideUp 0.42s ease-out both;
 }
 
-/* Kenar Çubuğu & Animasyonlu Menü */
+/* Kenar Çubuğu */
 section[data-testid="stSidebar"] {
     background: linear-gradient(180deg, #FFFFFF 0%, #FAFBFD 100%);
     border-right: 1px solid var(--kp-border);
@@ -969,14 +986,14 @@ div[data-testid="stSidebar"] .stButton > button {
     display: flex !important;
     justify-content: flex-start !important;
     align-items: center !important;
-    border-radius: 9px !important;
+    border-radius: 10px !important;
     padding: 0.52rem 0.85rem !important;
     font-size: 0.84rem !important;
     font-weight: 500 !important;
     border: 1px solid #E2E8F0 !important;
     background: #FFFFFF !important;
     color: #1E293B !important;
-    transition: transform 0.16s ease, background-color 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease !important;
+    transition: transform 0.16s ease, background-color 0.16s ease, border-color 0.16s ease !important;
 }
 div[data-testid="stSidebar"] .stButton > button:hover {
     background: var(--kp-navy-soft) !important;
@@ -988,30 +1005,29 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     background: linear-gradient(90deg, var(--kp-navy) 0%, var(--kp-navy-2) 100%) !important;
     color: #FFFFFF !important;
     border-color: var(--kp-navy) !important;
-    font-weight: 600 !important;
+    font-weight: 700 !important;
     box-shadow: 0 4px 12px rgba(14, 34, 71, 0.22) !important;
 }
 .kp-sidebar-meta {
     background: var(--kp-surface-alt);
     border: 1px solid var(--kp-border);
-    border-left: 3.5px solid var(--kp-gold);
+    border-left: 4px solid var(--kp-gold);
     border-radius: 10px;
     padding: 0.8rem 0.9rem;
     margin-top: 0.65rem;
     font-size: 0.79rem;
     color: #1E293B;
     line-height: 1.5;
-    animation: kpPulseRing 3.4s infinite;
 }
 
-/* Üst Kurumsal Ofis Header */
+/* Üst Header */
 .kp-top-header {
     position: relative;
     overflow: hidden;
-    background: linear-gradient(125deg, #FFFFFF 0%, #F8FAFC 62%, #FFFDF6 100%);
+    background: linear-gradient(125deg, #FFFFFF 0%, #F8FAFC 62%, #FFFBEB 100%);
     border: 1px solid var(--kp-border);
-    border-top: 3.5px solid var(--kp-navy);
-    border-radius: 14px;
+    border-top: 4px solid var(--kp-navy);
+    border-radius: 16px;
     padding: 1.05rem 1.4rem;
     margin-bottom: 1.05rem;
     display: flex;
@@ -1019,7 +1035,6 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     justify-content: space-between;
     gap: 1rem;
     box-shadow: 0 8px 24px rgba(14, 34, 71, 0.06);
-    animation: kpFadeSlideUp 0.34s ease-out both;
 }
 .kp-top-header::after {
     content: "";
@@ -1027,7 +1042,7 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     top: 0;
     left: 0;
     right: 0;
-    height: 2.5px;
+    height: 3px;
     background: linear-gradient(90deg, transparent, var(--kp-gold-bright), #FFFFFF, var(--kp-gold-bright), transparent);
     background-size: 220% 100%;
     animation: kpGoldShimmer 3.6s linear infinite;
@@ -1041,14 +1056,10 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     width: 52px;
     height: 52px;
     object-fit: contain;
-    border-radius: 11px;
+    border-radius: 12px;
     border: 1px solid var(--kp-gold-border);
     padding: 2px;
     background: #FFFFFF;
-    transition: transform 0.25s ease;
-}
-.kp-top-left img:hover {
-    transform: rotate(-3deg) scale(1.04);
 }
 .kp-top-title {
     font-size: 1.24rem;
@@ -1069,27 +1080,23 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     flex-wrap: wrap;
 }
 .kp-status-chip {
-    font-size: 0.73rem;
-    font-weight: 600;
+    font-size: 0.74rem;
+    font-weight: 700;
     color: var(--kp-navy);
     background: var(--kp-navy-soft);
     border: 1px solid #C5D4E8;
-    padding: 0.3rem 0.75rem;
+    padding: 0.34rem 0.8rem;
     border-radius: 999px;
-    transition: transform 0.16s ease;
 }
-.kp-status-chip:hover { transform: translateY(-1px); }
 .kp-gold-chip {
-    font-size: 0.73rem;
-    font-weight: 700;
-    color: #7A5405;
-    background: var(--kp-gold-soft);
-    border: 1px solid var(--kp-gold-border);
-    padding: 0.3rem 0.75rem;
+    font-size: 0.74rem;
+    font-weight: 800;
+    color: #92400E;
+    background: #FEF3C7;
+    border: 1px solid #F59E0B;
+    padding: 0.34rem 0.8rem;
     border-radius: 999px;
-    transition: transform 0.16s ease;
 }
-.kp-gold-chip:hover { transform: translateY(-1px); }
 
 .kp-page-strip {
     display: flex;
@@ -1099,11 +1106,10 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     padding: 0.05rem 0 0.72rem 0;
     margin-bottom: 1rem;
     border-bottom: 1px solid var(--kp-border);
-    animation: kpFadeSlideUp 0.38s ease-out both;
 }
 .kp-page-strip-title {
     font-size: 1.3rem;
-    font-weight: 700;
+    font-weight: 800;
     color: var(--kp-navy);
     margin: 0;
 }
@@ -1113,12 +1119,84 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     margin: 0.2rem 0 0 0;
 }
 
-/* Değer Şeridi & Animasyonlu Kartlar */
-.kp-value-strip {
-    background: linear-gradient(100deg, var(--kp-navy) 0%, var(--kp-navy-2) 60%, #244B8E 100%);
-    background-size: 180% 180%;
+/* Tonguç Tarzı Kampanya & Kademe Vitrin Kartları */
+.kp-hero-banner {
+    background: linear-gradient(110deg, #0E2247 0%, #1B3B73 58%, #B45309 135%);
     color: #FFFFFF;
-    border-radius: 12px;
+    border-radius: 18px;
+    padding: 1.35rem 1.55rem;
+    margin-bottom: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.2rem;
+    flex-wrap: wrap;
+    box-shadow: 0 12px 28px rgba(14, 34, 71, 0.16);
+}
+.kp-hero-pill {
+    display: inline-block;
+    background: #FACC15;
+    color: #0F172A;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    padding: 0.24rem 0.7rem;
+    border-radius: 999px;
+    margin-bottom: 0.45rem;
+}
+.kp-hero-title {
+    font-size: 1.35rem;
+    font-weight: 800;
+    margin: 0;
+    line-height: 1.25;
+}
+.kp-hero-sub {
+    font-size: 0.86rem;
+    color: #E2E8F0;
+    margin: 0.35rem 0 0 0;
+    max-width: 720px;
+}
+
+.kp-kademe-card {
+    background: #FFFFFF;
+    border: 1px solid var(--kp-border);
+    border-radius: 16px;
+    padding: 1rem 1.1rem;
+    min-height: 148px;
+    margin-bottom: 0.55rem;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+.kp-kademe-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 26px rgba(14, 34, 71, 0.10);
+}
+.kp-kademe-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #FFFFFF;
+    padding: 0.22rem 0.65rem;
+    border-radius: 999px;
+    letter-spacing: 0.04em;
+}
+.kp-kademe-title {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--kp-navy);
+    margin: 0.6rem 0 0.28rem 0;
+}
+.kp-kademe-desc {
+    font-size: 0.8rem;
+    color: var(--kp-muted);
+    line-height: 1.42;
+    margin: 0;
+}
+
+.kp-value-strip {
+    background: linear-gradient(100deg, var(--kp-navy) 0%, var(--kp-navy-2) 65%, #D97706 140%);
+    color: #FFFFFF;
+    border-radius: 14px;
     padding: 0.85rem 1.2rem;
     margin-bottom: 1.1rem;
     display: flex;
@@ -1127,20 +1205,19 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     gap: 1rem;
     flex-wrap: wrap;
     box-shadow: 0 8px 20px rgba(14, 34, 71, 0.16);
-    animation: kpFadeSlideUp 0.4s ease-out both;
 }
 .kp-value-strip-item {
     display: flex;
     align-items: center;
     gap: 0.48rem;
     font-size: 0.82rem;
-    font-weight: 500;
+    font-weight: 600;
 }
 .kp-value-dot {
     width: 8px;
     height: 8px;
     border-radius: 50%;
-    background: #F6D365;
+    background: #FACC15;
     display: inline-block;
     animation: kpPulseRing 2.4s infinite;
 }
@@ -1148,11 +1225,10 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
 div[data-testid="stMetric"] {
     background: var(--kp-surface);
     border: 1px solid var(--kp-border);
-    border-radius: 12px;
+    border-radius: 14px;
     padding: 0.92rem 1.05rem;
     box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
     transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-    animation: kpFadeSlideUp 0.42s ease-out both;
 }
 div[data-testid="stMetric"]:hover {
     transform: translateY(-2px);
@@ -1168,29 +1244,21 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
 .kp-card, .kp-bag-shell, .kp-pkg-card, .kp-pay-box, .kp-kpi-card, .kp-metric-box, .kp-studio-banner {
     background: var(--kp-surface);
     border: 1px solid var(--kp-border);
-    border-radius: 14px;
+    border-radius: 16px;
     box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
-    animation: kpFadeSlideUp 0.42s ease-out both;
 }
 .kp-card, .kp-bag-shell, .kp-pkg-card, .kp-pay-box, .kp-studio-banner {
     padding: 1.15rem 1.25rem;
 }
-.kp-card {
-    margin-bottom: 0.65rem;
-    transition: transform 0.16s ease, border-color 0.16s ease;
-}
-.kp-card:hover {
-    transform: translateY(-1px);
-    border-color: #C5D4E8;
-}
+.kp-card { margin-bottom: 0.65rem; }
 
 .kp-mod-card {
     background: var(--kp-surface);
     border: 1px solid var(--kp-border);
-    border-top: 3px solid var(--kp-navy);
-    border-radius: 12px;
+    border-top: 4px solid var(--kp-navy);
+    border-radius: 14px;
     padding: 1.1rem 1.2rem;
-    min-height: 122px;
+    min-height: 124px;
     margin-bottom: 0.55rem;
     box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
     transition: transform 0.18s ease, box-shadow 0.18s ease, border-top-color 0.18s ease;
@@ -1201,8 +1269,8 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     box-shadow: 0 12px 24px rgba(14, 34, 71, 0.09);
 }
 .kp-mod-title {
-    font-weight: 700;
-    font-size: 0.98rem;
+    font-weight: 800;
+    font-size: 1rem;
     color: var(--kp-navy);
     margin-bottom: 0.35rem;
 }
@@ -1219,7 +1287,7 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
 }
 .kp-studio-title {
     font-size: 1.14rem;
-    font-weight: 700;
+    font-weight: 800;
     color: var(--kp-navy);
     margin: 0;
 }
@@ -1228,14 +1296,7 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     color: var(--kp-muted);
     margin: 0.22rem 0 0 0;
 }
-.kp-kpi-card {
-    padding: 0.92rem 1.02rem;
-    transition: transform 0.16s ease, border-color 0.16s ease;
-}
-.kp-kpi-card:hover {
-    transform: translateY(-2px);
-    border-color: var(--kp-gold-border);
-}
+.kp-kpi-card { padding: 0.92rem 1.02rem; }
 .kp-kpi-label {
     font-size: 0.7rem;
     font-weight: 700;
@@ -1258,13 +1319,12 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
 .kp-metric-box {
     padding: 1.05rem 0.95rem;
     text-align: center;
-    border-bottom: 3.5px solid var(--kp-navy);
-    transition: transform 0.18s ease, border-bottom-color 0.18s ease, box-shadow 0.18s ease;
+    border-bottom: 4px solid var(--kp-navy);
+    transition: transform 0.18s ease, border-bottom-color 0.18s ease;
 }
 .kp-metric-box:hover {
     transform: translateY(-3px);
     border-bottom-color: var(--kp-gold);
-    box-shadow: 0 12px 24px rgba(14, 34, 71, 0.08);
 }
 .kp-metric-num {
     font-size: 1.62rem;
@@ -1284,7 +1344,7 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
 
 .kp-bag-shell {
     margin-bottom: 1.2rem;
-    border-top: 3px solid var(--kp-gold);
+    border-top: 4px solid var(--kp-gold);
 }
 .kp-bag-visual {
     background: linear-gradient(160deg, var(--kp-navy) 0%, var(--kp-navy-2) 100%);
@@ -1303,29 +1363,23 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
 }
 .kp-bag-count-pill {
     margin-top: 0.5rem;
-    background: rgba(255, 251, 235, 0.16);
-    color: #FDE68A;
-    border: 1px solid rgba(232, 201, 122, 0.45);
+    background: #FACC15;
+    color: #0F172A;
     font-size: 0.74rem;
-    font-weight: 700;
+    font-weight: 800;
     padding: 0.2rem 0.7rem;
     border-radius: 999px;
 }
 .kp-bag-item-chip {
     background: var(--kp-surface-alt);
     border: 1px solid var(--kp-border);
-    border-left: 3px solid var(--kp-navy);
+    border-left: 3.5px solid var(--kp-navy);
     border-radius: 10px;
     padding: 0.62rem 0.85rem;
     margin-bottom: 0.45rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    transition: transform 0.15s ease, border-left-color 0.15s ease;
-}
-.kp-bag-item-chip:hover {
-    transform: translateX(2px);
-    border-left-color: var(--kp-gold);
 }
 
 .kp-pkg-card {
@@ -1338,8 +1392,8 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     border-color: #BDD0E8;
 }
 .kp-pkg-featured {
-    border: 1.5px solid var(--kp-gold) !important;
-    background: linear-gradient(180deg, #FFFDF7 0%, #FFFFFF 35%) !important;
+    border: 2px solid #F59E0B !important;
+    background: linear-gradient(180deg, #FFFBEB 0%, #FFFFFF 35%) !important;
 }
 .kp-pkg-top {
     display: flex;
@@ -1349,7 +1403,7 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
 }
 .kp-pkg-seg {
     font-size: 0.71rem;
-    font-weight: 600;
+    font-weight: 700;
     color: var(--kp-navy);
     background: var(--kp-navy-soft);
     padding: 0.2rem 0.58rem;
@@ -1357,21 +1411,21 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
 }
 .kp-pkg-badge {
     font-size: 0.71rem;
-    font-weight: 700;
-    color: #7A5405;
-    background: var(--kp-gold-soft);
-    border: 1px solid var(--kp-gold-border);
+    font-weight: 800;
+    color: #92400E;
+    background: #FEF3C7;
+    border: 1px solid #F59E0B;
     padding: 0.2rem 0.58rem;
     border-radius: 6px;
 }
 .kp-pkg-title {
-    font-size: 1.02rem;
-    font-weight: 700;
+    font-size: 1.04rem;
+    font-weight: 800;
     color: var(--kp-navy);
     margin: 0.55rem 0 0.2rem 0;
 }
 .kp-pkg-price {
-    font-size: 1.35rem;
+    font-size: 1.38rem;
     font-weight: 800;
     color: var(--kp-text);
     margin-bottom: 0.4rem;
@@ -1407,7 +1461,6 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     overflow: hidden;
     background: #E2E8F0;
     margin: 0.5rem 0 0.45rem 0;
-    animation: kpBarSweep 3s ease-in-out infinite;
 }
 .kp-dist-legend {
     display: flex;
@@ -1423,30 +1476,23 @@ div[data-testid="stTextArea"] textarea {
     background-color: #FFFFFF !important;
     color: var(--kp-text) !important;
     border: 1px solid #CBD5E1 !important;
-    border-radius: 8px !important;
-    transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
-}
-div[data-testid="stTextInput"] input:focus,
-div[data-testid="stNumberInput"] input:focus,
-div[data-testid="stTextArea"] textarea:focus {
-    border-color: var(--kp-navy) !important;
-    box-shadow: 0 0 0 3px rgba(14, 34, 71, 0.10) !important;
+    border-radius: 10px !important;
 }
 div[data-testid="stSelectbox"] > div > div {
     background-color: #FFFFFF !important;
     border: 1px solid #CBD5E1 !important;
-    border-radius: 8px !important;
+    border-radius: 10px !important;
 }
 
 .stButton > button,
 div[data-testid="stFormSubmitButton"] > button {
-    border-radius: 8px;
-    font-weight: 600;
+    border-radius: 10px;
+    font-weight: 700;
     font-size: 0.84rem;
     border: 1px solid #CBD5E1;
     background-color: #FFFFFF;
     color: var(--kp-navy);
-    transition: transform 0.14s ease, background-color 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease;
+    transition: transform 0.14s ease, background-color 0.14s ease, border-color 0.14s ease;
 }
 .stButton > button:hover,
 div[data-testid="stFormSubmitButton"] > button:hover {
@@ -1454,20 +1500,17 @@ div[data-testid="stFormSubmitButton"] > button:hover {
     border-color: var(--kp-navy);
     background-color: var(--kp-navy-soft);
 }
-.stButton > button:active,
-div[data-testid="stFormSubmitButton"] > button:active {
-    transform: translateY(0px) scale(0.99);
-}
 .stButton > button[kind="primary"],
 div[data-testid="stFormSubmitButton"] > button[kind="primary"] {
-    background: linear-gradient(90deg, var(--kp-navy) 0%, var(--kp-navy-2) 100%) !important;
-    border-color: var(--kp-navy) !important;
+    background: linear-gradient(90deg, #EA580C 0%, #D97706 100%) !important;
+    border-color: #D97706 !important;
     color: #FFFFFF !important;
-    box-shadow: 0 3px 10px rgba(14, 34, 71, 0.18);
+    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25);
 }
 .stButton > button[kind="primary"]:hover,
 div[data-testid="stFormSubmitButton"] > button[kind="primary"]:hover {
-    box-shadow: 0 6px 16px rgba(14, 34, 71, 0.25);
+    background: linear-gradient(90deg, #0E2247 0%, #1B3B73 100%) !important;
+    border-color: var(--kp-navy) !important;
 }
 """
 
@@ -2935,9 +2978,55 @@ current_page = st.session_state.active_page
 render_page_strip(current_page)
 
 # ==============================================================================
-# 1. ANA SAYFA
+# 1. ANA SAYFA (TONGUÇ TARZI KADEME SEÇİCİ VİTRİN + TELEMETRİ)
 # ==============================================================================
 if current_page == "Ana Sayfa":
+    hero_l, hero_r = st.columns([3.4, 1.2], vertical_alignment="center")
+    with hero_l:
+        st.markdown(
+            """
+            <div class="kp-hero-banner">
+                <div>
+                    <div class="kp-hero-pill">TÜRKİYE YÜZYILI MAARİF MODELİ • 2027 DÖNEMİ</div>
+                    <h3 class="kp-hero-title">Kademeni Seç, Akıllı Soru &amp; Mentorlukla Netlerini Hızlandır!</h3>
+                    <p class="kp-hero-sub">
+                        Özgün soru üretimi, interaktif mini denemeler, Öğrenci Röntgeni ve Dijimentor haftalık planlarıyla
+                        sınav hazırlığını tek dijital ofiste yönet.
+                    </p>
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+    with hero_r:
+        if st.button("Hemen Soru Üretmeye Başla", key="hero_cta_factory", type="primary", use_container_width=True):
+            navigate_to("Soru & Redaksiyon Fabrikası")
+        st.markdown("<div style='height:0.35rem;'></div>", unsafe_allow_html=True)
+        if st.button("Paketleri & Çantayı İncele", key="hero_cta_plans", use_container_width=True):
+            navigate_to("Paketler & Abonelik Vitrini")
+
+    st.markdown("#### Kademe & Çalışma Alanı Seç")
+    k_cols = st.columns(4)
+    for idx, k_item in enumerate(KADEME_VITRIN_KARTLARI):
+        with k_cols[idx]:
+            st.markdown(
+                f"""
+                <div class="kp-kademe-card">
+                    <span class="kp-kademe-tag" style="background:{k_item['accent']};">{html.escape(k_item['tag'])}</span>
+                    <div class="kp-kademe-title">{html.escape(k_item['title'])}</div>
+                    <p class="kp-kademe-desc">{html.escape(k_item['desc'])}</p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            if st.button(f"{k_item['tag']} Modülüne Geç", key=f"kademe_btn_{idx}", use_container_width=True):
+                st.session_state["factory_grade"] = k_item["grade"]
+                st.session_state["factory_grade_sync"] = True
+                st.session_state["dk_exam"] = k_item["exam"]
+                record_activity("Kademe Seçici", f"{k_item['tag']} seçildi")
+                navigate_to(k_item["target_page"])
+
+    st.markdown("---")
     head_col, toggle_col = st.columns([4, 1], vertical_alignment="center")
     with head_col:
         st.markdown("#### 2027 LGS Geri Sayım (13 Haziran 2027)")
@@ -2959,7 +3048,7 @@ if current_page == "Ana Sayfa":
     m3.metric("B2B Anlaşmalı Kurum", "48", "+4 Yeni")
     m4.metric("Çözülen Soru Sayısı", "2.4 Milyon", "%98 Başarı")
 
-    st.markdown("### Modüller")
+    st.markdown("### Öne Çıkan Dijital Ofis Modülleri")
     f1, f2, f3 = st.columns(3)
     with f1:
         st.markdown(
@@ -3018,7 +3107,7 @@ if current_page == "Ana Sayfa":
         for item in st.session_state.get("activity_log", [])[:5]:
             st.markdown(
                 f"""
-                <div style="background:#FFFFFF;border:1px solid #DCE3EC;border-left:3px solid #C68B16;border-radius:10px;padding:0.58rem 0.8rem;margin-bottom:0.45rem;">
+                <div style="background:#FFFFFF;border:1px solid #DCE3EC;border-left:3.5px solid #D97706;border-radius:10px;padding:0.58rem 0.8rem;margin-bottom:0.45rem;">
                     <div style="font-size:0.72rem;font-weight:600;color:#64748B;">{html.escape(item['time'])} • {html.escape(item['module'])}</div>
                     <div style="font-size:0.83rem;color:#0F172A;margin-top:0.12rem;">{html.escape(item['summary'])}</div>
                 </div>
@@ -3472,7 +3561,7 @@ elif current_page == "Dijimentor":
             </div>
             <div class="kp-dist-bar">
                 <div style="width:45%;background:#0E2247;"></div>
-                <div style="width:30%;background:#C68B16;"></div>
+                <div style="width:30%;background:#D97706;"></div>
                 <div style="width:25%;background:#94A3B8;"></div>
             </div>
             <div class="kp-dist-legend">
@@ -3745,7 +3834,7 @@ elif current_page == "Paketler & Abonelik Vitrini":
             with cols[idx]:
                 in_bag_qty = current_bag.get(tier["id"], 0)
                 bag_tag = f" • Çantada: {in_bag_qty}" if in_bag_qty > 0 else ""
-                is_featured = tier["badge"] in ("Popüler", "VIP", "Kampüs")
+                is_featured = tier["badge"] in ("En Çok Tercih Edilen", "VIP", "Kampüs")
                 card_cls = "kp-pkg-card kp-pkg-featured" if is_featured else "kp-pkg-card"
                 feats_li = "".join([f"<li>• {html.escape(feat)}</li>" for feat in tier["features"]])
                 st.markdown(
