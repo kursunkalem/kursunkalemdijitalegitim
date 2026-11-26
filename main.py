@@ -2087,7 +2087,7 @@ def parse_quiz_questions(raw_text: str) -> List[Dict[str, Any]]:
         return []
 
     header_split_pattern = (
-        r"(?=(?:^|\n)\s*(?:#{1,6}\s*)?(?:\*\*)?\s*(?:Soru\s+\d+|\d+\s*(?:\.\s*Soru|\)|\.\s+(?=[A-ZÇĞİÖŞÜ\"“'\*])))"
+        r"(?=(?:^|\n)\s*(?:#{1,6}\s*)?(?:\*\*)?\s*(?:Soru\s+\d+|\d+\s*(?:\.\s*Soru|\)|\.\s+(?=[A-ZÇĞİÖŞÜ\"“'\*]))))"
     )
     raw_blocks = re.split(header_split_pattern, main_body, flags=re.IGNORECASE | re.MULTILINE)
 
