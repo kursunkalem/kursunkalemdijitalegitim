@@ -2412,8 +2412,7 @@ def render_school_backpack_panel() -> Dict[str, Any]:
             <div class="kp-bag-visual">
                 <img src="{BACKPACK_DATA_URI}" alt="Ofis Çantası"/>
                 <div class="kp-bag-count-pill">{summary['total_count']} Paket</div>
-                <div style="width:100%;margin-top:0.3rem;">{ 
-        {chips_html}</div>
+                <div style="width:100%;margin-top:0.3rem;">{chips_html}</div>
             </div>
             """,
             unsafe_allow_html=True,
