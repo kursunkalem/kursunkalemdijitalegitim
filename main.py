@@ -157,8 +157,8 @@ PAGES = [
 
 PAGE_DESCRIPTIONS: Dict[str, Tuple[str, str]] = {
     "Ana Sayfa": (
-        "Genel Bakış & Sınav Telemetrisi",
-        "Kademe seçici, 2027 LGS ve YKS geri sayımı, platform metrikleri ve öne çıkan modüller.",
+        "Genel Bakış, Kademe Vitrini & Kişisel Akış",
+        "Kademe seçimi, eksik kazanım öncelik sırası, 2027 LGS ve YKS geri sayımı ile dijital ofis özeti.",
     ),
     "Soru & Redaksiyon Fabrikası": (
         "Maarif Modeli Soru & Kalite Stüdyosu",
@@ -166,7 +166,7 @@ PAGE_DESCRIPTIONS: Dict[str, Tuple[str, str]] = {
     ),
     "Öğrenci Portalı & Çözüm": (
         "İnteraktif Mini Deneme & Çözüm Rehberi",
-        "Testleri şık işaretleyerek çözün, boş bırakma/3Y=1D kuralıyla netinizi hesaplayın ve zorlandığınız sorularda adımlı rehber alın.",
+        "Testleri çözün, netinizi hesaplayın, yanlış sorulardan telafi üretin ve adımlı çözüm rehberi alın.",
     ),
     "Dijimentor": (
         "Akıllı Sınav & Performans Mentorluğu",
@@ -174,11 +174,11 @@ PAGE_DESCRIPTIONS: Dict[str, Tuple[str, str]] = {
     ),
     "Veli Takip Paneli": (
         "Veli Gelişim & Bilgilendirme Merkezi",
-        "Öğrencinin haftalık soru temposunu, kazanım başarılarını izleyin ve hazır veli mesajları üretin.",
+        "Çalışma süresi, çözülen soru ve kazanım ivmesini tek bakışta izleyin; hazır veli mesajları üretin.",
     ),
     "Öğrenci Röntgeni": (
         "Öğrenci Röntgeni & Akademik Check-Up",
-        "Kazanım bazlı röntgen taraması, hata kök neden analizi ve Dijimentor telafi reçetesi ile öğrencinin akademik röntgenini çekin.",
+        "Kazanım bazlı röntgen taraması, hata kök neden analizi ve Dijimentor telafi reçetesi ile akademik röntgen çekin.",
     ),
     "B2B Lisans & Kurum": (
         "Kurumsal Lisans & Zümre Yönetimi",
@@ -221,7 +221,7 @@ KADEME_VITRIN_KARTLARI: List[Dict[str, str]] = [
     {
         "tag": "VELİ & KURUM",
         "title": "Veli Takip & B2B Ofis",
-        "desc": "Canlı gelişim takibi, hazır veli mesajları ve zümre kota yönetimi.",
+        "desc": "Haftalık çalışma-soru özeti, hazır veli mesajları ve zümre kota yönetimi.",
         "accent": "#059669",
         "grade": "8. Sınıf (LGS)",
         "exam": "2027 LGS",
@@ -322,6 +322,30 @@ OGRENCI_RONTGEN_PROFILLERI: Dict[str, Dict[str, Any]] = {
         "hedef_sinif": "11-12. Sınıf (YKS)",
     },
 }
+
+ONCELIKLI_EKSIK_SIRASI: List[Dict[str, str]] = [
+    {
+        "priority": "1. ÖNCELİK • %46 İSABET",
+        "topic": "Sözel Mantık & Muhakeme",
+        "branch": "Türkçe",
+        "grade": "8. Sınıf (LGS)",
+        "action": "Tablo/şema kurma ve 12 telafi sorusu",
+    },
+    {
+        "priority": "2. ÖNCELİK • %52 İSABET",
+        "topic": "Çarpanlar ve katlar, EBOB-EKOK problem modellemeleri",
+        "branch": "Matematik",
+        "grade": "8. Sınıf (LGS)",
+        "action": "Yeni nesil kurgu & çeldirici analizi",
+    },
+    {
+        "priority": "3. ÖNCELİK • DİKKAT",
+        "topic": "Yazım kuralları ve noktalama işaretlerinin anlamı belirlemedeki işlevi",
+        "branch": "Türkçe",
+        "grade": "8. Sınıf (LGS)",
+        "action": "Olumsuz soru kökü hız antrenmanı",
+    },
+]
 
 DIJIMENTOR_PRESETS: Dict[str, Dict[str, Any]] = {
     "2027 LGS Derece & Net İvmesi": {
@@ -822,9 +846,9 @@ BACKPACK_DATA_URI = svg_to_data_uri(SCHOOL_BACKPACK_SVG)
 LOGO_PNG_BYTES = get_embedded_logo_png_bytes()
 
 # ==============================================================================
-# TONGUÇ TARZI CANLI VİTRİN + FLASHLI AÇILIŞ TASARIM SİSTEMİ
+# PROFESYONEL YÜKLENİŞ + TONGUÇ & DOPİNG SENTEZ TASARIM SİSTEMİ
 # ==============================================================================
-ANIMATED_OFFICE_CSS = """
+REFINED_OFFICE_CSS = """
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
 
 :root {
@@ -843,47 +867,20 @@ ANIMATED_OFFICE_CSS = """
     --kp-muted: #475569;
 }
 
-@keyframes kpFadeSlideUp {
-    from { opacity: 0; transform: translateY(10px); }
+@keyframes kpSoftEnter {
+    from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-@keyframes kpPageFlashBurst {
-    0% {
-        opacity: 0.94;
-        background: radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.98) 0%, rgba(250, 204, 21, 0.56) 28%, rgba(27, 59, 115, 0.16) 65%, transparent 100%);
-    }
-    30% {
-        opacity: 0.72;
-        background: radial-gradient(circle at 50% 22%, rgba(255, 255, 255, 0.85) 0%, rgba(246, 211, 101, 0.34) 42%, transparent 85%);
-    }
-    100% {
-        opacity: 0;
-        background: radial-gradient(circle at 50% 22%, rgba(255, 255, 255, 0) 0%, transparent 100%);
-    }
+@keyframes kpTopProgressOnce {
+    0% { width: 0%; opacity: 1; }
+    65% { width: 88%; opacity: 1; }
+    100% { width: 100%; opacity: 0; }
 }
 
-@keyframes kpBeamSweep {
-    0% { transform: translateX(-130%) skewX(-22deg); opacity: 0; }
-    25% { opacity: 0.88; }
-    75% { opacity: 0.45; }
-    100% { transform: translateX(240%) skewX(-22deg); opacity: 0; }
-}
-
-@keyframes kpGoldShimmer {
-    0% { background-position: -220% 0; }
-    100% { background-position: 220% 0; }
-}
-
-@keyframes kpFloatSoft {
-    0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-4px); }
-}
-
-@keyframes kpPulseRing {
-    0% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.35); }
-    70% { box-shadow: 0 0 0 8px rgba(217, 119, 6, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0); }
+@keyframes kpSkeletonShimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -894,31 +891,31 @@ ANIMATED_OFFICE_CSS = """
     }
 }
 
-.kp-flash-overlay {
+.kp-top-loader {
     position: fixed;
-    inset: 0;
+    top: 0;
+    left: 0;
+    height: 3px;
+    z-index: 9998;
     pointer-events: none;
-    z-index: 9999;
-    overflow: hidden;
-    animation: kpPageFlashBurst 0.92s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    background: linear-gradient(90deg, var(--kp-navy) 0%, var(--kp-navy-2) 55%, var(--kp-gold) 100%);
+    animation: kpTopProgressOnce 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
-.kp-flash-beam {
-    position: absolute;
-    top: -20%;
-    left: 0;
-    width: 34%;
-    height: 140%;
-    background: linear-gradient(
-        90deg,
-        transparent 0%,
-        rgba(255, 255, 255, 0.15) 25%,
-        rgba(255, 255, 255, 0.94) 50%,
-        rgba(250, 204, 21, 0.48) 72%,
-        transparent 100%
-    );
-    filter: blur(6px);
-    animation: kpBeamSweep 0.88s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+.kp-skeleton-card {
+    background: #FFFFFF;
+    border: 1px solid var(--kp-border);
+    border-radius: 14px;
+    padding: 1rem 1.15rem;
+    margin-bottom: 0.85rem;
+}
+.kp-skel-line {
+    height: 12px;
+    border-radius: 8px;
+    margin-bottom: 0.55rem;
+    background: linear-gradient(90deg, #F1F5F9 25%, #E2E8F0 50%, #F1F5F9 75%);
+    background-size: 200% 100%;
+    animation: kpSkeletonShimmer 1.35s ease-in-out infinite;
 }
 
 html, body, [class*="css"] {
@@ -929,11 +926,11 @@ h1, h2, h3, .kp-top-title, .kp-page-strip-title, .kp-pkg-title, .kp-mod-title, .
     font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 }
 .stApp {
-    background: radial-gradient(circle at 85% 5%, #FFFBEB 0%, #F4F7FB 46%, #EBF0F7 100%);
+    background: radial-gradient(circle at 88% 4%, #FFFDF5 0%, #F4F7FB 48%, #EBF0F7 100%);
 }
 [data-testid="stHeader"] {
-    background: rgba(244, 247, 251, 0.92);
-    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(8px);
     border-bottom: 1px solid var(--kp-border);
 }
 [data-testid="stDecoration"] { display: none; }
@@ -941,7 +938,7 @@ h1, h2, h3, .kp-top-title, .kp-page-strip-title, .kp-pkg-title, .kp-mod-title, .
     padding-top: 1.05rem;
     padding-bottom: 4.5rem;
     max-width: 1260px;
-    animation: kpFadeSlideUp 0.42s ease-out both;
+    animation: kpSoftEnter 0.28s ease-out both;
 }
 
 /* Kenar Çubuğu */
@@ -968,7 +965,6 @@ section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
     border: 1px solid var(--kp-gold-border);
     padding: 2px;
     background: #FFFFFF;
-    animation: kpFloatSoft 4.2s ease-in-out infinite;
 }
 .kp-sidebar-brand-title {
     font-size: 0.95rem;
@@ -993,20 +989,20 @@ div[data-testid="stSidebar"] .stButton > button {
     border: 1px solid #E2E8F0 !important;
     background: #FFFFFF !important;
     color: #1E293B !important;
-    transition: transform 0.16s ease, background-color 0.16s ease, border-color 0.16s ease !important;
+    transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease !important;
 }
 div[data-testid="stSidebar"] .stButton > button:hover {
     background: var(--kp-navy-soft) !important;
     color: var(--kp-navy) !important;
     border-color: #B8CCE6 !important;
-    transform: translateX(4px);
+    transform: translateX(3px);
 }
 div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     background: linear-gradient(90deg, var(--kp-navy) 0%, var(--kp-navy-2) 100%) !important;
     color: #FFFFFF !important;
     border-color: var(--kp-navy) !important;
     font-weight: 700 !important;
-    box-shadow: 0 4px 12px rgba(14, 34, 71, 0.22) !important;
+    box-shadow: 0 3px 10px rgba(14, 34, 71, 0.18) !important;
 }
 .kp-sidebar-meta {
     background: var(--kp-surface-alt);
@@ -1022,30 +1018,17 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
 
 /* Üst Header */
 .kp-top-header {
-    position: relative;
-    overflow: hidden;
-    background: linear-gradient(125deg, #FFFFFF 0%, #F8FAFC 62%, #FFFBEB 100%);
+    background: linear-gradient(125deg, #FFFFFF 0%, #F8FAFC 65%, #FFFBEB 100%);
     border: 1px solid var(--kp-border);
-    border-top: 4px solid var(--kp-navy);
+    border-top: 3.5px solid var(--kp-navy);
     border-radius: 16px;
-    padding: 1.05rem 1.4rem;
-    margin-bottom: 1.05rem;
+    padding: 1.02rem 1.38rem;
+    margin-bottom: 1rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    box-shadow: 0 8px 24px rgba(14, 34, 71, 0.06);
-}
-.kp-top-header::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, transparent, var(--kp-gold-bright), #FFFFFF, var(--kp-gold-bright), transparent);
-    background-size: 220% 100%;
-    animation: kpGoldShimmer 3.6s linear infinite;
+    box-shadow: 0 4px 16px rgba(14, 34, 71, 0.05);
 }
 .kp-top-left {
     display: flex;
@@ -1103,12 +1086,12 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     align-items: baseline;
     justify-content: space-between;
     gap: 1rem;
-    padding: 0.05rem 0 0.72rem 0;
+    padding: 0.05rem 0 0.7rem 0;
     margin-bottom: 1rem;
     border-bottom: 1px solid var(--kp-border);
 }
 .kp-page-strip-title {
-    font-size: 1.3rem;
+    font-size: 1.28rem;
     font-weight: 800;
     color: var(--kp-navy);
     margin: 0;
@@ -1119,19 +1102,14 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     margin: 0.2rem 0 0 0;
 }
 
-/* Tonguç Tarzı Kampanya & Kademe Vitrin Kartları */
+/* Tonguç + Doping Sentez Vitrin Bileşenleri */
 .kp-hero-banner {
-    background: linear-gradient(110deg, #0E2247 0%, #1B3B73 58%, #B45309 135%);
+    background: linear-gradient(112deg, #0E2247 0%, #1B3B73 62%, #B45309 138%);
     color: #FFFFFF;
     border-radius: 18px;
-    padding: 1.35rem 1.55rem;
-    margin-bottom: 1.1rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1.2rem;
-    flex-wrap: wrap;
-    box-shadow: 0 12px 28px rgba(14, 34, 71, 0.16);
+    padding: 1.3rem 1.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 8px 22px rgba(14, 34, 71, 0.14);
 }
 .kp-hero-pill {
     display: inline-block;
@@ -1139,22 +1117,22 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     color: #0F172A;
     font-size: 0.72rem;
     font-weight: 800;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
     padding: 0.24rem 0.7rem;
     border-radius: 999px;
     margin-bottom: 0.45rem;
 }
 .kp-hero-title {
-    font-size: 1.35rem;
+    font-size: 1.32rem;
     font-weight: 800;
     margin: 0;
     line-height: 1.25;
 }
 .kp-hero-sub {
-    font-size: 0.86rem;
+    font-size: 0.85rem;
     color: #E2E8F0;
     margin: 0.35rem 0 0 0;
-    max-width: 720px;
+    max-width: 740px;
 }
 
 .kp-kademe-card {
@@ -1162,14 +1140,14 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     border: 1px solid var(--kp-border);
     border-radius: 16px;
     padding: 1rem 1.1rem;
-    min-height: 148px;
+    min-height: 146px;
     margin-bottom: 0.55rem;
-    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
-    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
+    transition: transform 0.16s ease, box-shadow 0.16s ease;
 }
 .kp-kademe-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 14px 26px rgba(14, 34, 71, 0.10);
+    transform: translateY(-3px);
+    box-shadow: 0 10px 22px rgba(14, 34, 71, 0.09);
 }
 .kp-kademe-tag {
     display: inline-block;
@@ -1184,7 +1162,7 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     font-size: 1rem;
     font-weight: 800;
     color: var(--kp-navy);
-    margin: 0.6rem 0 0.28rem 0;
+    margin: 0.58rem 0 0.26rem 0;
 }
 .kp-kademe-desc {
     font-size: 0.8rem;
@@ -1193,18 +1171,49 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     margin: 0;
 }
 
+.kp-priority-card {
+    background: #FFFFFF;
+    border: 1px solid var(--kp-border);
+    border-left: 4px solid var(--kp-gold);
+    border-radius: 14px;
+    padding: 0.95rem 1.05rem;
+    min-height: 132px;
+    margin-bottom: 0.55rem;
+    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
+}
+.kp-priority-badge {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #92400E;
+    background: #FEF3C7;
+    padding: 0.18rem 0.58rem;
+    border-radius: 999px;
+    display: inline-block;
+}
+.kp-priority-title {
+    font-size: 0.94rem;
+    font-weight: 800;
+    color: var(--kp-navy);
+    margin: 0.45rem 0 0.2rem 0;
+}
+.kp-priority-sub {
+    font-size: 0.79rem;
+    color: var(--kp-muted);
+    margin: 0;
+}
+
 .kp-value-strip {
-    background: linear-gradient(100deg, var(--kp-navy) 0%, var(--kp-navy-2) 65%, #D97706 140%);
+    background: linear-gradient(100deg, var(--kp-navy) 0%, var(--kp-navy-2) 68%, #D97706 140%);
     color: #FFFFFF;
     border-radius: 14px;
     padding: 0.85rem 1.2rem;
-    margin-bottom: 1.1rem;
+    margin-bottom: 1.05rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
     flex-wrap: wrap;
-    box-shadow: 0 8px 20px rgba(14, 34, 71, 0.16);
+    box-shadow: 0 6px 18px rgba(14, 34, 71, 0.14);
 }
 .kp-value-strip-item {
     display: flex;
@@ -1219,7 +1228,6 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     border-radius: 50%;
     background: #FACC15;
     display: inline-block;
-    animation: kpPulseRing 2.4s infinite;
 }
 
 div[data-testid="stMetric"] {
@@ -1228,12 +1236,11 @@ div[data-testid="stMetric"] {
     border-radius: 14px;
     padding: 0.92rem 1.05rem;
     box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
-    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    transition: transform 0.16s ease, border-color 0.16s ease;
 }
 div[data-testid="stMetric"]:hover {
     transform: translateY(-2px);
     border-color: var(--kp-gold-border);
-    box-shadow: 0 10px 22px rgba(14, 34, 71, 0.08);
 }
 div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     font-size: 1.52rem;
@@ -1245,7 +1252,7 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     background: var(--kp-surface);
     border: 1px solid var(--kp-border);
     border-radius: 16px;
-    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
 }
 .kp-card, .kp-bag-shell, .kp-pkg-card, .kp-pay-box, .kp-studio-banner {
     padding: 1.15rem 1.25rem;
@@ -1261,12 +1268,11 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     min-height: 124px;
     margin-bottom: 0.55rem;
     box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
-    transition: transform 0.18s ease, box-shadow 0.18s ease, border-top-color 0.18s ease;
+    transition: transform 0.16s ease, border-top-color 0.16s ease;
 }
 .kp-mod-card:hover {
-    transform: translateY(-3px);
+    transform: translateY(-2px);
     border-top-color: var(--kp-gold);
-    box-shadow: 0 12px 24px rgba(14, 34, 71, 0.09);
 }
 .kp-mod-title {
     font-weight: 800;
@@ -1320,11 +1326,6 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     padding: 1.05rem 0.95rem;
     text-align: center;
     border-bottom: 4px solid var(--kp-navy);
-    transition: transform 0.18s ease, border-bottom-color 0.18s ease;
-}
-.kp-metric-box:hover {
-    transform: translateY(-3px);
-    border-bottom-color: var(--kp-gold);
 }
 .kp-metric-num {
     font-size: 1.62rem;
@@ -1359,7 +1360,6 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     width: 102px;
     height: 118px;
     object-fit: contain;
-    animation: kpFloatSoft 3.8s ease-in-out infinite;
 }
 .kp-bag-count-pill {
     margin-top: 0.5rem;
@@ -1384,11 +1384,11 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
 
 .kp-pkg-card {
     margin-bottom: 0.65rem;
-    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
 }
 .kp-pkg-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 14px 28px rgba(14, 34, 71, 0.10);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px rgba(14, 34, 71, 0.09);
     border-color: #BDD0E8;
 }
 .kp-pkg-featured {
@@ -1492,50 +1492,53 @@ div[data-testid="stFormSubmitButton"] > button {
     border: 1px solid #CBD5E1;
     background-color: #FFFFFF;
     color: var(--kp-navy);
-    transition: transform 0.14s ease, background-color 0.14s ease, border-color 0.14s ease;
+    transition: background-color 0.14s ease, border-color 0.14s ease;
 }
 .stButton > button:hover,
 div[data-testid="stFormSubmitButton"] > button:hover {
-    transform: translateY(-1px);
     border-color: var(--kp-navy);
     background-color: var(--kp-navy-soft);
 }
 .stButton > button[kind="primary"],
 div[data-testid="stFormSubmitButton"] > button[kind="primary"] {
-    background: linear-gradient(90deg, #EA580C 0%, #D97706 100%) !important;
-    border-color: #D97706 !important;
+    background: linear-gradient(90deg, #0E2247 0%, #1B3B73 100%) !important;
+    border-color: var(--kp-navy) !important;
     color: #FFFFFF !important;
-    box-shadow: 0 4px 12px rgba(217, 119, 6, 0.25);
 }
 .stButton > button[kind="primary"]:hover,
 div[data-testid="stFormSubmitButton"] > button[kind="primary"]:hover {
-    background: linear-gradient(90deg, #0E2247 0%, #1B3B73 100%) !important;
-    border-color: var(--kp-navy) !important;
+    background: linear-gradient(90deg, #B45309 0%, #D97706 100%) !important;
+    border-color: #B45309 !important;
 }
 """
 
-css_to_inject = ANIMATED_OFFICE_CSS
+css_to_inject = REFINED_OFFICE_CSS
 if EXTERNAL_CSS_PATH.exists():
     try:
         ext_css = EXTERNAL_CSS_PATH.read_text(encoding="utf-8").strip()
         if ext_css:
-            css_to_inject = f"{ANIMATED_OFFICE_CSS}\n\n{ext_css}"
+            css_to_inject = f"{REFINED_OFFICE_CSS}\n\n{ext_css}"
     except Exception:
         pass
 
 st.markdown(f"<style>{css_to_inject}</style>", unsafe_allow_html=True)
 
 
-def trigger_page_flash() -> None:
-    st.session_state["flash_nonce"] = uuid.uuid4().hex[:8]
+def trigger_loader_bar() -> None:
+    st.session_state["loader_nonce"] = uuid.uuid4().hex[:8]
 
 
-def render_page_flash_overlay() -> None:
-    nonce = st.session_state.get("flash_nonce", "init")
+def render_top_loader_bar() -> None:
+    nonce = st.session_state.get("loader_nonce", "init")
     st.markdown(
-        f'<div class="kp-flash-overlay" data-flash-id="{html.escape(str(nonce))}"><div class="kp-flash-beam"></div></div>',
+        f'<div class="kp-top-loader" data-load-id="{html.escape(str(nonce))}"></div>',
         unsafe_allow_html=True,
     )
+
+
+def render_loading_skeleton(placeholder: Any, lines: int = 3) -> None:
+    bars = "".join(['<div class="kp-skel-line" style="width:94%;"></div>' for _ in range(max(2, lines))])
+    placeholder.markdown(f'<div class="kp-skeleton-card">{bars}</div>', unsafe_allow_html=True)
 
 
 # ==============================================================================
@@ -1825,7 +1828,7 @@ def navigate_to(page_name: str) -> None:
     if page_name in PAGES:
         clear_page_ephemeral_state(page_name)
         st.session_state.active_page = page_name
-        trigger_page_flash()
+        trigger_loader_bar()
         st.rerun()
 
 
@@ -2526,15 +2529,17 @@ def render_iyzico_simulator(
             if total_amount <= 0:
                 st.warning("Ödeme başlatmak için önce çantanıza en az bir paket ekleyin.")
             else:
-                with st.spinner("iyzico ödeme formu oluşturuluyor..."):
-                    res_dict = initialize_iyzico_checkout(
-                        buyer_name=buyer_name,
-                        buyer_surname=buyer_surname,
-                        buyer_email=buyer_email,
-                        buyer_phone="+905350000000",
-                        amount_try=float(total_amount),
-                        basket_title=f"{BRAND_NAME} - {display_label} ({billing_cycle})",
-                    )
+                load_slot = st.empty()
+                render_loading_skeleton(load_slot, lines=2)
+                res_dict = initialize_iyzico_checkout(
+                    buyer_name=buyer_name,
+                    buyer_surname=buyer_surname,
+                    buyer_email=buyer_email,
+                    buyer_phone="+905350000000",
+                    amount_try=float(total_amount),
+                    basket_title=f"{BRAND_NAME} - {display_label} ({billing_cycle})",
+                )
+                load_slot.empty()
                 if res_dict.get("status") == "success":
                     sync_plan_quotas(bag_summary, reset_usage=True)
                     record_activity("iyzico API", f"{display_label} ({total_amount:,} ₺) ödeme formu açıldı".replace(",", "."))
@@ -2819,10 +2824,10 @@ if "active_page" not in st.session_state:
 elif st.session_state.active_page == "Ana Sayfa & Geri Sayım":
     st.session_state.active_page = "Ana Sayfa"
 
-if "flash_nonce" not in st.session_state:
-    trigger_page_flash()
+if "loader_nonce" not in st.session_state:
+    trigger_loader_bar()
 
-render_page_flash_overlay()
+render_top_loader_bar()
 
 if "generated_test_text" not in st.session_state:
     st.session_state.generated_test_text = ""
@@ -2906,7 +2911,7 @@ with st.sidebar:
         if st.button(p_name, key=f"nav_{p_name}", type=btn_type, use_container_width=True):
             clear_page_ephemeral_state(p_name)
             st.session_state.active_page = p_name
-            trigger_page_flash()
+            trigger_loader_bar()
             st.rerun()
 
     st.markdown(
@@ -2978,7 +2983,7 @@ current_page = st.session_state.active_page
 render_page_strip(current_page)
 
 # ==============================================================================
-# 1. ANA SAYFA (TONGUÇ TARZI KADEME SEÇİCİ VİTRİN + TELEMETRİ)
+# 1. ANA SAYFA (TONGUÇ VİTRİNİ + DOPİNG KİŞİSEL ÖNCELİK AKIŞI)
 # ==============================================================================
 if current_page == "Ana Sayfa":
     hero_l, hero_r = st.columns([3.4, 1.2], vertical_alignment="center")
@@ -2987,11 +2992,11 @@ if current_page == "Ana Sayfa":
             """
             <div class="kp-hero-banner">
                 <div>
-                    <div class="kp-hero-pill">TÜRKİYE YÜZYILI MAARİF MODELİ • 2027 DÖNEMİ</div>
-                    <h3 class="kp-hero-title">Kademeni Seç, Akıllı Soru &amp; Mentorlukla Netlerini Hızlandır!</h3>
+                    <div class="kp-hero-pill">TONGUÇ VİTRİN ENERJİSİ • DOPİNG KİŞİSEL AKIŞ SENTEZİ</div>
+                    <h3 class="kp-hero-title">Kademeni Seç, Eksik Kazanımına Göre Sıralanan Akışla Net Artır!</h3>
                     <p class="kp-hero-sub">
-                        Özgün soru üretimi, interaktif mini denemeler, Öğrenci Röntgeni ve Dijimentor haftalık planlarıyla
-                        sınav hazırlığını tek dijital ofiste yönet.
+                        Kademe bazlı hızlı başlangıç, yanlış/eksik kazanımlara öncelik veren telafi akışı,
+                        Öğrenci Röntgeni ve haftalık veli özeti tek dijital ofiste birleşti.
                     </p>
                 </div>
             </div>
@@ -3025,6 +3030,31 @@ if current_page == "Ana Sayfa":
                 st.session_state["dk_exam"] = k_item["exam"]
                 record_activity("Kademe Seçici", f"{k_item['tag']} seçildi")
                 navigate_to(k_item["target_page"])
+
+    st.markdown("---")
+    st.markdown("#### Kişisel Eksik & Öncelik Sırası (Doping Tarzı Dinamik Odak)")
+    p_cols = st.columns(3)
+    for idx, p_item in enumerate(ONCELIKLI_EKSIK_SIRASI):
+        with p_cols[idx]:
+            st.markdown(
+                f"""
+                <div class="kp-priority-card">
+                    <span class="kp-priority-badge">{html.escape(p_item['priority'])}</span>
+                    <div class="kp-priority-title">{html.escape(p_item['topic'])}</div>
+                    <p class="kp-priority-sub">{html.escape(p_item['branch'])} • {html.escape(p_item['action'])}</p>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            if st.button("Bu Kazanımı Çalış", key=f"prio_btn_{idx}", use_container_width=True):
+                st.session_state["factory_focus_topic"] = p_item["topic"]
+                st.session_state["factory_branch"] = p_item["branch"]
+                st.session_state["factory_grade"] = p_item["grade"]
+                st.session_state["fab_theme_inp"] = p_item["topic"]
+                st.session_state["factory_sync_pending"] = True
+                st.session_state["factory_grade_sync"] = True
+                record_activity("Öncelikli Akış", f"{p_item['topic']} seçildi")
+                navigate_to("Soru & Redaksiyon Fabrikası")
 
     st.markdown("---")
     head_col, toggle_col = st.columns([4, 1], vertical_alignment="center")
@@ -3204,9 +3234,11 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
                 f"Otomatik Redaksiyon ve Kalite Denetimi: {'Aktif' if auto_review else 'Pasif'}\n\n"
                 "Lütfen numaralandırılmış çoktan seçmeli (Soru 1, Soru 2... ve A, B, C, D şıkları) özgün sorular üret."
             )
+            skel_slot = st.empty()
+            render_loading_skeleton(skel_slot, lines=4)
             try:
-                with st.spinner("Sorular üretiliyor ve kalite denetimi yapılıyor..."):
-                    result = call_gemini_text(prompt=user_prompt, system_instruction=sys_prompt)
+                result = call_gemini_text(prompt=user_prompt, system_instruction=sys_prompt)
+                skel_slot.empty()
                 st.session_state.generated_test_text = result
                 record_activity("Soru Fabrikası", f"{branch} • {question_count} soru üretildi")
                 st.success(
@@ -3214,6 +3246,7 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
                     f"{int(st.session_state.remaining_question_quota):,}".replace(",", ".")
                 )
             except Exception as exc:
+                skel_slot.empty()
                 refund_quota("question", int(question_count))
                 st.error(f"Soru üretim hatası oluştu: {exc}")
 
@@ -3358,10 +3391,19 @@ elif current_page == "Öğrenci Portalı & Çözüm":
                 st.dataframe(report["rows"], use_container_width=True, hide_index=True)
 
                 if report.get("first_wrong"):
-                    if st.button("Yanlış Yaptığım İlk Soruyu Çözüm Rehberine Aktar"):
-                        st.session_state["portal_question_draft"] = report["first_wrong"]
-                        st.toast("Yanlış soru Adımlı Çözüm Asistanı sekmesine aktarıldı.")
-                        st.rerun()
+                    wa_c1, wa_c2 = st.columns(2)
+                    with wa_c1:
+                        if st.button("Yanlış Soruyu Çözüm Rehberine Aktar", use_container_width=True):
+                            st.session_state["portal_question_draft"] = report["first_wrong"]
+                            st.toast("Yanlış soru Adımlı Çözüm Asistanı sekmesine aktarıldı.")
+                            st.rerun()
+                    with wa_c2:
+                        if st.button("Yanlış Sorudan Benzer Soru Üret", type="primary", use_container_width=True):
+                            snippet = re.sub(r"\s+", " ", report["first_wrong"])[:110]
+                            st.session_state["factory_focus_topic"] = f"Telafi: {snippet}"
+                            st.session_state["fab_theme_inp"] = f"Telafi: {snippet}"
+                            record_activity("Doping Telafi Akışı", "Yanlış sorudan benzer soru üretimine geçildi")
+                            navigate_to("Soru & Redaksiyon Fabrikası")
 
     with tab_hint:
         col_l, col_r = st.columns([2, 1])
@@ -3395,13 +3437,16 @@ elif current_page == "Öğrenci Portalı & Çözüm":
                     f"Yardım Düzeyi: {hint_mode}\n\n"
                     "Lütfen Türkçe olarak net ve anlaşılır yanıt ver."
                 )
+                skel_hint = st.empty()
+                render_loading_skeleton(skel_hint, lines=3)
                 try:
-                    with st.spinner("Çözüm rehberi hazırlanıyor..."):
-                        ans = call_gemini_text(prompt=prompt, system_instruction=sys_inst)
+                    ans = call_gemini_text(prompt=prompt, system_instruction=sys_inst)
+                    skel_hint.empty()
                     record_activity("Çözüm Asistanı", f"{hint_mode} üretildi")
                     st.markdown("#### Çözüm Analizi")
                     st.markdown(ans)
                 except Exception as exc:
+                    skel_hint.empty()
                     st.error(f"Çözüm üretilirken hata oluştu: {exc}")
 
 # ==============================================================================
@@ -3601,13 +3646,16 @@ elif current_page == "Dijimentor":
                 f"Detaylı Rutin & Analiz Protokolü: {'Evet' if include_routine else 'Özet'}\n\n"
                 "Lütfen öğrenciye doğrudan uygulanabilir, motive edici ve net bir Türkçe plan sun."
             )
+            skel_coach = st.empty()
+            render_loading_skeleton(skel_coach, lines=4)
             try:
-                with st.spinner("Dijimentor çalışma ve deneme stratejisi hazırlanıyor..."):
-                    plan = call_gemini_text(prompt=prompt_coach, system_instruction=sys_coach)
+                plan = call_gemini_text(prompt=prompt_coach, system_instruction=sys_coach)
+                skel_coach.empty()
                 st.session_state.dijimentor_plan = plan
                 record_activity("Dijimentor", f"{target_exam} • {weekly_hours} saatlik plan üretildi")
                 st.success("Dijimentor planı başarıyla oluşturuldu.")
             except Exception as exc:
+                skel_coach.empty()
                 refund_quota("coach", 1)
                 st.error(f"Dijimentor planı oluşturulurken hata oluştu: {exc}")
 
@@ -3654,10 +3702,11 @@ elif current_page == "Dijimentor":
 # 5. VELİ TAKİP PANELİ
 # ==============================================================================
 elif current_page == "Veli Takip Paneli":
+    stats_now = st.session_state["parent_student_stats"]
     v1, v2, v3 = st.columns(3)
-    v1.metric("Bu Hafta Çözülen Soru", "340 Soru", "+18% geçen haftaya göre")
-    v2.metric("Ortalama Doğruluk", "%81", "+4 puan")
-    v3.metric("Dijimentor Plan Uyumu", "%88", "6 / 7 gün aktif")
+    v1.metric("Haftalık Çalışma Süresi", f"{int(st.session_state.get('dk_hours', 16))} Saat", "Düzenli tempo")
+    v2.metric("Çözülen Soru Adedi", f"{int(stats_now['weekly_solved'])} Soru", "+18% geçen haftaya göre")
+    v3.metric("Kazanım İvmesi & Uyum", f"%{int(stats_now['mentor_completion'])}", "+4 puan doğruluk ivmesi")
 
     st.markdown("#### Kazanım Bazlı Görünüm")
     st.progress(0.84, text="Okuma ve Anlama — %84")
