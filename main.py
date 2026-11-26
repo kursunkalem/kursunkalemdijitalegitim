@@ -32,7 +32,7 @@ BRAND_NAME = "KURŞUN KALEM DİJİTAL OFİS"
 BRAND_SHORT = "Kurşun Kalem"
 BRAND_TAGLINE = "Dijital Ofis, Ölçme-Değerlendirme ve Akıllı Mentorluk Platformu"
 DEFAULT_MODEL = "gemini-2.5-flash"
-FALLBACK_MODEL = "gemini-3.1-pro-preview"
+FALLBACK_MODEL = "gemini-2.5-pro"
 STATE_FILE_PATH = Path(".kursun_kalem_ofis_state.json")
 STATE_BACKUP_PATH = Path(".kursun_kalem_ofis_state.bak.json")
 EXTERNAL_CSS_PATH = Path("assets/style.css")
@@ -1811,10 +1811,7 @@ def call_gemini_text(
                     continue
                 raise
 
-    raise RuntimeError(
-        f"Model çağrısı geçici yoğunluk nedeniyle tamamlanamadı ({last_exc}). "
-        "Lütfen birkaç saniye sonra tekrar deneyin."
-    )
+    raise RuntimeError(f"Model çağrısı başarısız oldu: {last_exc}")
 
 
 def clear_page_ephemeral_state(target_page: str) -> None:
@@ -2415,7 +2412,8 @@ def render_school_backpack_panel() -> Dict[str, Any]:
             <div class="kp-bag-visual">
                 <img src="{BACKPACK_DATA_URI}" alt="Ofis Çantası"/>
                 <div class="kp-bag-count-pill">{summary['total_count']} Paket</div>
-                <div style="width:100%;margin-top:0.3rem;">{chips_html}</div>
+                <div style="width:100%;margin-top:0.3rem;">{ 
+        {chips_html}</div>
             </div>
             """,
             unsafe_allow_html=True,
