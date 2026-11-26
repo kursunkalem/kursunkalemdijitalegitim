@@ -846,7 +846,7 @@ BACKPACK_DATA_URI = svg_to_data_uri(SCHOOL_BACKPACK_SVG)
 LOGO_PNG_BYTES = get_embedded_logo_png_bytes()
 
 # ==============================================================================
-# PROFESYONEL YÜKLENİŞ + TONGUÇ & DOPİNG SENTEZ TASARIM SİSTEMİ
+# PROFESYONEL YÜKLENİŞ VE KURUMSAL TASARIM SİSTEMİ
 # ==============================================================================
 REFINED_OFFICE_CSS = """
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
@@ -868,13 +868,13 @@ REFINED_OFFICE_CSS = """
 }
 
 @keyframes kpSoftEnter {
-    from { opacity: 0; transform: translateY(6px); }
+    from { opacity: 0.72; transform: translateY(3px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes kpTopProgressOnce {
-    0% { width: 0%; opacity: 1; }
-    65% { width: 88%; opacity: 1; }
+    0% { width: 0%; opacity: 0.9; }
+    70% { width: 85%; opacity: 0.9; }
     100% { width: 100%; opacity: 0; }
 }
 
@@ -895,11 +895,11 @@ REFINED_OFFICE_CSS = """
     position: fixed;
     top: 0;
     left: 0;
-    height: 3px;
+    height: 2.5px;
     z-index: 9998;
     pointer-events: none;
-    background: linear-gradient(90deg, var(--kp-navy) 0%, var(--kp-navy-2) 55%, var(--kp-gold) 100%);
-    animation: kpTopProgressOnce 0.65s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    background: linear-gradient(90deg, var(--kp-navy) 0%, var(--kp-navy-2) 60%, var(--kp-gold) 100%);
+    animation: kpTopProgressOnce 0.5s ease-out forwards;
 }
 
 .kp-skeleton-card {
@@ -938,7 +938,7 @@ h1, h2, h3, .kp-top-title, .kp-page-strip-title, .kp-pkg-title, .kp-mod-title, .
     padding-top: 1.05rem;
     padding-bottom: 4.5rem;
     max-width: 1260px;
-    animation: kpSoftEnter 0.28s ease-out both;
+    animation: kpSoftEnter 0.18s ease-out both;
 }
 
 /* Kenar Çubuğu */
@@ -989,7 +989,7 @@ div[data-testid="stSidebar"] .stButton > button {
     border: 1px solid #E2E8F0 !important;
     background: #FFFFFF !important;
     color: #1E293B !important;
-    transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease !important;
+    transition: background-color 0.14s ease, border-color 0.14s ease, transform 0.14s ease !important;
 }
 div[data-testid="stSidebar"] .stButton > button:hover {
     background: var(--kp-navy-soft) !important;
@@ -1102,7 +1102,7 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     margin: 0.2rem 0 0 0;
 }
 
-/* Tonguç + Doping Sentez Vitrin Bileşenleri */
+/* Ana Sayfa Vitrin ve Kişisel Öncelik Bileşenleri */
 .kp-hero-banner {
     background: linear-gradient(112deg, #0E2247 0%, #1B3B73 62%, #B45309 138%);
     color: #FFFFFF;
@@ -1146,8 +1146,8 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     transition: transform 0.16s ease, box-shadow 0.16s ease;
 }
 .kp-kademe-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 22px rgba(14, 34, 71, 0.09);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 18px rgba(14, 34, 71, 0.08);
 }
 .kp-kademe-tag {
     display: inline-block;
@@ -1387,8 +1387,8 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
 }
 .kp-pkg-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 24px rgba(14, 34, 71, 0.09);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(14, 34, 71, 0.08);
     border-color: #BDD0E8;
 }
 .kp-pkg-featured {
@@ -2983,7 +2983,7 @@ current_page = st.session_state.active_page
 render_page_strip(current_page)
 
 # ==============================================================================
-# 1. ANA SAYFA (TONGUÇ VİTRİNİ + DOPİNG KİŞİSEL ÖNCELİK AKIŞI)
+# 1. ANA SAYFA (KADEME VİTRİNİ + KİŞİSEL ÖNCELİK AKIŞI)
 # ==============================================================================
 if current_page == "Ana Sayfa":
     hero_l, hero_r = st.columns([3.4, 1.2], vertical_alignment="center")
@@ -2992,7 +2992,7 @@ if current_page == "Ana Sayfa":
             """
             <div class="kp-hero-banner">
                 <div>
-                    <div class="kp-hero-pill">TONGUÇ VİTRİN ENERJİSİ • DOPİNG KİŞİSEL AKIŞ SENTEZİ</div>
+                    <div class="kp-hero-pill">KADEME VİTRİNİ • DİNAMİK ÖNCELİK AKIŞI</div>
                     <h3 class="kp-hero-title">Kademeni Seç, Eksik Kazanımına Göre Sıralanan Akışla Net Artır!</h3>
                     <p class="kp-hero-sub">
                         Kademe bazlı hızlı başlangıç, yanlış/eksik kazanımlara öncelik veren telafi akışı,
@@ -3032,7 +3032,7 @@ if current_page == "Ana Sayfa":
                 navigate_to(k_item["target_page"])
 
     st.markdown("---")
-    st.markdown("#### Kişisel Eksik & Öncelik Sırası (Doping Tarzı Dinamik Odak)")
+    st.markdown("#### Kişisel Eksik & Öncelik Sırası")
     p_cols = st.columns(3)
     for idx, p_item in enumerate(ONCELIKLI_EKSIK_SIRASI):
         with p_cols[idx]:
@@ -3402,7 +3402,7 @@ elif current_page == "Öğrenci Portalı & Çözüm":
                             snippet = re.sub(r"\s+", " ", report["first_wrong"])[:110]
                             st.session_state["factory_focus_topic"] = f"Telafi: {snippet}"
                             st.session_state["fab_theme_inp"] = f"Telafi: {snippet}"
-                            record_activity("Doping Telafi Akışı", "Yanlış sorudan benzer soru üretimine geçildi")
+                            record_activity("Telafi Akışı", "Yanlış sorudan benzer soru üretimine geçildi")
                             navigate_to("Soru & Redaksiyon Fabrikası")
 
     with tab_hint:
