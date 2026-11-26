@@ -37,6 +37,17 @@ STATE_FILE_PATH = Path(".kursun_kalem_ofis_2028_state.json")
 STATE_BACKUP_PATH = Path(".kursun_kalem_ofis_2028_state.bak.json")
 EXTERNAL_CSS_PATH = Path("assets/style.css")
 
+GRADE_LEVELS_2028: List[str] = [
+    "5. Sınıf",
+    "6. Sınıf",
+    "7. Sınıf",
+    "8. Sınıf (LGS)",
+    "9. Sınıf",
+    "10. Sınıf",
+    "11. Sınıf (YKS)",
+    "12. Sınıf (YKS)",
+]
+
 EMBEDDED_LOGO_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
     <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -202,27 +213,27 @@ PAGE_DESCRIPTIONS: Dict[str, Tuple[str, str]] = {
     ),
     "Soru & Redaksiyon Fabrikası": (
         "Maarif Modeli Soru & Kalite Stüdyosu (2028)",
-        "Kazanım, çeldirici ve soru kökü kalitesi odaklı özgün testler üretin, redaksiyon denetleyin ve DOCX olarak indirin.",
+        "5–12. sınıf müfredatı, kademeli zorluk serisi, çeldirici denetimi, soru havuzu ve DOCX çıktı.",
     ),
     "Öğrenci Portalı & Çözüm": (
-        "İnteraktif Mini Deneme & Çözüm Rehberi",
-        "Testleri çözün, netinizi hesaplayın, yanlış sorulardan telafi üretin ve adımlı çözüm rehberi alın.",
+        "İnteraktif Mini Deneme, Hata Defteri & Çözüm Rehberi",
+        "Süre takipli mini deneme çözün, netinizi görün, yanlışları Hata Defteri'ne alın ve adımlı çözüm inceleyin.",
     ),
     "Dijimentor": (
-        "Akıllı Sınav & Performans Mentorluğu (2028)",
-        "Hedef sınava, zayıf kazanımlara ve haftalık kapasiteye göre ölçülebilir çalışma ve deneme planı oluşturun.",
+        "Akıllı Sınav, Faz Planı & Performans Mentorluğu (2028)",
+        "2028 sınav takvimine göre aşamalı kamp ve haftalık aksiyon planı üretin.",
     ),
     "Veli Takip Paneli": (
-        "Veli Gelişim & Bilgilendirme Merkezi",
-        "Çalışma süresi, çözülen soru ve kazanım ivmesini tek bakışta izleyin; hazır veli mesajları üretin.",
+        "Veli Karne Özeti & Bilgilendirme Merkezi",
+        "Haftalık değişim kartları, kazanım ivmesi ve hazır veli bilgilendirme mesajları.",
     ),
     "Öğrenci Röntgeni": (
         "Öğrenci Röntgeni & Akademik Check-Up",
-        "Kazanım bazlı röntgen taraması, hata kök neden analizi ve Dijimentor telafi reçetesi ile akademik röntgen çekin.",
+        "Kazanım bazlı röntgen taraması, hata kök neden analizi ve modüller arası tek tık aktarım.",
     ),
     "B2B Lisans & Kurum": (
-        "Kurumsal Lisans & Zümre Yönetimi",
-        "Okul ve kurs merkezleri için koltuk/kota planlaması, zümre dağılımı ve DOCX teklif çıktısı.",
+        "Kurumsal Lisans, Zümre & Deneme Planlayıcı",
+        "Koltuk/kota planlaması, zümre dağılımı, kurum içi deneme takvimi ve DOCX teklif çıktısı.",
     ),
     "Paketler & Abonelik Vitrini": (
         "Abonelik Paketleri & Ofis Çantası",
@@ -231,11 +242,11 @@ PAGE_DESCRIPTIONS: Dict[str, Tuple[str, str]] = {
 }
 
 HERO_PILL_CHIPS: List[Dict[str, str]] = [
-    {"label": "YKS 2028", "grade": "11-12. Sınıf (YKS)", "exam": "2028 TYT - AYT", "page": "Dijimentor"},
+    {"label": "YKS 2028", "grade": "12. Sınıf (YKS)", "exam": "2028 TYT - AYT", "page": "Dijimentor"},
     {"label": "LGS 2028", "grade": "8. Sınıf (LGS)", "exam": "2028 LGS", "page": "Soru & Redaksiyon Fabrikası"},
-    {"label": "11. Sınıf", "grade": "11-12. Sınıf (YKS)", "exam": "2028 TYT - AYT", "page": "Soru & Redaksiyon Fabrikası"},
-    {"label": "10. Sınıf", "grade": "9-10. Sınıf", "exam": "2028 TYT - AYT", "page": "Soru & Redaksiyon Fabrikası"},
-    {"label": "9. Sınıf", "grade": "9-10. Sınıf", "exam": "2028 TYT - AYT", "page": "Soru & Redaksiyon Fabrikası"},
+    {"label": "11. Sınıf", "grade": "11. Sınıf (YKS)", "exam": "2028 TYT - AYT", "page": "Soru & Redaksiyon Fabrikası"},
+    {"label": "10. Sınıf", "grade": "10. Sınıf", "exam": "2028 TYT - AYT", "page": "Soru & Redaksiyon Fabrikası"},
+    {"label": "9. Sınıf", "grade": "9. Sınıf", "exam": "2028 TYT - AYT", "page": "Soru & Redaksiyon Fabrikası"},
     {"label": "7. Sınıf", "grade": "7. Sınıf", "exam": "5-7. Sınıf Akademik Gelişim", "page": "Soru & Redaksiyon Fabrikası"},
     {"label": "6. Sınıf", "grade": "6. Sınıf", "exam": "5-7. Sınıf Akademik Gelişim", "page": "Soru & Redaksiyon Fabrikası"},
     {"label": "5. Sınıf", "grade": "5. Sınıf", "exam": "5-7. Sınıf Akademik Gelişim", "page": "Soru & Redaksiyon Fabrikası"},
@@ -270,7 +281,7 @@ KADEME_VITRIN_KARTLARI: List[Dict[str, str]] = [
         "title": "TYT & AYT Lise Kampı",
         "desc": "Süre yönetimi, paragraf-analitik denge ve derece hedefleyen mentorluk.",
         "accent": "#7C3AED",
-        "grade": "11-12. Sınıf (YKS)",
+        "grade": "12. Sınıf (YKS)",
         "exam": "2028 TYT - AYT",
         "target_page": "Dijimentor",
     },
@@ -286,6 +297,215 @@ KADEME_VITRIN_KARTLARI: List[Dict[str, str]] = [
     },
 ]
 
+# ==============================================================================
+# 5–12. SINIF TAM MÜFREDAT MOTORU (MAARİF MODELİ, LGS & YKS)
+# ==============================================================================
+_MIDDLE_COMMON: Dict[str, Dict[str, List[str]]] = {
+    "Türkçe": {
+        "Okuma ve Anlama": [
+            "Bağlamdan yararlanarak sözcük ve söz öbeklerinin anlamını tahmin etme",
+            "Metindeki ana düşünce, yardımcı düşünceler ve başlık ilişkisini kurma",
+            "Sözel mantık, tablo/grafik yorumlama ve muhakeme gerektiren metinleri çözümleme",
+            "Metinler arası karşılaştırma yapma ve çıkarımda bulunma",
+        ],
+        "Dil Bilgisi ve Yazım": [
+            "Sözcük türleri, fiilimsiler ve cümle ögeleri işlevini belirleme",
+            "Yazım kuralları ve noktalama işaretlerinin anlamı belirlemedeki işlevi",
+            "Cümlede anlam ilişkileri ve anlatım akıcılığını denetleme",
+        ],
+    },
+    "Matematik": {
+        "Sayılar ve İşlemler": [
+            "Doğal sayılar, tam sayılar, kesirler ve ondalık gösterimlerle çok adımlı işlemler",
+            "Çarpanlar ve katlar, EBOB-EKOK problem modellemeleri",
+            "Üslü ve kareköklü ifadelerde akıl yürütme, tahmin ve cebirsel ifadeler",
+        ],
+        "Geometri ve Veri Analizi": [
+            "Doğrular, açılar, çokgenler, üçgenler ve geometrik cisimler",
+            "Veri toplama, grafik yorumlama, olasılık ve merkezi eğilim ölçüleri",
+        ],
+    },
+    "Fen Bilimleri": {
+        "Fiziksel Süreçler ve Kuvvet": [
+            "Kuvvet, hareket, basınç, iş-enerji ve basit makineler",
+            "Mevsimlerin oluşumu, ışık, ses ve elektrik enerjisi uygulamaları",
+        ],
+        "Madde, Doğa ve Canlılar": [
+            "Maddenin yapısı, karışımlar, kimyasal tepkimeler ve asit-baz kavramları",
+            "Hücre, sistemler, DNA-genetik kod, kalıtım ve ekoloji/sürdürülebilirlik",
+        ],
+    },
+    "Sosyal Bilgiler / İnkılap Tarihi": {
+        "Tarih ve Kültür": [
+            "Birey, toplum, kültür ve miras; Millî Mücadele ve Atatürk İlkeleri",
+            "Cumhuriyet kazanımları, çağdaş gelişmeler ve tarihsel kanıt okuma",
+        ],
+        "İnsan, Yer ve Çevre": [
+            "Harita okuryazarlığı, nüfus, ekonomik faaliyetler ve çevre bilinci",
+            "Haklar, sorumluluklar, demokratik süreçler ve küresel bağlantılar",
+        ],
+    },
+    "İngilizce": {
+        "Reading & Comprehension": [
+            "Contextual vocabulary, inference and main idea in short texts",
+            "Everyday communication, invitations, preferences and plans",
+        ],
+        "Language & Reasoning": [
+            "Tenses, modals, comparatives and cohesive connectors in context",
+            "Table/chart interpretation and situational dialogue completion",
+        ],
+    },
+}
+
+_HIGH_COMMON: Dict[str, Dict[str, List[str]]] = {
+    "Türk Dili ve Edebiyatı": {
+        "Anlama ve Yorumlama": [
+            "Nitelikli metinlerde yapı, bakış açısı, anlatım biçimleri ve anlam çözümlemesi",
+            "Dönem/zihniyet ilişkisi, edebi sanatlar ve metinler arası etkileşim",
+        ],
+        "Dil Bilgisi ve Yazım": [
+            "Sözcükte ve cümlede anlam, paragraf kurgusu ve çeldirici analizi",
+            "Ses bilgisi, yazım kuralları, noktalama işaretleri ve anlatım bozukluğu",
+        ],
+    },
+    "Matematik": {
+        "Temel Kavramlar ve Cebir": [
+            "Temel kavramlar, bölünebilme, rasyonel/üslü/köklü ifadeler ve mutlak değer",
+            "Denklemler, eşitsizlikler, oran-orantı, problemler ve fonksiyonlar",
+        ],
+        "Analitik, Geometri ve İleri Konular": [
+            "Üçgenler, çokgenler, çember-daire, katı cisimler ve analitik geometri",
+            "Polinomlar, logaritma, diziler, trigonometri, limit, türev ve integral",
+        ],
+    },
+    "Fizik": {
+        "Mekanik ve Hareket": [
+            "Fizik bilimine giriş, hareket, Newton hareket yasaları, iş-güç-enerji",
+            "İtme-momentum, tork-denge, basit makineler, kaldırma kuvveti ve basınç",
+        ],
+        "Elektrik, Manyetizma ve Dalgalar": [
+            "Elektrostatik, elektrik akımı, manyetizma, elektromanyetik indüksiyon",
+            "Dalgalar, optik, çembersel hareket, harmonik hareket ve modern fizik",
+        ],
+    },
+    "Kimya": {
+        "Madde ve Tepkimeler": [
+            "Kimya bilimi, atom ve periyodik sistem, kimyasal türler arası etkileşimler",
+            "Maddenin halleri, mol kavramı, kimyasal hesaplamalar ve tepkime hızı/denge",
+        ],
+        "Çözeltiler ve Enerji": [
+            "Karışımlar, asitler-bazlar-tuzlar, kimya ve enerji, elektrokimya ve organik kimya",
+        ],
+    },
+    "Biyoloji": {
+        "Canlıların Temelleri ve Sistemler": [
+            "Yaşam bilimi biyoloji, hücre zarından madde geçişi, canlıların sınıflandırılması",
+            "Hücre bölünmeleri, kalıtım, ekosistem ekolojisi ve insan fizyolojisi sistemleri",
+        ],
+        "Genden Proteine ve Enerji": [
+            "Nükleik asitler, protein sentezi, fotosentez ve hücresel solunum",
+        ],
+    },
+    "Tarih": {
+        "Tarihsel Süreç ve İnkılap": [
+            "Tarih ve zaman, insanlığın ilk dönemleri, İslam tarihi ve Türk-İslam devletleri",
+            "Osmanlı kurumları ve diplomasi, Kurtuluş Savaşı ve Atatürk İlke ve İnkılapları",
+        ],
+    },
+    "Coğrafya": {
+        "Doğal ve Beşeri Sistemler": [
+            "Doğa ve insan, coğrafi koordinat ve iklim bilgisi, iç-dış kuvvetler",
+            "Nüfus, yerleşme, ekonomik faaliyetler, bölgeler ve küresel çevre sorunları",
+        ],
+    },
+}
+
+FULL_CURRICULUM_2028: Dict[str, Dict[str, Dict[str, List[str]]]] = {
+    "5. Sınıf": _MIDDLE_COMMON,
+    "6. Sınıf": _MIDDLE_COMMON,
+    "7. Sınıf": _MIDDLE_COMMON,
+    "8. Sınıf (LGS)": {
+        "Türkçe": {
+            "Okuma ve Muhakeme": [
+                "T.8.1.9. Sözel mantık ve muhakeme gerektiren metinleri analiz etme",
+                "Metindeki ana düşünce, çıkarım ve başlık/görsel ilişkisini kurma",
+                "Metinler arası karşılaştırma yapma ve yargı/kanıt türlerini ayırt etme",
+            ],
+            "Dil Bilgisi ve Yazım": [
+                "Fiilimsiler (isim-fiil, sıfat-fiil, zarf-fiil) ve cümle ögeleri",
+                "Yazım kuralları ve noktalama işaretlerinin anlamı belirlemedeki işlevi",
+            ],
+        },
+        "Matematik": {
+            "Sayılar ve Cebir": [
+                "Çarpanlar ve katlar, EBOB-EKOK problem modellemeleri",
+                "Üslü ve kareköklü ifadelerde akıl yürütme, tahmin ve işlemler",
+                "Cebirsel ifadeler, özdeşlikler ve birinci dereceden denklemler",
+            ],
+            "Geometri, Olasılık ve Veri": [
+                "Üçgenler, kenarortay/açıortay/yükseklik, eşlik-benzerlik ve dönüşüm geometrisi",
+                "Olasılık ve istatistiksel veri analizi / grafik dönüştürme",
+            ],
+        },
+        "Fen Bilimleri": {
+            "2028 LGS Fen Kazanımları": [
+                "Mevsimlerin oluşumu ve iklim/hava hareketleri",
+                "DNA, genetik kod, mutasyon, modifikasyon, adaptasyon ve biyoteknoloji",
+                "Basınç (katı, sıvı, gaz) ve madde-endüstri uygulamaları",
+                "Basit makineler, enerji dönüşümleri, elektrik yükleri ve elektrik enerjisi",
+            ],
+        },
+        "T.C. İnkılap Tarihi ve Atatürkçülük": {
+            "Millî Mücadele ve Çağdaş Türkiye": [
+                "Bir Kahraman Doğuyor ve Millî Uyanış: Bağımsızlık Yolunda Atılan Adımlar",
+                "Millî Bir Destan: Ya İstiklal Ya Ölüm ve Atatürkçülük/Çağdaşlaşan Türkiye",
+                "Demokratikleşme çabaları ve Atatürk'ten Sonraki Dış Politika",
+            ],
+        },
+        "İngilizce": {
+            "2028 LGS İngilizce Temaları": [
+                "Friendship, Teen Life, In the Kitchen, On the Phone, The Internet",
+                "Tourism, Chores, Science, Natural Forces & Reading Comprehension",
+            ],
+        },
+    },
+    "9. Sınıf": _HIGH_COMMON,
+    "10. Sınıf": _HIGH_COMMON,
+    "11. Sınıf (YKS)": _HIGH_COMMON,
+    "12. Sınıf (YKS)": _HIGH_COMMON,
+}
+
+
+def get_branches_for_grade_2028(grade: str) -> List[str]:
+    g_map = FULL_CURRICULUM_2028.get(grade)
+    if g_map:
+        return list(g_map.keys())
+    return list(_MIDDLE_COMMON.keys())
+
+
+def get_areas_for_grade_branch_2028(grade: str, branch: str) -> List[str]:
+    g_map = FULL_CURRICULUM_2028.get(grade, {})
+    if branch in g_map:
+        return list(g_map[branch].keys())
+    for other_g in FULL_CURRICULUM_2028.values():
+        if branch in other_g:
+            return list(other_g[branch].keys())
+    return ["Genel Kazanımlar"]
+
+
+def get_outcomes_for_2028(grade: str, branch: str, area: str) -> List[str]:
+    g_map = FULL_CURRICULUM_2028.get(grade, {})
+    if branch in g_map and area in g_map[branch]:
+        return list(g_map[branch][area])
+    for other_g in FULL_CURRICULUM_2028.values():
+        if branch in other_g and area in other_g[branch]:
+            return list(other_g[branch][area])
+    return ["Kazanım odaklı beceri ve muhakeme sorusu üretimi"]
+
+
+# ==============================================================================
+# DİĞER SABİTLER (RÖNTGEN, DİJİMENTOR, ABONELİK, VELİ MESAJLARI)
+# ==============================================================================
 OGRENCI_RONTGEN_PROFILLERI: Dict[str, Dict[str, Any]] = {
     "Elif Öztürk (8-A | 2028 LGS)": {
         "basari_endeksi": "%76.4",
@@ -297,11 +517,11 @@ OGRENCI_RONTGEN_PROFILLERI: Dict[str, Dict[str, Any]] = {
         "hedef_puan": "454 / 480",
         "hedef_delta": "26 Puan Fark",
         "kazanimlar": [
-            {"Ders / Alan": "Türkçe", "Kazanım / Konu": "Sözel Mantık & Muhakeme", "Çözülen": 58, "Başarı (%)": 46, "Teşhis Durumu": "🔴 Kritik Müdahale"},
-            {"Ders / Alan": "Türkçe", "Kazanım / Konu": "Paragrafta Ana Düşünce", "Çözülen": 135, "Başarı (%)": 86, "Teşhis Durumu": "🟢 Tam Hakimiyet"},
-            {"Ders / Alan": "Matematik", "Kazanım / Konu": "Sayısal Muhakeme & Cebirsel İfadeler", "Çözülen": 74, "Başarı (%)": 52, "Teşhis Durumu": "🔴 Kritik Müdahale"},
-            {"Ders / Alan": "Fen Bilimleri", "Kazanım / Konu": "Basınç & DNA Genetik Kod", "Çözülen": 62, "Başarı (%)": 74, "Teşhis Durumu": "🟡 Geliştirilmeli"},
-            {"Ders / Alan": "Sosyal / İnkılap", "Kazanım / Konu": "Millî Uyanış & Çağdaş Türkiye", "Çözülen": 48, "Başarı (%)": 88, "Teşhis Durumu": "🟢 Tam Hakimiyet"},
+            {"Ders / Alan": "Türkçe", "Kazanım / Konu": "T.8.1.9. Sözel mantık ve muhakeme gerektiren metinleri analiz etme", "Çözülen": 58, "Başarı (%)": 46, "Teşhis Durumu": "🔴 Kritik Müdahale"},
+            {"Ders / Alan": "Türkçe", "Kazanım / Konu": "Metindeki ana düşünce, çıkarım ve başlık/görsel ilişkisini kurma", "Çözülen": 135, "Başarı (%)": 86, "Teşhis Durumu": "🟢 Tam Hakimiyet"},
+            {"Ders / Alan": "Matematik", "Kazanım / Konu": "Çarpanlar ve katlar, EBOB-EKOK problem modellemeleri", "Çözülen": 74, "Başarı (%)": 52, "Teşhis Durumu": "🔴 Kritik Müdahale"},
+            {"Ders / Alan": "Fen Bilimleri", "Kazanım / Konu": "Basınç (katı, sıvı, gaz) ve madde-endüstri uygulamaları", "Çözülen": 62, "Başarı (%)": 74, "Teşhis Durumu": "🟡 Geliştirilmeli"},
+            {"Ders / Alan": "T.C. İnkılap Tarihi ve Atatürkçülük", "Kazanım / Konu": "Millî Mücadele ve Atatürk İlkeleri", "Çözülen": 48, "Başarı (%)": 88, "Teşhis Durumu": "🟢 Tam Hakimiyet"},
         ],
         "hatalar": {
             "Kavram / Bilgi Eksikliği": 36,
@@ -310,10 +530,10 @@ OGRENCI_RONTGEN_PROFILLERI: Dict[str, Dict[str, Any]] = {
             "Süre Yetişmemesi": 12,
         },
         "recete_ozet": (
-            "Sözel Mantık & Muhakeme (%46) ve Sayısal Muhakeme (%52) kazanımlarında tablo/şema kurma ve "
+            "Sözel Mantık & Muhakeme (%46) ve EBOB-EKOK modellemeleri (%52) kazanımlarında tablo/şema kurma ve "
             "çok adımlı yönerge takibi zayıf. Yanlışların %22'si soru kökündeki olumsuz ifadelerin hızlı okunmasından kaynaklanıyor."
         ),
-        "recete_aksiyon": "Soru & Redaksiyon Fabrikası üzerinden orta-zor seviyede 15 Sözel Mantık ve 15 Sayısal Muhakeme sorusu üretilip atanmaya hazır.",
+        "recete_aksiyon": "Soru & Redaksiyon Fabrikası üzerinden orta-zor seviyede Sözel Mantık ve Matematik telafi soruları üretilip atanmaya hazır.",
         "hedef_konu": "T.8.1.9. Sözel mantık ve muhakeme gerektiren metinleri analiz etme",
         "hedef_brans": "Türkçe",
         "hedef_sinif": "8. Sınıf (LGS)",
@@ -328,10 +548,10 @@ OGRENCI_RONTGEN_PROFILLERI: Dict[str, Dict[str, Any]] = {
         "hedef_puan": "468 / 480",
         "hedef_delta": "12 Puan Fark",
         "kazanimlar": [
-            {"Ders / Alan": "Türkçe", "Kazanım / Konu": "Metinler Arası Karşılaştırma", "Çözülen": 64, "Başarı (%)": 81, "Teşhis Durumu": "🟢 Tam Hakimiyet"},
-            {"Ders / Alan": "Matematik", "Kazanım / Konu": "Kareköklü İfadeler & Olasılık", "Çözülen": 72, "Başarı (%)": 55, "Teşhis Durumu": "🔴 Kritik Müdahale"},
-            {"Ders / Alan": "Fen Bilimleri", "Kazanım / Konu": "Mevsimler & İklim Hareketleri", "Çözülen": 54, "Başarı (%)": 89, "Teşhis Durumu": "🟢 Tam Hakimiyet"},
-            {"Ders / Alan": "Türkçe", "Kazanım / Konu": "Fiilimsiler & Cümle Ögeleri", "Çözülen": 86, "Başarı (%)": 71, "Teşhis Durumu": "🟡 Geliştirilmeli"},
+            {"Ders / Alan": "Türkçe", "Kazanım / Konu": "Metinler arası karşılaştırma yapma ve yargı/kanıt türlerini ayırt etme", "Çözülen": 64, "Başarı (%)": 81, "Teşhis Durumu": "🟢 Tam Hakimiyet"},
+            {"Ders / Alan": "Matematik", "Kazanım / Konu": "Üslü ve kareköklü ifadelerde akıl yürütme, tahmin ve işlemler", "Çözülen": 72, "Başarı (%)": 55, "Teşhis Durumu": "🔴 Kritik Müdahale"},
+            {"Ders / Alan": "Fen Bilimleri", "Kazanım / Konu": "Mevsimlerin oluşumu ve iklim/hava hareketleri", "Çözülen": 54, "Başarı (%)": 89, "Teşhis Durumu": "🟢 Tam Hakimiyet"},
+            {"Ders / Alan": "Türkçe", "Kazanım / Konu": "Fiilimsiler (isim-fiil, sıfat-fiil, zarf-fiil) ve cümle ögeleri", "Çözülen": 86, "Başarı (%)": 71, "Teşhis Durumu": "🟡 Geliştirilmeli"},
         ],
         "hatalar": {
             "Kavram / Bilgi Eksikliği": 27,
@@ -340,11 +560,11 @@ OGRENCI_RONTGEN_PROFILLERI: Dict[str, Dict[str, Any]] = {
             "Süre Yetişmemesi": 17,
         },
         "recete_ozet": (
-            "Kareköklü İfadeler (%55) alanında yaklaşık değer ve yeni nesil kurgu adımlarında sapma görülüyor. "
+            "Üslü ve kareköklü ifadeler (%55) alanında yaklaşık değer ve yeni nesil kurgu adımlarında sapma görülüyor. "
             "Hataların %35'i soru kökündeki sınırlandırıcı ifadelerin gözden kaçmasından kaynaklanıyor."
         ),
-        "recete_aksiyon": "Olumsuz soru köklü 20 Kareköklü İfade ve dikkat odaklı muhakeme seti oluşturularak Öğrenci Portalı'na gönderilmeye hazır.",
-        "hedef_konu": "Üslü ve kareköklü ifadelerde akıl yürütme ve tahmin",
+        "recete_aksiyon": "Olumsuz soru köklü Kareköklü İfade ve dikkat odaklı muhakeme seti oluşturularak Öğrenci Portalı'na gönderilmeye hazır.",
+        "hedef_konu": "Üslü ve kareköklü ifadelerde akıl yürütme, tahmin ve işlemler",
         "hedef_brans": "Matematik",
         "hedef_sinif": "8. Sınıf (LGS)",
     },
@@ -358,10 +578,10 @@ OGRENCI_RONTGEN_PROFILLERI: Dict[str, Dict[str, Any]] = {
         "hedef_puan": "442 / 500",
         "hedef_delta": "58 Puan Fark",
         "kazanimlar": [
-            {"Ders / Alan": "Türkçe", "Kazanım / Konu": "Paragrafta Çıkarım & Yorum", "Çözülen": 145, "Başarı (%)": 66, "Teşhis Durumu": "🟡 Geliştirilmeli"},
-            {"Ders / Alan": "Türkçe", "Kazanım / Konu": "Dil Bilgisi & Anlatım Bozukluğu", "Çözülen": 78, "Başarı (%)": 49, "Teşhis Durumu": "🔴 Kritik Müdahale"},
-            {"Ders / Alan": "Matematik", "Kazanım / Konu": "Geometri & Veri Analizi", "Çözülen": 88, "Başarı (%)": 54, "Teşhis Durumu": "🔴 Kritik Müdahale"},
-            {"Ders / Alan": "Fen Bilimleri", "Kazanım / Konu": "Basit Makineler & Enerji", "Çözülen": 56, "Başarı (%)": 84, "Teşhis Durumu": "🟢 Tam Hakimiyet"},
+            {"Ders / Alan": "Türk Dili ve Edebiyatı", "Kazanım / Konu": "Nitelikli metinlerde yapı, bakış açısı, anlatım biçimleri ve anlam çözümlemesi", "Çözülen": 145, "Başarı (%)": 66, "Teşhis Durumu": "🟡 Geliştirilmeli"},
+            {"Ders / Alan": "Türk Dili ve Edebiyatı", "Kazanım / Konu": "Ses bilgisi, yazım kuralları, noktalama işaretleri ve anlatım bozukluğu", "Çözülen": 78, "Başarı (%)": 49, "Teşhis Durumu": "🔴 Kritik Müdahale"},
+            {"Ders / Alan": "Matematik", "Kazanım / Konu": "Polinomlar, logaritma, diziler, trigonometri, limit, türev ve integral", "Çözülen": 88, "Başarı (%)": 54, "Teşhis Durumu": "🔴 Kritik Müdahale"},
+            {"Ders / Alan": "Fizik", "Kazanım / Konu": "İtme-momentum, tork-denge, basit makineler, kaldırma kuvveti ve basınç", "Çözülen": 56, "Başarı (%)": 84, "Teşhis Durumu": "🟢 Tam Hakimiyet"},
         ],
         "hatalar": {
             "Kavram / Bilgi Eksikliği": 34,
@@ -370,23 +590,23 @@ OGRENCI_RONTGEN_PROFILLERI: Dict[str, Dict[str, Any]] = {
             "Süre Yetişmemesi": 26,
         },
         "recete_ozet": (
-            "Dil Bilgisi (%49) ve Geometri/Veri Analizi (%54) alanlarında kural transferi ve süre yönetimi kritik öncelikte. "
+            "Dil Bilgisi (%49) ve İleri Matematik (%54) alanlarında kural transferi ve süre yönetimi kritik öncelikte. "
             "Süre yetişmemesi (%26) denemenin ikinci yarısında dikkat düşüşüyle birleşiyor."
         ),
-        "recete_aksiyon": "Zamanlı 15 Dil Bilgisi + 15 Analitik Muhakeme sorusundan oluşan hız ve doğruluk telafi paketi hazır.",
-        "hedef_konu": "Yazım kuralları ve noktalama işaretlerinin anlamı belirlemedeki işlevi",
-        "hedef_brans": "Türkçe",
-        "hedef_sinif": "11-12. Sınıf (YKS)",
+        "recete_aksiyon": "Zamanlı Dil Bilgisi + Analitik Muhakeme sorularından oluşan hız ve doğruluk telafi paketi hazır.",
+        "hedef_konu": "Ses bilgisi, yazım kuralları, noktalama işaretleri ve anlatım bozukluğu",
+        "hedef_brans": "Türk Dili ve Edebiyatı",
+        "hedef_sinif": "12. Sınıf (YKS)",
     },
 }
 
 ONCELIKLI_EKSIK_SIRASI: List[Dict[str, str]] = [
     {
         "priority": "1. ÖNCELİK • %46 İSABET",
-        "topic": "Sözel Mantık & Muhakeme",
+        "topic": "T.8.1.9. Sözel mantık ve muhakeme gerektiren metinleri analiz etme",
         "branch": "Türkçe",
         "grade": "8. Sınıf (LGS)",
-        "action": "Tablo/şema kurma ve 12 telafi sorusu",
+        "action": "Tablo/şema kurma ve telafi sorusu",
     },
     {
         "priority": "2. ÖNCELİK • %52 İSABET",
@@ -423,9 +643,9 @@ DIJIMENTOR_PRESETS: Dict[str, Dict[str, Any]] = {
         "focus": "Haftalık Dengeli Çalışma Programı",
         "weak": "TYT Türkçe paragraf süresi ve anlam-yorum çeldiricileri, problem kurma hızı, AYT konu tekrar gecikmeleri ve deneme tempo dalgalanması",
         "status": "Düzenli çalışma alışkanlığı var ancak TYT süresini verimli bölme ve hafta sonu deneme analizlerini puan/net aksiyonuna çevirme konusunda gelişime açık",
-        "branch": "Türkçe",
-        "grade": "11-12. Sınıf (YKS)",
-        "topic": "T.7.1.6. Metinler arası karşılaştırma yapma ve çıkarımda bulunma",
+        "branch": "Türk Dili ve Edebiyatı",
+        "grade": "12. Sınıf (YKS)",
+        "topic": "Nitelikli metinlerde yapı, bakış açısı, anlatım biçimleri ve anlam çözümlemesi",
     },
     "Dikkat & Çeldirici Tuzağı Temizliği": {
         "exam": "2028 LGS",
@@ -455,7 +675,7 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
             "Öğrenci Portalı mini deneme ve ipucu/çözüm asistanı",
             "2028 LGS canlı geri sayım ve haftalık hedef takibi",
             "Çeldirici analizli standart DOCX test çıktısı",
-            "Temel hata defteri ve kazanım özeti",
+            "Hata defteri ve kazanım özeti",
             "Mobil & masaüstü uyumlu kesintisiz çalışma arayüzü",
         ],
     },
@@ -474,7 +694,7 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
             "Dijimentor haftalık akıllı çalışma ve tempo programı",
             "Veli Takip Paneli canlı bildirim ve özet erişimi",
             "Soru köküne uygun başlıklandırılmış DOCX test çıktısı",
-            "Yanlış soruları otomatik çözüm rehberine aktarma",
+            "Yanlış soruları otomatik Hata Defteri'ne aktarma",
         ],
     },
     {
@@ -731,57 +951,6 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
     },
 ]
 
-CURRICULUM_TOPICS: Dict[str, Dict[str, List[str]]] = {
-    "Türkçe": {
-        "Okuma ve Anlama": [
-            "T.5.1.1. Bağlamdan yararlanarak bilmediği kelime gruplarının anlamını tahmin etme",
-            "T.6.1.4. Metindeki ana düşünce ve yardımcı düşünceleri belirleme",
-            "T.7.1.6. Metinler arası karşılaştırma yapma ve çıkarımda bulunma",
-            "T.8.1.9. Sözel mantık ve muhakeme gerektiren metinleri analiz etme",
-        ],
-        "Dil Bilgisi ve Yazım": [
-            "Fiilimsiler ve cümle ögeleri ilişkisi",
-            "Yazım kuralları ve noktalama işaretlerinin anlamı belirlemedeki işlevi",
-            "Cümlede anlam ve anlatım bozukluklarının tespiti",
-        ],
-    },
-    "Matematik": {
-        "Sayılar ve İşlemler": [
-            "Çarpanlar ve katlar, EBOB-EKOK problem modellemeleri",
-            "Üslü ve kareköklü ifadelerde akıl yürütme ve tahmin",
-            "Cebirsel ifadeler, özdeşlikler ve doğrusal denklemler",
-        ],
-        "Geometri ve Veri Analizi": [
-            "Üçgenler, eşlik-benzerlik ve dönüşüm geometrisi",
-            "Olasılık ve istatistiksel veri yorumlama",
-        ],
-    },
-    "Fen Bilimleri": {
-        "Fiziksel ve Kimyasal Süreçler": [
-            "Mevsimlerin oluşumu ve iklim hareketleri",
-            "DNA, genetik kod ve kalıtım problemleri",
-            "Basınç, madde ve endüstri uygulamaları",
-        ],
-        "Canlılar ve Enerji": [
-            "Basit makineler ve enerji dönüşümleri",
-            "Elektrik yükleri ve elektrik enerjisi",
-        ],
-    },
-    "Sosyal Bilgiler / İnkılap Tarihi": {
-        "Tarih ve Kültür": [
-            "Bir Kahraman Doğuyor ve Millî Uyanış süreci",
-            "Millî Birlik ve Çağdaş Türkiye",
-            "Birey, toplum ve aktif vatandaşlık",
-        ],
-    },
-    "İngilizce": {
-        "Okuma ve İletişim": [
-            "Friendship, Teen Life ve In the Kitchen bağlamsal okuma",
-            "On the Phone, The Internet ve Tourism akıl yürütme",
-        ],
-    },
-}
-
 PARENT_MESSAGE_TOPICS: Dict[str, Dict[str, Any]] = {
     "1. Akademik İlerleme ve Başarı Takibi": {
         "subtopics": [
@@ -986,9 +1155,7 @@ html, body, [class*="css"] {
 h1, h2, h3, .kp-kd-hero-title, .kp-page-strip-title, .kp-pkg-title, .kp-mod-title {
     font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 }
-.stApp {
-    background: #FFFFFF;
-}
+.stApp { background: #FFFFFF; }
 [data-testid="stHeader"] {
     background: rgba(255, 255, 255, 0.96);
     backdrop-filter: blur(8px);
@@ -1002,7 +1169,6 @@ h1, h2, h3, .kp-kd-hero-title, .kp-page-strip-title, .kp-pkg-title, .kp-mod-titl
     animation: kpSoftEnter 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* Kenar Çubuğu */
 section[data-testid="stSidebar"] {
     background: #FFFFFF;
     border-right: 1px solid var(--kp-border);
@@ -1076,7 +1242,6 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     line-height: 1.5;
 }
 
-/* Sadeleştirilmiş Üst Şerit */
 .kp-top-compact-bar {
     background: #F8FAFC;
     border: 1px solid #E2E8F0;
@@ -1102,7 +1267,6 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     white-space: nowrap;
 }
 
-/* Hero Alanı */
 .kp-kd-kicker {
     font-size: 0.73rem;
     font-weight: 800;
@@ -1338,28 +1502,6 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
 }
 .kp-card { margin-bottom: 0.65rem; }
 
-.kp-mod-card {
-    background: #FFFFFF;
-    border: 1px solid var(--kp-border);
-    border-top: 4px solid #2563EB;
-    border-radius: 14px;
-    padding: 1.1rem 1.2rem;
-    min-height: 124px;
-    margin-bottom: 0.55rem;
-}
-.kp-mod-title {
-    font-weight: 800;
-    font-size: 1rem;
-    color: var(--kp-navy);
-    margin-bottom: 0.35rem;
-}
-.kp-mod-desc {
-    font-size: 0.82rem;
-    color: var(--kp-muted);
-    line-height: 1.45;
-    margin: 0;
-}
-
 .kp-studio-banner {
     margin-bottom: 1.05rem;
     border-left: 4px solid #2563EB;
@@ -1454,9 +1596,7 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     align-items: center;
 }
 
-.kp-pkg-card {
-    margin-bottom: 0.65rem;
-}
+.kp-pkg-card { margin-bottom: 0.65rem; }
 .kp-pkg-featured {
     border: 2px solid #2563EB !important;
     background: linear-gradient(180deg, #EFF6FF 0%, #FFFFFF 35%) !important;
@@ -1636,7 +1776,7 @@ def _default_parent_stats() -> Dict[str, Any]:
         "blank": 20,
         "mentor_completion": 88,
         "strong_topic": "Okuma ve Anlama (%84)",
-        "weak_topic": "Sayısal Muhakeme ve Problem Çözme",
+        "weak_topic": "Sözel Mantık ve Muhakeme",
         "next_exam_date": (datetime.now() + timedelta(days=5)).strftime("%d.%m.%Y"),
         "next_exam_name": "Türkiye Geneli 2028 LGS Deneme Sınavı",
     }
@@ -1689,6 +1829,8 @@ def save_persisted_state() -> None:
         "parent_student_stats": st.session_state.get("parent_student_stats", _default_parent_stats()),
         "parent_announcements": st.session_state.get("parent_announcements", _default_parent_announcements()),
         "activity_log": st.session_state.get("activity_log", _default_activity_log()),
+        "question_bank_2028": st.session_state.get("question_bank_2028", []),
+        "error_notebook_2028": st.session_state.get("error_notebook_2028", []),
         "b2b_org_cache": st.session_state.get("b2b_org_cache"),
         "last_b2b_summary": st.session_state.get("last_b2b_summary", ""),
     }
@@ -2098,8 +2240,62 @@ def refund_quota(kind: str, amount: int = 1) -> None:
     sync_plan_quotas(get_bag_summary(), reset_usage=False)
 
 
+def add_to_question_bank(
+    grade: str,
+    branch: str,
+    outcome: str,
+    difficulty: str,
+    content_text: str,
+) -> None:
+    bank: List[Dict[str, str]] = st.session_state.setdefault("question_bank_2028", [])
+    bank.insert(
+        0,
+        {
+            "id": uuid.uuid4().hex[:6].upper(),
+            "date": datetime.now().strftime("%d.%m.%Y %H:%M"),
+            "grade": grade,
+            "branch": branch,
+            "outcome": outcome,
+            "difficulty": difficulty,
+            "content": content_text,
+        },
+    )
+    st.session_state["question_bank_2028"] = bank[:40]
+    save_persisted_state()
+
+
+def add_to_error_notebook(
+    question_num: int,
+    question_text: str,
+    user_ans: str,
+    correct_ans: str,
+    elapsed_sec: float,
+) -> None:
+    nb: List[Dict[str, Any]] = st.session_state.setdefault("error_notebook_2028", [])
+    now = datetime.now()
+    diag = "Süre / Dikkat Baskısı" if elapsed_sec > 90 else "Çeldirici / Kavram İncelemesi"
+    nb.insert(
+        0,
+        {
+            "id": uuid.uuid4().hex[:6].upper(),
+            "num": question_num,
+            "date": now.strftime("%d.%m.%Y %H:%M"),
+            "review_1d": (now + timedelta(days=1)).strftime("%d.%m.%Y"),
+            "review_3d": (now + timedelta(days=3)).strftime("%d.%m.%Y"),
+            "review_7d": (now + timedelta(days=7)).strftime("%d.%m.%Y"),
+            "user_ans": user_ans,
+            "correct_ans": correct_ans,
+            "elapsed_sec": round(elapsed_sec, 1),
+            "diagnosis": diag,
+            "question_text": question_text,
+        },
+    )
+    st.session_state["error_notebook_2028"] = nb[:50]
+    save_persisted_state()
+
+
 # ==============================================================================
-# GÜÇLÜ SORU AYRIŞTIRICI (parse_quiz_questions) & CEVAP ANAHTARI
+# GÜÇLÜ SORU AYRIŞTIRICI & DOCX ÜRETİCİLERİ
 # ==============================================================================
 def extract_answer_key(raw_text: str) -> Dict[int, str]:
     if not raw_text.strip():
@@ -2683,7 +2879,7 @@ def render_student_xray_panel() -> None:
             <div class="kp-studio-title">Öğrenci Röntgeni (2028) — Kazanım, Hata Kök Neden &amp; Telafi Tarama</div>
             <div class="kp-studio-sub">
                 Öğrencinin ders ve kazanım bazlı performans röntgenini çıkarın, hata türlerini ayrıştırın
-                ve tek tıkla Soru Fabrikası'na telafi paketi aktarın.
+                ve tek tıkla Soru Fabrikası, Dijimentor veya Veli Paneli'ne aktarın.
             </div>
         </div>
         """,
@@ -2739,7 +2935,7 @@ def render_student_xray_panel() -> None:
         unsafe_allow_html=True,
     )
 
-    a_col1, a_col2 = st.columns(2)
+    a_col1, a_col2, a_col3 = st.columns(3)
     with a_col1:
         if st.button("Kritik Kazanım İçin Soru Üret", key="xray_to_factory", type="primary", use_container_width=True):
             st.session_state["factory_focus_topic"] = prof["hedef_konu"]
@@ -2756,6 +2952,12 @@ def render_student_xray_panel() -> None:
             st.session_state["dk_focus"] = "Dikkat ve Çeldirici Tuzağı Azaltma"
             record_activity("Röntgen -> Dijimentor", f"{sec_student} bulguları mentorluğa aktarıldı")
             navigate_to("Dijimentor")
+    with a_col3:
+        if st.button("Veli Özeti olarak Aktar", key="xray_to_parent", use_container_width=True):
+            st.session_state["parent_student_stats"]["weak_topic"] = prof["hedef_konu"]
+            save_persisted_state()
+            record_activity("Röntgen -> Veli", f"{sec_student} kritik kazanımı Veli Paneline aktarıldı")
+            navigate_to("Veli Takip Paneli")
 
 
 def render_parent_notification_center() -> None:
@@ -2964,6 +3166,10 @@ if "parent_student_stats" not in st.session_state:
 if "parent_announcements" not in st.session_state:
     p_ann = _persisted.get("parent_announcements")
     st.session_state.parent_announcements = p_ann if isinstance(p_ann, list) and p_ann else _default_parent_announcements()
+if "question_bank_2028" not in st.session_state:
+    st.session_state["question_bank_2028"] = _persisted.get("question_bank_2028", []) if isinstance(_persisted.get("question_bank_2028"), list) else []
+if "error_notebook_2028" not in st.session_state:
+    st.session_state["error_notebook_2028"] = _persisted.get("error_notebook_2028", []) if isinstance(_persisted.get("error_notebook_2028"), list) else []
 if "b2b_org_cache" not in st.session_state and isinstance(_persisted.get("b2b_org_cache"), dict):
     st.session_state["b2b_org_cache"] = _persisted["b2b_org_cache"]
 if "last_b2b_summary" not in st.session_state and _persisted.get("last_b2b_summary"):
@@ -3004,7 +3210,8 @@ with st.sidebar:
             <div>{bag_summary_global['total_count']} Paket • {bag_summary_global['monthly_price']:,} ₺/ay</div>
             <div style="color:#475569;margin-top:0.25rem;">
                 Soru: <b>{int(st.session_state.remaining_question_quota):,}</b> / {bag_summary_global['monthly_quota']:,}<br>
-                Dijimentor: <b>{int(st.session_state.remaining_coach_quota)}</b> / {bag_summary_global['coach_quota']}
+                Dijimentor: <b>{int(st.session_state.remaining_coach_quota)}</b> / {bag_summary_global['coach_quota']}<br>
+                Havuz: <b>{len(st.session_state['question_bank_2028'])}</b> • Hata Defteri: <b>{len(st.session_state['error_notebook_2028'])}</b>
             </div>
         </div>
         """.replace(",", "."),
@@ -3046,8 +3253,8 @@ with st.sidebar:
 st.markdown(
     """
     <div class="kp-top-compact-bar">
-        <div><b>KURŞUN KALEM DİJİTAL OFİS • 2028</b> &nbsp;|&nbsp; Maarif Modeli • Dijimentor • Veli &amp; B2B</div>
-        <div>0850 532 16 29 &nbsp;•&nbsp; destek@kursunkalemdijitalofis.com.tr &nbsp;<span class="kp-top-badge">2028 Kurgusu</span></div>
+        <div><b>KURŞUN KALEM DİJİTAL OFİS • 2028</b> &nbsp;|&nbsp; 5–12. Sınıf Müfredatı • Dijimentor • Veli &amp; B2B</div>
+        <div>0850 532 16 29 &nbsp;•&nbsp; destek@kursunkalemdijitalofis.com.tr &nbsp;<span class="kp-top-badge">2028 Tam Sürüm</span></div>
     </div>
     """,
     unsafe_allow_html=True,
@@ -3058,7 +3265,7 @@ if current_page != "Ana Sayfa":
     render_page_strip(current_page)
 
 # ==============================================================================
-# 1. ANA SAYFA (2028 VİTRİN DÜZENİ + KURŞUN KALEM & ROZET VİTRİNİ)
+# 1. ANA SAYFA
 # ==============================================================================
 if current_page == "Ana Sayfa":
     hero_l, hero_r = st.columns([1.22, 1.0], vertical_alignment="center")
@@ -3073,7 +3280,7 @@ if current_page == "Ana Sayfa":
                 Tek platform.
             </h1>
             <p class="kp-kd-hero-sub">
-                7/24 Soru &amp; Redaksiyon Fabrikası • Her Hafta Dijimentor Planı • İnteraktif Mini Deneme •
+                7/24 Soru &amp; Redaksiyon Fabrikası • Her Hafta Dijimentor Planı • İnteraktif Mini Deneme &amp; Hata Defteri •
                 Öğrenci Röntgeni • Veli Takip &amp; B2B Zümre Yönetimi 2028 kurgusuyla <b>Kurşun Kalem Dijital Ofis</b>'te!
             </p>
             <div class="kp-kd-selector-label">2028 paketleri ve modülleri hızlı başlatmak için sınav ya da sınıfını seç:</div>
@@ -3237,153 +3444,242 @@ if current_page == "Ana Sayfa":
         st.rerun()
 
 # ==============================================================================
-# 2. SORU & REDAKSİYON FABRİKASI
+# 2. SORU & REDAKSİYON FABRİKASI (5–12. SINIF MÜFREDAT + KADEMELİ SERİ + HAVUZ)
 # ==============================================================================
 elif current_page == "Soru & Redaksiyon Fabrikası":
-    grade_options = ["5. Sınıf", "6. Sınıf", "7. Sınıf", "8. Sınıf (LGS)", "9-10. Sınıf", "11-12. Sınıf (YKS)"]
+    tab_gen, tab_bank = st.tabs(["Soru Üretim & Redaksiyon Stüdyosu", f"Soru Havuzu ({len(st.session_state['question_bank_2028'])})"])
 
-    if st.session_state.get("factory_branch") in CURRICULUM_TOPICS and st.session_state.get("factory_sync_pending"):
-        st.session_state["fab_branch_sel"] = st.session_state["factory_branch"]
-        areas_tmp = list(CURRICULUM_TOPICS[st.session_state["factory_branch"]].keys())
-        st.session_state["fab_area_sel"] = areas_tmp[0]
-        outcomes_tmp = CURRICULUM_TOPICS[st.session_state["factory_branch"]][areas_tmp[0]]
-        focus_t = st.session_state.get("factory_focus_topic")
-        st.session_state["fab_outcome_sel"] = focus_t if focus_t in outcomes_tmp else outcomes_tmp[0]
-        if focus_t:
-            st.session_state["fab_theme_inp"] = focus_t
-        st.session_state["factory_sync_pending"] = False
+    with tab_gen:
+        if st.session_state.get("factory_grade") in GRADE_LEVELS_2028 and st.session_state.get("factory_grade_sync"):
+            st.session_state["fab_grade_sel"] = st.session_state["factory_grade"]
+            st.session_state["factory_grade_sync"] = False
 
-    if st.session_state.get("factory_grade") in grade_options and st.session_state.get("factory_grade_sync"):
-        st.session_state["fab_grade_sel"] = st.session_state["factory_grade"]
-        st.session_state["factory_grade_sync"] = False
+        cur_grade_init = st.session_state.get("fab_grade_sel", "8. Sınıf (LGS)")
+        if cur_grade_init not in GRADE_LEVELS_2028:
+            cur_grade_init = "8. Sınıf (LGS)"
 
-    if st.session_state.get("factory_focus_topic"):
-        st.info(f"Aktarılan odak konu: **{st.session_state['factory_focus_topic']}**")
+        if st.session_state.get("factory_sync_pending"):
+            st.session_state["fab_grade_sel"] = st.session_state.get("factory_grade", cur_grade_init)
+            g_tmp = st.session_state["fab_grade_sel"]
+            b_list = get_branches_for_grade_2028(g_tmp)
+            target_b = st.session_state.get("factory_branch")
+            st.session_state["fab_branch_sel"] = target_b if target_b in b_list else b_list[0]
+            a_list = get_areas_for_grade_branch_2028(g_tmp, st.session_state["fab_branch_sel"])
+            st.session_state["fab_area_sel"] = a_list[0]
+            o_list = get_outcomes_for_2028(g_tmp, st.session_state["fab_branch_sel"], a_list[0])
+            focus_t = st.session_state.get("factory_focus_topic")
+            if focus_t and focus_t not in o_list:
+                st.session_state["fab_custom_outcome_chk"] = True
+                st.session_state["fab_custom_outcome_inp"] = focus_t
+            else:
+                st.session_state["fab_outcome_sel"] = focus_t if focus_t in o_list else o_list[0]
+            if focus_t:
+                st.session_state["fab_theme_inp"] = focus_t
+            st.session_state["factory_sync_pending"] = False
 
-    with st.expander("Test ve Kurum Parametreleri (2028)", expanded=True):
-        r1c1, r1c2, r1c3 = st.columns(3)
-        with r1c1:
-            institution = st.text_input("Kurum / Ofis Adı", value=BRAND_NAME, key="fab_inst_inp")
-            branch = st.selectbox("Branş Seçimi", list(CURRICULUM_TOPICS.keys()), key="fab_branch_sel")
-            grade = st.selectbox("Sınıf Seviyesi", grade_options, key="fab_grade_sel")
-        with r1c2:
-            areas = list(CURRICULUM_TOPICS[branch].keys())
-            if st.session_state.get("fab_area_sel") not in areas:
-                st.session_state["fab_area_sel"] = areas[0]
-            learning_area = st.selectbox("Öğrenme Alanı", areas, key="fab_area_sel")
+        if st.session_state.get("factory_focus_topic"):
+            st.info(f"Aktarılan odak konu: **{st.session_state['factory_focus_topic']}**")
 
-            outcomes = CURRICULUM_TOPICS[branch][learning_area]
-            if st.session_state.get("fab_outcome_sel") not in outcomes:
-                st.session_state["fab_outcome_sel"] = outcomes[0]
-            outcome = st.selectbox("Hedef Kazanım", outcomes, key="fab_outcome_sel")
+        with st.expander("5–12. Sınıf Müfredat, Zorluk & Kalite Parametreleri (2028)", expanded=True):
+            r1c1, r1c2, r1c3 = st.columns(3)
+            with r1c1:
+                institution = st.text_input("Kurum / Ofis Adı", value=BRAND_NAME, key="fab_inst_inp")
+                grade = st.selectbox("Sınıf Seviyesi (5–12)", GRADE_LEVELS_2028, key="fab_grade_sel")
+                branches = get_branches_for_grade_2028(grade)
+                if st.session_state.get("fab_branch_sel") not in branches:
+                    st.session_state["fab_branch_sel"] = branches[0]
+                branch = st.selectbox("Branş Seçimi", branches, key="fab_branch_sel")
+            with r1c2:
+                areas = get_areas_for_grade_branch_2028(grade, branch)
+                if st.session_state.get("fab_area_sel") not in areas:
+                    st.session_state["fab_area_sel"] = areas[0]
+                learning_area = st.selectbox("Öğrenme Alanı / Tema", areas, key="fab_area_sel")
 
-            if "fab_theme_inp" not in st.session_state:
-                st.session_state["fab_theme_inp"] = st.session_state.get("factory_focus_topic") or "2028 DİJİTAL OFİS & HAYAT"
-            context_theme = st.text_input("Bağlam / Tema / Senaryo", key="fab_theme_inp")
-        with r1c3:
-            question_count = st.slider("Üretilecek Soru Adedi (Test Modu)", 1, 10, 3, key="fab_q_cnt")
-            difficulty = st.select_slider(
-                "Zorluk Derecesi",
-                options=["Kolay", "Orta", "Orta-Zor", "Zor (2028 LGS/ÖSYM)"],
-                value="Orta-Zor",
-                key="fab_diff_sld",
+                use_custom_outcome = st.checkbox("Özel / Manuel Kazanım veya Konu Gir", key="fab_custom_outcome_chk")
+                if use_custom_outcome:
+                    outcome = st.text_input(
+                        "Özel Kazanım / Zümre Konusu",
+                        value=st.session_state.get("fab_custom_outcome_inp", ""),
+                        placeholder="Örn: Paragrafta yardımcı düşünce & çeldirici kurgusu",
+                        key="fab_custom_outcome_inp",
+                    ) or "Özel Kazanım Odaklı Soru Üretimi"
+                else:
+                    outcomes = get_outcomes_for_2028(grade, branch, learning_area)
+                    if st.session_state.get("fab_outcome_sel") not in outcomes:
+                        st.session_state["fab_outcome_sel"] = outcomes[0]
+                    outcome = st.selectbox("Hedef Kazanım", outcomes, key="fab_outcome_sel")
+
+                if "fab_theme_inp" not in st.session_state:
+                    st.session_state["fab_theme_inp"] = st.session_state.get("factory_focus_topic") or "2028 DİJİTAL OFİS & HAYAT"
+                context_theme = st.text_input("Bağlam / Tema / Senaryo", key="fab_theme_inp")
+            with r1c3:
+                production_mode = st.radio(
+                    "Üretim Modu",
+                    ["Standart Test Paketi", "Kademeli Zorluk Serisi (Kolay → Orta → Zor)"],
+                    key="fab_prod_mode",
+                )
+                question_count = st.slider("Soru Adedi", 1, 10, 3, key="fab_q_cnt")
+                difficulty = st.select_slider(
+                    "Temel Zorluk Düzeyi",
+                    options=["Kolay", "Orta", "Orta-Zor", "Zor (2028 LGS/ÖSYM)"],
+                    value="Orta-Zor",
+                    key="fab_diff_sld",
+                )
+                distractor_mode = st.selectbox(
+                    "Çeldirici & Kök Stratejisi",
+                    [
+                        "Muhakeme & Çeldirici Tuzağı Dengeli",
+                        "Olumsuz Kök ('Değildir / Ulaşılamaz') Odaklı",
+                        "Öncüllü & Bağlamsal Analiz Odaklı",
+                    ],
+                    index=0,
+                    key="fab_dist_sel",
+                )
+                auto_review = st.checkbox("Çift Katmanlı Redaksiyon & Çeldirici Kalite Denetimi", value=True, key="fab_rev_chk")
+
+        if st.button("Kurumsal Soru Paketi Üret (2028)", type="primary", key="fab_gen_btn"):
+            quota_ok, quota_msg = consume_quota("question", int(question_count))
+            if not quota_ok:
+                st.error(quota_msg)
+            else:
+                mode_instruction = (
+                    f"Her soruyu '{difficulty}' seviyesinde üret."
+                    if production_mode == "Standart Test Paketi"
+                    else "Soruları Kolay (pekiştirme), Orta (kazanım) ve Zor (2028 LGS/YKS muhakeme) olarak kademelendir."
+                )
+                sys_prompt = (
+                    "Sen Türkiye Yüzyılı Maarif Modeli, 2028 LGS ve 2028 YKS ölçme-değerlendirme standartlarında "
+                    "uzman bir kıdemli test editörüsün. Soruların özgün, dilbilgisi ve noktalama açısından "
+                    "kusursuz, çeldiricilerinin uzunluk ve dilbilgisi paralelliği açısından dengeli olmasını sağla. "
+                    "Her soruyu 'Soru 1', 'Soru 2'... şeklinde numaralandır ve şıkları 'A)', 'B)', 'C)', 'D)' "
+                    "olarak yaz. Her sorunun altında kısa bir [Çözüm & Şık Gerekçesi] ve redaksiyon açıksa "
+                    "[Redaksiyon & Çeldirici Kalite Notu] ekle; en sonda mutlaka 'Cevap Anahtarı' başlığı altında "
+                    "'1-A', '2-C' formatında net anahtar ver."
+                )
+                user_prompt = (
+                    f"Kurum: {institution} (2028)\nSınıf Seviyesi: {grade}\nBranş: {branch}\n"
+                    f"Öğrenme Alanı: {learning_area}\nHedef Kazanım: {outcome}\n"
+                    f"Bağlam / Tema / Senaryo: {context_theme}\nZorluk Kurgusu: {mode_instruction}\n"
+                    f"Çeldirici & Kök Stratejisi: {distractor_mode}\nSoru Adedi: {question_count}\n"
+                    f"Redaksiyon & Kalite Denetimi: {'Aktif' if auto_review else 'Pasif'}\n\n"
+                    "Lütfen numaralandırılmış çoktan seçmeli (Soru 1, Soru 2... ve A, B, C, D şıkları) özgün sorular üret."
+                )
+                skel_slot = st.empty()
+                render_loading_skeleton(skel_slot, lines=4)
+                try:
+                    result = call_gemini_text(prompt=user_prompt, system_instruction=sys_prompt)
+                    skel_slot.empty()
+                    st.session_state.generated_test_text = result
+                    st.session_state["last_fab_meta"] = {
+                        "grade": grade,
+                        "branch": branch,
+                        "outcome": outcome,
+                        "difficulty": difficulty if production_mode == "Standart Test Paketi" else "Kademeli Seri",
+                    }
+                    record_activity("Soru Fabrikası (2028)", f"{grade} • {branch} • {question_count} soru üretildi")
+                    st.success(
+                        f"Soru paketi oluşturuldu. Kalan soru kotası: "
+                        f"{int(st.session_state.remaining_question_quota):,}".replace(",", ".")
+                    )
+                except Exception as exc:
+                    skel_slot.empty()
+                    refund_quota("question", int(question_count))
+                    st.error(f"Soru üretim hatası oluştu: {exc}")
+
+        if st.session_state.generated_test_text:
+            st.markdown("---")
+            st.markdown("### Üretilen Test, Çözüm Gerekçeleri ve Redaksiyon Çıktısı")
+            st.markdown(st.session_state.generated_test_text)
+
+            docx_bytes = build_test_docx(
+                institution=institution,
+                branch=branch,
+                grade=grade,
+                learning_area=learning_area,
+                outcome=outcome,
+                context_theme=context_theme,
+                generated_content=st.session_state.generated_test_text,
             )
-            distractor_mode = st.selectbox(
-                "Çeldirici & Kök Stratejisi",
-                [
-                    "Muhakeme & Çeldirici Tuzağı Dengeli",
-                    "Olumsuz Kök ('Değildir / Ulaşılamaz') Odaklı",
-                    "Öncüllü & Bağlamsal Analiz Odaklı",
-                ],
-                index=0,
-                key="fab_dist_sel",
-            )
-            auto_review = st.checkbox("Otomatik Soru Kalite & Redaksiyon Denetimi", value=True, key="fab_rev_chk")
+            act_c1, act_c2, act_c3, act_c4 = st.columns(4)
+            with act_c1:
+                st.download_button(
+                    label="Testi DOCX İndir",
+                    data=docx_bytes,
+                    file_name=f"kursun_kalem_ofis_2028_{branch.lower().replace(' ', '_')}_test.docx",
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    use_container_width=True,
+                )
+            with act_c2:
+                if st.button("Soru Havuzuna Kaydet", use_container_width=True):
+                    add_to_question_bank(
+                        grade=grade,
+                        branch=branch,
+                        outcome=outcome,
+                        difficulty=difficulty,
+                        content_text=st.session_state.generated_test_text,
+                    )
+                    record_activity("Soru Havuzu", f"{grade} • {branch} testi havuza kaydedildi")
+                    st.toast("Test Soru Havuzuna kaydedildi.")
+                    st.rerun()
+            with act_c3:
+                if st.button("Mini Deneme Olarak Çöz", use_container_width=True):
+                    st.session_state["portal_exam_source"] = st.session_state.generated_test_text
+                    record_activity("Köprü", "Test Öğrenci Portalı mini denemesine aktarıldı")
+                    navigate_to("Öğrenci Portalı & Çözüm")
+            with act_c4:
+                if st.button("İlk Soruyu Çözüm Rehberine Gönder", use_container_width=True):
+                    parsed_q = parse_quiz_questions(st.session_state.generated_test_text)
+                    st.session_state["portal_question_draft"] = (
+                        parsed_q[0]["full_text"] if parsed_q else st.session_state.generated_test_text[:1000]
+                    )
+                    navigate_to("Öğrenci Portalı & Çözüm")
 
-    if st.button("Kurumsal Soru Paketi Üret (2028)", type="primary", key="fab_gen_btn"):
-        quota_ok, quota_msg = consume_quota("question", int(question_count))
-        if not quota_ok:
-            st.error(quota_msg)
+    with tab_bank:
+        bank_items: List[Dict[str, str]] = st.session_state.get("question_bank_2028", [])
+        if not bank_items:
+            st.info("Soru havuzunda henüz kayıtlı test bulunmuyor. Üretim sekmesinden **Soru Havuzuna Kaydet** butonunu kullanabilirsiniz.")
         else:
-            sys_prompt = (
-                "Sen Türkiye Yüzyılı Maarif Modeli, 2028 LGS ve 2028 YKS ölçme-değerlendirme standartlarında "
-                "uzman bir kıdemli test editörüsün. Soruların özgün, dilbilgisi ve noktalama açısından "
-                "kusursuz, çeldiricilerinin pedagojik olarak gerekçeli olmasını sağla. "
-                "Her soruyu 'Soru 1', 'Soru 2'... şeklinde numaralandır ve şıkları 'A)', 'B)', 'C)', 'D)' "
-                "olarak yaz. Otomatik redaksiyon açıksa her sorunun sonunda kısa bir [Redaksiyon & Çeldirici Notu] "
-                "ekle ve en sonda mutlaka 'Cevap Anahtarı' başlığı altında '1-A', '2-C' formatında net anahtar ver."
+            combined_bank_text = "\n\n".join(
+                [f"=== [{b['grade']} | {b['branch']} | {b['difficulty']}] {b['outcome']} ===\n{b['content']}" for b in bank_items]
             )
-            user_prompt = (
-                f"Kurum: {institution} (2028)\nBranş: {branch}\nSınıf Seviyesi: {grade}\n"
-                f"Öğrenme Alanı: {learning_area}\nHedef Kazanım: {outcome}\n"
-                f"Bağlam / Tema / Senaryo: {context_theme}\nZorluk Derecesi: {difficulty}\n"
-                f"Çeldirici & Kök Stratejisi: {distractor_mode}\nSoru Adedi: {question_count}\n"
-                f"Otomatik Redaksiyon ve Kalite Denetimi: {'Aktif' if auto_review else 'Pasif'}\n\n"
-                "Lütfen numaralandırılmış çoktan seçmeli (Soru 1, Soru 2... ve A, B, C, D şıkları) özgün sorular üret."
+            bundle_docx = build_test_docx(
+                institution=BRAND_NAME,
+                branch="Karma Zümre Havuzu",
+                grade="5–12. Sınıf",
+                learning_area="Kayıtlı Soru Havuzu",
+                outcome="Havuzdaki Seçili Kazanımlar",
+                context_theme="2028 Kurumsal Soru Kitapçığı",
+                generated_content=combined_bank_text,
             )
-            skel_slot = st.empty()
-            render_loading_skeleton(skel_slot, lines=4)
-            try:
-                result = call_gemini_text(prompt=user_prompt, system_instruction=sys_prompt)
-                skel_slot.empty()
-                st.session_state.generated_test_text = result
-                record_activity("Soru Fabrikası (2028)", f"{branch} • {question_count} soru üretildi")
-                st.success(
-                    f"Soru paketi oluşturuldu. Kalan soru kotası: "
-                    f"{int(st.session_state.remaining_question_quota):,}".replace(",", ".")
-                )
-            except Exception as exc:
-                skel_slot.empty()
-                refund_quota("question", int(question_count))
-                st.error(f"Soru üretim hatası oluştu: {exc}")
-
-    if st.session_state.generated_test_text:
-        st.markdown("---")
-        st.markdown("### Üretilen Test ve Redaksiyon Çıktısı")
-        st.markdown(st.session_state.generated_test_text)
-
-        docx_bytes = build_test_docx(
-            institution=institution,
-            branch=branch,
-            grade=grade,
-            learning_area=learning_area,
-            outcome=outcome,
-            context_theme=context_theme,
-            generated_content=st.session_state.generated_test_text,
-        )
-        act_c1, act_c2, act_c3 = st.columns(3)
-        with act_c1:
             st.download_button(
-                label="Testi DOCX Olarak İndir",
-                data=docx_bytes,
-                file_name=f"kursun_kalem_ofis_2028_{branch.lower().replace(' ', '_')}_test.docx",
+                label=f"Tüm Havuzu ({len(bank_items)} Kayıt) Toplu DOCX İndir",
+                data=bundle_docx,
+                file_name="kursun_kalem_2028_soru_havuzu.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                use_container_width=True,
             )
-        with act_c2:
-            if st.button("Mini Deneme Olarak Çöz", use_container_width=True):
-                st.session_state["portal_exam_source"] = st.session_state.generated_test_text
-                record_activity("Köprü", "Test Öğrenci Portalı mini denemesine aktarıldı")
-                navigate_to("Öğrenci Portalı & Çözüm")
-        with act_c3:
-            if st.button("İlk Soruyu Çözüm Rehberine Gönder", use_container_width=True):
-                parsed_q = parse_quiz_questions(st.session_state.generated_test_text)
-                st.session_state["portal_question_draft"] = (
-                    parsed_q[0]["full_text"] if parsed_q else st.session_state.generated_test_text[:1000]
-                )
-                navigate_to("Öğrenci Portalı & Çözüm")
+            for b_item in bank_items:
+                with st.expander(f"[{b_item['id']}] {b_item['grade']} • {b_item['branch']} ({b_item['difficulty']}) — {b_item['date']}"):
+                    st.caption(f"Kazanım: {b_item['outcome']}")
+                    st.markdown(b_item["content"])
+                    if st.button("Bu Testi Portala Aktar", key=f"load_bank_{b_item['id']}"):
+                        st.session_state["portal_exam_source"] = b_item["content"]
+                        navigate_to("Öğrenci Portalı & Çözüm")
 
 # ==============================================================================
-# 3. ÖĞRENCİ PORTALI & ÇÖZÜM
+# 3. ÖĞRENCİ PORTALI & ÇÖZÜM (+ SÜRE TAKİBİ + HATA DEFTERİ)
 # ==============================================================================
 elif current_page == "Öğrenci Portalı & Çözüm":
-    tab_exam, tab_hint = st.tabs(["İnteraktif Mini Deneme & Net Analizi", "Adımlı Çözüm Asistanı"])
+    tab_exam, tab_hint, tab_err = st.tabs([
+        "İnteraktif Mini Deneme & Süre Analizi",
+        "Adımlı Çözüm Asistanı",
+        f"Hata Defteri ({len(st.session_state['error_notebook_2028'])})",
+    ])
 
     with tab_exam:
         exam_source = st.text_area(
             "Deneme Soru Metni (Soru Fabrikasından otomatik gelir veya buraya yapıştır)",
             value=st.session_state.get("portal_exam_source") or st.session_state.get("generated_test_text", ""),
-            height=130,
+            height=120,
             placeholder="Soru 1) ... A) ... B) ... C) ... D) ... Cevap Anahtarı: 1-B",
         )
         st.session_state["portal_exam_source"] = exam_source
@@ -3395,23 +3691,40 @@ elif current_page == "Öğrenci Portalı & Çözüm":
                 "bir test üretin veya 'Soru 1 ... A) ... B) ... C) ... D) ...' biçiminde sorular yapıştırın."
             )
         else:
+            if "exam_start_ts" not in st.session_state:
+                st.session_state["exam_start_ts"] = time.time()
+
             st.markdown(f"#### Aktif Mini Deneme ({len(questions)} Soru)")
             st.caption("Boş bırakmak isterseniz **Boş Bırak** seçeneğini işaretleyebilir veya seçim yapmayabilirsiniz; boş sorular yanlışa sayılmaz.")
             user_answers: Dict[int, Optional[str]] = {}
+            q_durations: Dict[int, float] = {}
 
             for idx, q in enumerate(questions):
                 with st.container(border=True):
                     st.markdown(q["stem"])
-                    opts = list(q["options"].keys()) + ["BOŞ"]
-                    chosen = st.radio(
-                        f"Soru {q['num']} Yanıtın",
-                        options=opts,
-                        index=None,
-                        format_func=lambda k, o_map=q["options"]: "Boş Bırak" if k == "BOŞ" else f"{k}) {o_map[k]}",
-                        horizontal=True,
-                        key=f"mini_q_{q['num']}_{idx}",
-                    )
-                    user_answers[idx] = None if chosen in (None, "BOŞ") else chosen
+                    c_opt, c_sec = st.columns([3.4, 1.0])
+                    with c_opt:
+                        opts = list(q["options"].keys()) + ["BOŞ"]
+                        chosen = st.radio(
+                            f"Soru {q['num']} Yanıtın",
+                            options=opts,
+                            index=None,
+                            format_func=lambda k, o_map=q["options"]: "Boş Bırak" if k == "BOŞ" else f"{k}) {o_map[k]}",
+                            horizontal=True,
+                            key=f"mini_q_{q['num']}_{idx}",
+                        )
+                        user_answers[idx] = None if chosen in (None, "BOŞ") else chosen
+                    with c_sec:
+                        q_durations[idx] = float(
+                            st.number_input(
+                                f"Süre (sn) • S{q['num']}",
+                                min_value=5,
+                                max_value=300,
+                                value=65,
+                                step=5,
+                                key=f"mini_dur_{q['num']}_{idx}",
+                            )
+                        )
 
             if st.button("Denemeyi Bitir ve Netimi Hesapla", type="primary"):
                 correct_cnt = 0
@@ -3420,10 +3733,13 @@ elif current_page == "Öğrenci Portalı & Çözüm":
                 ungraded_cnt = 0
                 wrong_questions: List[Dict[str, Any]] = []
                 result_rows: List[Dict[str, str]] = []
+                total_sec = 0.0
 
                 for idx, q in enumerate(questions):
                     u_ans = user_answers[idx]
                     c_ans = q.get("correct")
+                    sec_val = q_durations.get(idx, 60.0)
+                    total_sec += sec_val
 
                     if u_ans is None:
                         blank_cnt += 1
@@ -3438,12 +3754,20 @@ elif current_page == "Öğrenci Portalı & Çözüm":
                         wrong_cnt += 1
                         wrong_questions.append(q)
                         status_txt = "Yanlış"
+                        add_to_error_notebook(
+                            question_num=q["num"],
+                            question_text=q["full_text"],
+                            user_ans=u_ans,
+                            correct_ans=c_ans,
+                            elapsed_sec=sec_val,
+                        )
 
                     result_rows.append(
                         {
                             "Soru": f"Soru {q['num']}",
                             "Senin Yanıtın": u_ans or "Boş",
                             "Doğru Cevap": c_ans or "Belirtilmedi",
+                            "Süre (sn)": f"{int(sec_val)} sn",
                             "Durum": status_txt,
                         }
                     )
@@ -3451,6 +3775,7 @@ elif current_page == "Öğrenci Portalı & Çözüm":
                 graded_total = correct_cnt + wrong_cnt
                 net_score = max(0.0, correct_cnt - (wrong_cnt / 3.0))
                 accuracy = (correct_cnt / graded_total * 100.0) if graded_total > 0 else 0.0
+                avg_sec = total_sec / max(1, len(questions))
 
                 st.session_state["last_exam_report"] = {
                     "correct": correct_cnt,
@@ -3458,12 +3783,13 @@ elif current_page == "Öğrenci Portalı & Çözüm":
                     "blank": blank_cnt,
                     "net": net_score,
                     "accuracy": accuracy,
+                    "avg_sec": avg_sec,
                     "rows": result_rows,
                     "first_wrong": wrong_questions[0]["full_text"] if wrong_questions else "",
                 }
                 record_activity(
                     "Mini Deneme",
-                    f"{correct_cnt}D {wrong_cnt}Y {blank_cnt}B • {net_score:.2f} Net (%{accuracy:.0f})",
+                    f"{correct_cnt}D {wrong_cnt}Y {blank_cnt}B • {net_score:.2f} Net • Ort {avg_sec:.0f} sn/soru",
                 )
 
             report = st.session_state.get("last_exam_report")
@@ -3473,7 +3799,7 @@ elif current_page == "Öğrenci Portalı & Çözüm":
                 r1.metric("Doğru / Boş", f"{report['correct']}D / {report['blank']}B")
                 r2.metric("Yanlış Sayısı", f"{report['wrong']} Soru")
                 r3.metric("Hesaplanan Net (3Y=1D)", f"{report['net']:.2f} Net")
-                r4.metric("Başarı Oranı", f"%{report['accuracy']:.1f}")
+                r4.metric("Ort. Soru Süresi", f"{report['avg_sec']:.0f} sn (%{report['accuracy']:.1f})")
 
                 st.dataframe(report["rows"], use_container_width=True, hide_index=True)
 
@@ -3536,17 +3862,38 @@ elif current_page == "Öğrenci Portalı & Çözüm":
                     skel_hint.empty()
                     st.error(f"Çözüm üretilirken hata oluştu: {exc}")
 
+    with tab_err:
+        err_list: List[Dict[str, Any]] = st.session_state.get("error_notebook_2028", [])
+        if not err_list:
+            st.info("Hata defterinde henüz kayıt bulunmuyor. Mini denemede yanlış işaretlenen sorular otomatik buraya eklenir.")
+        else:
+            st.caption("Aralıklı tekrar takvimi: 1. Gün • 3. Gün • 7. Gün")
+            for item in err_list:
+                with st.container(border=True):
+                    st.markdown(
+                        f"**[{item['id']}] Soru {item['num']}** • Teşhis: **{item['diagnosis']}** • "
+                        f"Senin: `{item['user_ans']}` / Doğru: `{item['correct_ans']}` • Süre: `{item['elapsed_sec']} sn`"
+                    )
+                    st.caption(
+                        f"Tekrar Hatırlatmaları → 1. Gün: {item['review_1d']} | "
+                        f"3. Gün: {item['review_3d']} | 7. Gün: {item['review_7d']}"
+                    )
+                    st.markdown(item["question_text"])
+                    if st.button("Çözüm Rehberinde Aç", key=f"err_solve_{item['id']}"):
+                        st.session_state["portal_question_draft"] = item["question_text"]
+                        st.toast("Soru Adımlı Çözüm Asistanına aktarıldı.")
+
 # ==============================================================================
-# 4. DİJİMENTOR (2028)
+# 4. DİJİMENTOR (2028 + AŞAMALI KAMP PLANI)
 # ==============================================================================
 elif current_page == "Dijimentor":
     st.markdown(
         """
         <div class="kp-studio-banner">
-            <div class="kp-studio-title">Dijimentor (2028) — Akıllı Sınav &amp; Performans Mentorluğu</div>
+            <div class="kp-studio-title">Dijimentor (2028) — Akıllı Sınav, Faz Planı &amp; Performans Mentorluğu</div>
             <div class="kp-studio-sub">
                 2028 hedef sınavına, haftalık çalışma kapasitene ve çeldirici/zaman analizine göre
-                ölçülebilir haftalık aksiyon planı ve deneme stratejisi üretir.
+                aşamalı kamp ve haftalık aksiyon planı üretir.
             </div>
         </div>
         """,
@@ -3579,9 +3926,9 @@ elif current_page == "Dijimentor":
     k_c3.markdown(
         """
         <div class="kp-kpi-card">
-            <div class="kp-kpi-label">Analiz Boyutu</div>
-            <div class="kp-kpi-value">3 Katman</div>
-            <div class="kp-kpi-sub">Hız • Çeldirici • Net İvmesi</div>
+            <div class="kp-kpi-label">2028 Kamp Fazları</div>
+            <div class="kp-kpi-value">3 Aşama</div>
+            <div class="kp-kpi-sub">Kazanım • Branş Hızı • Genel Deneme</div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -3673,7 +4020,7 @@ elif current_page == "Dijimentor":
     with r1_c:
         weak_topics = st.text_area(
             "Zorlandığın Dersler / Kazanımlar",
-            value=st.session_state.get("dk_weak", "Paragrafta ana düşünce, üslü ifadeler, dikkat kaynaklı işlem hataları"),
+            value=st.session_state.get("dk_weak", "Sözel mantık ve muhakeme, üslü ifadeler, dikkat kaynaklı işlem hataları"),
             height=82,
             key="dk_weak_area",
         )
@@ -3711,7 +4058,7 @@ elif current_page == "Dijimentor":
     )
 
     st.write("")
-    include_routine = st.checkbox("Günlük mikro rutin, deneme analiz protokolü ve hafta sonu kontrol listesi dahil et", value=True)
+    include_routine = st.checkbox("2028 Aşamalı Kamp Fazları (Kazanım → Branş → Genel Deneme) ve hafta sonu kontrol listesi dahil et", value=True)
 
     if st.button("Dijimentor 2028 Planı Oluştur", type="primary"):
         quota_ok, quota_msg = consume_quota("coach", 1)
@@ -3723,7 +4070,7 @@ elif current_page == "Dijimentor":
                 "net, empatik ve veri odaklı bir dijital eğitim mentorusun. Yanıtını başlıklarla, "
                 "madde işaretleriyle ve uygulanabilir zaman bloklarıyla kurumsal bir mentorluk "
                 "raporu gibi düzenle. Şu bölümleri net oluştur:\n"
-                "1. Teşhis ve Stratejik Özet\n"
+                "1. Teşhis ve 2028 Aşamalı Kamp Yol Haritası (Faz 1 Kazanım, Faz 2 Branş Hızı, Faz 3 Genel Deneme)\n"
                 "2. Pazartesi–Pazar Haftalık Çalışma Planı (saat ve odak ders dağılımı)\n"
                 "3. Çeldirici & Zaman Yönetimi Protokolü\n"
                 "4. Haftalık Başarı KPI'ları ve Kontrol Listesi"
@@ -3734,7 +4081,7 @@ elif current_page == "Dijimentor":
                 f"Zorlanılan Dersler / Kazanımlar: {weak_topics}\n"
                 f"Mentorluk Odak Alanı: {coach_focus}\n"
                 f"Mevcut Deneme / Süre Durumu: {recent_score}\n"
-                f"Detaylı Rutin & Analiz Protokolü: {'Evet' if include_routine else 'Özet'}\n\n"
+                f"Aşamalı Kamp & Analiz Protokolü: {'Evet' if include_routine else 'Özet'}\n\n"
                 "Lütfen öğrenciye doğrudan uygulanabilir, motive edici ve net bir Türkçe 2028 planı sun."
             )
             skel_coach = st.empty()
@@ -3790,7 +4137,7 @@ elif current_page == "Dijimentor":
                 navigate_to("Soru & Redaksiyon Fabrikası")
 
 # ==============================================================================
-# 5. VELİ TAKİP PANELİ
+# 5. VELİ TAKİP PANELİ (+ BU HAFTA NE DEĞİŞTİ KARTLARI)
 # ==============================================================================
 elif current_page == "Veli Takip Paneli":
     stats_now = st.session_state["parent_student_stats"]
@@ -3799,9 +4146,42 @@ elif current_page == "Veli Takip Paneli":
     v2.metric("Çözülen Soru Adedi", f"{int(stats_now['weekly_solved'])} Soru", "+18% geçen haftaya göre")
     v3.metric("Kazanım İvmesi & Uyum", f"%{int(stats_now['mentor_completion'])}", "+4 puan doğruluk ivmesi")
 
+    st.markdown("#### Bu Hafta Ne Değişti?")
+    w_c1, w_c2, w_c3 = st.columns(3)
+    w_c1.markdown(
+        f"""
+        <div class="kp-card">
+            <div style="font-size:0.72rem;font-weight:700;color:#2563EB;">GÜÇLÜ KAZANIM</div>
+            <div style="font-weight:800;color:#1E2952;margin-top:0.25rem;">{html.escape(str(stats_now['strong_topic']))}</div>
+            <div style="font-size:0.8rem;color:#64748B;margin-top:0.2rem;">İsabet oranı istikrarlı biçimde yükseldi.</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    w_c2.markdown(
+        f"""
+        <div class="kp-card">
+            <div style="font-size:0.72rem;font-weight:700;color:#D97706;">RİSKLİ KAZANIM</div>
+            <div style="font-weight:800;color:#1E2952;margin-top:0.25rem;">{html.escape(str(stats_now['weak_topic']))}</div>
+            <div style="font-size:0.8rem;color:#64748B;margin-top:0.2rem;">Hata Defteri ve telafi seti ile takip ediliyor.</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    w_c3.markdown(
+        f"""
+        <div class="kp-card">
+            <div style="font-size:0.72rem;font-weight:700;color:#059669;">SIRADAKİ DENEME</div>
+            <div style="font-weight:800;color:#1E2952;margin-top:0.25rem;">{html.escape(str(stats_now['next_exam_date']))}</div>
+            <div style="font-size:0.8rem;color:#64748B;margin-top:0.2rem;">{html.escape(str(stats_now['next_exam_name']))}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
     st.markdown("#### Kazanım Bazlı Görünüm")
     st.progress(0.84, text="Okuma ve Anlama — %84")
-    st.progress(0.72, text="Sayısal Muhakeme ve Problem Çözme — %72")
+    st.progress(0.72, text="Sözel Mantık & Sayısal Muhakeme — %72")
     st.progress(0.90, text="Düzenli Tekrar ve Ödev Tamamlama — %90")
 
     g_col1, g_col2 = st.columns(2)
@@ -3821,7 +4201,7 @@ elif current_page == "Öğrenci Röntgeni":
     render_student_xray_panel()
 
 # ==============================================================================
-# 7. B2B LİSANS & KURUM
+# 7. B2B LİSANS & KURUM (+ DENEME TAKVİMİ)
 # ==============================================================================
 elif current_page == "B2B Lisans & Kurum":
     tab_b2b_form, tab_b2b_zumre = st.tabs(["Kurumsal Lisans Teklif Stüdyosu (2028)", "Zümre Soru Dağıtımı & Kurumsal Rapor"])
@@ -3933,6 +4313,17 @@ elif current_page == "B2B Lisans & Kurum":
             st.dataframe(zumre_rows, use_container_width=True, hide_index=True)
         with zc2:
             st.bar_chart(chart_map, color="#2563EB", height=225)
+
+        st.markdown("#### Kurum İçi Deneme & Kazanım Tarama Planı")
+        st.dataframe(
+            [
+                {"Hafta": "1. Hafta", "Kademe": "8. Sınıf (LGS)", "Odak": "Sözel-Sayısal Muhakeme Tarama", "Durum": "Planlandı"},
+                {"Hafta": "2. Hafta", "Kademe": "5–7. Sınıf", "Odak": "Maarif Modeli Ara Kazanım Testi", "Durum": "Planlandı"},
+                {"Hafta": "3. Hafta", "Kademe": "9–12. Sınıf (YKS)", "Odak": "TYT-AYT Hız & Çeldirici Denemesi", "Durum": "Taslak"},
+            ],
+            use_container_width=True,
+            hide_index=True,
+        )
 
 # ==============================================================================
 # 8. PAKETLER & ABONELİK VİTRİNİ (2028)
