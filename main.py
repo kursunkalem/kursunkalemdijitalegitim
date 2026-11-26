@@ -110,17 +110,14 @@ HERO_SHOWCASE_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 
     </linearGradient>
   </defs>
 
-  <!-- Arka Kurumsal Vitrin Kartı -->
   <rect x="22" y="18" width="396" height="292" rx="24" fill="url(#bgCardGrad)" stroke="#C7D2FE" stroke-width="1.5"/>
 
-  <!-- Sol Ana Panel: Akademik Ölçme & Kazanım Kartı -->
   <rect x="44" y="42" width="214" height="244" rx="18" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5"/>
   <rect x="44" y="42" width="214" height="58" rx="18" fill="url(#navyBanner)"/>
   <rect x="44" y="76" width="214" height="24" fill="url(#navyBanner)"/>
   <text x="62" y="68" font-family="Inter, Arial, sans-serif" font-size="10.5" font-weight="800" fill="#FACC15" letter-spacing="1.2">KURŞUN KALEM • 2028</text>
   <text x="62" y="87" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="800" fill="#FFFFFF">Ölçme &amp; Redaksiyon Ofisi</text>
 
-  <!-- Kazanım ve Çeldirici Metrik Satırları -->
   <rect x="60" y="114" width="182" height="42" rx="10" fill="#F8FAFC" stroke="#E2E8F0"/>
   <circle cx="79" cy="135" r="8" fill="#2563EB"/>
   <text x="94" y="132" font-family="Inter, Arial, sans-serif" font-size="10.5" font-weight="700" fill="#1E2952">Maarif Kazanım Uyumu</text>
@@ -136,14 +133,12 @@ HERO_SHOWCASE_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 
   <rect x="74" y="243" width="152" height="8" rx="4" fill="#DBEAFE"/>
   <rect x="74" y="243" width="124" height="8" rx="4" fill="#2563EB"/>
 
-  <!-- Sağ Üst: Akademik Başarı Rozeti -->
   <rect x="276" y="42" width="120" height="114" rx="18" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5"/>
   <circle cx="336" cy="82" r="22" fill="url(#goldBadgeGrad)"/>
   <polygon points="336,68 340,77 350,78 342,85 345,95 336,90 327,95 330,85 322,78 332,77" fill="#1E2952"/>
   <text x="336" y="121" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="11" font-weight="800" fill="#1E2952">2028 HEDEF</text>
   <text x="336" y="136" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="9.5" font-weight="600" fill="#64748B">Dijimentor &amp; Röntgen</text>
 
-  <!-- Sağ Alt: Kurşun Kalem & Ofis Çantası Vurgusu -->
   <rect x="276" y="170" width="120" height="116" rx="18" fill="#1E2952"/>
   <g transform="translate(336, 214) rotate(-32)">
     <rect x="-8" y="-34" width="16" height="52" rx="2" fill="url(#pencilWoodGrad)"/>
@@ -253,7 +248,7 @@ KADEME_VITRIN_KARTLARI: List[Dict[str, str]] = [
         "tag": "5–7. SINIF • 2028",
         "cta": "5–7. Sınıf • Aç",
         "title": "Ortaokul & Maarif Temeli",
-        "desc": "Kazanım odaklı sorular, okuma-anlama hızı ve düzenli çalışma alışkanlığı.",
+        "desc": "Kazanım odaklı sorular, okuma hızı ve düzenli çalışma alışkanlığı.",
         "accent": "#2563EB",
         "grade": "7. Sınıf",
         "exam": "5-7. Sınıf Akademik Gelişim",
@@ -283,7 +278,7 @@ KADEME_VITRIN_KARTLARI: List[Dict[str, str]] = [
         "tag": "VELİ & KURUM • 2028",
         "cta": "Veli & Kurum • Aç",
         "title": "Veli Takip & B2B Ofis",
-        "desc": "Haftalık çalışma-soru özeti, hazır veli mesajları ve zümre kota yönetimi.",
+        "desc": "Haftalık çalışma-soru özeti, veli mesajları ve zümre kota yönetimi.",
         "accent": "#0284C7",
         "grade": "8. Sınıf (LGS)",
         "exam": "2028 LGS",
@@ -909,7 +904,7 @@ HERO_SHOWCASE_URI = svg_to_data_uri(HERO_SHOWCASE_SVG)
 LOGO_PNG_BYTES = get_embedded_logo_png_bytes()
 
 # ==============================================================================
-# KUNDUZ İLHAMLI KURUMSAL TASARIM SİSTEMİ (BEYAZ + LACİVERT/MOR + ALTIN)
+# KUNDUZ İLHAMLI KURUMSAL TASARIM SİSTEMİ + GİRİŞ ANİMASYONLARI
 # ==============================================================================
 REFINED_OFFICE_CSS = """
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
@@ -932,8 +927,18 @@ REFINED_OFFICE_CSS = """
 }
 
 @keyframes kpSoftEnter {
-    from { opacity: 0.75; transform: translateY(3px); }
+    from { opacity: 0.72; transform: translateY(5px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes kpHeroEntrance {
+    0% { opacity: 0; transform: translateY(10px) scale(0.99); }
+    100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes kpStaggerCard {
+    0% { opacity: 0; transform: translateY(8px); }
+    100% { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes kpTopProgressOnce {
@@ -955,7 +960,7 @@ REFINED_OFFICE_CSS = """
     z-index: 9998;
     pointer-events: none;
     background: linear-gradient(90deg, var(--kp-purple-bar) 0%, var(--kp-blue-accent) 60%, var(--kp-gold-bright) 100%);
-    animation: kpTopProgressOnce 0.5s ease-out forwards;
+    animation: kpTopProgressOnce 0.45s ease-out forwards;
 }
 
 .kp-skeleton-card {
@@ -994,7 +999,7 @@ h1, h2, h3, .kp-kd-hero-title, .kp-page-strip-title, .kp-pkg-title, .kp-mod-titl
     padding-top: 0.75rem;
     padding-bottom: 4.5rem;
     max-width: 1280px;
-    animation: kpSoftEnter 0.18s ease-out both;
+    animation: kpSoftEnter 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* Kenar Çubuğu */
@@ -1039,8 +1044,8 @@ div[data-testid="stSidebar"] .stButton > button {
     justify-content: flex-start !important;
     align-items: center !important;
     border-radius: 10px !important;
-    padding: 0.52rem 0.85rem !important;
-    font-size: 0.84rem !important;
+    padding: 0.52rem 0.8rem !important;
+    font-size: 0.82rem !important;
     font-weight: 600 !important;
     border: 1px solid #E2E8F0 !important;
     background: #FFFFFF !important;
@@ -1071,44 +1076,33 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     line-height: 1.5;
 }
 
-/* Kunduz İlhamlı Üst Duyuru & İletişim Şeridi */
-.kp-promo-strip {
-    background: linear-gradient(90deg, #6338E3 0%, #7A49F0 100%);
-    color: #FFFFFF;
-    border-radius: 10px;
-    padding: 0.5rem 1rem;
-    margin-bottom: 0.45rem;
+/* Sadeleştirilmiş Üst Şerit */
+.kp-top-compact-bar {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 0.55rem 1rem;
+    margin-bottom: 0.8rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
+    flex-wrap: wrap;
     font-size: 0.78rem;
-    font-weight: 600;
+    color: #334155;
+    animation: kpHeroEntrance 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-.kp-promo-cta {
-    background: rgba(255, 255, 255, 0.16);
-    border: 1px solid rgba(255, 255, 255, 0.35);
+.kp-top-badge {
+    background: linear-gradient(90deg, #2563EB 0%, #5A52E8 100%);
     color: #FFFFFF;
-    padding: 0.22rem 0.72rem;
-    border-radius: 6px;
-    font-size: 0.74rem;
+    padding: 0.22rem 0.68rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
     font-weight: 700;
     white-space: nowrap;
 }
-.kp-top-contact-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.35rem 0.2rem 0.55rem 0.2rem;
-    border-bottom: 1px solid #F1F5F9;
-    margin-bottom: 0.65rem;
-    font-size: 0.75rem;
-    color: #64748B;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-}
 
-/* Kunduz İlhamlı Hero Alanı */
+/* Hero Alanı */
 .kp-kd-kicker {
     font-size: 0.73rem;
     font-weight: 800;
@@ -1116,6 +1110,7 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     text-transform: uppercase;
     color: #2563EB;
     margin-bottom: 0.45rem;
+    animation: kpHeroEntrance 0.36s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .kp-kd-hero-title {
     font-size: 2.05rem;
@@ -1123,6 +1118,7 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     line-height: 1.15;
     color: #1E2952;
     margin: 0 0 0.75rem 0;
+    animation: kpHeroEntrance 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .kp-kd-hero-highlight {
     color: #2563EB;
@@ -1133,6 +1129,7 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     color: #475569;
     line-height: 1.55;
     margin-bottom: 1rem;
+    animation: kpHeroEntrance 0.46s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .kp-kd-selector-label {
     font-size: 0.78rem;
@@ -1145,14 +1142,15 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     align-items: center;
     gap: 1.5rem;
     margin-top: 0.9rem;
-    font-size: 0.76rem;
-    color: #64748B;
+    font-size: 0.78rem;
+    color: #475569;
     flex-wrap: wrap;
+    animation: kpStaggerCard 0.48s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .kp-kd-social-num {
     font-weight: 800;
     color: #1E2952;
-    font-size: 0.84rem;
+    font-size: 0.92rem;
 }
 
 .kp-feature-strip-card {
@@ -1162,6 +1160,7 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     padding: 0.65rem 0.45rem;
     text-align: center;
     transition: transform 0.14s ease, border-color 0.14s ease, background-color 0.14s ease;
+    animation: kpStaggerCard 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .kp-feature-strip-card:hover {
     transform: translateY(-2px);
@@ -1187,6 +1186,11 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     color: #1E293B;
     line-height: 1.25;
 }
+.kp-showcase-frame {
+    text-align: center;
+    margin-top: 0.55rem;
+    animation: kpHeroEntrance 0.48s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
 
 .kp-page-strip {
     display: flex;
@@ -1196,6 +1200,7 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     padding: 0.05rem 0 0.7rem 0;
     margin-bottom: 1rem;
     border-bottom: 1px solid var(--kp-border);
+    animation: kpHeroEntrance 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .kp-page-strip-title {
     font-size: 1.28rem;
@@ -1214,10 +1219,14 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     border: 1px solid var(--kp-border);
     border-radius: 16px;
     padding: 1rem 1.1rem;
-    min-height: 144px;
+    height: 146px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
     margin-bottom: 0.55rem;
     box-shadow: 0 3px 12px rgba(37, 99, 235, 0.04);
     transition: transform 0.16s ease, box-shadow 0.16s ease;
+    animation: kpStaggerCard 0.44s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .kp-kademe-card:hover {
     transform: translateY(-2px);
@@ -1225,6 +1234,7 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
 }
 .kp-kademe-tag {
     display: inline-block;
+    width: fit-content;
     font-size: 0.7rem;
     font-weight: 800;
     color: #FFFFFF;
@@ -1235,7 +1245,7 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     font-size: 1rem;
     font-weight: 800;
     color: var(--kp-navy);
-    margin: 0.58rem 0 0.26rem 0;
+    margin: 0.55rem 0 0.25rem 0;
 }
 .kp-kademe-desc {
     font-size: 0.8rem;
@@ -1250,8 +1260,9 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     border-left: 4px solid #2563EB;
     border-radius: 14px;
     padding: 0.95rem 1.05rem;
-    min-height: 132px;
+    height: 132px;
     margin-bottom: 0.55rem;
+    animation: kpStaggerCard 0.46s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .kp-priority-badge {
     font-size: 0.7rem;
@@ -1307,6 +1318,7 @@ div[data-testid="stMetric"] {
     border-radius: 14px;
     padding: 0.92rem 1.05rem;
     box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
+    animation: kpStaggerCard 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     font-size: 1.52rem;
@@ -1319,6 +1331,7 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     border: 1px solid var(--kp-border);
     border-radius: 16px;
     box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
+    animation: kpStaggerCard 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 .kp-card, .kp-bag-shell, .kp-pkg-card, .kp-pay-box, .kp-studio-banner {
     padding: 1.15rem 1.25rem;
@@ -1548,6 +1561,33 @@ div[data-testid="stFormSubmitButton"] > button[kind="primary"] {
 div[data-testid="stFormSubmitButton"] > button[kind="primary"]:hover {
     background: #1D4ED8 !important;
     border-color: #1D4ED8 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .block-container,
+    .kp-top-loader,
+    .kp-top-compact-bar,
+    .kp-kd-kicker,
+    .kp-kd-hero-title,
+    .kp-kd-hero-sub,
+    .kp-kd-social-row,
+    .kp-feature-strip-card,
+    .kp-showcase-frame,
+    .kp-page-strip,
+    .kp-kademe-card,
+    .kp-priority-card,
+    div[data-testid="stMetric"],
+    .kp-card,
+    .kp-bag-shell,
+    .kp-pkg-card,
+    .kp-pay-box,
+    .kp-kpi-card,
+    .kp-metric-box,
+    .kp-studio-banner {
+        animation: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+    }
 }
 """
 
@@ -3001,17 +3041,13 @@ with st.sidebar:
                 st.rerun()
 
 # ==============================================================================
-# KUNDUZ İLHAMLI ÜST DUYURU & İLETİŞİM ŞERİDİ (2028)
+# SADELEŞTİRİLMİŞ ÜST ŞERİT (2028)
 # ==============================================================================
 st.markdown(
     """
-    <div class="kp-promo-strip">
-        <span>2028 LGS &amp; YKS Erken Lansman Kurgusu! Maarif Modeli soru fabrikası, Dijimentor ve veli takibi tek dijital ofiste.</span>
-        <span class="kp-promo-cta">2028 Paketleri</span>
-    </div>
-    <div class="kp-top-contact-bar">
-        <div>0850 532 16 29 &nbsp;•&nbsp; Kurşun Kalem Dijital Ofis • 2028</div>
-        <div>Maarif Modeli Uyumlu &nbsp;|&nbsp; destek@kursunkalemdijitalofis.com.tr</div>
+    <div class="kp-top-compact-bar">
+        <div><b>KURŞUN KALEM DİJİTAL OFİS • 2028</b> &nbsp;|&nbsp; Maarif Modeli • Dijimentor • Veli &amp; B2B</div>
+        <div>0850 532 16 29 &nbsp;•&nbsp; destek@kursunkalemdijitalofis.com.tr &nbsp;<span class="kp-top-badge">2028 Kurgusu</span></div>
     </div>
     """,
     unsafe_allow_html=True,
@@ -3022,7 +3058,7 @@ if current_page != "Ana Sayfa":
     render_page_strip(current_page)
 
 # ==============================================================================
-# 1. ANA SAYFA (2028 KUNDUZ VİTRİN DÜZENİ + KURŞUN KALEM & ROZET VİTRİNİ)
+# 1. ANA SAYFA (2028 VİTRİN DÜZENİ + KURŞUN KALEM & ROZET VİTRİNİ)
 # ==============================================================================
 if current_page == "Ana Sayfa":
     hero_l, hero_r = st.columns([1.22, 1.0], vertical_alignment="center")
@@ -3101,7 +3137,7 @@ if current_page == "Ana Sayfa":
 
         st.markdown(
             f"""
-            <div style="text-align:center;margin-top:0.55rem;">
+            <div class="kp-showcase-frame">
                 <img src="{HERO_SHOWCASE_URI}" alt="Kurşun Kalem Dijital Ofis 2028 Kurumsal Vitrin" style="width:100%;max-width:420px;border-radius:16px;"/>
             </div>
             """,
