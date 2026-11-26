@@ -5,6 +5,7 @@ import json
 import os
 import re
 import time
+import uuid
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -782,7 +783,7 @@ BACKPACK_DATA_URI = svg_to_data_uri(SCHOOL_BACKPACK_SVG)
 LOGO_PNG_BYTES = get_embedded_logo_png_bytes()
 
 # ==============================================================================
-# ANİMASYONLU KURUMSAL OFİS TASARIM SİSTEMİ (LACİVERT + ALTIN + HAREKET)
+# FLASHLI AÇILIŞ & KURUMSAL OFİS TASARIM SİSTEMİ
 # ==============================================================================
 ANIMATED_OFFICE_CSS = """
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
@@ -792,7 +793,7 @@ ANIMATED_OFFICE_CSS = """
     --kp-navy-2: #1B3B73;
     --kp-navy-soft: #EAF0F9;
     --kp-gold: #C68B16;
-    --kp-gold-bright: #F5C85C;
+    --kp-gold-bright: #FDE047;
     --kp-gold-soft: #FFFBEB;
     --kp-gold-border: #E6C571;
     --kp-bg: #F3F6FA;
@@ -811,6 +812,38 @@ ANIMATED_OFFICE_CSS = """
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+@keyframes kpPageFlashBurst {
+    0% {
+        opacity: 0.92;
+        background: radial-gradient(circle at 50% 18%, rgba(255, 255, 255, 0.98) 0%, rgba(253, 224, 71, 0.55) 28%, rgba(27, 59, 115, 0.16) 65%, transparent 100%);
+    }
+    28% {
+        opacity: 0.72;
+        background: radial-gradient(circle at 50% 22%, rgba(255, 255, 255, 0.85) 0%, rgba(246, 211, 101, 0.34) 42%, transparent 85%);
+    }
+    100% {
+        opacity: 0;
+        background: radial-gradient(circle at 50% 22%, rgba(255, 255, 255, 0) 0%, transparent 100%);
+    }
+}
+
+@keyframes kpBeamSweep {
+    0% {
+        transform: translateX(-130%) skewX(-22deg);
+        opacity: 0;
+    }
+    25% {
+        opacity: 0.85;
+    }
+    75% {
+        opacity: 0.45;
+    }
+    100% {
+        transform: translateX(240%) skewX(-22deg);
+        opacity: 0;
     }
 }
 
@@ -844,6 +877,33 @@ ANIMATED_OFFICE_CSS = """
     }
 }
 
+.kp-flash-overlay {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    overflow: hidden;
+    animation: kpPageFlashBurst 0.92s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.kp-flash-beam {
+    position: absolute;
+    top: -20%;
+    left: 0;
+    width: 34%;
+    height: 140%;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.15) 25%,
+        rgba(255, 255, 255, 0.92) 50%,
+        rgba(253, 224, 71, 0.45) 72%,
+        transparent 100%
+    );
+    filter: blur(6px);
+    animation: kpBeamSweep 0.88s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
 html, body, [class*="css"] {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     color: var(--kp-text);
@@ -864,7 +924,7 @@ h1, h2, h3, .kp-top-title, .kp-page-strip-title, .kp-pkg-title, .kp-mod-title {
     padding-top: 1.05rem;
     padding-bottom: 4.5rem;
     max-width: 1260px;
-    animation: kpFadeSlideUp 0.36s ease-out both;
+    animation: kpFadeSlideUp 0.42s ease-out both;
 }
 
 /* Kenar Çubuğu & Animasyonlu Menü */
@@ -959,7 +1019,7 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     justify-content: space-between;
     gap: 1rem;
     box-shadow: 0 8px 24px rgba(14, 34, 71, 0.06);
-    animation: kpFadeSlideUp 0.32s ease-out both;
+    animation: kpFadeSlideUp 0.34s ease-out both;
 }
 .kp-top-header::after {
     content: "";
@@ -967,10 +1027,10 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     top: 0;
     left: 0;
     right: 0;
-    height: 2px;
-    background: linear-gradient(90deg, transparent, var(--kp-gold-bright), transparent);
+    height: 2.5px;
+    background: linear-gradient(90deg, transparent, var(--kp-gold-bright), #FFFFFF, var(--kp-gold-bright), transparent);
     background-size: 220% 100%;
-    animation: kpGoldShimmer 4.5s linear infinite;
+    animation: kpGoldShimmer 3.6s linear infinite;
 }
 .kp-top-left {
     display: flex;
@@ -1039,7 +1099,7 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     padding: 0.05rem 0 0.72rem 0;
     margin-bottom: 1rem;
     border-bottom: 1px solid var(--kp-border);
-    animation: kpFadeSlideUp 0.35s ease-out both;
+    animation: kpFadeSlideUp 0.38s ease-out both;
 }
 .kp-page-strip-title {
     font-size: 1.3rem;
@@ -1067,7 +1127,7 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     gap: 1rem;
     flex-wrap: wrap;
     box-shadow: 0 8px 20px rgba(14, 34, 71, 0.16);
-    animation: kpFadeSlideUp 0.38s ease-out both;
+    animation: kpFadeSlideUp 0.4s ease-out both;
 }
 .kp-value-strip-item {
     display: flex;
@@ -1092,7 +1152,7 @@ div[data-testid="stMetric"] {
     padding: 0.92rem 1.05rem;
     box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
     transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-    animation: kpFadeSlideUp 0.4s ease-out both;
+    animation: kpFadeSlideUp 0.42s ease-out both;
 }
 div[data-testid="stMetric"]:hover {
     transform: translateY(-2px);
@@ -1110,7 +1170,7 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     border: 1px solid var(--kp-border);
     border-radius: 14px;
     box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
-    animation: kpFadeSlideUp 0.4s ease-out both;
+    animation: kpFadeSlideUp 0.42s ease-out both;
 }
 .kp-card, .kp-bag-shell, .kp-pkg-card, .kp-pay-box, .kp-studio-banner {
     padding: 1.15rem 1.25rem;
@@ -1423,6 +1483,18 @@ if EXTERNAL_CSS_PATH.exists():
 st.markdown(f"<style>{css_to_inject}</style>", unsafe_allow_html=True)
 
 
+def trigger_page_flash() -> None:
+    st.session_state["flash_nonce"] = uuid.uuid4().hex[:8]
+
+
+def render_page_flash_overlay() -> None:
+    nonce = st.session_state.get("flash_nonce", "init")
+    st.markdown(
+        f'<div class="kp-flash-overlay" data-flash-id="{html.escape(str(nonce))}"><div class="kp-flash-beam"></div></div>',
+        unsafe_allow_html=True,
+    )
+
+
 # ==============================================================================
 # YARDIMCI FONKSİYONLAR, KOTA YÖNETİMİ VE KALICI DURUM
 # ==============================================================================
@@ -1710,6 +1782,7 @@ def navigate_to(page_name: str) -> None:
     if page_name in PAGES:
         clear_page_ephemeral_state(page_name)
         st.session_state.active_page = page_name
+        trigger_page_flash()
         st.rerun()
 
 
@@ -2703,6 +2776,11 @@ if "active_page" not in st.session_state:
 elif st.session_state.active_page == "Ana Sayfa & Geri Sayım":
     st.session_state.active_page = "Ana Sayfa"
 
+if "flash_nonce" not in st.session_state:
+    trigger_page_flash()
+
+render_page_flash_overlay()
+
 if "generated_test_text" not in st.session_state:
     st.session_state.generated_test_text = ""
 if "dijimentor_plan" not in st.session_state:
@@ -2785,6 +2863,7 @@ with st.sidebar:
         if st.button(p_name, key=f"nav_{p_name}", type=btn_type, use_container_width=True):
             clear_page_ephemeral_state(p_name)
             st.session_state.active_page = p_name
+            trigger_page_flash()
             st.rerun()
 
     st.markdown(
