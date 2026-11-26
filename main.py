@@ -30,7 +30,7 @@ st.set_page_config(
 
 BRAND_NAME = "KURŞUN KALEM DİJİTAL OFİS"
 BRAND_SHORT = "Kurşun Kalem"
-BRAND_TAGLINE = "Dijital Ofis, Ölçme-Değerlendirme ve Akıllı Mentorluk Platformu"
+BRAND_TAGLINE = "7/24 Soru & Redaksiyon Fabrikası • Dijimentor • Veli & B2B Dijital Ofis"
 DEFAULT_MODEL = "gemini-2.5-flash"
 FALLBACK_MODEL = "gemini-3.5-flash-lite"
 STATE_FILE_PATH = Path(".kursun_kalem_ofis_state.json")
@@ -56,21 +56,12 @@ EMBEDDED_LOGO_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 
   <circle cx="256" cy="256" r="244" fill="#ffffff"/>
   <path d="M 432 108 A 232 232 0 1 0 468 332 L 444 326 A 208 208 0 1 1 412 124 Z" fill="url(#navyGrad)"/>
   <path d="M 456 138 A 232 232 0 0 1 474 295 L 452 292 A 210 210 0 0 0 436 152 Z" fill="url(#goldGrad)"/>
-  <path d="M 102 222 Q 178 214 256 254 Q 334 214 410 222 L 404 236 Q 332 228 256 266 Q 180 228 108 236 Z" fill="url(#navyGrad)"/>
-  <path d="M 118 202 Q 184 196 256 238 Q 328 196 394 202 L 390 214 Q 326 208 256 248 Q 186 208 122 214 Z" fill="url(#goldGrad)"/>
   <polygon points="256,82 362,130 256,178 150,130" fill="url(#navyGrad)" stroke="url(#goldGrad)" stroke-width="5"/>
   <polygon points="190,148 256,178 322,148 322,188 256,216 190,188" fill="url(#navyGrad)"/>
-  <path d="M 332 144 L 332 206" stroke="url(#goldGrad)" stroke-width="6" stroke-linecap="round"/>
-  <circle cx="332" cy="214" r="9" fill="url(#goldGrad)"/>
-  <text x="256" y="314" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="44" font-weight="800" fill="#0b1836" letter-spacing="1">DİJİTAL OFİS</text>
-  <line x1="92" y1="344" x2="152" y2="344" stroke="#64748b" stroke-width="2.5"/>
-  <text x="256" y="351" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="#0f172a" letter-spacing="5">KURŞUN KALEM</text>
-  <line x1="360" y1="344" x2="420" y2="344" stroke="#64748b" stroke-width="2.5"/>
-  <path d="M 122 396 Q 272 414 432 356 Q 282 404 122 390 Z" fill="url(#goldGrad)"/>
+  <text x="256" y="314" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="44" font-weight="800" fill="#0b1836">DİJİTAL OFİS</text>
+  <text x="256" y="351" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="#0f172a" letter-spacing="4">KURŞUN KALEM</text>
   <g transform="translate(432, 342) rotate(24)">
     <rect x="-12" y="-110" width="24" height="96" rx="3" fill="url(#pencilBody)" stroke="#1e293b" stroke-width="2"/>
-    <rect x="-12" y="-124" width="24" height="14" fill="#cbd5e1" stroke="#1e293b" stroke-width="2"/>
-    <rect x="-12" y="-138" width="24" height="14" rx="4" fill="#f472b6" stroke="#1e293b" stroke-width="2"/>
     <polygon points="-12,-14 12,-14 0,24" fill="#fde68a" stroke="#1e293b" stroke-width="2"/>
     <polygon points="-3.5,12 3.5,12 0,24" fill="#0f172a"/>
   </g>
@@ -99,6 +90,31 @@ SCHOOL_BACKPACK_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26
   <rect x="72" y="242" width="116" height="18" rx="9" fill="#090d16"/>
 </svg>"""
 
+HERO_STUDENT_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 340" width="420" height="340">
+  <defs>
+    <linearGradient id="blobGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#1D4ED8"/>
+    </linearGradient>
+    <linearGradient id="sweaterGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#D97706"/>
+    </linearGradient>
+  </defs>
+  <path d="M 110 295 C 58 265, 58 145, 118 96 C 175 48, 285 45, 335 98 C 385 152, 378 265, 315 298 C 255 328, 155 322, 110 295 Z" fill="url(#blobGrad)" opacity="0.92"/>
+  <circle cx="215" cy="128" r="38" fill="#FDE68A"/>
+  <path d="M 176 122 C 176 84, 254 84, 254 122 C 254 106, 236 96, 215 96 C 194 96, 176 106, 176 122 Z" fill="#1E293B"/>
+  <circle cx="202" cy="128" r="3.5" fill="#0F172A"/>
+  <circle cx="228" cy="128" r="3.5" fill="#0F172A"/>
+  <path d="M 203 142 Q 215 154 227 142" fill="none" stroke="#9A3412" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 155 295 C 155 205, 175 170, 215 170 C 255 170, 275 205, 275 295 Z" fill="url(#sweaterGrad)"/>
+  <rect x="234" y="185" width="44" height="72" rx="8" fill="#FFFFFF" stroke="#0F172A" stroke-width="2.5"/>
+  <line x1="242" y1="200" x2="270" y2="200" stroke="#3B82F6" stroke-width="3" stroke-linecap="round"/>
+  <line x1="242" y1="212" x2="266" y2="212" stroke="#94A3B8" stroke-width="3" stroke-linecap="round"/>
+  <line x1="242" y1="224" x2="262" y2="224" stroke="#94A3B8" stroke-width="3" stroke-linecap="round"/>
+  <path d="M 142 122 L 164 114 M 136 140 L 160 138 M 148 104 L 168 100" stroke="#FACC15" stroke-width="4" stroke-linecap="round"/>
+</svg>"""
+
 
 def svg_to_data_uri(svg_str: str) -> str:
     encoded = base64.b64encode(svg_str.encode("utf-8")).decode("ascii")
@@ -122,18 +138,7 @@ def get_embedded_logo_png_bytes() -> Optional[bytes]:
         img = Image.new("RGBA", (size, size), (255, 255, 255, 255))
         draw = ImageDraw.Draw(img)
         draw.ellipse([14, 14, size - 14, size - 14], outline=(15, 23, 42, 255), width=10)
-        draw.arc([20, 20, size - 20, size - 20], start=290, end=75, fill=(212, 175, 55, 255), width=8)
-        draw.pieslice([68, 95, 252, 215], start=180, end=360, fill=(23, 44, 86, 255))
-        draw.polygon(
-            [(160, 56), (232, 88), (160, 120), (88, 88)],
-            fill=(15, 23, 42, 255),
-            outline=(212, 175, 55, 255),
-        )
-        draw.rectangle([122, 104, 198, 130], fill=(23, 44, 86, 255))
         draw.text((160, 182), "DİJİTAL OFİS", fill=(11, 24, 54, 255), anchor="mm")
-        draw.text((160, 206), "— KURŞUN KALEM —", fill=(15, 23, 42, 255), anchor="mm")
-        draw.line([(215, 252), (274, 206)], fill=(234, 179, 8, 255), width=12)
-        draw.polygon([(274, 206), (284, 198), (281, 212)], fill=(15, 23, 42, 255))
         out = io.BytesIO()
         img.save(out, format="PNG")
         return out.getvalue()
@@ -190,12 +195,25 @@ PAGE_DESCRIPTIONS: Dict[str, Tuple[str, str]] = {
     ),
 }
 
+HERO_PILL_CHIPS: List[Dict[str, str]] = [
+    {"label": "YKS 2027", "grade": "11-12. Sınıf (YKS)", "exam": "2027 TYT - AYT", "page": "Dijimentor"},
+    {"label": "LGS 2027", "grade": "8. Sınıf (LGS)", "exam": "2027 LGS", "page": "Soru & Redaksiyon Fabrikası"},
+    {"label": "11. Sınıf", "grade": "11-12. Sınıf (YKS)", "exam": "2027 TYT - AYT", "page": "Soru & Redaksiyon Fabrikası"},
+    {"label": "10. Sınıf", "grade": "9-10. Sınıf", "exam": "2027 TYT - AYT", "page": "Soru & Redaksiyon Fabrikası"},
+    {"label": "9. Sınıf", "grade": "9-10. Sınıf", "exam": "2027 TYT - AYT", "page": "Soru & Redaksiyon Fabrikası"},
+    {"label": "7. Sınıf", "grade": "7. Sınıf", "exam": "5-7. Sınıf Akademik Gelişim", "page": "Soru & Redaksiyon Fabrikası"},
+    {"label": "6. Sınıf", "grade": "6. Sınıf", "exam": "5-7. Sınıf Akademik Gelişim", "page": "Soru & Redaksiyon Fabrikası"},
+    {"label": "5. Sınıf", "grade": "5. Sınıf", "exam": "5-7. Sınıf Akademik Gelişim", "page": "Soru & Redaksiyon Fabrikası"},
+    {"label": "Veli & Kurum", "grade": "8. Sınıf (LGS)", "exam": "2027 LGS", "page": "Veli Takip Paneli"},
+    {"label": "Zümre & B2B", "grade": "8. Sınıf (LGS)", "exam": "2027 LGS", "page": "B2B Lisans & Kurum"},
+]
+
 KADEME_VITRIN_KARTLARI: List[Dict[str, str]] = [
     {
         "tag": "5–7. SINIF",
         "title": "Ortaokul & Maarif Temeli",
         "desc": "Kazanım odaklı sorular, okuma-anlama hızı ve düzenli çalışma alışkanlığı.",
-        "accent": "#0284C7",
+        "accent": "#2563EB",
         "grade": "7. Sınıf",
         "exam": "5-7. Sınıf Akademik Gelişim",
         "target_page": "Soru & Redaksiyon Fabrikası",
@@ -204,7 +222,7 @@ KADEME_VITRIN_KARTLARI: List[Dict[str, str]] = [
         "tag": "2027 LGS",
         "title": "8. Sınıf LGS Hazırlık",
         "desc": "Sözel-sayısal muhakeme, çeldirici analizi ve net yükselten deneme akışı.",
-        "accent": "#EA580C",
+        "accent": "#4F46E5",
         "grade": "8. Sınıf (LGS)",
         "exam": "2027 LGS",
         "target_page": "Soru & Redaksiyon Fabrikası",
@@ -222,7 +240,7 @@ KADEME_VITRIN_KARTLARI: List[Dict[str, str]] = [
         "tag": "VELİ & KURUM",
         "title": "Veli Takip & B2B Ofis",
         "desc": "Haftalık çalışma-soru özeti, hazır veli mesajları ve zümre kota yönetimi.",
-        "accent": "#059669",
+        "accent": "#0284C7",
         "grade": "8. Sınıf (LGS)",
         "exam": "2027 LGS",
         "target_page": "Veli Takip Paneli",
@@ -843,32 +861,34 @@ PARENT_MESSAGE_TOPICS: Dict[str, Dict[str, Any]] = {
 
 LOGO_DATA_URI = svg_to_data_uri(EMBEDDED_LOGO_SVG)
 BACKPACK_DATA_URI = svg_to_data_uri(SCHOOL_BACKPACK_SVG)
+HERO_STUDENT_URI = svg_to_data_uri(HERO_STUDENT_SVG)
 LOGO_PNG_BYTES = get_embedded_logo_png_bytes()
 
 # ==============================================================================
-# PROFESYONEL YÜKLENİŞ VE KURUMSAL TASARIM SİSTEMİ
+# KUNDUZ İLHAMLI KURUMSAL TASARIM SİSTEMİ (BEYAZ + LACİVERT/MOR + ALTIN)
 # ==============================================================================
 REFINED_OFFICE_CSS = """
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
 
 :root {
-    --kp-navy: #0E2247;
-    --kp-navy-2: #1B3B73;
-    --kp-navy-soft: #EAF0F9;
+    --kp-navy: #1E2952;
+    --kp-navy-2: #2E3F8F;
+    --kp-indigo: #5A52E8;
+    --kp-purple-bar: #6E47E5;
+    --kp-blue-accent: #2563EB;
+    --kp-navy-soft: #EEF2FF;
     --kp-gold: #D97706;
     --kp-gold-bright: #FACC15;
-    --kp-gold-soft: #FFFBEB;
-    --kp-gold-border: #F59E0B;
-    --kp-bg: #F4F7FB;
+    --kp-bg: #FFFFFF;
     --kp-surface: #FFFFFF;
     --kp-surface-alt: #F8FAFC;
-    --kp-border: #DCE3EC;
-    --kp-text: #0F172A;
-    --kp-muted: #475569;
+    --kp-border: #E2E8F0;
+    --kp-text: #1E293B;
+    --kp-muted: #64748B;
 }
 
 @keyframes kpSoftEnter {
-    from { opacity: 0.72; transform: translateY(3px); }
+    from { opacity: 0.75; transform: translateY(3px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
@@ -883,22 +903,14 @@ REFINED_OFFICE_CSS = """
     100% { background-position: 200% 0; }
 }
 
-@media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        animation-iteration-count: 1 !important;
-        transition-duration: 0.01ms !important;
-    }
-}
-
 .kp-top-loader {
     position: fixed;
     top: 0;
     left: 0;
-    height: 2.5px;
+    height: 3px;
     z-index: 9998;
     pointer-events: none;
-    background: linear-gradient(90deg, var(--kp-navy) 0%, var(--kp-navy-2) 60%, var(--kp-gold) 100%);
+    background: linear-gradient(90deg, var(--kp-purple-bar) 0%, var(--kp-blue-accent) 60%, var(--kp-gold-bright) 100%);
     animation: kpTopProgressOnce 0.5s ease-out forwards;
 }
 
@@ -922,28 +934,28 @@ html, body, [class*="css"] {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     color: var(--kp-text);
 }
-h1, h2, h3, .kp-top-title, .kp-page-strip-title, .kp-pkg-title, .kp-mod-title, .kp-kademe-title {
+h1, h2, h3, .kp-kd-hero-title, .kp-page-strip-title, .kp-pkg-title, .kp-mod-title {
     font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
 }
 .stApp {
-    background: radial-gradient(circle at 88% 4%, #FFFDF5 0%, #F4F7FB 48%, #EBF0F7 100%);
+    background: #FFFFFF;
 }
 [data-testid="stHeader"] {
-    background: rgba(255, 255, 255, 0.94);
+    background: rgba(255, 255, 255, 0.96);
     backdrop-filter: blur(8px);
     border-bottom: 1px solid var(--kp-border);
 }
 [data-testid="stDecoration"] { display: none; }
 .block-container {
-    padding-top: 1.05rem;
+    padding-top: 0.75rem;
     padding-bottom: 4.5rem;
-    max-width: 1260px;
+    max-width: 1280px;
     animation: kpSoftEnter 0.18s ease-out both;
 }
 
 /* Kenar Çubuğu */
 section[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #FFFFFF 0%, #FAFBFD 100%);
+    background: #FFFFFF;
     border-right: 1px solid var(--kp-border);
 }
 section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
@@ -958,18 +970,18 @@ section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
     margin-bottom: 0.65rem;
 }
 .kp-sidebar-brand img {
-    width: 44px;
-    height: 44px;
+    width: 42px;
+    height: 42px;
     object-fit: contain;
     border-radius: 10px;
-    border: 1px solid var(--kp-gold-border);
+    border: 1px solid #CBD5E1;
     padding: 2px;
     background: #FFFFFF;
 }
 .kp-sidebar-brand-title {
-    font-size: 0.95rem;
+    font-size: 0.96rem;
     font-weight: 800;
-    color: var(--kp-navy);
+    color: var(--kp-blue-accent);
     line-height: 1.2;
 }
 .kp-sidebar-brand-sub {
@@ -985,29 +997,28 @@ div[data-testid="stSidebar"] .stButton > button {
     border-radius: 10px !important;
     padding: 0.52rem 0.85rem !important;
     font-size: 0.84rem !important;
-    font-weight: 500 !important;
+    font-weight: 600 !important;
     border: 1px solid #E2E8F0 !important;
     background: #FFFFFF !important;
     color: #1E293B !important;
     transition: background-color 0.14s ease, border-color 0.14s ease, transform 0.14s ease !important;
 }
 div[data-testid="stSidebar"] .stButton > button:hover {
-    background: var(--kp-navy-soft) !important;
-    color: var(--kp-navy) !important;
-    border-color: #B8CCE6 !important;
+    background: #EEF2FF !important;
+    color: var(--kp-blue-accent) !important;
+    border-color: #C7D2FE !important;
     transform: translateX(3px);
 }
 div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
-    background: linear-gradient(90deg, var(--kp-navy) 0%, var(--kp-navy-2) 100%) !important;
+    background: linear-gradient(90deg, #2563EB 0%, #5A52E8 100%) !important;
     color: #FFFFFF !important;
-    border-color: var(--kp-navy) !important;
+    border-color: #2563EB !important;
     font-weight: 700 !important;
-    box-shadow: 0 3px 10px rgba(14, 34, 71, 0.18) !important;
 }
 .kp-sidebar-meta {
-    background: var(--kp-surface-alt);
-    border: 1px solid var(--kp-border);
-    border-left: 4px solid var(--kp-gold);
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-left: 4px solid #5A52E8;
     border-radius: 10px;
     padding: 0.8rem 0.9rem;
     margin-top: 0.65rem;
@@ -1016,69 +1027,121 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     line-height: 1.5;
 }
 
-/* Üst Header */
-.kp-top-header {
-    background: linear-gradient(125deg, #FFFFFF 0%, #F8FAFC 65%, #FFFBEB 100%);
-    border: 1px solid var(--kp-border);
-    border-top: 3.5px solid var(--kp-navy);
-    border-radius: 16px;
-    padding: 1.02rem 1.38rem;
-    margin-bottom: 1rem;
+/* Kunduz İlhamlı Üst Duyuru & İletişim Şeridi */
+.kp-promo-strip {
+    background: linear-gradient(90deg, #6338E3 0%, #7A49F0 100%);
+    color: #FFFFFF;
+    border-radius: 10px;
+    padding: 0.5rem 1rem;
+    margin-bottom: 0.45rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
-    box-shadow: 0 4px 16px rgba(14, 34, 71, 0.05);
+    gap: 0.75rem;
+    font-size: 0.78rem;
+    font-weight: 600;
 }
-.kp-top-left {
-    display: flex;
-    align-items: center;
-    gap: 0.9rem;
-}
-.kp-top-left img {
-    width: 52px;
-    height: 52px;
-    object-fit: contain;
-    border-radius: 12px;
-    border: 1px solid var(--kp-gold-border);
-    padding: 2px;
-    background: #FFFFFF;
-}
-.kp-top-title {
-    font-size: 1.24rem;
-    font-weight: 800;
-    color: var(--kp-navy);
-    letter-spacing: -0.02em;
-    margin: 0;
-}
-.kp-top-sub {
-    font-size: 0.82rem;
-    color: #334155;
-    margin: 0.18rem 0 0 0;
-}
-.kp-header-badges {
-    display: flex;
-    align-items: center;
-    gap: 0.48rem;
-    flex-wrap: wrap;
-}
-.kp-status-chip {
+.kp-promo-cta {
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    color: #FFFFFF;
+    padding: 0.22rem 0.72rem;
+    border-radius: 6px;
     font-size: 0.74rem;
     font-weight: 700;
-    color: var(--kp-navy);
-    background: var(--kp-navy-soft);
-    border: 1px solid #C5D4E8;
-    padding: 0.34rem 0.8rem;
-    border-radius: 999px;
+    white-space: nowrap;
 }
-.kp-gold-chip {
-    font-size: 0.74rem;
+.kp-top-contact-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.35rem 0.2rem 0.55rem 0.2rem;
+    border-bottom: 1px solid #F1F5F9;
+    margin-bottom: 0.65rem;
+    font-size: 0.75rem;
+    color: #64748B;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+/* Kunduz İlhamlı Hero Alanı */
+.kp-kd-kicker {
+    font-size: 0.73rem;
     font-weight: 800;
-    color: #92400E;
-    background: #FEF3C7;
-    border: 1px solid #F59E0B;
-    padding: 0.34rem 0.8rem;
-    border-radius: 999px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #2563EB;
+    margin-bottom: 0.45rem;
+}
+.kp-kd-hero-title {
+    font-size: 2.05rem;
+    font-weight: 800;
+    line-height: 1.15;
+    color: #1E2952;
+    margin: 0 0 0.75rem 0;
+}
+.kp-kd-hero-highlight {
+    color: #2563EB;
+    font-style: italic;
+}
+.kp-kd-hero-sub {
+    font-size: 0.88rem;
+    color: #475569;
+    line-height: 1.55;
+    margin-bottom: 1rem;
+}
+.kp-kd-selector-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #2563EB;
+    margin-bottom: 0.45rem;
+}
+.kp-kd-social-row {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 0.9rem;
+    font-size: 0.76rem;
+    color: #64748B;
+    flex-wrap: wrap;
+}
+.kp-kd-social-num {
+    font-weight: 800;
+    color: #1E2952;
+    font-size: 0.84rem;
+}
+
+.kp-feature-strip-card {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    padding: 0.65rem 0.45rem;
+    text-align: center;
+    transition: transform 0.14s ease, border-color 0.14s ease, background-color 0.14s ease;
+}
+.kp-feature-strip-card:hover {
+    transform: translateY(-2px);
+    border-color: #93C5FD;
+    background: #EFF6FF;
+}
+.kp-feature-icon-box {
+    width: 34px;
+    height: 34px;
+    border-radius: 9px;
+    margin: 0 auto 0.35rem auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #2563EB;
+    color: #FFFFFF;
+    font-weight: 800;
+    font-size: 0.82rem;
+}
+.kp-feature-strip-title {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #1E293B;
+    line-height: 1.25;
 }
 
 .kp-page-strip {
@@ -1102,52 +1165,19 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     margin: 0.2rem 0 0 0;
 }
 
-/* Ana Sayfa Vitrin ve Kişisel Öncelik Bileşenleri */
-.kp-hero-banner {
-    background: linear-gradient(112deg, #0E2247 0%, #1B3B73 62%, #B45309 138%);
-    color: #FFFFFF;
-    border-radius: 18px;
-    padding: 1.3rem 1.5rem;
-    margin-bottom: 1rem;
-    box-shadow: 0 8px 22px rgba(14, 34, 71, 0.14);
-}
-.kp-hero-pill {
-    display: inline-block;
-    background: #FACC15;
-    color: #0F172A;
-    font-size: 0.72rem;
-    font-weight: 800;
-    letter-spacing: 0.04em;
-    padding: 0.24rem 0.7rem;
-    border-radius: 999px;
-    margin-bottom: 0.45rem;
-}
-.kp-hero-title {
-    font-size: 1.32rem;
-    font-weight: 800;
-    margin: 0;
-    line-height: 1.25;
-}
-.kp-hero-sub {
-    font-size: 0.85rem;
-    color: #E2E8F0;
-    margin: 0.35rem 0 0 0;
-    max-width: 740px;
-}
-
 .kp-kademe-card {
     background: #FFFFFF;
     border: 1px solid var(--kp-border);
     border-radius: 16px;
     padding: 1rem 1.1rem;
-    min-height: 146px;
+    min-height: 144px;
     margin-bottom: 0.55rem;
-    box-shadow: 0 3px 12px rgba(15, 23, 42, 0.04);
+    box-shadow: 0 3px 12px rgba(37, 99, 235, 0.04);
     transition: transform 0.16s ease, box-shadow 0.16s ease;
 }
 .kp-kademe-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 18px rgba(14, 34, 71, 0.08);
+    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.09);
 }
 .kp-kademe-tag {
     display: inline-block;
@@ -1156,7 +1186,6 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     color: #FFFFFF;
     padding: 0.22rem 0.65rem;
     border-radius: 999px;
-    letter-spacing: 0.04em;
 }
 .kp-kademe-title {
     font-size: 1rem;
@@ -1174,18 +1203,17 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
 .kp-priority-card {
     background: #FFFFFF;
     border: 1px solid var(--kp-border);
-    border-left: 4px solid var(--kp-gold);
+    border-left: 4px solid #2563EB;
     border-radius: 14px;
     padding: 0.95rem 1.05rem;
     min-height: 132px;
     margin-bottom: 0.55rem;
-    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
 }
 .kp-priority-badge {
     font-size: 0.7rem;
     font-weight: 800;
-    color: #92400E;
-    background: #FEF3C7;
+    color: #1D4ED8;
+    background: #EFF6FF;
     padding: 0.18rem 0.58rem;
     border-radius: 999px;
     display: inline-block;
@@ -1203,7 +1231,7 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
 }
 
 .kp-value-strip {
-    background: linear-gradient(100deg, var(--kp-navy) 0%, var(--kp-navy-2) 68%, #D97706 140%);
+    background: linear-gradient(90deg, #1E2952 0%, #2563EB 65%, #5A52E8 100%);
     color: #FFFFFF;
     border-radius: 14px;
     padding: 0.85rem 1.2rem;
@@ -1213,7 +1241,6 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
     justify-content: space-between;
     gap: 1rem;
     flex-wrap: wrap;
-    box-shadow: 0 6px 18px rgba(14, 34, 71, 0.14);
 }
 .kp-value-strip-item {
     display: flex;
@@ -1231,16 +1258,11 @@ div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
 }
 
 div[data-testid="stMetric"] {
-    background: var(--kp-surface);
+    background: #FFFFFF;
     border: 1px solid var(--kp-border);
     border-radius: 14px;
     padding: 0.92rem 1.05rem;
     box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
-    transition: transform 0.16s ease, border-color 0.16s ease;
-}
-div[data-testid="stMetric"]:hover {
-    transform: translateY(-2px);
-    border-color: var(--kp-gold-border);
 }
 div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     font-size: 1.52rem;
@@ -1249,7 +1271,7 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
 }
 
 .kp-card, .kp-bag-shell, .kp-pkg-card, .kp-pay-box, .kp-kpi-card, .kp-metric-box, .kp-studio-banner {
-    background: var(--kp-surface);
+    background: #FFFFFF;
     border: 1px solid var(--kp-border);
     border-radius: 16px;
     box-shadow: 0 4px 14px rgba(15, 23, 42, 0.04);
@@ -1260,19 +1282,13 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
 .kp-card { margin-bottom: 0.65rem; }
 
 .kp-mod-card {
-    background: var(--kp-surface);
+    background: #FFFFFF;
     border: 1px solid var(--kp-border);
-    border-top: 4px solid var(--kp-navy);
+    border-top: 4px solid #2563EB;
     border-radius: 14px;
     padding: 1.1rem 1.2rem;
     min-height: 124px;
     margin-bottom: 0.55rem;
-    box-shadow: 0 3px 10px rgba(15, 23, 42, 0.04);
-    transition: transform 0.16s ease, border-top-color 0.16s ease;
-}
-.kp-mod-card:hover {
-    transform: translateY(-2px);
-    border-top-color: var(--kp-gold);
 }
 .kp-mod-title {
     font-weight: 800;
@@ -1289,7 +1305,7 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
 
 .kp-studio-banner {
     margin-bottom: 1.05rem;
-    border-left: 4px solid var(--kp-gold);
+    border-left: 4px solid #2563EB;
 }
 .kp-studio-title {
     font-size: 1.14rem;
@@ -1308,7 +1324,6 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     font-weight: 700;
     color: #64748B;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
 }
 .kp-kpi-value {
     font-size: 1.25rem;
@@ -1325,7 +1340,7 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
 .kp-metric-box {
     padding: 1.05rem 0.95rem;
     text-align: center;
-    border-bottom: 4px solid var(--kp-navy);
+    border-bottom: 4px solid #2563EB;
 }
 .kp-metric-num {
     font-size: 1.62rem;
@@ -1345,10 +1360,10 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
 
 .kp-bag-shell {
     margin-bottom: 1.2rem;
-    border-top: 4px solid var(--kp-gold);
+    border-top: 4px solid #2563EB;
 }
 .kp-bag-visual {
-    background: linear-gradient(160deg, var(--kp-navy) 0%, var(--kp-navy-2) 100%);
+    background: linear-gradient(160deg, #1E2952 0%, #2563EB 100%);
     border-radius: 14px;
     padding: 1rem 0.85rem;
     display: flex;
@@ -1371,9 +1386,9 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     border-radius: 999px;
 }
 .kp-bag-item-chip {
-    background: var(--kp-surface-alt);
-    border: 1px solid var(--kp-border);
-    border-left: 3.5px solid var(--kp-navy);
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
+    border-left: 3.5px solid #2563EB;
     border-radius: 10px;
     padding: 0.62rem 0.85rem;
     margin-bottom: 0.45rem;
@@ -1384,16 +1399,10 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
 
 .kp-pkg-card {
     margin-bottom: 0.65rem;
-    transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
-}
-.kp-pkg-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(14, 34, 71, 0.08);
-    border-color: #BDD0E8;
 }
 .kp-pkg-featured {
-    border: 2px solid #F59E0B !important;
-    background: linear-gradient(180deg, #FFFBEB 0%, #FFFFFF 35%) !important;
+    border: 2px solid #2563EB !important;
+    background: linear-gradient(180deg, #EFF6FF 0%, #FFFFFF 35%) !important;
 }
 .kp-pkg-top {
     display: flex;
@@ -1404,8 +1413,8 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
 .kp-pkg-seg {
     font-size: 0.71rem;
     font-weight: 700;
-    color: var(--kp-navy);
-    background: var(--kp-navy-soft);
+    color: #1D4ED8;
+    background: #EFF6FF;
     padding: 0.2rem 0.58rem;
     border-radius: 6px;
 }
@@ -1470,45 +1479,31 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     color: var(--kp-muted);
 }
 
-div[data-testid="stTextInput"] input,
-div[data-testid="stNumberInput"] input,
-div[data-testid="stTextArea"] textarea {
-    background-color: #FFFFFF !important;
-    color: var(--kp-text) !important;
-    border: 1px solid #CBD5E1 !important;
-    border-radius: 10px !important;
-}
-div[data-testid="stSelectbox"] > div > div {
-    background-color: #FFFFFF !important;
-    border: 1px solid #CBD5E1 !important;
-    border-radius: 10px !important;
-}
-
 .stButton > button,
 div[data-testid="stFormSubmitButton"] > button {
-    border-radius: 10px;
+    border-radius: 8px;
     font-weight: 700;
-    font-size: 0.84rem;
+    font-size: 0.82rem;
     border: 1px solid #CBD5E1;
     background-color: #FFFFFF;
-    color: var(--kp-navy);
-    transition: background-color 0.14s ease, border-color 0.14s ease;
+    color: #1E293B;
 }
 .stButton > button:hover,
 div[data-testid="stFormSubmitButton"] > button:hover {
-    border-color: var(--kp-navy);
-    background-color: var(--kp-navy-soft);
+    border-color: #2563EB;
+    background-color: #EFF6FF;
+    color: #1D4ED8;
 }
 .stButton > button[kind="primary"],
 div[data-testid="stFormSubmitButton"] > button[kind="primary"] {
-    background: linear-gradient(90deg, #0E2247 0%, #1B3B73 100%) !important;
-    border-color: var(--kp-navy) !important;
+    background: #2563EB !important;
+    border-color: #2563EB !important;
     color: #FFFFFF !important;
 }
 .stButton > button[kind="primary"]:hover,
 div[data-testid="stFormSubmitButton"] > button[kind="primary"]:hover {
-    background: linear-gradient(90deg, #B45309 0%, #D97706 100%) !important;
-    border-color: #B45309 !important;
+    background: #1D4ED8 !important;
+    border-color: #1D4ED8 !important;
 }
 """
 
@@ -2228,7 +2223,7 @@ def build_test_docx(
     title_run = title_p.add_run(f"{institution.upper()} — DEĞERLENDİRME TESTİ")
     title_run.bold = True
     title_run.font.size = Pt(14)
-    title_run.font.color.rgb = RGBColor(14, 34, 71)
+    title_run.font.color.rgb = RGBColor(30, 41, 82)
 
     sub_p = doc.add_paragraph()
     sub_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -2256,7 +2251,7 @@ def build_test_docx(
         run.font.size = Pt(10.5)
         if re.match(r"^(Soru\s*\d+|Cevap\s*Anahtarı|Çözüm)", cleaned, re.IGNORECASE):
             run.bold = True
-            run.font.color.rgb = RGBColor(14, 34, 71)
+            run.font.color.rgb = RGBColor(30, 41, 82)
 
     footer_p = doc.add_paragraph()
     footer_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -2285,7 +2280,7 @@ def build_coach_docx(title_meta: str, plan_text: str) -> bytes:
     r = h.add_run(f"{BRAND_NAME.upper()} — DİJİMENTOR ÇALIŞMA PLANI")
     r.bold = True
     r.font.size = Pt(14)
-    r.font.color.rgb = RGBColor(14, 34, 71)
+    r.font.color.rgb = RGBColor(30, 41, 82)
 
     m = doc.add_paragraph()
     mr = m.add_run(f"{title_meta}\nTarih: {datetime.now().strftime('%d.%m.%Y')}")
@@ -2305,7 +2300,7 @@ def build_coach_docx(title_meta: str, plan_text: str) -> bytes:
         run.font.size = Pt(10.5)
         if cleaned.startswith("#") or cleaned.endswith(":"):
             run.bold = True
-            run.font.color.rgb = RGBColor(14, 34, 71)
+            run.font.color.rgb = RGBColor(30, 41, 82)
 
     buffer = io.BytesIO()
     doc.save(buffer)
@@ -2334,7 +2329,7 @@ def build_commercial_brief_docx(
     r = h.add_run(f"{BRAND_NAME.upper()} — OFİS ÇANTASI & ABONELİK ÖZETİ")
     r.bold = True
     r.font.size = Pt(14)
-    r.font.color.rgb = RGBColor(14, 34, 71)
+    r.font.color.rgb = RGBColor(30, 41, 82)
 
     sub = doc.add_paragraph()
     sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -2372,7 +2367,7 @@ def build_commercial_brief_docx(
         run.font.size = Pt(10.5)
         if line.startswith(("Çanta Durumu", "Çantadaki Paketler", "Ek / Kurumsal Notlar")):
             run.bold = True
-            run.font.color.rgb = RGBColor(14, 34, 71)
+            run.font.color.rgb = RGBColor(30, 41, 82)
 
     buf = io.BytesIO()
     doc.save(buf)
@@ -2446,7 +2441,7 @@ def render_school_backpack_panel() -> Dict[str, Any]:
                                     Adet: <b>{qty}</b> • Soru: <b>{entry['line_quota']:,}/ay</b> • Dijimentor: <b>{entry['line_coach']}/ay</b>
                                 </div>
                             </div>
-                            <div style="font-weight:700;font-size:0.92rem;color:#0E2247;white-space:nowrap;">
+                            <div style="font-weight:700;font-size:0.92rem;color:#2563EB;white-space:nowrap;">
                                 {entry['line_price']:,} ₺/ay
                             </div>
                         </div>
@@ -2586,7 +2581,7 @@ def render_iyzico_simulator(
         if pay_url:
             st.markdown(
                 f'<div style="margin-top:0.75rem;"><a href="{html.escape(str(pay_url))}" target="_blank">'
-                f'<button style="background:#0E2247;color:#FFFFFF;border:none;border-radius:8px;'
+                f'<button style="background:#2563EB;color:#FFFFFF;border:none;border-radius:8px;'
                 f'padding:0.55rem 1.15rem;font-weight:600;cursor:pointer;">'
                 f'Güvenli iyzico Ödeme Sayfasını Aç</button></a></div>',
                 unsafe_allow_html=True,
@@ -2640,13 +2635,13 @@ def render_student_xray_panel() -> None:
         st.dataframe(prof["kazanimlar"], use_container_width=True, hide_index=True)
     with c_col:
         st.markdown("#### Hata Kök Neden Dağılımı (%)")
-        st.bar_chart(prof["hatalar"], color="#0E2247", height=225)
+        st.bar_chart(prof["hatalar"], color="#2563EB", height=225)
 
     st.markdown("#### Dijimentor Otomatik Telafi Reçetesi")
     st.markdown(
         f"""
         <div class="kp-card">
-            <div style="font-weight:700;color:#0E2247;font-size:0.92rem;">
+            <div style="font-weight:700;color:#1E2952;font-size:0.92rem;">
                 {html.escape(sec_student)} — {html.escape(sec_scope)}
             </div>
             <div style="color:#334155;font-size:0.85rem;margin-top:0.4rem;line-height:1.5;">
@@ -2921,7 +2916,7 @@ with st.sidebar:
     st.markdown(
         f"""
         <div class="kp-sidebar-meta">
-            <div style="font-weight:700;color:#0E2247;margin-bottom:0.2rem;">Aktif Kota &amp; Çanta</div>
+            <div style="font-weight:700;color:#1E2952;margin-bottom:0.2rem;">Aktif Kota &amp; Çanta</div>
             <div>{bag_summary_global['total_count']} Paket • {bag_summary_global['monthly_price']:,} ₺/ay</div>
             <div style="color:#475569;margin-top:0.25rem;">
                 Soru: <b>{int(st.session_state.remaining_question_quota):,}</b> / {bag_summary_global['monthly_quota']:,}<br>
@@ -2962,58 +2957,117 @@ with st.sidebar:
                 st.rerun()
 
 # ==============================================================================
-# ÜST KURUMSAL HEADER
+# KUNDUZ İLHAMLI ÜST DUYURU & İLETİŞİM ŞERİDİ
 # ==============================================================================
 st.markdown(
-    f"""
-    <div class="kp-top-header">
-        <div class="kp-top-left">
-            <img src="{LOGO_DATA_URI}" alt="{BRAND_NAME}"/>
-            <div>
-                <h1 class="kp-top-title">{BRAND_NAME}</h1>
-                <p class="kp-top-sub">{BRAND_TAGLINE}</p>
-            </div>
-        </div>
-        <div class="kp-header-badges">
-            <span class="kp-gold-chip">2027 LGS &amp; YKS</span>
-            <span class="kp-status-chip">Maarif Modeli</span>
-        </div>
+    """
+    <div class="kp-promo-strip">
+        <span>2027 LGS &amp; YKS Kamp Dönemi! Maarif Modeli soru fabrikası, Dijimentor ve veli takibi tek dijital ofiste.</span>
+        <span class="kp-promo-cta">Paketleri İncele</span>
+    </div>
+    <div class="kp-top-contact-bar">
+        <div>0850 532 16 29 &nbsp;•&nbsp; Kurşun Kalem Dijital Ofis</div>
+        <div>Maarif Modeli Uyumlu &nbsp;|&nbsp; destek@kursunkalemdijitalofis.com.tr</div>
     </div>
     """,
     unsafe_allow_html=True,
 )
 
 current_page = st.session_state.active_page
-render_page_strip(current_page)
+if current_page != "Ana Sayfa":
+    render_page_strip(current_page)
 
 # ==============================================================================
-# 1. ANA SAYFA (KADEME VİTRİNİ + KİŞİSEL ÖNCELİK AKIŞI)
+# 1. ANA SAYFA (KUNDUZ VİTRİN DÜZENİ + KADEME & ÖNCELİK AKIŞI)
 # ==============================================================================
 if current_page == "Ana Sayfa":
-    hero_l, hero_r = st.columns([3.4, 1.2], vertical_alignment="center")
+    hero_l, hero_r = st.columns([1.25, 1.0], vertical_alignment="center")
+
     with hero_l:
         st.markdown(
             """
-            <div class="kp-hero-banner">
-                <div>
-                    <div class="kp-hero-pill">KADEME VİTRİNİ • DİNAMİK ÖNCELİK AKIŞI</div>
-                    <h3 class="kp-hero-title">Kademeni Seç, Eksik Kazanımına Göre Sıralanan Akışla Net Artır!</h3>
-                    <p class="kp-hero-sub">
-                        Kademe bazlı hızlı başlangıç, yanlış/eksik kazanımlara öncelik veren telafi akışı,
-                        Öğrenci Röntgeni ve haftalık veli özeti tek dijital ofiste birleşti.
-                    </p>
-                </div>
+            <div class="kp-kd-kicker">TÜRKİYE'NİN DİJİTAL ÖLÇME &amp; MENTORLUK OFİSİ</div>
+            <h1 class="kp-kd-hero-title">
+                Hayalindeki <span class="kp-kd-hero-highlight">hedef</span><br>
+                İhtiyacın olan her şey.<br>
+                Tek platform.
+            </h1>
+            <p class="kp-kd-hero-sub">
+                7/24 Soru &amp; Redaksiyon Fabrikası • Her Hafta Dijimentor Planı • İnteraktif Mini Deneme •
+                Öğrenci Röntgeni • Veli Takip &amp; B2B Zümre Yönetimi şimdi <b>Kurşun Kalem Dijital Ofis</b>'te!
+            </p>
+            <div class="kp-kd-selector-label">Paketleri ve modülleri hızlı başlatmak için sınav ya da sınıfını seç:</div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        # 5'li rozet satırı 1
+        r1_cols = st.columns(5)
+        for idx, chip in enumerate(HERO_PILL_CHIPS[:5]):
+            with r1_cols[idx]:
+                if st.button(chip["label"], key=f"kd_chip_1_{idx}", use_container_width=True):
+                    st.session_state["factory_grade"] = chip["grade"]
+                    st.session_state["factory_grade_sync"] = True
+                    st.session_state["dk_exam"] = chip["exam"]
+                    record_activity("Hızlı Kademe", f"{chip['label']} seçildi")
+                    navigate_to(chip["page"])
+
+        # 5'li rozet satırı 2
+        r2_cols = st.columns(5)
+        for idx, chip in enumerate(HERO_PILL_CHIPS[5:]):
+            with r2_cols[idx]:
+                if st.button(chip["label"], key=f"kd_chip_2_{idx}", use_container_width=True):
+                    st.session_state["factory_grade"] = chip["grade"]
+                    st.session_state["factory_grade_sync"] = True
+                    st.session_state["dk_exam"] = chip["exam"]
+                    record_activity("Hızlı Kademe", f"{chip['label']} seçildi")
+                    navigate_to(chip["page"])
+
+        st.markdown(
+            """
+            <div class="kp-kd-social-row">
+                <div><span class="kp-kd-social-num">142.500+</span><br>Üretilen Soru</div>
+                <div><span class="kp-kd-social-num">18.420</span><br>Aktif Öğrenci &amp; Veli</div>
+                <div><span class="kp-kd-social-num">48</span><br>B2B Anlaşmalı Kurum</div>
             </div>
             """,
             unsafe_allow_html=True,
         )
-    with hero_r:
-        if st.button("Hemen Soru Üretmeye Başla", key="hero_cta_factory", type="primary", use_container_width=True):
-            navigate_to("Soru & Redaksiyon Fabrikası")
-        st.markdown("<div style='height:0.35rem;'></div>", unsafe_allow_html=True)
-        if st.button("Paketleri & Çantayı İncele", key="hero_cta_plans", use_container_width=True):
-            navigate_to("Paketler & Abonelik Vitrini")
 
+    with hero_r:
+        # Kunduz'daki 5 sütunlu hızlı özellik şeridi
+        f_strip = [
+            ("SF", "Soru Fabrikası", "Soru & Redaksiyon Fabrikası"),
+            ("DM", "Dijimentor", "Dijimentor"),
+            ("MD", "Mini Deneme", "Öğrenci Portalı & Çözüm"),
+            ("RT", "Öğrenci Röntgeni", "Öğrenci Röntgeni"),
+            ("ÇT", "Ofis Çantası", "Paketler & Abonelik Vitrini"),
+        ]
+        s_cols = st.columns(5)
+        for idx, (code, f_title, f_target) in enumerate(f_strip):
+            with s_cols[idx]:
+                st.markdown(
+                    f"""
+                    <div class="kp-feature-strip-card">
+                        <div class="kp-feature-icon-box">{code}</div>
+                        <div class="kp-feature-strip-title">{html.escape(f_title)}</div>
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                if st.button("Aç", key=f"fstrip_btn_{idx}", use_container_width=True):
+                    navigate_to(f_target)
+
+        st.markdown(
+            f"""
+            <div style="text-align:center;margin-top:0.55rem;">
+                <img src="{HERO_STUDENT_URI}" alt="Kurşun Kalem Dijital Ofis" style="width:100%;max-width:390px;border-radius:16px;"/>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    st.markdown("---")
     st.markdown("#### Kademe & Çalışma Alanı Seç")
     k_cols = st.columns(4)
     for idx, k_item in enumerate(KADEME_VITRIN_KARTLARI):
@@ -3082,66 +3136,18 @@ if current_page == "Ana Sayfa":
     m3.metric("B2B Anlaşmalı Kurum", "48", "+4 Yeni")
     m4.metric("Çözülen Soru Sayısı", "2.4 Milyon", "%98 Başarı")
 
-    st.markdown("### Öne Çıkan Dijital Ofis Modülleri")
-    f1, f2, f3 = st.columns(3)
-    with f1:
-        st.markdown(
-            """
-            <div class="kp-mod-card">
-                <div class="kp-mod-title">Soru &amp; Redaksiyon Fabrikası</div>
-                <p class="kp-mod-desc">
-                    Maarif Modeli kazanımlarına uygun, çeldirici analizi yapılmış
-                    özgün sorular üretin ve DOCX formatında indirin.
-                </p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        if st.button("Soru Fabrikasına Git", key="go_factory", use_container_width=True):
-            navigate_to("Soru & Redaksiyon Fabrikası")
-    with f2:
-        st.markdown(
-            """
-            <div class="kp-mod-card">
-                <div class="kp-mod-title">Öğrenci Röntgeni</div>
-                <p class="kp-mod-desc">
-                    Kazanım başarı röntgenini çıkarın, hata kök nedenlerini inceleyin
-                    ve tek tıkla telafi soru seti oluşturun.
-                </p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        if st.button("Öğrenci Röntgenini Aç", key="go_xray", use_container_width=True):
-            navigate_to("Öğrenci Röntgeni")
-    with f3:
-        st.markdown(
-            """
-            <div class="kp-mod-card">
-                <div class="kp-mod-title">Paketler &amp; Abonelik Vitrini</div>
-                <p class="kp-mod-desc">
-                    Öğrenci, YKS, Veli ve Kurumsal paketleri Ofis Çantasına
-                    ekleyin ve iyzico taksit seçeneklerini inceleyin.
-                </p>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-        if st.button("Paketler Vitrinine Git", key="go_plans", use_container_width=True):
-            navigate_to("Paketler & Abonelik Vitrini")
-
     st.markdown("---")
     ana_l, ana_r = st.columns([2, 1])
     with ana_l:
         st.markdown("#### Haftalık Soru Üretim & Çözüm Telemetrisi")
         telemetry_data = {"Pzt": 16800, "Sal": 18200, "Çar": 19500, "Per": 21100, "Cum": 22400, "Cmt": 25900, "Paz": 24800}
-        st.area_chart(telemetry_data, color="#0E2247", height=210)
+        st.area_chart(telemetry_data, color="#2563EB", height=210)
     with ana_r:
         st.markdown("#### Son Aktiviteler")
         for item in st.session_state.get("activity_log", [])[:5]:
             st.markdown(
                 f"""
-                <div style="background:#FFFFFF;border:1px solid #DCE3EC;border-left:3.5px solid #D97706;border-radius:10px;padding:0.58rem 0.8rem;margin-bottom:0.45rem;">
+                <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-left:3.5px solid #2563EB;border-radius:10px;padding:0.58rem 0.8rem;margin-bottom:0.45rem;">
                     <div style="font-size:0.72rem;font-weight:600;color:#64748B;">{html.escape(item['time'])} • {html.escape(item['module'])}</div>
                     <div style="font-size:0.83rem;color:#0F172A;margin-top:0.12rem;">{html.escape(item['summary'])}</div>
                 </div>
@@ -3604,13 +3610,13 @@ elif current_page == "Dijimentor":
     a_hrs = round(weekly_hours * 0.25, 1)
     st.markdown(
         f"""
-        <div style="margin-top:0.65rem;padding-top:0.75rem;border-top:1px solid #DCE3EC;">
+        <div style="margin-top:0.65rem;padding-top:0.75rem;border-top:1px solid #E2E8F0;">
             <div style="font-size:0.75rem;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.04em;">
                 Önerilen Haftalık Kapasite Dağılımı ({weekly_hours} Saat)
             </div>
             <div class="kp-dist-bar">
-                <div style="width:45%;background:#0E2247;"></div>
-                <div style="width:30%;background:#D97706;"></div>
+                <div style="width:45%;background:#2563EB;"></div>
+                <div style="width:30%;background:#5A52E8;"></div>
                 <div style="width:25%;background:#94A3B8;"></div>
             </div>
             <div class="kp-dist-legend">
@@ -3720,10 +3726,10 @@ elif current_page == "Veli Takip Paneli":
     g_col1, g_col2 = st.columns(2)
     with g_col1:
         st.markdown("#### Haftalık Doğruluk İvmesi (%)")
-        st.area_chart({"1. Hafta": 71, "2. Hafta": 74, "3. Hafta": 77, "4. Hafta": 81}, color="#0E2247", height=190)
+        st.area_chart({"1. Hafta": 71, "2. Hafta": 74, "3. Hafta": 77, "4. Hafta": 81}, color="#2563EB", height=190)
     with g_col2:
         st.markdown("#### Ders Bazlı Başarı Oranı (%)")
-        st.bar_chart({"Türkçe": 84, "Matematik": 72, "Fen": 82, "Sosyal": 86, "İngilizce": 79}, color="#0E2247", height=190)
+        st.bar_chart({"Türkçe": 84, "Matematik": 72, "Fen": 82, "Sosyal": 86, "İngilizce": 79}, color="#2563EB", height=190)
 
     render_parent_notification_center()
 
@@ -3845,7 +3851,7 @@ elif current_page == "B2B Lisans & Kurum":
         with zc1:
             st.dataframe(zumre_rows, use_container_width=True, hide_index=True)
         with zc2:
-            st.bar_chart(chart_map, color="#0E2247", height=225)
+            st.bar_chart(chart_map, color="#2563EB", height=225)
 
 # ==============================================================================
 # 8. PAKETLER & ABONELİK VİTRİNİ
