@@ -1313,6 +1313,22 @@ st.set_page_config(
 )
 
 BRAND_NAME = "KURŞUN KALEM DİJİTAL OFİS"
+# İletişim: kendi numaranı yazana kadar boş bırak; boşsa sitede telefon gösterilmez.
+SUPPORT_PHONE = ""  # örn. "0532 000 00 00"
+SUPPORT_EMAIL = "destek@kursunkalemdijitalofis.com.tr"
+
+
+def _support_phone_html() -> str:
+    if not SUPPORT_PHONE:
+        return ""
+    digits = "".join(ch for ch in SUPPORT_PHONE if ch.isdigit() or ch == "+")
+    return f'<a href="tel:{digits}">{html.escape(SUPPORT_PHONE)}</a>'
+
+
+def _support_line_html() -> str:
+    parts = [_support_phone_html(), f'<a href="mailto:{SUPPORT_EMAIL}">{SUPPORT_EMAIL}</a>' if SUPPORT_EMAIL else ""]
+    parts = [p for p in parts if p]
+    return ("Destek: " + " · ".join(parts)) if parts else ""
 BRAND_SHORT = "Kurşun Kalem"
 BRAND_TAGLINE = "2027 Hedefli Soru & Redaksiyon Fabrikası • Dijimentor • Veli & B2B Dijital Ofis"
 DEFAULT_MODEL = "gemini-2.5-flash"
@@ -5070,8 +5086,8 @@ KVKK_BILGI: Dict[str, str] = {
     "adres": "[AÇIK ADRES]",
     "vergi_no": "[MERSİS NO ya da VERGİ NO]",
     "kep": "[VARSA KEP ADRESİ]",
-    "eposta": "destek@kursunkalemdijitalofis.com.tr",
-    "telefon": "0850 532 16 29",
+    "eposta": SUPPORT_EMAIL,
+    "telefon": SUPPORT_PHONE or "[VARSA TELEFON]",
     "hesap_silme_suresi": "[ör. 6 AY]",
     "guvenlik_kaydi_suresi": "[ör. 2 YIL]",
     "eposta_saglayici": "[E-POSTA SAĞLAYICISI, ör. Google Workspace]",
@@ -5325,7 +5341,7 @@ def render_landing() -> None:
         f"""
         <div class="kp-topbar">
             <span class="kp-topbar-brand"><img src="{LOGO_DATA_URI}" alt="" style="width:30px;height:30px;vertical-align:middle;margin-right:8px;border-radius:8px;"/>Kurşun Kalem Dijital Ofis</span>
-            <span>Destek: <a href="tel:08505321629">0850 532 16 29</a></span>
+            <span>{_support_line_html()}</span>
         </div>
         """,
         unsafe_allow_html=True,
@@ -5473,7 +5489,7 @@ def render_landing() -> None:
         )
     st.markdown(
         '<div class="kp-gap"></div><p style="text-align:center;color:#64748B;font-size:0.85rem;">'
-        "Kurşun Kalem Dijital Ofis · destek@kursunkalemdijitalofis.com.tr · 0850 532 16 29</p>",
+        + " · ".join(x for x in ["Kurşun Kalem Dijital Ofis", SUPPORT_EMAIL, SUPPORT_PHONE] if x) + "</p>",
         unsafe_allow_html=True,
     )
     _f1, _f2, _f3 = st.columns([2, 1, 2])
@@ -5744,10 +5760,10 @@ with st.sidebar:
 # ÜST ŞERİT
 # ==============================================================================
 st.markdown(
-    """
+    f"""
     <div class="kp-topbar">
         <span class="kp-topbar-brand">Kurşun Kalem Dijital Ofis</span>
-        <span>Destek: <a href="tel:08505321629">0850 532 16 29</a> · <a href="mailto:destek@kursunkalemdijitalofis.com.tr">destek@kursunkalemdijitalofis.com.tr</a></span>
+        <span>{_support_line_html()}</span>
     </div>
     """,
     unsafe_allow_html=True,
