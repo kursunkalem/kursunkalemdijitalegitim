@@ -1219,12 +1219,13 @@ PAGES = [
     "Paketler & Abonelik Vitrini",
     "Sınıflarım",
     "Profilim & Rozetler",
+    "Fotoğrafla Çöz",
 ]
 
 # Hangi rol hangi sayfaları görür
 ROLE_PAGES: Dict[str, List[str]] = {
     "ogrenci": [
-        "Ana Sayfa", "Soru & Redaksiyon Fabrikası", "Öğrenci Portalı & Çözüm", "Dijimentor",
+        "Ana Sayfa", "Soru & Redaksiyon Fabrikası", "Öğrenci Portalı & Çözüm", "Fotoğrafla Çöz", "Dijimentor",
         "Öğrenci Röntgeni", "Paketler & Abonelik Vitrini", "Profilim & Rozetler",
     ],
     "veli": ["Ana Sayfa", "Veli Takip Paneli", "Öğrenci Röntgeni", "Paketler & Abonelik Vitrini", "Profilim & Rozetler"],
@@ -1273,6 +1274,10 @@ PAGE_DESCRIPTIONS: Dict[str, Tuple[str, str]] = {
     "B2B Lisans & Kurum": (
         "Kurumsal Lisans, Zümre & Deneme Planlayıcı",
         "Koltuk/kota planlaması, zümre dağılımı, kurum içi deneme takvimi ve DOCX teklif çıktısı.",
+    ),
+    "Fotoğrafla Çöz": (
+        "Fotoğrafla Çöz",
+        "Kitaptaki ya da defterdeki sorunun fotoğrafını yükle; Dijimentor önce ipucu versin ya da adım adım çözsün.",
     ),
     "Sınıflarım": (
         "Sınıflarım, Ödevler & Sınıf Analizi",
@@ -1358,6 +1363,7 @@ NAV_GROUPS: List[Tuple[Optional[str], List[Tuple[str, str, str]]]] = [
     ("Modüller", [
         ("Soru & Redaksiyon Fabrikası", "Soru & Redaksiyon", ":material/edit_note:"),
         ("Öğrenci Portalı & Çözüm", "Öğrenci Portalı", ":material/quiz:"),
+        ("Fotoğrafla Çöz", "Fotoğrafla Çöz", ":material/photo_camera:"),
         ("Dijimentor", "Dijimentor", ":material/event_note:"),
         ("Öğrenci Röntgeni", "Öğrenci Röntgeni", ":material/monitor_heart:"),
     ]),
@@ -1377,6 +1383,7 @@ MODULE_CARDS: List[Tuple[str, str, str, str, str, str]] = [
     ("SR", "Soru & Redaksiyon", "Kazanım etiketli soru üretimi ve çift katmanlı editör kontrolü.", "Soru & Redaksiyon Fabrikası", "#EFF6FF", "#1D4ED8"),
     ("DM", "Dijimentor", "Seviyene göre her hafta yenilenen kişisel çalışma planı.", "Dijimentor", "#F0FDF4", "#15803D"),
     ("MD", "Mini Deneme", "Süre takipli denemeler ve otomatik hata defteri.", "Öğrenci Portalı & Çözüm", "#FEF3C7", "#B45309"),
+    ("FC", "Fotoğrafla Çöz", "Sorunun fotoğrafını çek, ipucu al ya da adım adım çözümünü gör.", "Fotoğrafla Çöz", "#ECFEFF", "#0E7490"),
     ("ÖR", "Öğrenci Röntgeni", "Konu konu güçlü ve zayıf yönlerin net haritası.", "Öğrenci Röntgeni", "#F5F3FF", "#6D28D9"),
     ("VT", "Veli Takip", "Haftalık özet, ilerleme ve veli mesajları tek yerde.", "Veli Takip Paneli", "#FFF1F2", "#BE123C"),
 ]
@@ -4991,7 +4998,6 @@ def render_landing() -> None:
         unsafe_allow_html=True,
     )
     feats = list(MODULE_CARDS) + [
-        ("FC", "Fotoğrafla Çöz", "Kitaptaki sorunun fotoğrafını çek, adım adım çözümünü gör.", "Öğrenci Portalı & Çözüm", "#ECFEFF", "#0E7490"),
         ("SE", "Seri & Rozetler", "Her gün çalış, serini büyüt, rozetleri topla.", "Profilim & Rozetler", "#FFF7ED", "#C2410C"),
         ("SO", "Sınıf & Ödev", "Öğretmenin test atar, sonuçlar anında sınıf paneline düşer.", "Sınıflarım|Öğrenci Portalı & Çözüm", "#F0FDFA", "#0F766E"),
     ]
@@ -6026,10 +6032,9 @@ elif current_page == "Öğrenci Portalı & Çözüm":
     _pending_hw = [a for a in db.student_assignments(USER["id"]) if not a.get("submitted_at")]
     if st.session_state.pop("portal_tab_hint", None) == "Ödevlerim":
         st.info("Ödevlerini ve sınıfa katılma alanını **Ödevlerim** sekmesinde bulabilirsin.")
-    tab_exam, tab_hw, tab_photo, tab_hint, tab_err = st.tabs([
+    tab_exam, tab_hw, tab_hint, tab_err = st.tabs([
         "Mini Deneme",
         f"Ödevlerim ({len(_pending_hw)})",
-        "Fotoğrafla Çöz",
         "Adımlı Çözüm Asistanı",
         f"Hata Defteri & Tekrar ({len(_due_now)})",
     ])
@@ -6273,60 +6278,6 @@ elif current_page == "Öğrenci Portalı & Çözüm":
                     if st.button(label, key=f"hw_start_{hw['id']}", type="secondary" if hw.get("submitted_at") else "primary",
                                  use_container_width=True):
                         start_assignment(hw)
-
-    with tab_photo:
-        st.markdown("Kitaptaki ya da defterdeki sorunun fotoğrafını çek veya yükle; Dijimentor adım adım açıklasın.")
-        ph1, ph2 = st.columns([1.2, 1])
-        with ph1:
-            src_mode = st.segmented_control("Kaynak", ["Dosya yükle", "Kamera"], default="Dosya yükle",
-                                            key="photo_src", label_visibility="collapsed")
-            img_file = (
-                st.camera_input("Soruyu çek", key="photo_cam")
-                if src_mode == "Kamera"
-                else st.file_uploader("Soru fotoğrafı", type=["png", "jpg", "jpeg", "webp"], key="photo_up")
-            )
-        with ph2:
-            photo_mode = st.radio("Yardım düzeyi", ["Önce ipucu ver", "Adım adım çöz"], key="photo_mode")
-            photo_note = st.text_input("Not (isteğe bağlı)", placeholder="Örn: C dedim ama yanlış çıktı", key="photo_note")
-        if img_file is not None:
-            st.image(img_file, width=360)
-        if st.button("Çözümü göster", type="primary", key="photo_solve_btn", disabled=img_file is None):
-            img_bytes = img_file.getvalue()
-            if len(img_bytes) > 8 * 1024 * 1024:
-                st.error("Fotoğraf 8 MB'tan büyük olamaz.")
-            else:
-                ok_q, q_msg = consume_quota("question", 1)
-                if not ok_q:
-                    st.error(q_msg)
-                else:
-                    slot = st.empty()
-                    render_loading_skeleton(slot, lines=3)
-                    try:
-                        answer = call_gemini_vision(
-                            img_bytes,
-                            getattr(img_file, "type", None) or "image/jpeg",
-                            (
-                                f"Fotoğraftaki soruyu oku. Öğrencinin sınıfı: {USER.get('grade') or 'belirtilmedi'}. "
-                                f"Yardım düzeyi: {photo_mode}. Öğrencinin notu: {photo_note or '-'}.\n"
-                                "Önce soruyu kısaca yeniden yaz, sonra yardım düzeyine uygun şekilde açıkla. "
-                                "Soru okunamıyorsa bunu söyle ve daha net bir fotoğraf iste."
-                            ),
-                            (
-                                "Sen sabırlı, teşvik edici bir Türk eğitim mentorusun. LGS/YKS müfredatına hâkimsin. "
-                                "'Önce ipucu ver' seçildiyse cevabı söyleme, sadece yol göster. Türkçe yanıt ver."
-                            ),
-                        )
-                        slot.empty()
-                        st.session_state["photo_solves"] = int(st.session_state.get("photo_solves", 0)) + 1
-                        save_persisted_state()
-                        record_activity("Fotoğrafla Çöz", f"{photo_mode} üretildi")
-                        st.markdown("#### Çözüm")
-                        st.markdown(answer)
-                        check_and_award_badges()
-                    except Exception as exc:
-                        slot.empty()
-                        refund_quota("question", 1)
-                        st.error(f"Çözüm üretilemedi: {exc}")
 
     with tab_hint:
         col_l, col_r = st.columns([2, 1])
@@ -7005,6 +6956,62 @@ elif current_page == "Paketler & Abonelik Vitrini":
         monthly_price=active_bag_summary["monthly_price"],
         summary=active_bag_summary,
     )
+
+# ==============================================================================
+# FOTOĞRAFLA ÇÖZ (öğrenci)
+# ==============================================================================
+elif current_page == "Fotoğrafla Çöz":
+    ph1, ph2 = st.columns([1.2, 1])
+    with ph1:
+        src_mode = st.segmented_control("Kaynak", ["Dosya yükle", "Kamera"], default="Dosya yükle",
+                                        key="photo_src", label_visibility="collapsed")
+        img_file = (
+            st.camera_input("Soruyu çek", key="photo_cam")
+            if src_mode == "Kamera"
+            else st.file_uploader("Soru fotoğrafı", type=["png", "jpg", "jpeg", "webp"], key="photo_up")
+        )
+    with ph2:
+        photo_mode = st.radio("Yardım düzeyi", ["Önce ipucu ver", "Adım adım çöz"], key="photo_mode")
+        photo_note = st.text_input("Not (isteğe bağlı)", placeholder="Örn: C dedim ama yanlış çıktı", key="photo_note")
+    if img_file is not None:
+        st.image(img_file, width=360)
+    if st.button("Çözümü göster", type="primary", key="photo_solve_btn", disabled=img_file is None):
+        img_bytes = img_file.getvalue()
+        if len(img_bytes) > 8 * 1024 * 1024:
+            st.error("Fotoğraf 8 MB'tan büyük olamaz.")
+        else:
+            ok_q, q_msg = consume_quota("question", 1)
+            if not ok_q:
+                st.error(q_msg)
+            else:
+                slot = st.empty()
+                render_loading_skeleton(slot, lines=3)
+                try:
+                    answer = call_gemini_vision(
+                        img_bytes,
+                        getattr(img_file, "type", None) or "image/jpeg",
+                        (
+                            f"Fotoğraftaki soruyu oku. Öğrencinin sınıfı: {USER.get('grade') or 'belirtilmedi'}. "
+                            f"Yardım düzeyi: {photo_mode}. Öğrencinin notu: {photo_note or '-'}.\n"
+                            "Önce soruyu kısaca yeniden yaz, sonra yardım düzeyine uygun şekilde açıkla. "
+                            "Soru okunamıyorsa bunu söyle ve daha net bir fotoğraf iste."
+                        ),
+                        (
+                            "Sen sabırlı, teşvik edici bir Türk eğitim mentorusun. LGS/YKS müfredatına hâkimsin. "
+                            "'Önce ipucu ver' seçildiyse cevabı söyleme, sadece yol göster. Türkçe yanıt ver."
+                        ),
+                    )
+                    slot.empty()
+                    st.session_state["photo_solves"] = int(st.session_state.get("photo_solves", 0)) + 1
+                    save_persisted_state()
+                    record_activity("Fotoğrafla Çöz", f"{photo_mode} üretildi")
+                    st.markdown("#### Çözüm")
+                    st.markdown(answer)
+                    check_and_award_badges()
+                except Exception as exc:
+                    slot.empty()
+                    refund_quota("question", 1)
+                    st.error(f"Çözüm üretilemedi: {exc}")
 
 # ==============================================================================
 # 9. SINIFLARIM (ÖĞRETMEN): sınıf oluşturma, ödevler, sınıf karşılaştırma paneli
