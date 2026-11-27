@@ -1159,6 +1159,11 @@ HERO_SHOWCASE_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 
 </svg>"""
 
 
+def tr_upper(text: str) -> str:
+    """Türkçe büyük harf: i -> İ, ı -> I (CSS'in text-transform'u bunu bilmez)."""
+    return str(text).replace("i", "İ").replace("ı", "I").upper()
+
+
 def svg_to_data_uri(svg_str: str) -> str:
     encoded = base64.b64encode(svg_str.encode("utf-8")).decode("ascii")
     return f"data:image/svg+xml;base64,{encoded}"
@@ -2328,7 +2333,6 @@ section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
     font-weight: 700;
     letter-spacing: 0.06em;
     line-height: 1.2;
-    text-transform: uppercase;
     color: #64748B;
     padding: 1rem 0.75rem 0.35rem 0.75rem;
 }
@@ -2464,7 +2468,7 @@ section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
 .kp-user-name { font-weight: 700; font-size: 0.88rem; color: #0F172A; line-height: 1.25; overflow-wrap: anywhere; }
 .kp-user-role { font-size: 0.75rem; color: #64748B; }
 .kp-streak-pill { display: inline-block; margin-top: 0.3rem; font-size: 0.72rem; font-weight: 800; color: #9A3412; background: #FFEDD5; border-radius: 999px; padding: 0.15rem 0.55rem; white-space: nowrap; }
-.kp-today-label { font-size: 0.78rem; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.05em; }
+.kp-today-label { font-size: 0.78rem; font-weight: 700; color: #64748B; letter-spacing: 0.05em; }
 .kp-today-big { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 2.2rem; font-weight: 800; color: #0F172A; line-height: 1.15; margin-top: 0.2rem; }
 .kp-today-big span { font-size: 0.95rem; font-weight: 600; color: #64748B; }
 .kp-today-sub { font-size: 0.86rem; color: #475569; min-height: 2.6rem; margin-bottom: 0.6rem; }
@@ -2654,7 +2658,6 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     font-size: 0.7rem;
     font-weight: 700;
     color: #64748B;
-    text-transform: uppercase;
 }
 .kp-kpi-value {
     font-size: 1.25rem;
@@ -2684,7 +2687,6 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
     font-size: 0.71rem;
     color: #64748B;
     margin-top: 0.3rem;
-    text-transform: uppercase;
     letter-spacing: 0.08em;
     font-weight: 700;
 }
@@ -3136,8 +3138,8 @@ SPLASH_HTML = """
     animation: kpSplashMark 0.45s ease-out 1.4s forwards;
 }}
 .kp-splash-sub {{
-    font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; letter-spacing: 0.32em;
-    text-transform: uppercase; color: #1D4ED8; font-size: clamp(0.85rem, 2vw, 1.05rem); margin-top: 0.35rem;
+    font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; letter-spacing: 0.08em;
+    color: #1D4ED8; font-size: clamp(1.05rem, 2.6vw, 1.35rem); margin-top: 0.35rem;
     opacity: 0; transform: translateY(8px);
     animation: kpSplashSub 0.45s ease-out 1.65s forwards;
 }}
@@ -5339,7 +5341,7 @@ with st.sidebar:
         if not items:
             continue
         if group_title:
-            st.markdown(f'<div class="kp-nav-title">{html.escape(group_title)}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="kp-nav-title">{html.escape(tr_upper(group_title))}</div>', unsafe_allow_html=True)
         for p_name, p_label, p_icon in items:
             is_current = st.session_state.active_page == p_name
             if st.button(
@@ -5633,7 +5635,7 @@ if current_page == "Ana Sayfa":
                 done_txt = "Hedef tamam!" if goal_pct >= 100 else f"{prog['goal'] - prog['solved_today']} soru kaldı"
                 st.markdown(
                     f"""
-                    <div class="kp-today-label">Bugünkü hedefin</div>
+                    <div class="kp-today-label">BUGÜNKÜ HEDEFİN</div>
                     <div class="kp-today-big">{prog['solved_today']}<span> / {prog['goal']} soru</span></div>
                     <div class="kp-meter" style="margin:0.6rem 0 0.4rem;"><span style="width:{goal_pct}%;background:#16A34A"></span></div>
                     <div class="kp-today-sub">{done_txt} · <b>{prog['streak']} gün</b> seri</div>
@@ -5646,7 +5648,7 @@ if current_page == "Ana Sayfa":
             with st.container(border=True, key="card_review"):
                 st.markdown(
                     f"""
-                    <div class="kp-today-label">Tekrar zamanı</div>
+                    <div class="kp-today-label">TEKRAR ZAMANI</div>
                     <div class="kp-today-big">{len(due)}<span> soru</span></div>
                     <div class="kp-today-sub" style="margin-top:0.55rem;">
                     {"Hata defterinden bugün tekrar etmen gerekenler hazır." if due else "Bugün tekrar edilecek soru yok. Harika!"}
@@ -5660,7 +5662,7 @@ if current_page == "Ana Sayfa":
             with st.container(border=True, key="card_homework"):
                 st.markdown(
                     f"""
-                    <div class="kp-today-label">Ödevlerin</div>
+                    <div class="kp-today-label">ÖDEVLERİN</div>
                     <div class="kp-today-big">{len(pending)}<span> bekleyen</span></div>
                     <div class="kp-today-sub" style="margin-top:0.55rem;">
                     {html.escape(pending[0]["title"] + " · " + pending[0]["class_name"]) if pending else "Bekleyen ödevin yok."}
@@ -5855,7 +5857,7 @@ if current_page == "Ana Sayfa":
                     with st.container(border=True, key=f"card_cls_{cls['id']}"):
                         st.markdown(
                             f"""
-                            <div class="kp-today-label">{html.escape(cls.get('grade') or 'Sınıf')}</div>
+                            <div class="kp-today-label">{html.escape(tr_upper(cls.get('grade') or 'Sınıf'))}</div>
                             <div class="kp-today-big">{html.escape(cls['name'])}</div>
                             <div class="kp-today-sub" style="margin-top:0.4rem;">
                                 {cls['member_count']} öğrenci · {ov['total_assignments']} ödev<br>
@@ -6478,7 +6480,7 @@ elif current_page == "Dijimentor":
     k_c1.markdown(
         f"""
         <div class="kp-kpi-card">
-            <div class="kp-kpi-label">Mentorluk Motoru</div>
+            <div class="kp-kpi-label">MENTORLUK MOTORU</div>
             <div class="kp-kpi-value">Dijimentor 2028</div>
             <div class="kp-kpi-sub">Kalan Plan: {int(st.session_state.remaining_coach_quota)} Hak</div>
         </div>
@@ -6488,7 +6490,7 @@ elif current_page == "Dijimentor":
     k_c2.markdown(
         f"""
         <div class="kp-kpi-card">
-            <div class="kp-kpi-label">Günlük Ortalama Tempo</div>
+            <div class="kp-kpi-label">GÜNLÜK ORTALAMA TEMPO</div>
             <div class="kp-kpi-value">{daily_avg:.1f} Saat</div>
             <div class="kp-kpi-sub">Haftalık Toplam: {current_hours} Saat</div>
         </div>
@@ -6498,7 +6500,7 @@ elif current_page == "Dijimentor":
     k_c3.markdown(
         """
         <div class="kp-kpi-card">
-            <div class="kp-kpi-label">2028 Kamp Fazları</div>
+            <div class="kp-kpi-label">2028 KAMP FAZLARI</div>
             <div class="kp-kpi-value">3 Aşama</div>
             <div class="kp-kpi-sub">Kazanım • Branş Hızı • Genel Deneme</div>
         </div>
@@ -6508,7 +6510,7 @@ elif current_page == "Dijimentor":
     k_c4.markdown(
         """
         <div class="kp-kpi-card">
-            <div class="kp-kpi-label">Çıktı Formatı</div>
+            <div class="kp-kpi-label">ÇIKTI FORMATI</div>
             <div class="kp-kpi-value">Plan + DOCX</div>
             <div class="kp-kpi-sub">İndirilebilir Çalışma Rehberi</div>
         </div>
@@ -6611,8 +6613,8 @@ elif current_page == "Dijimentor":
     st.markdown(
         f"""
         <div style="margin-top:0.65rem;padding-top:0.75rem;border-top:1px solid #E2E8F0;">
-            <div style="font-size:0.75rem;font-weight:600;color:#475569;text-transform:uppercase;letter-spacing:0.04em;">
-                Önerilen Haftalık Kapasite Dağılımı ({weekly_hours} Saat)
+            <div style="font-size:0.75rem;font-weight:600;color:#475569;letter-spacing:0.04em;">
+                ÖNERİLEN HAFTALIK KAPASİTE DAĞILIMI ({weekly_hours} SAAT)
             </div>
             <div class="kp-dist-bar">
                 <div style="width:45%;background:#2563EB;"></div>
