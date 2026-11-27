@@ -1024,6 +1024,16 @@ reports = SimpleNamespace(
 # ==============================================================================
 # SAYFA YAPILANDIRMASI VE KURUMSAL SABİTLER (2028 KURGUSU)
 # ==============================================================================
+# Streamlit'in kendi bileşenlerinin (sekme, kaydırıcı, onay kutusu) rengi: kırmızı yerine marka mavisi.
+# Kalıcı ve kesin yol .streamlit/config.toml'dur; bu satır o dosya yoksa da çalışmayı dener.
+try:
+    from streamlit import config as _st_config
+
+    if not os.path.exists(".streamlit/config.toml"):
+        _st_config.set_option("theme.primaryColor", "#1D4ED8")
+except Exception:
+    pass
+
 st.set_page_config(
     page_title="KURŞUN KALEM DİJİTAL OFİS • 2028",
     page_icon="🏛️",
@@ -2329,10 +2339,21 @@ section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
     font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.06em;
+    line-height: 1.2;
     text-transform: uppercase;
     color: #64748B;
-    padding: 0.9rem 0.75rem 0.2rem 0.75rem;
+    padding: 1rem 0.75rem 0.35rem 0.75rem;
 }
+/* Streamlit metin bloklarına negatif alt boşluk veriyor; başlıklar butonun altına kaymasın */
+[data-testid="stSidebar"] [data-testid="stMarkdown"]:has(.kp-nav-title),
+[data-testid="stSidebar"] .stMarkdown:has(.kp-nav-title),
+[data-testid="stSidebar"] [data-testid="stElementContainer"]:has(.kp-nav-title),
+[data-testid="stSidebar"] .element-container:has(.kp-nav-title) {
+    margin-bottom: 0 !important;
+    height: auto !important;
+    overflow: visible !important;
+}
+[data-testid="stSidebar"] [data-testid="stMarkdownContainer"]:has(.kp-nav-title) { margin-bottom: 0 !important; }
 .kp-sidebar-meta {
     background: #F8FAFC;
     border: 1px solid #E2E8F0;
@@ -2432,7 +2453,7 @@ section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
 .kp-mod-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; margin-bottom: 0.7rem; }
 .kp-mod-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 1rem; color: #0F172A; }
 .kp-mod-desc { font-size: 0.86rem; line-height: 1.5; color: #475569; margin-top: 0.3rem; min-height: 3.9rem; }
-[class*="st-key-mod_open_"] button, .st-key-prio_all button, [class*="st-key-landing_try_"] button {
+[class*="st-key-mod_open_"] button, .st-key-prio_all button, [class*="st-key-landing_try_"] button, .st-key-landing_kvkk button {
     border: 0 !important;
     background: transparent !important;
     color: #1D4ED8 !important;
@@ -2450,11 +2471,11 @@ section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
 .kp-prio-sub { font-size: 0.8rem; color: #64748B; margin-top: 0.15rem; }
 .kp-prio-divider { border-top: 1px solid #E2E8F0; margin: 0.35rem 0; }
 /* Kullanıcı kartı, seri, bugün kartları */
-.kp-user-card { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.7rem; margin: 0 0 0.6rem 0; border: 1px solid #E2E8F0; border-radius: 12px; background: #FFFFFF; }
+.kp-user-card { display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.6rem 0.7rem; margin: 0 0 0.6rem 0; border: 1px solid #E2E8F0; border-radius: 12px; background: #FFFFFF; }
 .kp-avatar { width: 34px; height: 34px; border-radius: 50%; background: #1D4ED8; color: #FFFFFF; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.kp-user-name { font-weight: 700; font-size: 0.88rem; color: #0F172A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kp-user-name { font-weight: 700; font-size: 0.88rem; color: #0F172A; line-height: 1.25; overflow-wrap: anywhere; }
 .kp-user-role { font-size: 0.75rem; color: #64748B; }
-.kp-streak-pill { font-size: 0.72rem; font-weight: 800; color: #9A3412; background: #FFEDD5; border-radius: 999px; padding: 0.2rem 0.55rem; white-space: nowrap; }
+.kp-streak-pill { display: inline-block; margin-top: 0.3rem; font-size: 0.72rem; font-weight: 800; color: #9A3412; background: #FFEDD5; border-radius: 999px; padding: 0.15rem 0.55rem; white-space: nowrap; }
 .kp-today-label { font-size: 0.78rem; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.05em; }
 .kp-today-big { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 2.2rem; font-weight: 800; color: #0F172A; line-height: 1.15; margin-top: 0.2rem; }
 .kp-today-big span { font-size: 0.95rem; font-weight: 600; color: #64748B; }
@@ -2967,7 +2988,7 @@ FUN_THEME_CSS = """
 
 /* Sol menü ve link görünümlü butonlar bu stilden muaf */
 [data-testid="stSidebar"] .stButton > button,
-[class*="st-key-mod_open_"] button, .st-key-prio_all button, [class*="st-key-landing_try_"] button {
+[class*="st-key-mod_open_"] button, .st-key-prio_all button, [class*="st-key-landing_try_"] button, .st-key-landing_kvkk button {
     box-shadow: none !important;
     transform: none !important;
 }
@@ -2976,7 +2997,7 @@ FUN_THEME_CSS = """
     background: var(--fun-yellow) !important;
     color: var(--fun-ink) !important;
 }
-[class*="st-key-mod_open_"] button, .st-key-prio_all button, [class*="st-key-landing_try_"] button { border: 0 !important; }
+[class*="st-key-mod_open_"] button, .st-key-prio_all button, [class*="st-key-landing_try_"] button, .st-key-landing_kvkk button { border: 0 !important; }
 [class*="st-key-mod_open_"] button:hover, .st-key-prio_all button:hover, [class*="st-key-landing_try_"] button:hover { background: transparent !important; }
 
 /* Kartlar: kalın çerçeve + renkli pop gölge */
@@ -4662,6 +4683,152 @@ def render_parent_notification_center() -> None:
 
 
 # ==============================================================================
+# KVKK AYDINLATMA METNİ (geçici taslak; yayından önce hukukçuya kontrol ettirin)
+# Köşeli parantezli alanları BURADAN doldurun; metin kayıt formunda, tanıtım sayfasının
+# altında ve Profil sayfasında otomatik olarak bu bilgilerle gösterilir.
+# ==============================================================================
+KVKK_BILGI: Dict[str, str] = {
+    "unvan": "[ŞİRKET UNVANI ya da ŞAHIS İŞLETMESİ SAHİBİNİN ADI SOYADI]",
+    "adres": "[AÇIK ADRES]",
+    "vergi_no": "[MERSİS NO ya da VERGİ NO]",
+    "kep": "[VARSA KEP ADRESİ]",
+    "eposta": "destek@kursunkalemdijitalofis.com.tr",
+    "telefon": "0850 532 16 29",
+    "hesap_silme_suresi": "[ör. 6 AY]",
+    "guvenlik_kaydi_suresi": "[ör. 2 YIL]",
+    "eposta_saglayici": "[E-POSTA SAĞLAYICISI, ör. Google Workspace]",
+    "eposta_ulke": "[ÜLKE]",
+    # Supabase projesini oluştururken seçtiğin bölge (Project Settings > General'da yazar)
+    "supabase_bolge": "Almanya (Frankfurt veri merkezi)",
+}
+KVKK_GUNCELLEME = "27.11.2026"
+
+KVKK_AYDINLATMA_MD = """
+Kurşun Kalem Dijital Ofis olarak, 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") uyarınca, platformumuzu kullanan öğrenci, veli ve öğretmenlerin kişisel verilerini nasıl işlediğimizi aşağıda açıklıyoruz. Bu metin bilgilendirme amaçlıdır; sizden onay istenmez.
+
+#### 1. Veri sorumlusu
+
+| Bilgi | Değer |
+| --- | --- |
+| Unvan | {unvan} |
+| Adres | {adres} |
+| MERSİS / Vergi no | {vergi_no} |
+| E-posta | {eposta} |
+| KEP adresi | {kep} |
+| Telefon | {telefon} |
+
+#### 2. İşlenen kişisel veriler
+
+Yalnızca hizmeti sunmak için gereken verileri işleriz. Kart bilgileriniz bize ulaşmaz; doğrudan ödeme kuruluşu iyzico tarafından alınır.
+
+| Veri kategorisi | Örnekler | Kimden |
+| --- | --- | --- |
+| Kimlik | Ad soyad | Öğrenci, veli, öğretmen |
+| İletişim | E-posta adresi, (varsa) telefon | Tüm kullanıcılar |
+| Hesap ve güvenlik | Kullanıcı rolü, şifrelenmiş parola (özet değeri), giriş kayıtları, IP adresi | Tüm kullanıcılar |
+| Eğitim ve performans | Sınıf düzeyi, çözülen sorular, deneme sonuçları, hata defteri, çalışma serisi, rozetler, ödev teslimleri | Öğrenci |
+| Sınıf bilgileri | Sınıf adı, sınıf kodu, atanan ödevler | Öğretmen |
+| Veli bağlantısı | Velinin hangi öğrenciye bağlı olduğu | Veli |
+| Yüklediğiniz içerik | "Fotoğrafla Çöz" ile gönderilen soru fotoğrafları, yazılan sorular ve notlar | Öğrenci |
+| Müşteri işlem | Seçilen paket, ödeme tutarı, ödeme durumu, fatura için iyzico'ya iletilen ad soyad, e-posta ve T.C. kimlik no | Paket satın alan kullanıcı |
+
+Fotoğraflar sunucularımızda saklanmaz; yalnızca çözüm üretmek için yapay zekâ hizmetine gönderilir. Özel nitelikli kişisel veri (sağlık, din vb.) toplamayız; lütfen fotoğraf ve notlarda bu tür bilgilere yer vermeyin.
+
+#### 3. İşleme amaçları ve hukuki sebepler
+
+Verilerinizi aşağıdaki amaçlarla ve KVKK'nın 5. maddesinin 2. fıkrasındaki hukuki sebeplere dayanarak işleriz. Bu işlemelerin hiçbiri açık rızaya dayanmadığı için sizden ayrıca açık rıza istenmez.
+
+| Amaç | Hukuki sebep (KVKK m.5/2) |
+| --- | --- |
+| Hesap oluşturma, giriş ve hesap güvenliği | (c) Sözleşmenin kurulması ve ifası; (f) meşru menfaat |
+| Soru üretimi, mini deneme, hata defteri, tekrar testleri, Dijimentor planı ve fotoğrafla çözüm hizmetinin sunulması | (c) Sözleşmenin ifası |
+| Seri, günlük hedef ve rozetlerin hesaplanması | (c) Sözleşmenin ifası |
+| Öğretmenin sınıfa ödev ataması ve sonuçları görmesi | (c) Sözleşmenin ifası |
+| Bağlı veliye öğrencinin çalışma özetinin gösterilmesi ve haftalık rapor gönderilmesi | (c) Sözleşmenin ifası |
+| Paket satışı, ödeme doğrulama, kota yönetimi, faturalandırma | (c) Sözleşmenin ifası; (ç) hukuki yükümlülük (vergi mevzuatı) |
+| Destek taleplerinin yanıtlanması | (c) Sözleşmenin ifası |
+| Hizmetin güvenliği, kötüye kullanımın önlenmesi, hataların giderilmesi | (f) Meşru menfaat |
+| Resmî mercilerin talepleri ve olası uyuşmazlıklar | (ç) Hukuki yükümlülük; (e) bir hakkın tesisi, kullanılması veya korunması |
+
+Verilerinizi reklam veya pazarlama amacıyla kullanmayız ve üçüncü kişilere satmayız.
+
+#### 4. Toplama yöntemi
+
+Veriler, platformu kullandığınızda elektronik ortamda ve otomatik yollarla toplanır: kayıt ve profil formları, çözdüğünüz denemeler, yüklediğiniz fotoğraflar, ödeme adımları ve destek yazışmaları aracılığıyla. Öğrencinin performans verileri, bağlı velinin ve sınıfın öğretmeninin ekranında gösterilmek üzere platform içinde üretilir.
+
+#### 5. Verilerin aktarılması
+
+Verilerinizi yalnızca hizmeti sunmak için gereken ölçüde, aşağıdaki alıcı gruplarına aktarırız.
+
+**Yurt içi**
+
+| Alıcı | Aktarılan veri | Amaç |
+| --- | --- | --- |
+| iyzico Ödeme Hizmetleri A.Ş. | Ad soyad, e-posta, T.C. kimlik no, IP adresi, ödeme tutarı | Ödemenin alınması ve doğrulanması |
+| Bağlı veli | Öğrencinin çalışma özeti, deneme sonuçları, rozetleri | Veli takibi (öğrencinin paylaştığı bağlantı koduyla) |
+| Sınıfın öğretmeni | Öğrencinin adı, ödev sonuçları, haftalık çözülen soru sayısı | Ödev ve sınıf takibi (öğrencinin katıldığı sınıf için) |
+| Yetkili kamu kurum ve kuruluşları | Talep edilen veriler | Hukuki yükümlülük |
+
+**Yurt dışı**
+
+Platformun çalışması için yurt dışında bulunan altyapı hizmetleri kullanılır. Bu aktarımlar KVKK'nın 9. maddesi uyarınca, Kişisel Verileri Koruma Kurulu'nun ilan ettiği standart sözleşmeler imzalanarak ve Kurum'a bildirilerek yapılır.
+
+| Alıcı | Ülke | Aktarılan veri | Amaç |
+| --- | --- | --- | --- |
+| Supabase Inc. | {supabase_bolge} | Hesap, eğitim, sınıf, ödeme kayıtları | Veritabanı barındırma |
+| Snowflake Inc. (Streamlit Community Cloud) | ABD | Platform kullanılırken işlenen tüm veriler, IP adresi | Uygulama barındırma |
+| Google LLC (Gemini API) | ABD | Soru üretim talepleri, fotoğraflar, çözüm istenen soru metinleri | Yapay zekâ ile soru ve çözüm üretimi |
+| {eposta_saglayici} | {eposta_ulke} | Veli adı, e-posta adresi, haftalık rapor içeriği | Haftalık veli raporunun gönderilmesi |
+
+#### 6. Saklama süresi
+
+Verilerinizi işleme amacı sürdükçe saklar, süre dolunca siler, yok eder veya anonim hale getiririz.
+
+| Veri | Saklama süresi |
+| --- | --- |
+| Hesap, eğitim ve sınıf verileri | Hesap açık kaldığı sürece; hesap kapatıldıktan sonra {hesap_silme_suresi} içinde silinir |
+| Ödeme ve fatura kayıtları | İlgili vergi ve ticaret mevzuatında öngörülen süre boyunca |
+| "Fotoğrafla Çöz" fotoğrafları | Platform tarafından saklanmaz; yapay zekâ hizmet sağlayıcısının kendi saklama koşulları geçerlidir |
+| Güvenlik ve erişim kayıtları | {guvenlik_kaydi_suresi} |
+
+#### 7. 18 yaşından küçük kullanıcılar
+
+Platformu kullanan öğrencilerin çoğu 18 yaşından küçüktür. 18 yaşından küçük kullanıcılar platformu velilerinin bilgisi ve izniyle kullanmalıdır. Velilerin bu metni çocuklarıyla birlikte okumasını öneririz.
+
+Veliler, çocuklarının hesabını bağlantı koduyla kendi hesaplarına bağlayarak çalışma özetini görebilir. Velisi olduğunuz çocuğunuz adına KVKK'dan doğan hakları kullanmak için de aşağıdaki başvuru yolunu izleyebilirsiniz.
+
+#### 8. Haklarınız ve başvuru yolu
+
+KVKK'nın 11. maddesi uyarınca şu haklara sahipsiniz:
+
+1. Kişisel verilerinizin işlenip işlenmediğini öğrenme
+2. İşlenmişse buna ilişkin bilgi talep etme
+3. İşlenme amacını ve amacına uygun kullanılıp kullanılmadığını öğrenme
+4. Yurt içinde veya yurt dışında aktarıldığı üçüncü kişileri bilme
+5. Eksik veya yanlış işlenmişse düzeltilmesini isteme
+6. KVKK'nın 7. maddesindeki şartlar çerçevesinde silinmesini veya yok edilmesini isteme
+7. Düzeltme, silme ve yok etme işlemlerinin, verilerin aktarıldığı üçüncü kişilere bildirilmesini isteme
+8. Yalnızca otomatik sistemlerle analiz edilmesi sonucu aleyhinize bir sonuç çıkmasına itiraz etme
+9. Kanuna aykırı işleme nedeniyle zarara uğramanız hâlinde zararın giderilmesini talep etme
+
+**Nasıl başvurulur:** Talebinizi yazılı olarak {adres} adresine, KEP adresimize ({kep}) ya da platformda kayıtlı e-posta adresinizden {eposta} adresine iletebilirsiniz. Başvurunuzda ad soyadınızı, iletişim bilgilerinizi ve talebinizi açıkça belirtin. Başvurular en geç 30 gün içinde ücretsiz yanıtlanır; işlem ayrıca bir maliyet gerektirirse Kurul'un belirlediği tarifedeki ücret alınabilir.
+
+Hesabınızı ve verilerinizi silmek için de aynı adrese yazabilirsiniz.
+"""
+
+
+@st.dialog("KVKK Aydınlatma Metni", width="large")
+def show_kvkk_dialog() -> None:
+    render_kvkk_text()
+
+
+def render_kvkk_text() -> None:
+    """Aydınlatma metnini (doldurulmuş haliyle) ekrana basar."""
+    st.caption(f"Son güncelleme: {KVKK_GUNCELLEME}")
+    st.markdown(KVKK_AYDINLATMA_MD.format(**KVKK_BILGI))
+
+
+# ==============================================================================
 # GİRİŞ / KAYIT VE TANITIM SAYFASI (giriş yapmamış ziyaretçiler)
 # ==============================================================================
 def _database_url() -> str:
@@ -4727,13 +4894,19 @@ def _register_form() -> None:
             grade = st.selectbox("Sınıfın", GRADE_LEVELS_2028, index=3)
         elif role == "veli":
             link_code = st.text_input("Öğrenci bağlantı kodu (isteğe bağlı)", help="Çocuğunuzun Profil sayfasında yazan 6 haneli kod.")
-        consent = st.checkbox(
-            "Kişisel verilerimin hizmetin sunulması amacıyla işlenmesini kabul ediyorum. "
-            "18 yaşından küçüksem velimin onayı var."
-        )
+        with st.expander("KVKK Aydınlatma Metni (okumak için tıklayın)", icon=":material/policy:"):
+            render_kvkk_text()
+        # KVKK 2026/347 ilke kararı: aydınlatma metni için onay değil, okunduğuna dair beyan alınır
+        read_notice = st.checkbox("KVKK Aydınlatma Metni'ni okudum, bilgi edindim.")
+        minor_ok = True
+        if role == "ogrenci":
+            minor_ok = st.checkbox("18 yaşından küçüksem bu platformu velimin bilgisi ve izniyle kullanıyorum.")
         if st.form_submit_button("Hesap oluştur", type="primary", use_container_width=True):
-            if not consent:
-                st.error("Devam etmek için onay kutusunu işaretleyin.")
+            if not read_notice:
+                st.error("Devam etmek için Aydınlatma Metni'ni okuduğunuzu işaretleyin.")
+                return
+            if not minor_ok:
+                st.error("18 yaşından küçükseniz velinizin bilgisi ve izni gereklidir; ilgili kutuyu işaretleyin.")
                 return
             try:
                 user = db.create_user(email, name, password, role, grade)
@@ -4887,6 +5060,10 @@ def render_landing() -> None:
         "Kurşun Kalem Dijital Ofis · destek@kursunkalemdijitalofis.com.tr · 0850 532 16 29</p>",
         unsafe_allow_html=True,
     )
+    _f1, _f2, _f3 = st.columns([2, 1, 2])
+    with _f2:
+        if st.button("KVKK Aydınlatma Metni", key="landing_kvkk", use_container_width=True):
+            show_kvkk_dialog()
 
 
 if not current_user():
@@ -5056,8 +5233,8 @@ with st.sidebar:
             <div style="min-width:0;flex:1;">
                 <div class="kp-user-name">{html.escape(USER["name"])}</div>
                 <div class="kp-user-role">{db.ROLE_LABELS.get(ROLE, ROLE)}{(" · " + html.escape(USER["grade"])) if USER.get("grade") else ""}</div>
+                {_streak_html}
             </div>
-            {_streak_html}
         </div>
         """,
         unsafe_allow_html=True,
@@ -7037,6 +7214,8 @@ elif current_page == "Profilim & Rozetler":
                 """,
                 unsafe_allow_html=True,
             )
+    with st.expander("KVKK Aydınlatma Metni", icon=":material/policy:"):
+        render_kvkk_text()
     if ROLE != "ogretmen":
         target_id = USER["id"] if ROLE != "veli" else LIVE_STUDENT_ID
         if target_id:
