@@ -697,7 +697,7 @@ db = SimpleNamespace(
 # ==============================================================================
 # OYUNLAŞTIRMA: seri, rozetler, aralıklı tekrar, zorluk önerisi
 # ==============================================================================
-DIFFICULTY_LEVELS = ["Kolay", "Orta", "Orta-Zor", "Zor (2028 LGS/ÖSYM)"]
+DIFFICULTY_LEVELS = ["Kolay", "Orta", "Orta-Zor", "Zor (LGS/ÖSYM)"]
 
 # ------------------------------------------------------------------------------
 # Seri
@@ -1022,7 +1022,7 @@ reports = SimpleNamespace(
 
 
 # ==============================================================================
-# SAYFA YAPILANDIRMASI VE KURUMSAL SABİTLER (2028 KURGUSU)
+# SAYFA YAPILANDIRMASI VE KURUMSAL SABİTLER (2027 KURGUSU)
 # ==============================================================================
 # Streamlit'in kendi bileşenlerinin (sekme, kaydırıcı, onay kutusu) rengi: kırmızı yerine marka mavisi.
 # Kalıcı ve kesin yol .streamlit/config.toml'dur; bu satır o dosya yoksa da çalışmayı dener.
@@ -1035,7 +1035,7 @@ except Exception:
     pass
 
 st.set_page_config(
-    page_title="KURŞUN KALEM DİJİTAL OFİS • 2028",
+    page_title="KURŞUN KALEM DİJİTAL OFİS • 2027",
     page_icon="✏️",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -1043,14 +1043,14 @@ st.set_page_config(
 
 BRAND_NAME = "KURŞUN KALEM DİJİTAL OFİS"
 BRAND_SHORT = "Kurşun Kalem"
-BRAND_TAGLINE = "2028 Hedefli Soru & Redaksiyon Fabrikası • Dijimentor • Veli & B2B Dijital Ofis"
+BRAND_TAGLINE = "2027 Hedefli Soru & Redaksiyon Fabrikası • Dijimentor • Veli & B2B Dijital Ofis"
 DEFAULT_MODEL = "gemini-2.5-flash"
 FALLBACK_MODEL = "gemini-3.5-flash-lite"
 STATE_FILE_PATH = Path(".kursun_kalem_ofis_2028_state.json")
 STATE_BACKUP_PATH = Path(".kursun_kalem_ofis_2028_state.bak.json")
 EXTERNAL_CSS_PATH = Path("assets/style.css")
 
-GRADE_LEVELS_2028: List[str] = [
+GRADE_LEVELS_2027: List[str] = [
     "5. Sınıf",
     "6. Sınıf",
     "7. Sınıf",
@@ -1123,13 +1123,13 @@ HERO_SHOWCASE_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 
   <rect x="44" y="42" width="214" height="244" rx="18" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5"/>
   <rect x="44" y="42" width="214" height="58" rx="18" fill="url(#navyBanner)"/>
   <rect x="44" y="76" width="214" height="24" fill="url(#navyBanner)"/>
-  <text x="62" y="68" font-family="Inter, Arial, sans-serif" font-size="10.5" font-weight="800" fill="#FACC15" letter-spacing="1.2">KURŞUN KALEM • 2028</text>
+  <text x="62" y="68" font-family="Inter, Arial, sans-serif" font-size="10.5" font-weight="800" fill="#FACC15" letter-spacing="1.2">KURŞUN KALEM • 2027</text>
   <text x="62" y="87" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="800" fill="#FFFFFF">Ölçme &amp; Redaksiyon Ofisi</text>
 
   <rect x="60" y="114" width="182" height="42" rx="10" fill="#F8FAFC" stroke="#E2E8F0"/>
   <circle cx="79" cy="135" r="8" fill="#2563EB"/>
   <text x="94" y="132" font-family="Inter, Arial, sans-serif" font-size="10.5" font-weight="700" fill="#1E2952">Maarif Kazanım Uyumu</text>
-  <text x="94" y="146" font-family="Inter, Arial, sans-serif" font-size="9.5" font-weight="600" fill="#64748B">LGS &amp; YKS 2028 Müfredatı</text>
+  <text x="94" y="146" font-family="Inter, Arial, sans-serif" font-size="9.5" font-weight="600" fill="#64748B">LGS &amp; YKS 2027 Müfredatı</text>
 
   <rect x="60" y="164" width="182" height="42" rx="10" fill="#F8FAFC" stroke="#E2E8F0"/>
   <circle cx="79" cy="185" r="8" fill="#4F46E5"/>
@@ -1144,7 +1144,7 @@ HERO_SHOWCASE_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 
   <rect x="276" y="42" width="120" height="114" rx="18" fill="#FFFFFF" stroke="#E2E8F0" stroke-width="1.5"/>
   <circle cx="336" cy="82" r="22" fill="url(#goldBadgeGrad)"/>
   <polygon points="336,68 340,77 350,78 342,85 345,95 336,90 327,95 330,85 322,78 332,77" fill="#1E2952"/>
-  <text x="336" y="121" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="11" font-weight="800" fill="#1E2952">2028 HEDEF</text>
+  <text x="336" y="121" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="11" font-weight="800" fill="#1E2952">2027 HEDEF</text>
   <text x="336" y="136" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="9.5" font-weight="600" fill="#64748B">Dijimentor &amp; Röntgen</text>
 
   <rect x="276" y="170" width="120" height="116" rx="18" fill="#1E2952"/>
@@ -1195,8 +1195,13 @@ def get_embedded_logo_png_bytes() -> Optional[bytes]:
         return None
 
 
-LGS_2028_TARGET = datetime(2028, 6, 11, 9, 30, 0)
-YKS_2028_TARGET = datetime(2028, 6, 17, 10, 15, 0)
+# Resmi tarihler: MEB 2027 Sınav Uygulama Takvimi (LGS) ve ÖSYM 2027 takvimi (YKS).
+# Başlama saatleri henüz açıklanmadı; sayaç için tahmini saat kullanılıyor.
+LGS_TARGET = datetime(2027, 6, 13, 9, 30, 0)
+YKS_TARGET = datetime(2027, 6, 19, 10, 15, 0)
+# Açılış sayfasındaki rakamlar: yalnızca gerçek ve doğrulanabilir değerler yaz.
+# Boş bırakılırsa rakam yerine özellik maddeleri gösterilir.
+LANDING_STATS: List[Tuple[str, str]] = []  # örn. [("1.250", "kayıtlı öğrenci")]
 
 PAGES = [
     "Ana Sayfa",
@@ -1238,11 +1243,11 @@ FREE_PLAN: Dict[str, Any] = {
 
 PAGE_DESCRIPTIONS: Dict[str, Tuple[str, str]] = {
     "Ana Sayfa": (
-        "Genel Bakış, 2028 Kademe Vitrini & Kişisel Akış",
-        "Kademe seçimi, eksik kazanım öncelik sırası, 2028 LGS ve YKS geri sayımı ile dijital ofis özeti.",
+        "Genel Bakış, 2027 Kademe Vitrini & Kişisel Akış",
+        "Kademe seçimi, eksik kazanım öncelik sırası, 2027 LGS ve YKS geri sayımı ile dijital ofis özeti.",
     ),
     "Soru & Redaksiyon Fabrikası": (
-        "Maarif Modeli Soru & Kalite Stüdyosu (2028)",
+        "Maarif Modeli Soru & Kalite Stüdyosu",
         "5–12. sınıf müfredatı, kademeli zorluk serisi, çeldirici denetimi, soru havuzu ve DOCX çıktı.",
     ),
     "Öğrenci Portalı & Çözüm": (
@@ -1250,8 +1255,8 @@ PAGE_DESCRIPTIONS: Dict[str, Tuple[str, str]] = {
         "Süre takipli mini deneme çözün, netinizi görün, yanlışları Hata Defteri'ne alın ve adımlı çözüm inceleyin.",
     ),
     "Dijimentor": (
-        "Akıllı Sınav, Faz Planı & Performans Mentorluğu (2028)",
-        "2028 sınav takvimine göre aşamalı kamp ve haftalık aksiyon planı üretin.",
+        "Akıllı Sınav, Faz Planı & Performans Mentorluğu",
+        "2027 sınav takvimine göre aşamalı kamp ve haftalık aksiyon planı üretin.",
     ),
     "Veli Takip Paneli": (
         "Veli Karne Özeti & Bilgilendirme Merkezi",
@@ -1279,26 +1284,26 @@ PAGE_DESCRIPTIONS: Dict[str, Tuple[str, str]] = {
     ),
     "Paketler & Abonelik Vitrini": (
         "Abonelik Paketleri & Ofis Çantası",
-        "Öğrenci, 2028 YKS, Veli ve Kurumsal paketleri çantanıza ekleyin, kotaları yönetin ve iyzico planını inceleyin.",
+        "Öğrenci, 2027 YKS, Veli ve Kurumsal paketleri çantanıza ekleyin, kotaları yönetin ve iyzico planını inceleyin.",
     ),
 }
 
 HERO_PILL_CHIPS: List[Dict[str, str]] = [
-    {"label": "YKS 2028", "grade": "12. Sınıf (YKS)", "exam": "2028 TYT - AYT", "page": "Dijimentor"},
-    {"label": "LGS 2028", "grade": "8. Sınıf (LGS)", "exam": "2028 LGS", "page": "Soru & Redaksiyon Fabrikası"},
-    {"label": "11. Sınıf", "grade": "11. Sınıf (YKS)", "exam": "2028 TYT - AYT", "page": "Soru & Redaksiyon Fabrikası"},
-    {"label": "10. Sınıf", "grade": "10. Sınıf", "exam": "2028 TYT - AYT", "page": "Soru & Redaksiyon Fabrikası"},
-    {"label": "9. Sınıf", "grade": "9. Sınıf", "exam": "2028 TYT - AYT", "page": "Soru & Redaksiyon Fabrikası"},
+    {"label": "YKS 2027", "grade": "12. Sınıf (YKS)", "exam": "2027 TYT - AYT", "page": "Dijimentor"},
+    {"label": "LGS 2027", "grade": "8. Sınıf (LGS)", "exam": "2027 LGS", "page": "Soru & Redaksiyon Fabrikası"},
+    {"label": "11. Sınıf", "grade": "11. Sınıf (YKS)", "exam": "2027 TYT - AYT", "page": "Soru & Redaksiyon Fabrikası"},
+    {"label": "10. Sınıf", "grade": "10. Sınıf", "exam": "2027 TYT - AYT", "page": "Soru & Redaksiyon Fabrikası"},
+    {"label": "9. Sınıf", "grade": "9. Sınıf", "exam": "2027 TYT - AYT", "page": "Soru & Redaksiyon Fabrikası"},
     {"label": "7. Sınıf", "grade": "7. Sınıf", "exam": "5-7. Sınıf Akademik Gelişim", "page": "Soru & Redaksiyon Fabrikası"},
     {"label": "6. Sınıf", "grade": "6. Sınıf", "exam": "5-7. Sınıf Akademik Gelişim", "page": "Soru & Redaksiyon Fabrikası"},
     {"label": "5. Sınıf", "grade": "5. Sınıf", "exam": "5-7. Sınıf Akademik Gelişim", "page": "Soru & Redaksiyon Fabrikası"},
-    {"label": "Veli & Kurum", "grade": "8. Sınıf (LGS)", "exam": "2028 LGS", "page": "Veli Takip Paneli"},
-    {"label": "Zümre & B2B", "grade": "8. Sınıf (LGS)", "exam": "2028 LGS", "page": "B2B Lisans & Kurum"},
+    {"label": "Veli & Kurum", "grade": "8. Sınıf (LGS)", "exam": "2027 LGS", "page": "Veli Takip Paneli"},
+    {"label": "Zümre & B2B", "grade": "8. Sınıf (LGS)", "exam": "2027 LGS", "page": "B2B Lisans & Kurum"},
 ]
 
 KADEME_VITRIN_KARTLARI: List[Dict[str, str]] = [
     {
-        "tag": "5–7. SINIF • 2028",
+        "tag": "5–7. SINIF • 2027",
         "cta": "5–7. Sınıf • Aç",
         "title": "Ortaokul & Maarif Temeli",
         "desc": "Kazanım odaklı sorular, okuma hızı ve düzenli çalışma alışkanlığı.",
@@ -1308,41 +1313,41 @@ KADEME_VITRIN_KARTLARI: List[Dict[str, str]] = [
         "target_page": "Soru & Redaksiyon Fabrikası",
     },
     {
-        "tag": "2028 LGS",
-        "cta": "2028 LGS • Aç",
+        "tag": "2027 LGS",
+        "cta": "2027 LGS • Aç",
         "title": "8. Sınıf LGS Hazırlık",
         "desc": "Sözel-sayısal muhakeme, çeldirici analizi ve net yükselten deneme akışı.",
         "accent": "#4F46E5",
         "grade": "8. Sınıf (LGS)",
-        "exam": "2028 LGS",
+        "exam": "2027 LGS",
         "target_page": "Soru & Redaksiyon Fabrikası",
     },
     {
-        "tag": "2028 YKS",
-        "cta": "2028 YKS • Aç",
+        "tag": "2027 YKS",
+        "cta": "2027 YKS • Aç",
         "title": "TYT & AYT Lise Kampı",
         "desc": "Süre yönetimi, paragraf-analitik denge ve derece hedefleyen mentorluk.",
         "accent": "#7C3AED",
         "grade": "12. Sınıf (YKS)",
-        "exam": "2028 TYT - AYT",
+        "exam": "2027 TYT - AYT",
         "target_page": "Dijimentor",
     },
     {
-        "tag": "VELİ & KURUM • 2028",
+        "tag": "VELİ & KURUM • 2027",
         "cta": "Veli & Kurum • Aç",
         "title": "Veli Takip & B2B Ofis",
         "desc": "Haftalık çalışma-soru özeti, veli mesajları ve zümre kota yönetimi.",
         "accent": "#0284C7",
         "grade": "8. Sınıf (LGS)",
-        "exam": "2028 LGS",
+        "exam": "2027 LGS",
         "target_page": "Veli Takip Paneli",
     },
 ]
 
 # Ana sayfadaki sınıf seçici: sekme -> o sekmedeki seçenekler (HERO_PILL_CHIPS etiketleri)
 GRADE_GROUPS: Dict[str, List[str]] = {
-    "Ortaokul": ["5. Sınıf", "6. Sınıf", "7. Sınıf", "LGS 2028"],
-    "Lise": ["9. Sınıf", "10. Sınıf", "11. Sınıf", "YKS 2028"],
+    "Ortaokul": ["5. Sınıf", "6. Sınıf", "7. Sınıf", "LGS 2027"],
+    "Lise": ["9. Sınıf", "10. Sınıf", "11. Sınıf", "YKS 2027"],
     "Veli & Kurum": ["Veli & Kurum", "Zümre & B2B"],
 }
 CHIP_BY_LABEL: Dict[str, Dict[str, str]] = {c["label"]: c for c in HERO_PILL_CHIPS}
@@ -1370,7 +1375,7 @@ NAV_GROUPS: List[Tuple[Optional[str], List[Tuple[str, str, str]]]] = [
 
 # Ana sayfadaki modül kartları: (kısaltma, başlık, açıklama, hedef sayfa, arka plan, yazı rengi)
 MODULE_CARDS: List[Tuple[str, str, str, str, str, str]] = [
-    ("SR", "Soru & Redaksiyon", "Kazanım etiketli soru üretimi ve çift katmanlı editör kontrolü.", "Soru & Redaksiyon Fabrikası", "#EFF6FF", "#1D4ED8"),
+    ("SR", "Soru & Redaksiyon", "Kazanım etiketli soru üretimi; yayın öncesi öğretmen kontrolü için düzenlenebilir.", "Soru & Redaksiyon Fabrikası", "#EFF6FF", "#1D4ED8"),
     ("DM", "Dijimentor", "Seviyene göre her hafta yenilenen kişisel çalışma planı.", "Dijimentor", "#F0FDF4", "#15803D"),
     ("MD", "Mini Deneme", "Süre takipli denemeler ve otomatik hata defteri.", "Öğrenci Portalı & Çözüm", "#FEF3C7", "#B45309"),
     ("FC", "Fotoğrafla Çöz", "Sorunun fotoğrafını çek, ipucu al ya da adım adım çözümünü gör.", "Fotoğrafla Çöz", "#ECFEFF", "#0E7490"),
@@ -1517,7 +1522,7 @@ _HIGH_COMMON: Dict[str, Dict[str, List[str]]] = {
     },
 }
 
-FULL_CURRICULUM_2028: Dict[str, Dict[str, Dict[str, List[str]]]] = {
+FULL_CURRICULUM_2027: Dict[str, Dict[str, Dict[str, List[str]]]] = {
     "5. Sınıf": _MIDDLE_COMMON,
     "6. Sınıf": _MIDDLE_COMMON,
     "7. Sınıf": _MIDDLE_COMMON,
@@ -1545,7 +1550,7 @@ FULL_CURRICULUM_2028: Dict[str, Dict[str, Dict[str, List[str]]]] = {
             ],
         },
         "Fen Bilimleri": {
-            "2028 LGS Fen Kazanımları": [
+            "2027 LGS Fen Kazanımları": [
                 "Mevsimlerin oluşumu ve iklim/hava hareketleri",
                 "DNA, genetik kod, mutasyon, modifikasyon, adaptasyon ve biyoteknoloji",
                 "Basınç (katı, sıvı, gaz) ve madde-endüstri uygulamaları",
@@ -1560,7 +1565,7 @@ FULL_CURRICULUM_2028: Dict[str, Dict[str, Dict[str, List[str]]]] = {
             ],
         },
         "İngilizce": {
-            "2028 LGS İngilizce Temaları": [
+            "2027 LGS İngilizce Temaları": [
                 "Friendship, Teen Life, In the Kitchen, On the Phone, The Internet",
                 "Tourism, Chores, Science, Natural Forces & Reading Comprehension",
             ],
@@ -1573,28 +1578,28 @@ FULL_CURRICULUM_2028: Dict[str, Dict[str, Dict[str, List[str]]]] = {
 }
 
 
-def get_branches_for_grade_2028(grade: str) -> List[str]:
-    g_map = FULL_CURRICULUM_2028.get(grade)
+def get_branches_for_grade_2027(grade: str) -> List[str]:
+    g_map = FULL_CURRICULUM_2027.get(grade)
     if g_map:
         return list(g_map.keys())
     return list(_MIDDLE_COMMON.keys())
 
 
-def get_areas_for_grade_branch_2028(grade: str, branch: str) -> List[str]:
-    g_map = FULL_CURRICULUM_2028.get(grade, {})
+def get_areas_for_grade_branch_2027(grade: str, branch: str) -> List[str]:
+    g_map = FULL_CURRICULUM_2027.get(grade, {})
     if branch in g_map:
         return list(g_map[branch].keys())
-    for other_g in FULL_CURRICULUM_2028.values():
+    for other_g in FULL_CURRICULUM_2027.values():
         if branch in other_g:
             return list(other_g[branch].keys())
     return ["Genel Kazanımlar"]
 
 
-def get_outcomes_for_2028(grade: str, branch: str, area: str) -> List[str]:
-    g_map = FULL_CURRICULUM_2028.get(grade, {})
+def get_outcomes_for_2027(grade: str, branch: str, area: str) -> List[str]:
+    g_map = FULL_CURRICULUM_2027.get(grade, {})
     if branch in g_map and area in g_map[branch]:
         return list(g_map[branch][area])
-    for other_g in FULL_CURRICULUM_2028.values():
+    for other_g in FULL_CURRICULUM_2027.values():
         if branch in other_g and area in other_g[branch]:
             return list(other_g[branch][area])
     return ["Kazanım odaklı beceri ve muhakeme sorusu üretimi"]
@@ -1604,7 +1609,7 @@ def get_outcomes_for_2028(grade: str, branch: str, area: str) -> List[str]:
 # DİĞER SABİTLER (RÖNTGEN, DİJİMENTOR, ABONELİK, VELİ MESAJLARI)
 # ==============================================================================
 OGRENCI_RONTGEN_PROFILLERI: Dict[str, Dict[str, Any]] = {
-    "Elif Öztürk (8-A | 2028 LGS)": {
+    "Elif Öztürk (8-A | 2027 LGS)": {
         "basari_endeksi": "%76.4",
         "basari_delta": "+4.2% (Son 2 hafta)",
         "kritik_konu": "3 Kazanım",
@@ -1635,7 +1640,7 @@ OGRENCI_RONTGEN_PROFILLERI: Dict[str, Dict[str, Any]] = {
         "hedef_brans": "Türkçe",
         "hedef_sinif": "8. Sınıf (LGS)",
     },
-    "Zeynep Kaya (8-B | 2028 LGS)": {
+    "Zeynep Kaya (8-B | 2027 LGS)": {
         "basari_endeksi": "%83.8",
         "basari_delta": "+5.6% (Son 2 hafta)",
         "kritik_konu": "2 Kazanım",
@@ -1665,7 +1670,7 @@ OGRENCI_RONTGEN_PROFILLERI: Dict[str, Dict[str, Any]] = {
         "hedef_brans": "Matematik",
         "hedef_sinif": "8. Sınıf (LGS)",
     },
-    "Emir Demir (12-A | 2028 YKS)": {
+    "Emir Demir (12-A | 2027 YKS)": {
         "basari_endeksi": "%71.2",
         "basari_delta": "+3.8% (Son 2 hafta)",
         "kritik_konu": "4 Kazanım",
@@ -1724,8 +1729,8 @@ ONCELIKLI_EKSIK_SIRASI: List[Dict[str, str]] = [
 ]
 
 DIJIMENTOR_PRESETS: Dict[str, Dict[str, Any]] = {
-    "2028 LGS Derece & Net İvmesi": {
-        "exam": "2028 LGS",
+    "2027 LGS Derece & Net İvmesi": {
+        "exam": "2027 LGS",
         "hours": 20,
         "goal": "Fen liseleri ve nitelikli Anadolu liseleri bandı (470+ puan ve 82+ net hedefi)",
         "focus": "Deneme Net Artırma & Zaman Yönetimi",
@@ -1735,8 +1740,8 @@ DIJIMENTOR_PRESETS: Dict[str, Dict[str, Any]] = {
         "grade": "8. Sınıf (LGS)",
         "topic": "T.8.1.9. Sözel mantık ve muhakeme gerektiren metinleri analiz etme",
     },
-    "2028 YKS TYT-AYT Disiplin Rutini": {
-        "exam": "2028 TYT - AYT",
+    "2027 YKS TYT-AYT Disiplin Rutini": {
+        "exam": "2027 TYT - AYT",
         "hours": 30,
         "goal": "TYT 98+ net ve AYT alanında ilk 15 bin derece hedefi",
         "focus": "Haftalık Dengeli Çalışma Programı",
@@ -1747,7 +1752,7 @@ DIJIMENTOR_PRESETS: Dict[str, Dict[str, Any]] = {
         "topic": "Nitelikli metinlerde yapı, bakış açısı, anlatım biçimleri ve anlam çözümlemesi",
     },
     "Dikkat & Çeldirici Tuzağı Temizliği": {
-        "exam": "2028 LGS",
+        "exam": "2027 LGS",
         "hours": 16,
         "goal": "Dikkat ve okuma kaynaklı net kayıplarını %70 azaltmak ve istikrarlı net artışı sağlamak",
         "focus": "Dikkat ve Çeldirici Tuzağı Azaltma",
@@ -1763,7 +1768,7 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
     {
         "id": "ogrenci_temel",
         "segment": "Öğrenci",
-        "name": "2028 LGS Başlangıç Dijital",
+        "name": "2027 LGS Başlangıç Dijital",
         "monthly_price": 1990,
         "monthly_quota": 400,
         "coach_quota": 30,
@@ -1772,7 +1777,7 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
         "features": [
             "Aylık 400 Maarif Modeli & LGS soru üretimi",
             "Öğrenci Portalı mini deneme ve ipucu/çözüm asistanı",
-            "2028 LGS canlı geri sayım ve haftalık hedef takibi",
+            "2027 LGS canlı geri sayım ve haftalık hedef takibi",
             "Çeldirici analizli standart DOCX test çıktısı",
             "Hata defteri ve kazanım özeti",
             "Mobil & masaüstü uyumlu kesintisiz çalışma arayüzü",
@@ -1781,7 +1786,7 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
     {
         "id": "ogrenci_pro",
         "segment": "Öğrenci",
-        "name": "2028 LGS Hedef Pro",
+        "name": "2027 LGS Hedef Pro",
         "monthly_price": 3290,
         "monthly_quota": 1500,
         "coach_quota": 90,
@@ -1799,14 +1804,14 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
     {
         "id": "ogrenci_elit",
         "segment": "Öğrenci",
-        "name": "2028 LGS Tam Donanım Elit",
+        "name": "2027 LGS Tam Donanım Elit",
         "monthly_price": 4890,
         "monthly_quota": 3500,
         "coach_quota": 200,
         "badge": "Kapsamlı",
         "desc": "Yüksek soru üretim kotası, yoğun kalite denetimi, çeldirici raporu ve özel mentorluk senaryoları.",
         "features": [
-            "Aylık 3.500 soru üretimi + çift katmanlı redaksiyon",
+            "Aylık 3.500 soru üretimi + düzenlenebilir taslaklar",
             "Dijimentor günlük deneme analizi & çeldirici tuzağı raporu",
             "Veli Takip Paneli + haftalık veli bilgilendirme merkezi",
             "Özel kurum/öğrenci başlıklı düzenlenebilir DOCX testler",
@@ -1817,7 +1822,7 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
     {
         "id": "ogrenci_kamp",
         "segment": "Öğrenci",
-        "name": "2028 LGS Final & Deneme Kampı",
+        "name": "2027 LGS Final & Deneme Kampı",
         "monthly_price": 5690,
         "monthly_quota": 5000,
         "coach_quota": 260,
@@ -1835,7 +1840,7 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
     {
         "id": "yks_sayisal",
         "segment": "YKS",
-        "name": "2028 YKS MF (Sayısal) Akademi",
+        "name": "2027 YKS MF (Sayısal) Akademi",
         "monthly_price": 3690,
         "monthly_quota": 1800,
         "coach_quota": 110,
@@ -1853,7 +1858,7 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
     {
         "id": "yks_ea_sozel",
         "segment": "YKS",
-        "name": "2028 YKS EA & Sözel Atölye",
+        "name": "2027 YKS EA & Sözel Atölye",
         "monthly_price": 3490,
         "monthly_quota": 1800,
         "coach_quota": 110,
@@ -1871,7 +1876,7 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
     {
         "id": "yks_vip",
         "segment": "YKS",
-        "name": "2028 YKS Derece VIP",
+        "name": "2027 YKS Derece VIP",
         "monthly_price": 5490,
         "monthly_quota": 4500,
         "coach_quota": 280,
@@ -1889,7 +1894,7 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
     {
         "id": "yks_tyt_sprint",
         "segment": "YKS",
-        "name": "2028 TYT Hız & Paragraf Sprinti",
+        "name": "2027 TYT Hız & Paragraf Sprinti",
         "monthly_price": 3190,
         "monthly_quota": 1400,
         "coach_quota": 90,
@@ -1907,7 +1912,7 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
     {
         "id": "veli_aile",
         "segment": "Veli",
-        "name": "Aile Takip & Rehberlik (2028)",
+        "name": "Aile Takip & Rehberlik",
         "monthly_price": 2190,
         "monthly_quota": 600,
         "coach_quota": 60,
@@ -1925,14 +1930,14 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
     {
         "id": "veli_coklu",
         "segment": "Veli",
-        "name": "Çoklu Kardeş Aile Paketi (2028)",
+        "name": "Çoklu Kardeş Aile Paketi",
         "monthly_price": 3690,
         "monthly_quota": 2200,
         "coach_quota": 130,
         "badge": "2 Öğrenci",
         "desc": "İki kardeş için ayrı sınıf/sınav seviyelerinde takip, soru üretimi ve Dijimentor desteği.",
         "features": [
-            "2 ayrı öğrenci profili (5–12. sınıf / 2028 LGS & YKS)",
+            "2 ayrı öğrenci profili (5–12. sınıf / 2027 LGS & YKS)",
             "Aylık 2.200 ortak soru üretim ve redaksiyon kotası",
             "Veli Takip Paneli karşılaştırmalı gelişim görünümü",
             "Otomatik veli bilgilendirme mesajları ve duyuru akışı",
@@ -1943,7 +1948,7 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
     {
         "id": "veli_rehber_plus",
         "segment": "Veli",
-        "name": "Aile Rehberlik & Deneme Plus (2028)",
+        "name": "Aile Rehberlik & Deneme Plus",
         "monthly_price": 4390,
         "monthly_quota": 3000,
         "coach_quota": 160,
@@ -1961,7 +1966,7 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
     {
         "id": "b2b_ogretmen",
         "segment": "Kurum / B2B",
-        "name": "Öğretmen & Zümre Stüdyosu (2028)",
+        "name": "Öğretmen & Zümre Stüdyosu",
         "monthly_price": 7900,
         "monthly_quota": 6000,
         "coach_quota": 220,
@@ -1979,7 +1984,7 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
     {
         "id": "b2b_kurs",
         "segment": "Kurum / B2B",
-        "name": "Etüt Merkezi & Kurs Paketi (2028)",
+        "name": "Etüt Merkezi & Kurs Paketi",
         "monthly_price": 19900,
         "monthly_quota": 18000,
         "coach_quota": 600,
@@ -1997,7 +2002,7 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
     {
         "id": "b2b_kampus",
         "segment": "Kurum / B2B",
-        "name": "Okul & Kampüs Lisansı (2028)",
+        "name": "Okul & Kampüs Lisansı",
         "monthly_price": 39900,
         "monthly_quota": 50000,
         "coach_quota": 1500,
@@ -2015,7 +2020,7 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
     {
         "id": "b2b_ozel",
         "segment": "Kurum / B2B",
-        "name": "Kurumsal Zincir & Yayınevi (2028)",
+        "name": "Kurumsal Zincir & Yayınevi",
         "monthly_price": 74900,
         "monthly_quota": 140000,
         "coach_quota": 3500,
@@ -2033,7 +2038,7 @@ SUBSCRIPTION_TIERS: List[Dict[str, Any]] = [
     {
         "id": "b2b_yayinevi_pro",
         "segment": "Kurum / B2B",
-        "name": "Akademik İçerik & Soru Bankası Pro (2028)",
+        "name": "Akademik İçerik & Soru Bankası Pro",
         "monthly_price": 98900,
         "monthly_quota": 220000,
         "coach_quota": 5000,
@@ -2055,12 +2060,12 @@ PARENT_MESSAGE_TOPICS: Dict[str, Dict[str, Any]] = {
         "subtopics": [
             "Haftalık Soru ve Net Özeti",
             "Türkiye Yüzyılı Maarif Modeli Kazanım Analizi",
-            "Deneme Sınavı ve 2028 LGS Değerlendirmesi",
+            "Deneme Sınavı ve 2027 LGS Değerlendirmesi",
         ],
         "templates": {
             "Haftalık Soru ve Net Özeti": (
                 "Sayın {parent_name},\n\n"
-                "Kurşun Kalem Dijital Ofis (2028) platformunda öğrencimiz {student_name} ({grade}) "
+                "Kurşun Kalem Dijital Ofis platformunda öğrencimiz {student_name} ({grade}) "
                 "bu hafta toplam {weekly_solved} soru çözmüştür. "
                 "{correct_count} doğru, {wrong_count} yanlış ve {blank_count} boş ile "
                 "%{accuracy} başarı oranı elde edilmiştir.\n\n"
@@ -2075,7 +2080,7 @@ PARENT_MESSAGE_TOPICS: Dict[str, Dict[str, Any]] = {
                 "ek pekiştirme testleri tanımlanmıştır.\n\n"
                 "Kurşun Kalem Dijital Ofis"
             ),
-            "Deneme Sınavı ve 2028 LGS Değerlendirmesi": (
+            "Deneme Sınavı ve 2027 LGS Değerlendirmesi": (
                 "Sayın {parent_name},\n\n"
                 "Öğrencimiz {student_name}'in son deneme performansında doğruluk oranı %{accuracy} seviyesindedir. "
                 "Bir sonraki deneme oturumumuz {next_exam_date} tarihinde '{next_exam_name}' adıyla yapılacaktır.\n\n"
@@ -2131,7 +2136,7 @@ PARENT_MESSAGE_TOPICS: Dict[str, Dict[str, Any]] = {
             ),
             "Özel Dönem Bilgilendirmeleri": (
                 "Sayın {parent_name},\n\n"
-                "Kurşun Kalem Dijital Ofis 2028 kamp ve kazanım tekrar programları aktif edilmiştir. "
+                "Kurşun Kalem Dijital Ofis 2027 kamp ve kazanım tekrar programları aktif edilmiştir. "
                 "Detaylara panel üzerinden ulaşabilirsiniz.\n\n"
                 "Kurşun Kalem Dijital Ofis"
             ),
@@ -3231,7 +3236,7 @@ def _default_parent_stats() -> Dict[str, Any]:
         "strong_topic": "Okuma ve Anlama (%84)",
         "weak_topic": "Sözel Mantık ve Muhakeme",
         "next_exam_date": (datetime.now() + timedelta(days=5)).strftime("%d.%m.%Y"),
-        "next_exam_name": "Türkiye Geneli 2028 LGS Deneme Sınavı",
+        "next_exam_name": "Türkiye Geneli 2027 LGS Deneme Sınavı",
     }
 
 
@@ -3437,7 +3442,7 @@ def initialize_iyzico_checkout(
             {
                 "id": "BI_KP28_101",
                 "name": basket_title[:120],
-                "category1": "Dijital Eğitim 2028",
+                "category1": "Dijital Eğitim 2027",
                 "itemType": "VIRTUAL",
                 "price": price_str,
             }
@@ -4108,7 +4113,7 @@ def render_countdown_boxes(target: datetime) -> None:
 
 
 def render_page_strip(page_name: str) -> None:
-    title, desc = PAGE_DESCRIPTIONS.get(page_name, (page_name, "Kurşun Kalem Dijital Ofis 2028 çalışma alanı."))
+    title, desc = PAGE_DESCRIPTIONS.get(page_name, (page_name, "Kurşun Kalem Dijital Ofis 2027 çalışma alanı."))
     st.markdown(
         f"""
         <div class="kp-page-strip">
@@ -4141,7 +4146,7 @@ def build_test_docx(
     attach_logo_to_doc(doc, width_in=1.15)
     title_p = doc.add_paragraph()
     title_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    title_run = title_p.add_run(f"{institution.upper()} (2028) — DEĞERLENDİRME TESTİ")
+    title_run = title_p.add_run(f"{institution.upper()} — DEĞERLENDİRME TESTİ")
     title_run.bold = True
     title_run.font.size = Pt(14)
     title_run.font.color.rgb = RGBColor(30, 41, 82)
@@ -4176,7 +4181,7 @@ def build_test_docx(
 
     footer_p = doc.add_paragraph()
     footer_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    footer_run = footer_p.add_run(f"\n{BRAND_NAME} • 2028")
+    footer_run = footer_p.add_run(f"\n{BRAND_NAME} • 2027")
     footer_run.italic = True
     footer_run.font.size = Pt(8.5)
     footer_run.font.color.rgb = RGBColor(100, 116, 139)
@@ -4198,7 +4203,7 @@ def build_coach_docx(title_meta: str, plan_text: str) -> bytes:
     attach_logo_to_doc(doc, width_in=1.15)
     h = doc.add_paragraph()
     h.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r = h.add_run(f"{BRAND_NAME.upper()} (2028) — DİJİMENTOR ÇALIŞMA PLANI")
+    r = h.add_run(f"{BRAND_NAME.upper()} — DİJİMENTOR ÇALIŞMA PLANI")
     r.bold = True
     r.font.size = Pt(14)
     r.font.color.rgb = RGBColor(30, 41, 82)
@@ -4247,7 +4252,7 @@ def build_commercial_brief_docx(
     attach_logo_to_doc(doc, width_in=1.15)
     h = doc.add_paragraph()
     h.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    r = h.add_run(f"{BRAND_NAME.upper()} (2028) — OFİS ÇANTASI & ABONELİK ÖZETİ")
+    r = h.add_run(f"{BRAND_NAME.upper()} — OFİS ÇANTASI & ABONELİK ÖZETİ")
     r.bold = True
     r.font.size = Pt(14)
     r.font.color.rgb = RGBColor(30, 41, 82)
@@ -4303,7 +4308,7 @@ def render_school_backpack_panel() -> Dict[str, Any]:
     st.markdown('<div class="kp-bag-shell">', unsafe_allow_html=True)
     h_col, clr_col = st.columns([4, 1])
     with h_col:
-        st.markdown("#### Kurşun Kalem Ofis Çantası (2028)")
+        st.markdown("#### Kurşun Kalem Ofis Çantası")
         st.caption("Seçili paketler, adet kontrolleri, kota çubukları ve aylık toplam özet.")
     with clr_col:
         if entries:
@@ -4465,7 +4470,7 @@ def render_iyzico_simulator(
                         buyer_email=buyer_email,
                         buyer_phone="",
                         amount_try=float(total_amount),
-                        basket_title=f"{BRAND_NAME} 2028 - {display_label} ({billing_cycle})",
+                        basket_title=f"{BRAND_NAME} 2027 - {display_label} ({billing_cycle})",
                         identity_number=buyer_tc,
                     )
                 except Exception as exc:
@@ -4514,7 +4519,7 @@ def render_iyzico_simulator(
 
     with btn_c3:
         brief_docx = build_commercial_brief_docx(
-            title=f"{display_label} Özeti (2028)",
+            title=f"{display_label} Özeti",
             summary=bag_summary,
             billing_cycle=billing_cycle,
             installment=int(installment),
@@ -4524,7 +4529,7 @@ def render_iyzico_simulator(
         st.download_button(
             label="Özet DOCX",
             data=brief_docx,
-            file_name="kursun_kalem_ofis_2028_cantasi_ozet.docx",
+            file_name="kursun_kalem_ofis_2027_cantasi_ozet.docx",
             mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             key=f"dl_brief_{display_label}",
             use_container_width=True,
@@ -4553,7 +4558,7 @@ def render_student_xray_panel() -> None:
     st.markdown(
         """
         <div class="kp-studio-banner">
-            <div class="kp-studio-title">Öğrenci Röntgeni (2028) — Kazanım, Hata Kök Neden &amp; Telafi Tarama</div>
+            <div class="kp-studio-title">Öğrenci Röntgeni — Kazanım, Hata Kök Neden &amp; Telafi Tarama</div>
             <div class="kp-studio-sub">
                 Öğrencinin ders ve kazanım bazlı performans röntgenini çıkarın, hata türlerini ayrıştırın
                 ve tek tıkla Soru Fabrikası, Dijimentor veya Veli Paneli'ne aktarın.
@@ -4681,7 +4686,7 @@ def render_parent_notification_center() -> None:
 
             if channel == "Kısa SMS":
                 msg_text = (
-                    f"{BRAND_NAME} 2028: Sn. {stats['parent_name']}, {stats['student_name']} "
+                    f"{BRAND_NAME} 2027: Sn. {stats['parent_name']}, {stats['student_name']} "
                     f"({sel_sub}) haftalık {stats['weekly_solved']} soru, %{acc_pct} doğruluk, "
                     f"Dijimentor %{stats['mentor_completion']} uyum."
                 )
@@ -4719,7 +4724,7 @@ def render_parent_notification_center() -> None:
             st.download_button(
                 label="Veli Mesajını DOCX İndir",
                 data=msg_docx,
-                file_name="veli_bilgilendirme_mesaji_2028.docx",
+                file_name="veli_bilgilendirme_mesaji_2027.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True,
             )
@@ -4987,7 +4992,7 @@ def _register_form() -> None:
         grade = None
         link_code = ""
         if role == "ogrenci":
-            grade = st.selectbox("Sınıfın", GRADE_LEVELS_2028, index=3)
+            grade = st.selectbox("Sınıfın", GRADE_LEVELS_2027, index=3)
         elif role == "veli":
             link_code = st.text_input("Öğrenci bağlantı kodu (isteğe bağlı)", help="Çocuğunuzun Profil sayfasında yazan 6 haneli kod.")
         with st.expander("KVKK Aydınlatma Metni (okumak için tıklayın)", icon=":material/policy:"):
@@ -5018,6 +5023,20 @@ def _register_form() -> None:
                 st.error(str(exc))
 
 
+def landing_stats_html() -> str:
+    if LANDING_STATS:
+        items = "".join(
+            f'<div><div class="kp-stat-num">{html.escape(n)}</div><div class="kp-stat-lbl">{html.escape(l)}</div></div>'
+            for n, l in LANDING_STATS[:3]
+        )
+    else:
+        facts = [("5–12", "sınıf düzeyi"), ("3", "rol: öğrenci · veli · öğretmen"), ("1 dk", "ücretsiz kayıt")]
+        items = "".join(
+            f'<div><div class="kp-stat-num">{n}</div><div class="kp-stat-lbl">{l}</div></div>' for n, l in facts
+        )
+    return f'<div class="kp-stats">{items}</div>'
+
+
 def render_landing() -> None:
     st.markdown(
         '<style>[data-testid="stSidebar"], [data-testid="stSidebarCollapsedControl"] {display:none;}</style>',
@@ -5036,17 +5055,13 @@ def render_landing() -> None:
     with hero_l:
         st.markdown(
             f"""
-            <span class="kp-eyebrow">2028 müfredatına tam uyumlu</span>
-            <h1 class="kp-hero-title">Hayalindeki <em>2028 hedefi</em> için ihtiyacın olan her şey, tek platformda.</h1>
+            <span class="kp-eyebrow">LGS &amp; YKS 2027 hazırlık</span>
+            <h1 class="kp-hero-title">Hayalindeki <em>2027 hedefi</em> için ihtiyacın olan her şey, tek platformda.</h1>
             <p class="kp-hero-lead">
                 Yapay zekâ destekli soru bankası, haftalık dijital mentorluk, fotoğrafla soru çözümü,
                 mini denemeler ve kişisel eksik analizi. Öğrenci, veli ve öğretmen aynı ekranda.
             </p>
-            <div class="kp-stats">
-                <div><div class="kp-stat-num">142.500+</div><div class="kp-stat-lbl">soru havuzu</div></div>
-                <div><div class="kp-stat-num">18.420</div><div class="kp-stat-lbl">ön kayıtlı öğrenci ve veli</div></div>
-                <div><div class="kp-stat-num">48</div><div class="kp-stat-lbl">anlaşmalı kurum</div></div>
-            </div>
+            {landing_stats_html()}
             """,
             unsafe_allow_html=True,
         )
@@ -5487,7 +5502,7 @@ def render_week_card(stats_now: Dict[str, Any], show_sticker: bool = True) -> No
     solved_now = max(1, int(stats_now["weekly_solved"]))
     graded_now = int(stats_now["correct"]) + int(stats_now["wrong"])
     acc_now = round(int(stats_now["correct"]) / graded_now * 100) if graded_now else 0
-    lgs_days_left = format_countdown(LGS_2028_TARGET)[0]
+    lgs_days_left = format_countdown(LGS_TARGET)[0]
     sticker_html = (
         f'<span class="kp-sticker">LGS\'ye {lgs_days_left} gün!</span>'
         if FUN_THEME and show_sticker and lgs_days_left > 0 else ""
@@ -5518,13 +5533,13 @@ def render_week_card(stats_now: Dict[str, Any], show_sticker: bool = True) -> No
 def render_countdown_section() -> None:
     head_col, toggle_col = st.columns([4, 1], vertical_alignment="center")
     with head_col:
-        st.markdown('<h2 class="kp-section-title">2028 LGS\'ye kalan süre</h2>', unsafe_allow_html=True)
+        st.markdown('<h2 class="kp-section-title">2027 LGS\'ye kalan süre</h2>', unsafe_allow_html=True)
     with toggle_col:
         live_counter = st.toggle("Canlı sayaç", value=st.session_state.live_tick)
         st.session_state.live_tick = live_counter
-    render_countdown_boxes(LGS_2028_TARGET)
-    yks_d, yks_h, _, _ = format_countdown(YKS_2028_TARGET)
-    st.caption(f"LGS: 11 Haziran 2028 · YKS (17 Haziran 2028) için kalan süre: {yks_d} gün {yks_h} saat")
+    render_countdown_boxes(LGS_TARGET)
+    yks_d, yks_h, _, _ = format_countdown(YKS_TARGET)
+    st.caption(f"LGS: 13 Haziran 2027 Pazar · YKS (TYT): 19 Haziran 2027 Cumartesi — YKS'ye kalan: {yks_d} gün {yks_h} saat. Tarihler MEB ve ÖSYM 2027 takvimlerinden; sayaç saati tahminidir.")
 
 
 def render_modules_section() -> None:
@@ -5712,7 +5727,7 @@ if current_page == "Ana Sayfa":
                         st.session_state["factory_grade"] = chip["grade"]
                         st.session_state["factory_grade_sync"] = True
                         st.session_state["dk_exam"] = chip["exam"]
-                        record_activity("Hızlı Kademe (2028)", f"{chip['label']} seçildi")
+                        record_activity("Hızlı Kademe", f"{chip['label']} seçildi")
                         navigate_to(chip["page"])
 
         gap()
@@ -5762,7 +5777,7 @@ if current_page == "Ana Sayfa":
                         st.session_state["fab_theme_inp"] = p_item["topic"]
                         st.session_state["factory_sync_pending"] = True
                         st.session_state["factory_grade_sync"] = True
-                        record_activity("Öncelikli Akış (2028)", f"{p_item['topic']} seçildi")
+                        record_activity("Öncelikli Akış", f"{p_item['topic']} seçildi")
                         navigate_to("Soru & Redaksiyon Fabrikası")
 
         gap()
@@ -5886,23 +5901,23 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
     tab_gen, tab_bank = st.tabs(["Soru Üretim & Redaksiyon Stüdyosu", f"Soru Havuzu ({len(st.session_state['question_bank_2028'])})"])
 
     with tab_gen:
-        if st.session_state.get("factory_grade") in GRADE_LEVELS_2028 and st.session_state.get("factory_grade_sync"):
+        if st.session_state.get("factory_grade") in GRADE_LEVELS_2027 and st.session_state.get("factory_grade_sync"):
             st.session_state["fab_grade_sel"] = st.session_state["factory_grade"]
             st.session_state["factory_grade_sync"] = False
 
         cur_grade_init = st.session_state.get("fab_grade_sel", "8. Sınıf (LGS)")
-        if cur_grade_init not in GRADE_LEVELS_2028:
+        if cur_grade_init not in GRADE_LEVELS_2027:
             cur_grade_init = "8. Sınıf (LGS)"
 
         if st.session_state.get("factory_sync_pending"):
             st.session_state["fab_grade_sel"] = st.session_state.get("factory_grade", cur_grade_init)
             g_tmp = st.session_state["fab_grade_sel"]
-            b_list = get_branches_for_grade_2028(g_tmp)
+            b_list = get_branches_for_grade_2027(g_tmp)
             target_b = st.session_state.get("factory_branch")
             st.session_state["fab_branch_sel"] = target_b if target_b in b_list else b_list[0]
-            a_list = get_areas_for_grade_branch_2028(g_tmp, st.session_state["fab_branch_sel"])
+            a_list = get_areas_for_grade_branch_2027(g_tmp, st.session_state["fab_branch_sel"])
             st.session_state["fab_area_sel"] = a_list[0]
-            o_list = get_outcomes_for_2028(g_tmp, st.session_state["fab_branch_sel"], a_list[0])
+            o_list = get_outcomes_for_2027(g_tmp, st.session_state["fab_branch_sel"], a_list[0])
             focus_t = st.session_state.get("factory_focus_topic")
             if focus_t and focus_t not in o_list:
                 st.session_state["fab_custom_outcome_chk"] = True
@@ -5916,17 +5931,17 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
         if st.session_state.get("factory_focus_topic"):
             st.info(f"Aktarılan odak konu: **{st.session_state['factory_focus_topic']}**")
 
-        with st.expander("5–12. Sınıf Müfredat, Zorluk & Kalite Parametreleri (2028)", expanded=True):
+        with st.expander("5–12. Sınıf Müfredat, Zorluk & Kalite Parametreleri", expanded=True):
             r1c1, r1c2, r1c3 = st.columns(3)
             with r1c1:
                 institution = st.text_input("Kurum / Ofis Adı", value=BRAND_NAME, key="fab_inst_inp")
-                grade = st.selectbox("Sınıf Seviyesi (5–12)", GRADE_LEVELS_2028, key="fab_grade_sel")
-                branches = get_branches_for_grade_2028(grade)
+                grade = st.selectbox("Sınıf Seviyesi (5–12)", GRADE_LEVELS_2027, key="fab_grade_sel")
+                branches = get_branches_for_grade_2027(grade)
                 if st.session_state.get("fab_branch_sel") not in branches:
                     st.session_state["fab_branch_sel"] = branches[0]
                 branch = st.selectbox("Branş Seçimi", branches, key="fab_branch_sel")
             with r1c2:
-                areas = get_areas_for_grade_branch_2028(grade, branch)
+                areas = get_areas_for_grade_branch_2027(grade, branch)
                 if st.session_state.get("fab_area_sel") not in areas:
                     st.session_state["fab_area_sel"] = areas[0]
                 learning_area = st.selectbox("Öğrenme Alanı / Tema", areas, key="fab_area_sel")
@@ -5940,13 +5955,13 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
                         key="fab_custom_outcome_inp",
                     ) or "Özel Kazanım Odaklı Soru Üretimi"
                 else:
-                    outcomes = get_outcomes_for_2028(grade, branch, learning_area)
+                    outcomes = get_outcomes_for_2027(grade, branch, learning_area)
                     if st.session_state.get("fab_outcome_sel") not in outcomes:
                         st.session_state["fab_outcome_sel"] = outcomes[0]
                     outcome = st.selectbox("Hedef Kazanım", outcomes, key="fab_outcome_sel")
 
                 if "fab_theme_inp" not in st.session_state:
-                    st.session_state["fab_theme_inp"] = st.session_state.get("factory_focus_topic") or "2028 DİJİTAL OFİS & HAYAT"
+                    st.session_state["fab_theme_inp"] = st.session_state.get("factory_focus_topic") or "2027 DİJİTAL OFİS & HAYAT"
                 context_theme = st.text_input("Bağlam / Tema / Senaryo", key="fab_theme_inp")
             with r1c3:
                 production_mode = st.radio(
@@ -5980,7 +5995,7 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
                 )
                 auto_review = st.checkbox("Çift Katmanlı Redaksiyon & Çeldirici Kalite Denetimi", value=True, key="fab_rev_chk")
 
-        if st.button("Kurumsal Soru Paketi Üret (2028)", type="primary", key="fab_gen_btn"):
+        if st.button("Kurumsal Soru Paketi Üret", type="primary", key="fab_gen_btn"):
             quota_ok, quota_msg = consume_quota("question", int(question_count))
             if not quota_ok:
                 st.error(quota_msg)
@@ -5988,10 +6003,10 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
                 mode_instruction = (
                     f"Her soruyu '{difficulty}' seviyesinde üret."
                     if production_mode == "Standart Test Paketi"
-                    else "Soruları Kolay (pekiştirme), Orta (kazanım) ve Zor (2028 LGS/YKS muhakeme) olarak kademelendir."
+                    else "Soruları Kolay (pekiştirme), Orta (kazanım) ve Zor (2027 LGS/YKS muhakeme) olarak kademelendir."
                 )
                 sys_prompt = (
-                    "Sen Türkiye Yüzyılı Maarif Modeli, 2028 LGS ve 2028 YKS ölçme-değerlendirme standartlarında "
+                    "Sen Türkiye Yüzyılı Maarif Modeli, 2027 LGS ve 2027 YKS ölçme-değerlendirme standartlarında "
                     "uzman bir kıdemli test editörüsün. Soruların özgün, dilbilgisi ve noktalama açısından "
                     "kusursuz, çeldiricilerinin uzunluk ve dilbilgisi paralelliği açısından dengeli olmasını sağla. "
                     "Her soruyu 'Soru 1', 'Soru 2'... şeklinde numaralandır ve şıkları 'A)', 'B)', 'C)', 'D)' "
@@ -6000,7 +6015,7 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
                     "'1-A', '2-C' formatında net anahtar ver."
                 )
                 user_prompt = (
-                    f"Kurum: {institution} (2028)\nSınıf Seviyesi: {grade}\nBranş: {branch}\n"
+                    f"Kurum: {institution}\nSınıf Seviyesi: {grade}\nBranş: {branch}\n"
                     f"Öğrenme Alanı: {learning_area}\nHedef Kazanım: {outcome}\n"
                     f"Bağlam / Tema / Senaryo: {context_theme}\nZorluk Kurgusu: {mode_instruction}\n"
                     f"Çeldirici & Kök Stratejisi: {distractor_mode}\nSoru Adedi: {question_count}\n"
@@ -6019,7 +6034,7 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
                         "outcome": outcome,
                         "difficulty": difficulty if production_mode == "Standart Test Paketi" else "Kademeli Seri",
                     }
-                    record_activity("Soru Fabrikası (2028)", f"{grade} • {branch} • {question_count} soru üretildi")
+                    record_activity("Soru Fabrikası", f"{grade} • {branch} • {question_count} soru üretildi")
                     st.success(
                         f"Soru paketi oluşturuldu. Kalan soru kotası: "
                         f"{int(st.session_state.remaining_question_quota):,}".replace(",", ".")
@@ -6048,7 +6063,7 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
                 st.download_button(
                     label="Testi DOCX İndir",
                     data=docx_bytes,
-                    file_name=f"kursun_kalem_ofis_2028_{branch.lower().replace(' ', '_')}_test.docx",
+                    file_name=f"kursun_kalem_ofis_2027_{branch.lower().replace(' ', '_')}_test.docx",
                     mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                     use_container_width=True,
                 )
@@ -6100,13 +6115,13 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
                 grade="5–12. Sınıf",
                 learning_area="Kayıtlı Soru Havuzu",
                 outcome="Havuzdaki Seçili Kazanımlar",
-                context_theme="2028 Kurumsal Soru Kitapçığı",
+                context_theme="2027 Kurumsal Soru Kitapçığı",
                 generated_content=combined_bank_text,
             )
             st.download_button(
                 label=f"Tüm Havuzu ({len(bank_items)} Kayıt) Toplu DOCX İndir",
                 data=bundle_docx,
-                file_name="kursun_kalem_2028_soru_havuzu.docx",
+                file_name="kursun_kalem_2027_soru_havuzu.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             )
             for b_item in bank_items:
@@ -6458,15 +6473,15 @@ elif current_page == "Öğrenci Portalı & Çözüm":
                         st.toast("Soru Adımlı Çözüm Asistanına aktarıldı.")
 
 # ==============================================================================
-# 4. DİJİMENTOR (2028 + AŞAMALI KAMP PLANI)
+# 4. DİJİMENTOR (2027 + AŞAMALI KAMP PLANI)
 # ==============================================================================
 elif current_page == "Dijimentor":
     st.markdown(
         """
         <div class="kp-studio-banner">
-            <div class="kp-studio-title">Dijimentor (2028) — Akıllı Sınav, Faz Planı &amp; Performans Mentorluğu</div>
+            <div class="kp-studio-title">Dijimentor — Akıllı Sınav, Faz Planı &amp; Performans Mentorluğu</div>
             <div class="kp-studio-sub">
-                2028 hedef sınavına, haftalık çalışma kapasitene ve çeldirici/zaman analizine göre
+                2027 hedef sınavına, haftalık çalışma kapasitene ve çeldirici/zaman analizine göre
                 aşamalı kamp ve haftalık aksiyon planı üretir.
             </div>
         </div>
@@ -6481,7 +6496,7 @@ elif current_page == "Dijimentor":
         f"""
         <div class="kp-kpi-card">
             <div class="kp-kpi-label">MENTORLUK MOTORU</div>
-            <div class="kp-kpi-value">Dijimentor 2028</div>
+            <div class="kp-kpi-value">Dijimentor 2027</div>
             <div class="kp-kpi-sub">Kalan Plan: {int(st.session_state.remaining_coach_quota)} Hak</div>
         </div>
         """,
@@ -6500,7 +6515,7 @@ elif current_page == "Dijimentor":
     k_c3.markdown(
         """
         <div class="kp-kpi-card">
-            <div class="kp-kpi-label">2028 KAMP FAZLARI</div>
+            <div class="kp-kpi-label">2027 KAMP FAZLARI</div>
             <div class="kp-kpi-value">3 Aşama</div>
             <div class="kp-kpi-sub">Kazanım • Branş Hızı • Genel Deneme</div>
         </div>
@@ -6519,7 +6534,7 @@ elif current_page == "Dijimentor":
     )
 
     st.write("")
-    st.markdown("#### Hızlı 2028 Mentorluk Senaryoları")
+    st.markdown("#### Hızlı 2027 Mentorluk Senaryoları")
     p_cols = st.columns(len(DIJIMENTOR_PRESETS) + 1)
     for idx, (preset_title, preset_data) in enumerate(DIJIMENTOR_PRESETS.items()):
         with p_cols[idx]:
@@ -6546,12 +6561,12 @@ elif current_page == "Dijimentor":
             st.rerun()
 
     st.markdown("---")
-    st.markdown("#### Öğrenci 2028 Hedef ve Çalışma Profili")
+    st.markdown("#### Öğrenci 2027 Hedef ve Çalışma Profili")
 
-    exam_opts = ["2028 LGS", "2028 TYT - AYT", "5-7. Sınıf Akademik Gelişim"]
-    stored_exam = st.session_state.get("dk_exam", "2028 LGS")
+    exam_opts = ["2027 LGS", "2027 TYT - AYT", "5-7. Sınıf Akademik Gelişim"]
+    stored_exam = st.session_state.get("dk_exam", "2027 LGS")
     if stored_exam not in exam_opts:
-        stored_exam = "2028 LGS"
+        stored_exam = "2027 LGS"
 
     r1_a, r1_b, r1_c = st.columns(3)
     with r1_a:
@@ -6632,19 +6647,19 @@ elif current_page == "Dijimentor":
     )
 
     st.write("")
-    include_routine = st.checkbox("2028 Aşamalı Kamp Fazları (Kazanım → Branş → Genel Deneme) ve hafta sonu kontrol listesi dahil et", value=True)
+    include_routine = st.checkbox("2027 Aşamalı Kamp Fazları (Kazanım → Branş → Genel Deneme) ve hafta sonu kontrol listesi dahil et", value=True)
 
-    if st.button("Dijimentor 2028 Planı Oluştur", type="primary"):
+    if st.button("Dijimentor 2027 Planı Oluştur", type="primary"):
         quota_ok, quota_msg = consume_quota("coach", 1)
         if not quota_ok:
             st.error(quota_msg)
         else:
             sys_coach = (
-                "Sen 'Dijimentor' adlı, 2028 sınav dönemine hazırlanan öğrenciler için çalışan üst düzey, "
+                "Sen 'Dijimentor' adlı, 2027 sınav dönemine hazırlanan öğrenciler için çalışan üst düzey, "
                 "net, empatik ve veri odaklı bir dijital eğitim mentorusun. Yanıtını başlıklarla, "
                 "madde işaretleriyle ve uygulanabilir zaman bloklarıyla kurumsal bir mentorluk "
                 "raporu gibi düzenle. Şu bölümleri net oluştur:\n"
-                "1. Teşhis ve 2028 Aşamalı Kamp Yol Haritası (Faz 1 Kazanım, Faz 2 Branş Hızı, Faz 3 Genel Deneme)\n"
+                "1. Teşhis ve 2027 Aşamalı Kamp Yol Haritası (Faz 1 Kazanım, Faz 2 Branş Hızı, Faz 3 Genel Deneme)\n"
                 "2. Pazartesi–Pazar Haftalık Çalışma Planı (saat ve odak ders dağılımı)\n"
                 "3. Çeldirici & Zaman Yönetimi Protokolü\n"
                 "4. Haftalık Başarı KPI'ları ve Kontrol Listesi"
@@ -6656,7 +6671,7 @@ elif current_page == "Dijimentor":
                 f"Mentorluk Odak Alanı: {coach_focus}\n"
                 f"Mevcut Deneme / Süre Durumu: {recent_score}\n"
                 f"Aşamalı Kamp & Analiz Protokolü: {'Evet' if include_routine else 'Özet'}\n\n"
-                "Lütfen öğrenciye doğrudan uygulanabilir, motive edici ve net bir Türkçe 2028 planı sun."
+                "Lütfen öğrenciye doğrudan uygulanabilir, motive edici ve net bir Türkçe 2027 planı sun."
             )
             skel_coach = st.empty()
             render_loading_skeleton(skel_coach, lines=4)
@@ -6664,8 +6679,8 @@ elif current_page == "Dijimentor":
                 plan = call_gemini_text(prompt=prompt_coach, system_instruction=sys_coach)
                 skel_coach.empty()
                 st.session_state.dijimentor_plan = plan
-                record_activity("Dijimentor (2028)", f"{target_exam} • {weekly_hours} saatlik plan üretildi")
-                st.success("Dijimentor 2028 planı başarıyla oluşturuldu.")
+                record_activity("Dijimentor", f"{target_exam} • {weekly_hours} saatlik plan üretildi")
+                st.success("Dijimentor 2027 planı başarıyla oluşturuldu.")
             except Exception as exc:
                 skel_coach.empty()
                 refund_quota("coach", 1)
@@ -6673,7 +6688,7 @@ elif current_page == "Dijimentor":
 
     if st.session_state.dijimentor_plan:
         st.markdown("---")
-        st.markdown("### Kişiselleştirilmiş Dijimentor 2028 Mentorluk Raporu")
+        st.markdown("### Kişiselleştirilmiş Dijimentor 2027 Mentorluk Raporu")
         st.markdown(st.session_state.dijimentor_plan)
 
         meta_summary = (
@@ -6682,7 +6697,7 @@ elif current_page == "Dijimentor":
         )
         docx_coach = build_coach_docx(meta_summary, st.session_state.dijimentor_plan)
         txt_report = (
-            f"{BRAND_NAME} (2028)\n{meta_summary}\nTarih: {datetime.now().strftime('%d.%m.%Y')}\n"
+            f"{BRAND_NAME}\n{meta_summary}\nTarih: {datetime.now().strftime('%d.%m.%Y')}\n"
             f"{'=' * 60}\n\n{st.session_state.dijimentor_plan}"
         )
 
@@ -6691,7 +6706,7 @@ elif current_page == "Dijimentor":
             st.download_button(
                 label="Mentorluk Planını DOCX İndir",
                 data=docx_coach,
-                file_name="dijimentor_2028_calisma_plani.docx",
+                file_name="dijimentor_2027_calisma_plani.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
                 use_container_width=True,
             )
@@ -6699,7 +6714,7 @@ elif current_page == "Dijimentor":
             st.download_button(
                 label="Planı Metin (.txt) İndir",
                 data=txt_report.encode("utf-8"),
-                file_name="dijimentor_2028_calisma_plani.txt",
+                file_name="dijimentor_2027_calisma_plani.txt",
                 mime="text/plain",
                 use_container_width=True,
             )
@@ -6841,7 +6856,7 @@ elif current_page == "Öğrenci Röntgeni":
 # 7. B2B LİSANS & KURUM (+ DENEME TAKVİMİ)
 # ==============================================================================
 elif current_page == "B2B Lisans & Kurum":
-    tab_b2b_form, tab_b2b_zumre = st.tabs(["Kurumsal Lisans Teklif Stüdyosu (2028)", "Zümre Soru Dağıtımı & Kurumsal Rapor"])
+    tab_b2b_form, tab_b2b_zumre = st.tabs(["Kurumsal Lisans Teklif Stüdyosu", "Zümre Soru Dağıtımı & Kurumsal Rapor"])
 
     with tab_b2b_form:
         with st.form("b2b_inquiry_form"):
@@ -6855,13 +6870,13 @@ elif current_page == "B2B Lisans & Kurum":
                 contact_name = st.text_input("Yetkili Adı Soyadı")
                 contact_email = st.text_input("Kurumsal E-posta")
 
-            submitted = st.form_submit_button("2028 Kurumsal Lisans Teklifi Hazırla", type="primary")
+            submitted = st.form_submit_button("2027 Kurumsal Lisans Teklifi Hazırla", type="primary")
             if submitted:
                 if not org_name.strip():
                     st.warning("Lütfen kurum adını girin.")
                 else:
                     st.session_state["last_b2b_summary"] = (
-                        f"Dönem: 2028 | Kurum: {org_name} ({city}) | Yetkili: {contact_name or '-'} | "
+                        f"Dönem: 2027 | Kurum: {org_name} ({city}) | Yetkili: {contact_name or '-'} | "
                         f"E-posta: {contact_email or '-'} | Koltuk: {teacher_seats} Öğretmen, "
                         f"{student_seats} Öğrenci"
                     )
@@ -6870,9 +6885,9 @@ elif current_page == "B2B Lisans & Kurum":
                         "teachers": int(teacher_seats),
                         "students": int(student_seats),
                     }
-                    record_activity("B2B Lisans (2028)", f"{org_name} teklif taslağı hazırlandı")
+                    record_activity("B2B Lisans", f"{org_name} teklif taslağı hazırlandı")
                     st.success(
-                        f"**{org_name}** ({city}) için 2028 dönemi **{teacher_seats} öğretmen** ve "
+                        f"**{org_name}** ({city}) için 2027 dönemi **{teacher_seats} öğretmen** ve "
                         f"**{student_seats} öğrenci** kapasiteli kurumsal lisans talebi kaydedildi."
                     )
 
@@ -6896,7 +6911,7 @@ elif current_page == "B2B Lisans & Kurum":
                 ],
             }
             b2b_docx = build_commercial_brief_docx(
-                title=f"{cache_for_doc.get('org', 'Kurumsal')} 2028 Lisans Teklif Özeti",
+                title=f"{cache_for_doc.get('org', 'Kurumsal')} 2027 Lisans Teklif Özeti",
                 summary=b2b_summary,
                 billing_cycle="Yıllık (%20 İndirim)",
                 installment=6,
@@ -6906,7 +6921,7 @@ elif current_page == "B2B Lisans & Kurum":
             st.download_button(
                 label="Kurumsal Lisans Teklifini DOCX İndir",
                 data=b2b_docx,
-                file_name="kursun_kalem_ofis_2028_kurumsal_teklif.docx",
+                file_name="kursun_kalem_ofis_2027_kurumsal_teklif.docx",
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
             )
 
@@ -6921,7 +6936,7 @@ elif current_page == "B2B Lisans & Kurum":
         bk3.metric("Öğretmen Başına Kota", f"{total_q // max(1, org_cache['teachers']):,} Soru".replace(",", "."))
         bk4.metric("Öğrenci Başına Test", f"{total_q // max(1, org_cache['students'])} Soru / Ay")
 
-        st.markdown("#### Branş Zümreleri Arası Soru Kotası Dağılımı (2028)")
+        st.markdown("#### Branş Zümreleri Arası Soru Kotası Dağılımı")
         dist_ratios = {
             "Türkçe & Edebiyat Zümresi": 0.28,
             "Matematik & Geometri Zümresi": 0.30,
@@ -6963,7 +6978,7 @@ elif current_page == "B2B Lisans & Kurum":
         )
 
 # ==============================================================================
-# 8. PAKETLER & ABONELİK VİTRİNİ (2028)
+# 8. PAKETLER & ABONELİK VİTRİNİ
 # ==============================================================================
 elif current_page == "Paketler & Abonelik Vitrini":
     total_pkg_count = len(SUBSCRIPTION_TIERS)
@@ -6971,7 +6986,7 @@ elif current_page == "Paketler & Abonelik Vitrini":
     st.markdown(
         """
         <div class="kp-value-strip">
-            <div class="kp-value-strip-item"><span class="kp-value-dot"></span> Türkiye Yüzyılı Maarif Modeli 2028 Soru Havuzu</div>
+            <div class="kp-value-strip-item"><span class="kp-value-dot"></span> Türkiye Yüzyılı Maarif Modeli 2027 Soru Havuzu</div>
             <div class="kp-value-strip-item"><span class="kp-value-dot"></span> Dijimentor Haftalık Akıllı Çalışma Planı</div>
             <div class="kp-value-strip-item"><span class="kp-value-dot"></span> iyzico Güvencesiyle 12 Taksite Varan Ödeme</div>
         </div>
@@ -7032,7 +7047,7 @@ elif current_page == "Paketler & Abonelik Vitrini":
                 )
 
     st.markdown("---")
-    st.markdown(f"#### {total_pkg_count} Paket Karşılaştırma Matrisi (2028)")
+    st.markdown(f"#### {total_pkg_count} Paket Karşılaştırma Matrisi")
     matrix_rows = [
         {
             "Paket Adı": t["name"],
@@ -7122,7 +7137,7 @@ elif current_page == "Sınıflarım":
         with nc1:
             new_cls_name = st.text_input("Sınıf adı", placeholder="Örn: 8-A Türkçe", key="new_cls_name")
         with nc2:
-            new_cls_grade = st.selectbox("Sınıf düzeyi", GRADE_LEVELS_2028, index=3, key="new_cls_grade")
+            new_cls_grade = st.selectbox("Sınıf düzeyi", GRADE_LEVELS_2027, index=3, key="new_cls_grade")
         with nc3:
             if st.button("Oluştur", key="new_cls_btn", type="primary", use_container_width=True):
                 try:
@@ -7272,8 +7287,8 @@ elif current_page == "Profilim & Rozetler":
                 unsafe_allow_html=True,
             )
             if ROLE == "ogrenci":
-                cur_grade = USER.get("grade") if USER.get("grade") in GRADE_LEVELS_2028 else GRADE_LEVELS_2028[3]
-                new_grade = st.selectbox("Sınıfın", GRADE_LEVELS_2028, index=GRADE_LEVELS_2028.index(cur_grade), key="pf_grade")
+                cur_grade = USER.get("grade") if USER.get("grade") in GRADE_LEVELS_2027 else GRADE_LEVELS_2027[3]
+                new_grade = st.selectbox("Sınıfın", GRADE_LEVELS_2027, index=GRADE_LEVELS_2027.index(cur_grade), key="pf_grade")
                 new_goal = st.slider("Günlük soru hedefin", 5, 100, int(USER.get("daily_goal", 20)), step=5, key="pf_goal")
                 if st.button("Kaydet", key="pf_save", type="primary"):
                     db.update_grade(USER["id"], new_grade)
