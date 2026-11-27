@@ -297,6 +297,41 @@ KADEME_VITRIN_KARTLARI: List[Dict[str, str]] = [
     },
 ]
 
+# Ana sayfadaki sınıf seçici: sekme -> o sekmedeki seçenekler (HERO_PILL_CHIPS etiketleri)
+GRADE_GROUPS: Dict[str, List[str]] = {
+    "Ortaokul": ["5. Sınıf", "6. Sınıf", "7. Sınıf", "LGS 2028"],
+    "Lise": ["9. Sınıf", "10. Sınıf", "11. Sınıf", "YKS 2028"],
+    "Veli & Kurum": ["Veli & Kurum", "Zümre & B2B"],
+}
+CHIP_BY_LABEL: Dict[str, Dict[str, str]] = {c["label"]: c for c in HERO_PILL_CHIPS}
+
+# Sol menü: (başlık, [(sayfa adı, menüde görünen kısa ad, ikon), ...])
+NAV_GROUPS: List[Tuple[Optional[str], List[Tuple[str, str, str]]]] = [
+    (None, [("Ana Sayfa", "Ana Sayfa", ":material/home:")]),
+    ("Modüller", [
+        ("Soru & Redaksiyon Fabrikası", "Soru & Redaksiyon", ":material/edit_note:"),
+        ("Öğrenci Portalı & Çözüm", "Öğrenci Portalı", ":material/quiz:"),
+        ("Dijimentor", "Dijimentor", ":material/event_note:"),
+        ("Öğrenci Röntgeni", "Öğrenci Röntgeni", ":material/monitor_heart:"),
+    ]),
+    ("Veli & Kurum", [
+        ("Veli Takip Paneli", "Veli Takip Paneli", ":material/family_restroom:"),
+        ("B2B Lisans & Kurum", "B2B Lisans & Kurum", ":material/apartment:"),
+    ]),
+    ("Hesap", [
+        ("Paketler & Abonelik Vitrini", "Paketler", ":material/shopping_bag:"),
+    ]),
+]
+
+# Ana sayfadaki modül kartları: (kısaltma, başlık, açıklama, hedef sayfa, arka plan, yazı rengi)
+MODULE_CARDS: List[Tuple[str, str, str, str, str, str]] = [
+    ("SR", "Soru & Redaksiyon", "Kazanım etiketli soru üretimi ve çift katmanlı editör kontrolü.", "Soru & Redaksiyon Fabrikası", "#EFF6FF", "#1D4ED8"),
+    ("DM", "Dijimentor", "Seviyene göre her hafta yenilenen kişisel çalışma planı.", "Dijimentor", "#F0FDF4", "#15803D"),
+    ("MD", "Mini Deneme", "Süre takipli denemeler ve otomatik hata defteri.", "Öğrenci Portalı & Çözüm", "#FEF3C7", "#B45309"),
+    ("ÖR", "Öğrenci Röntgeni", "Konu konu güçlü ve zayıf yönlerin net haritası.", "Öğrenci Röntgeni", "#F5F3FF", "#6D28D9"),
+    ("VT", "Veli Takip", "Haftalık özet, ilerleme ve veli mesajları tek yerde.", "Veli Takip Paneli", "#FFF1F2", "#BE123C"),
+]
+
 # ==============================================================================
 # 5–12. SINIF TAM MÜFREDAT MOTORU (MAARİF MODELİ, LGS & YKS)
 # ==============================================================================
@@ -603,6 +638,7 @@ OGRENCI_RONTGEN_PROFILLERI: Dict[str, Dict[str, Any]] = {
 ONCELIKLI_EKSIK_SIRASI: List[Dict[str, str]] = [
     {
         "priority": "1. ÖNCELİK • %46 İSABET",
+        "pct": 46,
         "topic": "T.8.1.9. Sözel mantık ve muhakeme gerektiren metinleri analiz etme",
         "branch": "Türkçe",
         "grade": "8. Sınıf (LGS)",
@@ -610,6 +646,7 @@ ONCELIKLI_EKSIK_SIRASI: List[Dict[str, str]] = [
     },
     {
         "priority": "2. ÖNCELİK • %52 İSABET",
+        "pct": 52,
         "topic": "Çarpanlar ve katlar, EBOB-EKOK problem modellemeleri",
         "branch": "Matematik",
         "grade": "8. Sınıf (LGS)",
@@ -1194,168 +1231,169 @@ section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
     background: #FFFFFF;
 }
 .kp-sidebar-brand-title {
-    font-size: 0.96rem;
+    font-size: 0.98rem;
     font-weight: 800;
-    color: var(--kp-blue-accent);
+    color: #0F172A;
     line-height: 1.2;
 }
 .kp-sidebar-brand-sub {
-    font-size: 0.72rem;
+    font-size: 0.78rem;
     color: var(--kp-muted);
     margin-top: 2px;
 }
-div[data-testid="stSidebar"] .stButton > button {
+/* ---------- Sol menü: çerçevesiz, ikonlu linkler ---------- */
+[data-testid="stSidebar"] .stButton > button {
     width: 100% !important;
     display: flex !important;
     justify-content: flex-start !important;
     align-items: center !important;
-    border-radius: 10px !important;
-    padding: 0.52rem 0.8rem !important;
-    font-size: 0.82rem !important;
+    gap: 0.55rem;
+    border-radius: 8px !important;
+    padding: 0.5rem 0.75rem !important;
+    min-height: 2.5rem;
+    font-size: 0.9rem !important;
+    font-weight: 500 !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: #334155 !important;
+    box-shadow: none !important;
+    transition: background-color 0.14s ease, color 0.14s ease !important;
+}
+[data-testid="stSidebar"] .stButton > button > div { justify-content: flex-start !important; }
+[data-testid="stSidebar"] .stButton > button:hover {
+    background: #F1F5F9 !important;
+    color: #0F172A !important;
+}
+[data-testid="stSidebar"] .stButton > button[kind="primary"] {
+    background: #EFF6FF !important;
+    color: #1D4ED8 !important;
     font-weight: 600 !important;
-    border: 1px solid #E2E8F0 !important;
-    background: #FFFFFF !important;
-    color: #1E293B !important;
-    transition: background-color 0.14s ease, border-color 0.14s ease, transform 0.14s ease !important;
 }
-div[data-testid="stSidebar"] .stButton > button:hover {
-    background: #EEF2FF !important;
-    color: var(--kp-blue-accent) !important;
-    border-color: #C7D2FE !important;
-    transform: translateX(3px);
-}
-div[data-testid="stSidebar"] .stButton > button[kind="primary"] {
-    background: linear-gradient(90deg, #2563EB 0%, #5A52E8 100%) !important;
-    color: #FFFFFF !important;
-    border-color: #2563EB !important;
-    font-weight: 700 !important;
+.kp-nav-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #64748B;
+    padding: 0.9rem 0.75rem 0.2rem 0.75rem;
 }
 .kp-sidebar-meta {
     background: #F8FAFC;
     border: 1px solid #E2E8F0;
-    border-left: 4px solid #5A52E8;
-    border-radius: 10px;
-    padding: 0.8rem 0.9rem;
-    margin-top: 0.65rem;
-    font-size: 0.79rem;
-    color: #1E293B;
-    line-height: 1.5;
-}
-
-.kp-top-compact-bar {
-    background: #F8FAFC;
-    border: 1px solid #E2E8F0;
     border-radius: 12px;
-    padding: 0.55rem 1rem;
-    margin-bottom: 0.8rem;
+    padding: 0.85rem 0.9rem;
+    margin-top: 1rem;
+    font-size: 0.8rem;
+    color: #334155;
+    line-height: 1.45;
+}
+.kp-meta-head { display: flex; justify-content: space-between; align-items: center; font-weight: 700; color: #0F172A; }
+.kp-meta-sub { color: #475569; margin: 0.15rem 0 0.6rem 0; }
+.kp-meter-label { display: flex; justify-content: space-between; font-size: 0.76rem; color: #475569; margin: 0.45rem 0 0.2rem 0; }
+.kp-meter { height: 6px; background: #E2E8F0; border-radius: 3px; overflow: hidden; }
+.kp-meter > span { display: block; height: 100%; background: #1D4ED8; border-radius: 3px; }
+.kp-status { display: flex; align-items: center; gap: 0.4rem; font-size: 0.76rem; color: #475569; margin-top: 0.7rem; padding-top: 0.6rem; border-top: 1px solid #E2E8F0; }
+.kp-status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* ---------- Üst şerit ---------- */
+.kp-topbar {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
     flex-wrap: wrap;
-    font-size: 0.78rem;
-    color: #334155;
-    animation: kpHeroEntrance 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-.kp-top-badge {
-    background: linear-gradient(90deg, #2563EB 0%, #5A52E8 100%);
-    color: #FFFFFF;
-    padding: 0.22rem 0.68rem;
-    border-radius: 999px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    white-space: nowrap;
-}
-
-.kp-kd-kicker {
-    font-size: 0.73rem;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: #2563EB;
-    margin-bottom: 0.45rem;
-    animation: kpHeroEntrance 0.36s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-.kp-kd-hero-title {
-    font-size: 2.05rem;
-    font-weight: 800;
-    line-height: 1.15;
-    color: #1E2952;
-    margin: 0 0 0.75rem 0;
-    animation: kpHeroEntrance 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-.kp-kd-hero-highlight {
-    color: #2563EB;
-    font-style: italic;
-}
-.kp-kd-hero-sub {
-    font-size: 0.88rem;
+    padding: 0.2rem 0 0.9rem 0;
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #E2E8F0;
+    font-size: 0.85rem;
     color: #475569;
-    line-height: 1.55;
-    margin-bottom: 1rem;
-    animation: kpHeroEntrance 0.46s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
-.kp-kd-selector-label {
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: #2563EB;
-    margin-bottom: 0.45rem;
-}
-.kp-kd-social-row {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    margin-top: 0.9rem;
-    font-size: 0.78rem;
-    color: #475569;
-    flex-wrap: wrap;
-    animation: kpStaggerCard 0.48s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-.kp-kd-social-num {
-    font-weight: 800;
-    color: #1E2952;
-    font-size: 0.92rem;
-}
+.kp-topbar-brand { font-weight: 700; color: #0F172A; }
+.kp-topbar a { color: #1D4ED8; text-decoration: none; }
 
-.kp-feature-strip-card {
-    background: #F8FAFC;
-    border: 1px solid #E2E8F0;
-    border-radius: 12px;
-    padding: 0.65rem 0.45rem;
-    text-align: center;
-    transition: transform 0.14s ease, border-color 0.14s ease, background-color 0.14s ease;
-    animation: kpStaggerCard 0.4s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-.kp-feature-strip-card:hover {
-    transform: translateY(-2px);
-    border-color: #93C5FD;
-    background: #EFF6FF;
-}
-.kp-feature-icon-box {
-    width: 34px;
-    height: 34px;
-    border-radius: 9px;
-    margin: 0 auto 0.35rem auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #2563EB;
-    color: #FFFFFF;
-    font-weight: 800;
+/* ---------- Hero ---------- */
+.kp-eyebrow {
+    display: inline-block;
     font-size: 0.82rem;
+    font-weight: 600;
+    color: #1D4ED8;
+    background: #EFF6FF;
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    margin-bottom: 1rem;
 }
-.kp-feature-strip-title {
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: #1E293B;
-    line-height: 1.25;
+.kp-hero-title {
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    font-size: clamp(2rem, 3.6vw, 3.1rem);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: #0F172A;
+    margin: 0 0 1rem 0;
+    padding: 0;
 }
-.kp-showcase-frame {
-    text-align: center;
-    margin-top: 0.55rem;
-    animation: kpHeroEntrance 0.48s cubic-bezier(0.22, 1, 0.36, 1) both;
+.kp-hero-title em { font-style: normal; color: #1D4ED8; }
+.kp-hero-lead { font-size: 1.1rem; line-height: 1.6; color: #475569; margin: 0 0 1.4rem 0; max-width: 34rem; }
+.kp-stats { display: flex; gap: 2.2rem; flex-wrap: wrap; margin-top: 1.4rem; }
+.kp-stat-num { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.7rem; font-weight: 800; color: #0F172A; line-height: 1.2; }
+.kp-stat-lbl { font-size: 0.82rem; color: #64748B; }
+.st-key-hero_cta_primary button, .st-key-hero_cta_secondary button {
+    min-height: 3rem;
+    font-size: 0.95rem !important;
+    border-radius: 10px !important;
 }
 
+.kp-preview {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 16px;
+    padding: 1.3rem;
+    box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+}
+.kp-preview-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.5rem; }
+.kp-preview-head small { display: block; font-size: 0.78rem; color: #64748B; }
+.kp-preview-head strong { font-size: 1.05rem; color: #0F172A; }
+.kp-pill { font-size: 0.75rem; font-weight: 600; color: #1D4ED8; background: #EFF6FF; padding: 0.2rem 0.6rem; border-radius: 999px; white-space: nowrap; }
+.kp-preview-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.6rem; margin: 1.1rem 0; }
+.kp-preview-stat { background: #F8FAFC; border-radius: 10px; padding: 0.7rem; }
+.kp-preview-stat b { display: block; font-size: 1.25rem; color: #0F172A; }
+.kp-preview-stat span { font-size: 0.75rem; color: #64748B; }
+.kp-preview-row { display: flex; justify-content: space-between; gap: 0.75rem; font-size: 0.86rem; color: #334155; padding: 0.6rem 0; border-top: 1px solid #E2E8F0; }
+.kp-preview-row span:last-child { color: #0F172A; font-weight: 600; text-align: right; }
+
+/* ---------- Bölüm başlıkları ---------- */
+.kp-section-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.45rem; font-weight: 700; color: #0F172A; margin: 0; letter-spacing: -0.01em; }
+.kp-section-sub { font-size: 0.95rem; color: #475569; margin: 0.3rem 0 0.9rem 0; }
+.kp-gap { height: 3rem; }
+
+/* ---------- Kartlı kapsayıcılar (st.container(border=True)) ---------- */
+[data-testid="stVerticalBlockBorderWrapper"] { border-radius: 14px !important; }
+
+/* Sınıf seçici: hap şeklinde butonlar */
+[class*="st-key-grade_chip_"] button { border-radius: 999px !important; min-height: 2.75rem; font-weight: 500 !important; font-size: 0.9rem !important; }
+
+/* Modül kartları */
+.kp-mod-icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.85rem; margin-bottom: 0.7rem; }
+.kp-mod-title { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; font-size: 1rem; color: #0F172A; }
+.kp-mod-desc { font-size: 0.86rem; line-height: 1.5; color: #475569; margin-top: 0.3rem; min-height: 3.9rem; }
+[class*="st-key-mod_open_"] button, .st-key-prio_all button {
+    border: 0 !important;
+    background: transparent !important;
+    color: #1D4ED8 !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+    font-weight: 600 !important;
+    font-size: 0.88rem !important;
+    justify-content: flex-start !important;
+}
+[class*="st-key-mod_open_"] button:hover, .st-key-prio_all button:hover { color: #1E3A8A !important; text-decoration: underline; }
+
+/* Öncelik satırları */
+.kp-prio-num { width: 32px; height: 32px; border-radius: 50%; background: #F1F5F9; font-weight: 700; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; color: #0F172A; }
+.kp-prio-title { font-weight: 600; font-size: 0.95rem; color: #0F172A; line-height: 1.4; }
+.kp-prio-sub { font-size: 0.8rem; color: #64748B; margin-top: 0.15rem; }
+.kp-prio-divider { border-top: 1px solid #E2E8F0; margin: 0.35rem 0; }
+.kp-tag-warn { font-size: 0.75rem; font-weight: 600; color: #92400E; background: #FEF3C7; padding: 0.2rem 0.6rem; border-radius: 999px; }
 .kp-page-strip {
     display: flex;
     align-items: baseline;
@@ -1679,8 +1717,8 @@ div[data-testid="stMetric"] [data-testid="stMetricValue"] {
 .stButton > button,
 div[data-testid="stFormSubmitButton"] > button {
     border-radius: 8px;
-    font-weight: 700;
-    font-size: 0.82rem;
+    font-weight: 600;
+    font-size: 0.9rem;
     border: 1px solid #CBD5E1;
     background-color: #FFFFFF;
     color: #1E293B;
@@ -3180,81 +3218,105 @@ api_key_ready = resolve_gemini_api_key() is not None
 # ==============================================================================
 # KENAR ÇUBUĞU
 # ==============================================================================
+def _fmt(n: int) -> str:
+    """1500 -> '1.500'"""
+    return f"{int(n):,}".replace(",", ".")
+
+
 with st.sidebar:
     st.markdown(
         f"""
         <div class="kp-sidebar-brand">
-            <img src="{LOGO_DATA_URI}" alt="{BRAND_NAME}"/>
+            <img src="{LOGO_DATA_URI}" alt=""/>
             <div>
-                <div class="kp-sidebar-brand-title">{BRAND_SHORT} • 2028</div>
-                <div class="kp-sidebar-brand-sub">Dijital Ofis Platformu</div>
+                <div class="kp-sidebar-brand-title">{BRAND_SHORT}</div>
+                <div class="kp-sidebar-brand-sub">Dijital Ofis</div>
             </div>
         </div>
         """,
         unsafe_allow_html=True,
     )
 
-    for p_name in PAGES:
-        is_current = st.session_state.active_page == p_name
-        btn_type = "primary" if is_current else "secondary"
-        if st.button(p_name, key=f"nav_{p_name}", type=btn_type, use_container_width=True):
-            clear_page_ephemeral_state(p_name)
-            st.session_state.active_page = p_name
-            trigger_loader_bar()
-            st.rerun()
+    # Gruplanmış, ikonlu menü
+    for group_title, items in NAV_GROUPS:
+        if group_title:
+            st.markdown(f'<div class="kp-nav-title">{html.escape(group_title)}</div>', unsafe_allow_html=True)
+        for p_name, p_label, p_icon in items:
+            is_current = st.session_state.active_page == p_name
+            if st.button(
+                p_label,
+                key=f"nav_{p_name}",
+                icon=p_icon,
+                type="primary" if is_current else "secondary",
+                use_container_width=True,
+            ):
+                clear_page_ephemeral_state(p_name)
+                st.session_state.active_page = p_name
+                trigger_loader_bar()
+                st.rerun()
+
+    # Paket & kota kartı (ilerleme çubuklu)
+    total_q = int(bag_summary_global["monthly_quota"])
+    total_c = int(bag_summary_global["coach_quota"])
+    rem_q = int(st.session_state.remaining_question_quota)
+    rem_c = int(st.session_state.remaining_coach_quota)
+    q_pct = round(100 * rem_q / total_q) if total_q else 0
+    c_pct = round(100 * rem_c / total_c) if total_c else 0
+    status_color = "#16A34A" if api_key_ready else "#D97706"
+    status_text = "Sistem aktif" if api_key_ready else "API anahtarı bekleniyor"
 
     st.markdown(
         f"""
         <div class="kp-sidebar-meta">
-            <div style="font-weight:700;color:#1E2952;margin-bottom:0.2rem;">Aktif Kota &amp; Çanta (2028)</div>
-            <div>{bag_summary_global['total_count']} Paket • {bag_summary_global['monthly_price']:,} ₺/ay</div>
-            <div style="color:#475569;margin-top:0.25rem;">
-                Soru: <b>{int(st.session_state.remaining_question_quota):,}</b> / {bag_summary_global['monthly_quota']:,}<br>
-                Dijimentor: <b>{int(st.session_state.remaining_coach_quota)}</b> / {bag_summary_global['coach_quota']}<br>
-                Havuz: <b>{len(st.session_state['question_bank_2028'])}</b> • Hata Defteri: <b>{len(st.session_state['error_notebook_2028'])}</b>
+            <div class="kp-meta-head"><span>Aktif paketin</span></div>
+            <div class="kp-meta-sub">{bag_summary_global['total_count']} paket · {_fmt(bag_summary_global['monthly_price'])} ₺/ay</div>
+            <div class="kp-meter-label"><span>Soru kotası</span><span>{_fmt(rem_q)} / {_fmt(total_q)}</span></div>
+            <div class="kp-meter"><span style="width:{q_pct}%"></span></div>
+            <div class="kp-meter-label"><span>Dijimentor</span><span>{rem_c} / {total_c}</span></div>
+            <div class="kp-meter"><span style="width:{c_pct}%"></span></div>
+            <div class="kp-meter-label" style="margin-top:0.6rem;">
+                <span>Soru havuzu: <b>{len(st.session_state['question_bank_2028'])}</b></span>
+                <span>Hata defteri: <b>{len(st.session_state['error_notebook_2028'])}</b></span>
             </div>
+            <div class="kp-status"><span class="kp-status-dot" style="background:{status_color}"></span>{status_text}</div>
         </div>
-        """.replace(",", "."),
+        """,
         unsafe_allow_html=True,
     )
 
-    st.markdown("<div style='margin-top:0.55rem;'></div>", unsafe_allow_html=True)
-    if api_key_ready:
-        st.caption("Durum: Dijital Ofis 2028 aktif")
-    else:
-        st.caption("Durum: API anahtarı bekleniyor")
-
-    if not st.session_state.get("confirm_reset_session", False):
-        if st.button("Oturumu Sıfırla", key="reset_session_btn", use_container_width=True):
-            st.session_state["confirm_reset_session"] = True
-            st.rerun()
-    else:
-        st.warning("Yerel durum sıfırlansın mı? (Yedek alınır)")
-        rc1, rc2 = st.columns(2)
-        with rc1:
-            if st.button("Evet", key="confirm_reset_yes", type="primary", use_container_width=True):
-                try:
-                    if STATE_FILE_PATH.exists():
-                        STATE_BACKUP_PATH.write_text(STATE_FILE_PATH.read_text(encoding="utf-8"), encoding="utf-8")
-                        STATE_FILE_PATH.unlink()
-                except Exception:
-                    pass
-                for k in list(st.session_state.keys()):
-                    del st.session_state[k]
+    # Tehlikeli işlem: göz önünden kaldırıldı, "Ayarlar" altında
+    with st.expander("Ayarlar", icon=":material/settings:"):
+        if not st.session_state.get("confirm_reset_session", False):
+            if st.button("Oturumu sıfırla", key="reset_session_btn", use_container_width=True):
+                st.session_state["confirm_reset_session"] = True
                 st.rerun()
-        with rc2:
-            if st.button("İptal", key="confirm_reset_no", use_container_width=True):
-                st.session_state["confirm_reset_session"] = False
-                st.rerun()
+        else:
+            st.warning("Yerel durum sıfırlansın mı? (Yedek alınır)")
+            rc1, rc2 = st.columns(2)
+            with rc1:
+                if st.button("Evet", key="confirm_reset_yes", type="primary", use_container_width=True):
+                    try:
+                        if STATE_FILE_PATH.exists():
+                            STATE_BACKUP_PATH.write_text(STATE_FILE_PATH.read_text(encoding="utf-8"), encoding="utf-8")
+                            STATE_FILE_PATH.unlink()
+                    except Exception:
+                        pass
+                    for k in list(st.session_state.keys()):
+                        del st.session_state[k]
+                    st.rerun()
+            with rc2:
+                if st.button("İptal", key="confirm_reset_no", use_container_width=True):
+                    st.session_state["confirm_reset_session"] = False
+                    st.rerun()
 
 # ==============================================================================
-# SADELEŞTİRİLMİŞ ÜST ŞERİT (2028)
+# ÜST ŞERİT
 # ==============================================================================
 st.markdown(
     """
-    <div class="kp-top-compact-bar">
-        <div><b>KURŞUN KALEM DİJİTAL OFİS • 2028</b> &nbsp;|&nbsp; 5–12. Sınıf Müfredatı • Dijimentor • Veli &amp; B2B</div>
-        <div>0850 532 16 29 &nbsp;•&nbsp; destek@kursunkalemdijitalofis.com.tr &nbsp;<span class="kp-top-badge">2028 Tam Sürüm</span></div>
+    <div class="kp-topbar">
+        <span class="kp-topbar-brand">Kurşun Kalem Dijital Ofis</span>
+        <span>Destek: <a href="tel:08505321629">0850 532 16 29</a> · <a href="mailto:destek@kursunkalemdijitalofis.com.tr">destek@kursunkalemdijitalofis.com.tr</a></span>
     </div>
     """,
     unsafe_allow_html=True,
@@ -3268,142 +3330,180 @@ if current_page != "Ana Sayfa":
 # 1. ANA SAYFA
 # ==============================================================================
 if current_page == "Ana Sayfa":
-    hero_l, hero_r = st.columns([1.22, 1.0], vertical_alignment="center")
+    stats_now = st.session_state["parent_student_stats"]
+    solved_now = max(1, int(stats_now["weekly_solved"]))
+    acc_now = round(int(stats_now["correct"]) / solved_now * 100)
+
+    # ---------- HERO ----------
+    hero_l, hero_r = st.columns([1.2, 1.0], gap="large", vertical_alignment="center")
 
     with hero_l:
         st.markdown(
             """
-            <div class="kp-kd-kicker">TÜRKİYE'NİN 2028 DİJİTAL ÖLÇME &amp; MENTORLUK OFİSİ</div>
-            <h1 class="kp-kd-hero-title">
-                Hayalindeki <span class="kp-kd-hero-highlight">2028 hedefi</span><br>
-                İhtiyacın olan her şey.<br>
-                Tek platform.
-            </h1>
-            <p class="kp-kd-hero-sub">
-                7/24 Soru &amp; Redaksiyon Fabrikası • Her Hafta Dijimentor Planı • İnteraktif Mini Deneme &amp; Hata Defteri •
-                Öğrenci Röntgeni • Veli Takip &amp; B2B Zümre Yönetimi 2028 kurgusuyla <b>Kurşun Kalem Dijital Ofis</b>'te!
+            <span class="kp-eyebrow">2028 müfredatına tam uyumlu</span>
+            <h1 class="kp-hero-title">Hayalindeki <em>2028 hedefi</em> için ihtiyacın olan her şey, tek platformda.</h1>
+            <p class="kp-hero-lead">
+                Soru bankası, haftalık dijital mentorluk, mini denemeler ve kişisel eksik analizi.
+                Öğrenci, veli ve okul aynı ekranda.
             </p>
-            <div class="kp-kd-selector-label">2028 paketleri ve modülleri hızlı başlatmak için sınav ya da sınıfını seç:</div>
             """,
             unsafe_allow_html=True,
         )
-
-        r1_cols = st.columns(5)
-        for idx, chip in enumerate(HERO_PILL_CHIPS[:5]):
-            with r1_cols[idx]:
-                if st.button(chip["label"], key=f"kd_chip_1_{idx}", use_container_width=True):
-                    st.session_state["factory_grade"] = chip["grade"]
-                    st.session_state["factory_grade_sync"] = True
-                    st.session_state["dk_exam"] = chip["exam"]
-                    record_activity("Hızlı Kademe (2028)", f"{chip['label']} seçildi")
-                    navigate_to(chip["page"])
-
-        r2_cols = st.columns(5)
-        for idx, chip in enumerate(HERO_PILL_CHIPS[5:]):
-            with r2_cols[idx]:
-                if st.button(chip["label"], key=f"kd_chip_2_{idx}", use_container_width=True):
-                    st.session_state["factory_grade"] = chip["grade"]
-                    st.session_state["factory_grade_sync"] = True
-                    st.session_state["dk_exam"] = chip["exam"]
-                    record_activity("Hızlı Kademe (2028)", f"{chip['label']} seçildi")
-                    navigate_to(chip["page"])
-
+        cta1, cta2, _ = st.columns([1, 1.15, 0.6])
+        with cta1:
+            if st.button("Ücretsiz dene", key="hero_cta_primary", type="primary", use_container_width=True):
+                navigate_to("Paketler & Abonelik Vitrini")
+        with cta2:
+            if st.button("Kurumlar için demo", key="hero_cta_secondary", use_container_width=True):
+                navigate_to("B2B Lisans & Kurum")
         st.markdown(
             """
-            <div class="kp-kd-social-row">
-                <div><span class="kp-kd-social-num">142.500+</span><br>2028 Soru Havuzu</div>
-                <div><span class="kp-kd-social-num">18.420</span><br>Ön Kayıt Öğrenci &amp; Veli</div>
-                <div><span class="kp-kd-social-num">48</span><br>B2B Anlaşmalı Kurum</div>
+            <div class="kp-stats">
+                <div><div class="kp-stat-num">142.500+</div><div class="kp-stat-lbl">soru havuzu</div></div>
+                <div><div class="kp-stat-num">18.420</div><div class="kp-stat-lbl">ön kayıtlı öğrenci ve veli</div></div>
+                <div><div class="kp-stat-num">48</div><div class="kp-stat-lbl">anlaşmalı kurum</div></div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
     with hero_r:
-        f_strip = [
-            ("SF", "Soru Fabrikası", "Soru & Redaksiyon Fabrikası"),
-            ("DM", "Dijimentor", "Dijimentor"),
-            ("MD", "Mini Deneme", "Öğrenci Portalı & Çözüm"),
-            ("RT", "Öğrenci Röntgeni", "Öğrenci Röntgeni"),
-            ("ÇT", "Ofis Çantası", "Paketler & Abonelik Vitrini"),
-        ]
-        s_cols = st.columns(5)
-        for idx, (code, f_title, f_target) in enumerate(f_strip):
-            with s_cols[idx]:
-                st.markdown(
-                    f"""
-                    <div class="kp-feature-strip-card">
-                        <div class="kp-feature-icon-box">{code}</div>
-                        <div class="kp-feature-strip-title">{html.escape(f_title)}</div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-                if st.button("Aç", key=f"fstrip_btn_{idx}", use_container_width=True):
-                    navigate_to(f_target)
-
+        # Eski SVG vitrin yerine öğrencinin gerçek haftalık özeti
         st.markdown(
             f"""
-            <div class="kp-showcase-frame">
-                <img src="{HERO_SHOWCASE_URI}" alt="Kurşun Kalem Dijital Ofis 2028 Kurumsal Vitrin" style="width:100%;max-width:420px;border-radius:16px;"/>
+            <div class="kp-preview">
+                <div class="kp-preview-head">
+                    <div><small>Bu hafta</small><strong>{html.escape(str(stats_now['student_name']))}</strong></div>
+                    <span class="kp-pill">{html.escape(str(stats_now['grade']))}</span>
+                </div>
+                <div class="kp-preview-stats">
+                    <div class="kp-preview-stat"><b>{_fmt(stats_now['weekly_solved'])}</b><span>çözülen soru</span></div>
+                    <div class="kp-preview-stat"><b>%{acc_now}</b><span>doğruluk</span></div>
+                    <div class="kp-preview-stat"><b>%{int(stats_now['mentor_completion'])}</b><span>plan uyumu</span></div>
+                </div>
+                <div class="kp-meter" style="margin-bottom:0.9rem;"><span style="width:{int(stats_now['mentor_completion'])}%"></span></div>
+                <div class="kp-preview-row"><span>Güçlü alan</span><span>{html.escape(str(stats_now['strong_topic']))}</span></div>
+                <div class="kp-preview-row"><span>Pekiştirilecek</span><span>{html.escape(str(stats_now['weak_topic']))}</span></div>
+                <div class="kp-preview-row"><span>Sıradaki deneme</span><span>{html.escape(str(stats_now['next_exam_date']))}</span></div>
             </div>
             """,
             unsafe_allow_html=True,
         )
 
-    st.markdown("---")
-    st.markdown("#### 2028 Kademe & Çalışma Alanı Seç")
-    k_cols = st.columns(4)
-    for idx, k_item in enumerate(KADEME_VITRIN_KARTLARI):
-        with k_cols[idx]:
+    st.markdown('<div class="kp-gap"></div>', unsafe_allow_html=True)
+
+    # ---------- SINIF SEÇİCİ ----------
+    with st.container(border=True):
+        sel_l, sel_r = st.columns([1.3, 1.0], vertical_alignment="center")
+        with sel_l:
             st.markdown(
-                f"""
-                <div class="kp-kademe-card">
-                    <span class="kp-kademe-tag" style="background:{k_item['accent']};">{html.escape(k_item['tag'])}</span>
-                    <div class="kp-kademe-title">{html.escape(k_item['title'])}</div>
-                    <p class="kp-kademe-desc">{html.escape(k_item['desc'])}</p>
-                </div>
-                """,
+                '<h2 class="kp-section-title">Sınıfını ya da sınavını seç</h2>'
+                '<p class="kp-section-sub" style="margin-bottom:0;">Sana uygun modül otomatik açılır.</p>',
                 unsafe_allow_html=True,
             )
-            if st.button(k_item["cta"], key=f"kademe_btn_{idx}", use_container_width=True):
-                st.session_state["factory_grade"] = k_item["grade"]
-                st.session_state["factory_grade_sync"] = True
-                st.session_state["dk_exam"] = k_item["exam"]
-                record_activity("Kademe Seçici (2028)", f"{k_item['tag']} seçildi")
-                navigate_to(k_item["target_page"])
+        with sel_r:
+            group_names = list(GRADE_GROUPS.keys())
+            selected_group = st.segmented_control(
+                "Kademe",
+                options=group_names,
+                default=group_names[0],
+                key="grade_group_sel",
+                label_visibility="collapsed",
+            ) or group_names[0]
 
-    st.markdown("---")
-    st.markdown("#### Kişisel Eksik & Öncelik Sırası (2028)")
-    p_cols = st.columns(3)
-    for idx, p_item in enumerate(ONCELIKLI_EKSIK_SIRASI):
-        with p_cols[idx]:
-            st.markdown(
-                f"""
-                <div class="kp-priority-card">
-                    <span class="kp-priority-badge">{html.escape(p_item['priority'])}</span>
-                    <div class="kp-priority-title">{html.escape(p_item['topic'])}</div>
-                    <p class="kp-priority-sub">{html.escape(p_item['branch'])} • {html.escape(p_item['action'])}</p>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-            if st.button("Bu Kazanımı Çalış", key=f"prio_btn_{idx}", use_container_width=True):
-                st.session_state["factory_focus_topic"] = p_item["topic"]
-                st.session_state["factory_branch"] = p_item["branch"]
-                st.session_state["factory_grade"] = p_item["grade"]
-                st.session_state["fab_theme_inp"] = p_item["topic"]
-                st.session_state["factory_sync_pending"] = True
-                st.session_state["factory_grade_sync"] = True
-                record_activity("Öncelikli Akış (2028)", f"{p_item['topic']} seçildi")
-                navigate_to("Soru & Redaksiyon Fabrikası")
+        group_items = GRADE_GROUPS[selected_group]
+        g_idx = group_names.index(selected_group)
+        chip_cols = st.columns(4)
+        for idx, chip_label in enumerate(group_items):
+            chip = CHIP_BY_LABEL[chip_label]
+            with chip_cols[idx % 4]:
+                if st.button(chip["label"], key=f"grade_chip_{g_idx}_{idx}", use_container_width=True):
+                    st.session_state["factory_grade"] = chip["grade"]
+                    st.session_state["factory_grade_sync"] = True
+                    st.session_state["dk_exam"] = chip["exam"]
+                    record_activity("Hızlı Kademe (2028)", f"{chip['label']} seçildi")
+                    navigate_to(chip["page"])
 
-    st.markdown("---")
+    st.markdown('<div class="kp-gap"></div>', unsafe_allow_html=True)
+
+    # ---------- MODÜLLER ----------
+    st.markdown(
+        '<h2 class="kp-section-title">Modüller</h2>'
+        '<p class="kp-section-sub">Her biri tek başına çalışır, birlikte daha güçlüdür.</p>',
+        unsafe_allow_html=True,
+    )
+    mod_cols = st.columns(len(MODULE_CARDS))
+    for idx, (code, m_title, m_desc, m_page, m_bg, m_fg) in enumerate(MODULE_CARDS):
+        with mod_cols[idx]:
+            with st.container(border=True):
+                st.markdown(
+                    f"""
+                    <div class="kp-mod-icon" style="background:{m_bg};color:{m_fg};">{html.escape(code)}</div>
+                    <div class="kp-mod-title">{html.escape(m_title)}</div>
+                    <div class="kp-mod-desc">{html.escape(m_desc)}</div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+                if st.button("Aç →", key=f"mod_open_{idx}"):
+                    navigate_to(m_page)
+
+    st.markdown('<div class="kp-gap"></div>', unsafe_allow_html=True)
+
+    # ---------- ÖNCELİKLİ EKSİKLER ----------
+    pr_l, pr_r = st.columns([4, 1], vertical_alignment="bottom")
+    with pr_l:
+        st.markdown(
+            '<h2 class="kp-section-title">Öncelikli eksiklerin</h2>'
+            '<p class="kp-section-sub">En çok puan kazandıracak konular, öncelik sırasıyla.</p>',
+            unsafe_allow_html=True,
+        )
+    with pr_r:
+        if st.button("Tüm analizi gör →", key="prio_all"):
+            navigate_to("Öğrenci Röntgeni")
+
+    with st.container(border=True):
+        for idx, p_item in enumerate(ONCELIKLI_EKSIK_SIRASI):
+            if idx:
+                st.markdown('<div class="kp-prio-divider"></div>', unsafe_allow_html=True)
+            c_num, c_txt, c_meter, c_btn = st.columns([0.45, 5, 2.2, 1.2], vertical_alignment="center")
+            with c_num:
+                st.markdown(f'<div class="kp-prio-num">{idx + 1}</div>', unsafe_allow_html=True)
+            with c_txt:
+                st.markdown(
+                    f'<div class="kp-prio-title">{html.escape(p_item["topic"])}</div>'
+                    f'<div class="kp-prio-sub">{html.escape(p_item["branch"])} · {html.escape(p_item["action"])}</div>',
+                    unsafe_allow_html=True,
+                )
+            with c_meter:
+                pct = p_item.get("pct")
+                if pct is not None:
+                    bar_color = "#DC2626" if pct < 50 else "#EA580C" if pct < 60 else "#CA8A04"
+                    st.markdown(
+                        f'<div class="kp-meter-label"><span>Doğru oranı</span><b style="color:#0F172A">%{pct}</b></div>'
+                        f'<div class="kp-meter"><span style="width:{pct}%;background:{bar_color}"></span></div>',
+                        unsafe_allow_html=True,
+                    )
+                else:
+                    st.markdown('<span class="kp-tag-warn">Dikkat gerektiriyor</span>', unsafe_allow_html=True)
+            with c_btn:
+                if st.button("Çalış", key=f"prio_btn_{idx}", use_container_width=True):
+                    st.session_state["factory_focus_topic"] = p_item["topic"]
+                    st.session_state["factory_branch"] = p_item["branch"]
+                    st.session_state["factory_grade"] = p_item["grade"]
+                    st.session_state["fab_theme_inp"] = p_item["topic"]
+                    st.session_state["factory_sync_pending"] = True
+                    st.session_state["factory_grade_sync"] = True
+                    record_activity("Öncelikli Akış (2028)", f"{p_item['topic']} seçildi")
+                    navigate_to("Soru & Redaksiyon Fabrikası")
+
+    st.markdown('<div class="kp-gap"></div>', unsafe_allow_html=True)
+
+    # ---------- GERİ SAYIM ----------
     head_col, toggle_col = st.columns([4, 1], vertical_alignment="center")
     with head_col:
-        st.markdown("#### 2028 LGS Geri Sayım (11 Haziran 2028)")
+        st.markdown('<h2 class="kp-section-title">2028 LGS\'ye kalan süre</h2>', unsafe_allow_html=True)
     with toggle_col:
-        live_counter = st.toggle("Canlı Sayaç", value=st.session_state.live_tick)
+        live_counter = st.toggle("Canlı sayaç", value=st.session_state.live_tick)
         st.session_state.live_tick = live_counter
 
     counter_placeholder = st.empty()
@@ -3411,29 +3511,24 @@ if current_page == "Ana Sayfa":
         render_countdown_boxes(LGS_2028_TARGET)
 
     yks_d, yks_h, _, _ = format_countdown(YKS_2028_TARGET)
-    st.caption(f"2028 YKS (17 Haziran 2028) için kalan süre: {yks_d} gün {yks_h} saat")
+    st.caption(f"LGS: 11 Haziran 2028 · YKS (17 Haziran 2028) için kalan süre: {yks_d} gün {yks_h} saat")
 
-    st.markdown("---")
-    m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Üretilen Soru Havuzu", "142.500+", "+1.200 bugün")
-    m2.metric("Aktif Öğrenci / Veli", "18.420", "+340 bu hafta")
-    m3.metric("B2B Anlaşmalı Kurum", "48", "+4 Yeni")
-    m4.metric("Çözülen Soru Sayısı", "2.4 Milyon", "%98 Başarı")
+    st.markdown('<div class="kp-gap"></div>', unsafe_allow_html=True)
 
-    st.markdown("---")
-    ana_l, ana_r = st.columns([2, 1])
+    # ---------- TELEMETRİ & AKTİVİTE ----------
+    ana_l, ana_r = st.columns([2, 1], gap="large")
     with ana_l:
-        st.markdown("#### Haftalık Soru Üretim & Çözüm Telemetrisi (2028)")
+        st.markdown('<h2 class="kp-section-title" style="font-size:1.15rem;">Haftalık soru üretimi</h2>', unsafe_allow_html=True)
         telemetry_data = {"Pzt": 16800, "Sal": 18200, "Çar": 19500, "Per": 21100, "Cum": 22400, "Cmt": 25900, "Paz": 24800}
-        st.area_chart(telemetry_data, color="#2563EB", height=210)
+        st.area_chart(telemetry_data, color="#1D4ED8", height=210)
     with ana_r:
-        st.markdown("#### Son Aktiviteler")
+        st.markdown('<h2 class="kp-section-title" style="font-size:1.15rem;">Son aktiviteler</h2>', unsafe_allow_html=True)
         for item in st.session_state.get("activity_log", [])[:5]:
             st.markdown(
                 f"""
-                <div style="background:#FFFFFF;border:1px solid #E2E8F0;border-left:3.5px solid #2563EB;border-radius:10px;padding:0.58rem 0.8rem;margin-bottom:0.45rem;">
-                    <div style="font-size:0.72rem;font-weight:600;color:#64748B;">{html.escape(item['time'])} • {html.escape(item['module'])}</div>
-                    <div style="font-size:0.83rem;color:#0F172A;margin-top:0.12rem;">{html.escape(item['summary'])}</div>
+                <div style="padding:0.6rem 0;border-bottom:1px solid #E2E8F0;">
+                    <div style="font-size:0.78rem;color:#64748B;">{html.escape(item['time'])} · {html.escape(item['module'])}</div>
+                    <div style="font-size:0.9rem;color:#0F172A;margin-top:0.1rem;">{html.escape(item['summary'])}</div>
                 </div>
                 """,
                 unsafe_allow_html=True,
