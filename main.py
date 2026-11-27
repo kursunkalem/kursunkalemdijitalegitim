@@ -135,6 +135,28 @@ CREATE TABLE IF NOT EXISTS payments (
     created_at TEXT NOT NULL,
     verified_at TEXT
 );
+CREATE TABLE IF NOT EXISTS bank_questions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    teacher_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    grade TEXT,
+    branch TEXT,
+    outcome TEXT,
+    difficulty TEXT,
+    stem TEXT NOT NULL,
+    options_json TEXT NOT NULL,
+    correct TEXT,
+    explanation TEXT,
+    status TEXT NOT NULL DEFAULT 'taslak',
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_bank_teacher ON bank_questions (teacher_id, status);
+CREATE TABLE IF NOT EXISTS teacher_profiles (
+    user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    org_name TEXT,
+    signature TEXT,
+    updated_at TEXT NOT NULL
+);
 CREATE TABLE IF NOT EXISTS report_log (
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     week TEXT NOT NULL,
@@ -149,7 +171,8 @@ def _now() -> str:
 
 
 _TABLES = ["users", "user_state", "activity_days", "exam_results", "badges", "classes",
-           "class_members", "assignments", "submissions", "payments", "report_log"]
+           "class_members", "assignments", "submissions", "payments", "report_log",
+           "bank_questions", "teacher_profiles"]
 
 # Postgres şeması SQLite şemasından türetilir (tek kaynak, iki lehçe)
 _SCHEMA_PG = (
@@ -571,6 +594,234 @@ def assignment_results(assignment_id: int) -> List[Dict[str, Any]]:
     )
 
 
+def remove_member(teacher_id: int, class_id: int, user_id: int) -> int:
+    """Öğrenciyi sınıftan çıkarır (yalnızca sınıfın öğretmeni)."""
+    return _x(
+        "DELETE FROM class_members WHERE class_id = ? AND user_id = ? "
+        "AND class_id IN (SELECT id FROM classes WHERE teacher_id = ?)",
+        (class_id, user_id, teacher_id),
+    )
+
+
+def _slug(text: str) -> str:
+    tr = str.maketrans("çğıöşüÇĞİÖŞÜ", "cgiosuCGIOSU")
+    out = re.sub(r"[^a-z0-9]+", ".", text.translate(tr).lower()).strip(".")
+    return out[:24] or "ogrenci"
+
+
+def bulk_create_students(teacher_id: int, class_id: int, rows: List[Dict[str, str]],
+                         grade: Optional[str] = None) -> List[Dict[str, str]]:
+    """rows: [{"name": ..., "email": opsiyonel}]. Hesap açar, sınıfa ekler, geçici şifreleri döner.
+    E-postası olmayan öğrenciye giriş için okunabilir bir kullanıcı adresi üretilir."""
+    cls = _q("SELECT * FROM classes WHERE id = ? AND teacher_id = ?", (class_id, teacher_id), one=True)
+    if not cls:
+        raise ValueError("Sınıf bulunamadı.")
+    results: List[Dict[str, str]] = []
+    pw_alphabet = "abcdefghjkmnpqrstuvwxyz23456789"
+    for row in rows:
+        name = (row.get("name") or "").strip()
+        if not name:
+            continue
+        email = (row.get("email") or "").strip().lower()
+        existing = get_user_by_email(email) if email else None
+        if existing:
+            if existing["role"] != "ogrenci":
+                results.append({"name": name, "email": email, "password": "", "status": "Atlandı: öğrenci hesabı değil"})
+                continue
+            join_class(existing["id"], cls["code"])
+            results.append({"name": name, "email": email, "password": "", "status": "Var olan hesap sınıfa eklendi"})
+            continue
+        if not email:
+            for _ in range(20):
+                email = f"{_slug(name)}.{secrets.randbelow(9000) + 1000}@ogrenci.kursunkalem"
+                if not get_user_by_email(email):
+                    break
+        password = "".join(secrets.choice(pw_alphabet) for _ in range(8))
+        try:
+            user = create_user(email, name, password, "ogrenci", grade or cls.get("grade"))
+        except ValueError as exc:
+            results.append({"name": name, "email": email, "password": "", "status": f"Hata: {exc}"})
+            continue
+        join_class(user["id"], cls["code"])
+        results.append({"name": name, "email": email, "password": password, "status": "Oluşturuldu"})
+    return results
+
+
+def class_parents(class_id: int) -> List[Dict[str, Any]]:
+    """Sınıftaki öğrencilere bağlı veli hesapları."""
+    return _q(
+        "SELECT p.id AS parent_id, p.name AS parent_name, p.email AS parent_email, "
+        "s.id AS student_id, s.name AS student_name "
+        "FROM class_members m JOIN users s ON s.id = m.user_id JOIN users p ON p.parent_of = s.id "
+        "WHERE m.class_id = ? AND p.role = 'veli' ORDER BY s.name",
+        (class_id,),
+    )
+
+
+def get_teacher_profile(user_id: int) -> Dict[str, Any]:
+    row = _q("SELECT * FROM teacher_profiles WHERE user_id = ?", (user_id,), one=True)
+    return row or {"user_id": user_id, "org_name": "", "signature": ""}
+
+
+def save_teacher_profile(user_id: int, org_name: str, signature: str) -> None:
+    _x(
+        "INSERT INTO teacher_profiles (user_id, org_name, signature, updated_at) VALUES (?,?,?,?) "
+        "ON CONFLICT(user_id) DO UPDATE SET org_name = excluded.org_name, signature = excluded.signature, "
+        "updated_at = excluded.updated_at",
+        (user_id, org_name.strip(), signature.strip(), _now()),
+    )
+
+
+def student_teachers(student_id: int) -> List[Dict[str, Any]]:
+    """Öğrencinin öğretmenleri (veli raporunda imza için)."""
+    return _q(
+        "SELECT DISTINCT u.id, u.name, c.name AS class_name, tp.org_name, tp.signature "
+        "FROM class_members m JOIN classes c ON c.id = m.class_id JOIN users u ON u.id = c.teacher_id "
+        "LEFT JOIN teacher_profiles tp ON tp.user_id = u.id WHERE m.user_id = ? ORDER BY c.name",
+        (student_id,),
+    )
+
+
+# ------------------------------------------------------------------------------
+# Öğretmen soru bankası (taslak → onaylı)
+# ------------------------------------------------------------------------------
+BANK_STATUSES = ("taslak", "onayli")
+
+
+def _bank_row(row: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+    if not row:
+        return None
+    try:
+        row["options"] = json.loads(row.get("options_json") or "{}")
+    except ValueError:
+        row["options"] = {}
+    return row
+
+
+def add_bank_questions(teacher_id: int, questions: List[Dict[str, Any]], grade: str = "", branch: str = "",
+                       outcome: str = "", difficulty: str = "", status: str = "taslak") -> List[int]:
+    if status not in BANK_STATUSES:
+        raise ValueError("Geçersiz durum.")
+    ids: List[int] = []
+    now = _now()
+    for q in questions:
+        stem = (q.get("stem") or "").strip()
+        options = {k: str(v).strip() for k, v in (q.get("options") or {}).items() if str(v).strip()}
+        if not stem or len(options) < 2:
+            continue
+        correct = (q.get("correct") or "").strip().upper() or None
+        ids.append(_insert_id(
+            "INSERT INTO bank_questions (teacher_id, grade, branch, outcome, difficulty, stem, options_json, "
+            "correct, explanation, status, created_at, updated_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)",
+            (teacher_id, grade, branch, q.get("outcome") or outcome, difficulty, stem,
+             json.dumps(options, ensure_ascii=False), correct, (q.get("explanation") or "").strip(),
+             status, now, now),
+        ))
+    return ids
+
+
+def list_bank_questions(teacher_id: int, status: Optional[str] = None, grade: Optional[str] = None,
+                        branch: Optional[str] = None, search: str = "") -> List[Dict[str, Any]]:
+    sql = "SELECT * FROM bank_questions WHERE teacher_id = ?"
+    params: List[Any] = [teacher_id]
+    if status:
+        sql += " AND status = ?"
+        params.append(status)
+    if grade:
+        sql += " AND grade = ?"
+        params.append(grade)
+    if branch:
+        sql += " AND branch = ?"
+        params.append(branch)
+    if search.strip():
+        sql += " AND (LOWER(stem) LIKE ? OR LOWER(outcome) LIKE ?)"
+        like = f"%{search.strip().lower()}%"
+        params += [like, like]
+    sql += " ORDER BY id DESC"
+    return [_bank_row(r) for r in _q(sql, tuple(params))]
+
+
+def get_bank_questions(teacher_id: int, ids: List[int]) -> List[Dict[str, Any]]:
+    if not ids:
+        return []
+    marks = ",".join("?" for _ in ids)
+    rows = _q(f"SELECT * FROM bank_questions WHERE teacher_id = ? AND id IN ({marks})", (teacher_id, *ids))
+    by_id = {r["id"]: _bank_row(r) for r in rows}
+    return [by_id[i] for i in ids if i in by_id]
+
+
+def update_bank_question(teacher_id: int, qid: int, stem: str, options: Dict[str, str], correct: Optional[str],
+                         explanation: str = "", outcome: Optional[str] = None) -> int:
+    options = {k: v.strip() for k, v in options.items() if v and v.strip()}
+    if not stem.strip():
+        raise ValueError("Soru kökü boş olamaz.")
+    if len(options) < 2:
+        raise ValueError("En az iki şık gerekli.")
+    if correct and correct not in options:
+        raise ValueError("Doğru cevap şıklardan biri olmalı.")
+    sql = "UPDATE bank_questions SET stem = ?, options_json = ?, correct = ?, explanation = ?, updated_at = ?"
+    params: List[Any] = [stem.strip(), json.dumps(options, ensure_ascii=False), correct or None, explanation.strip(), _now()]
+    if outcome is not None:
+        sql += ", outcome = ?"
+        params.append(outcome.strip())
+    sql += " WHERE id = ? AND teacher_id = ?"
+    params += [qid, teacher_id]
+    return _x(sql, tuple(params))
+
+
+def set_bank_status(teacher_id: int, qids: List[int], status: str) -> int:
+    if status not in BANK_STATUSES:
+        raise ValueError("Geçersiz durum.")
+    if not qids:
+        return 0
+    if status == "onayli":
+        # Cevabı belirsiz soru onaylanamaz
+        marks = ",".join("?" for _ in qids)
+        bad = _q(f"SELECT id FROM bank_questions WHERE teacher_id = ? AND id IN ({marks}) "
+                 "AND (correct IS NULL OR correct = '')", (teacher_id, *qids))
+        if bad:
+            raise ValueError(f"{len(bad)} sorunun doğru cevabı seçilmemiş; önce cevabı işaretleyin.")
+    marks = ",".join("?" for _ in qids)
+    return _x(f"UPDATE bank_questions SET status = ?, updated_at = ? WHERE teacher_id = ? AND id IN ({marks})",
+              (status, _now(), teacher_id, *qids))
+
+
+def delete_bank_questions(teacher_id: int, qids: List[int]) -> int:
+    if not qids:
+        return 0
+    marks = ",".join("?" for _ in qids)
+    return _x(f"DELETE FROM bank_questions WHERE teacher_id = ? AND id IN ({marks})", (teacher_id, *qids))
+
+
+def bank_counts(teacher_id: int) -> Dict[str, int]:
+    rows = _q("SELECT status, COUNT(*) AS n FROM bank_questions WHERE teacher_id = ? GROUP BY status", (teacher_id,))
+    out = {s: 0 for s in BANK_STATUSES}
+    for r in rows:
+        out[r["status"]] = int(r["n"])
+    return out
+
+
+def bank_filters(teacher_id: int) -> Dict[str, List[str]]:
+    grades = [r["grade"] for r in _q("SELECT DISTINCT grade FROM bank_questions WHERE teacher_id = ? AND grade <> '' ORDER BY grade", (teacher_id,))]
+    branches = [r["branch"] for r in _q("SELECT DISTINCT branch FROM bank_questions WHERE teacher_id = ? AND branch <> '' ORDER BY branch", (teacher_id,))]
+    return {"grades": grades, "branches": branches}
+
+
+def questions_to_text(questions: List[Dict[str, Any]]) -> str:
+    """Bankadaki soruları portalın çözebildiği metin biçimine çevirir (Soru N / A) ... / Cevap Anahtarı)."""
+    blocks: List[str] = []
+    key: List[str] = []
+    for i, q in enumerate(questions, start=1):
+        opts = "\n".join(f"{k}) {v}" for k, v in q["options"].items())
+        blocks.append(f"Soru {i}\n{q['stem']}\n{opts}")
+        if q.get("correct"):
+            key.append(f"{i}-{q['correct']}")
+    text = "\n\n".join(blocks)
+    if key:
+        text += "\n\nCevap Anahtarı\n" + "\n".join(key)
+    return text
+
+
 def class_overview(class_id: int) -> Dict[str, Any]:
     """Sınıf karşılaştırma paneli için kazanım ve öğrenci bazlı özet."""
     by_outcome = _q(
@@ -644,28 +895,37 @@ def log_report_sent(user_id: int, week: str) -> None:
 
 
 db = SimpleNamespace(
+    BANK_STATUSES=BANK_STATUSES,
     DB_PATH=DB_PATH,
     PG_URL=PG_URL,
     ROLES=ROLES,
     ROLE_LABELS=ROLE_LABELS,
     activity_days=activity_days,
+    add_bank_questions=add_bank_questions,
     add_exam_result=add_exam_result,
     assignment_results=assignment_results,
     authenticate=authenticate,
     award_badge=award_badge,
     backend=backend,
+    bank_counts=bank_counts,
+    bank_filters=bank_filters,
+    bulk_create_students=bulk_create_students,
     class_assignments=class_assignments,
     class_members=class_members,
     class_overview=class_overview,
+    class_parents=class_parents,
     configure=configure,
     create_assignment=create_assignment,
     create_class=create_class,
     create_payment=create_payment,
     create_user=create_user,
+    delete_bank_questions=delete_bank_questions,
     delete_state=delete_state,
     exam_count=exam_count,
     get_assignment=get_assignment,
+    get_bank_questions=get_bank_questions,
     get_payment=get_payment,
+    get_teacher_profile=get_teacher_profile,
     get_user=get_user,
     get_user_by_email=get_user_by_email,
     hash_password=hash_password,
@@ -673,19 +933,26 @@ db = SimpleNamespace(
     join_class=join_class,
     latest_pending_payment=latest_pending_payment,
     link_parent=link_parent,
+    list_bank_questions=list_bank_questions,
     list_parents_with_students=list_parents_with_students,
     load_state=load_state,
     log_report_sent=log_report_sent,
     mark_payment=mark_payment,
+    questions_to_text=questions_to_text,
     recent_exam_results=recent_exam_results,
     record_practice=record_practice,
+    remove_member=remove_member,
     report_already_sent=report_already_sent,
     save_state=save_state,
+    save_teacher_profile=save_teacher_profile,
+    set_bank_status=set_bank_status,
     set_daily_goal=set_daily_goal,
     student_assignments=student_assignments,
     student_classes=student_classes,
+    student_teachers=student_teachers,
     submit_assignment=submit_assignment,
     teacher_classes=teacher_classes,
+    update_bank_question=update_bank_question,
     update_grade=update_grade,
     user_badges=user_badges,
     verify_password=verify_password,
@@ -898,7 +1165,8 @@ def send_email(cfg: Dict[str, Any], to: str, subject: str, body: str,
 
 
 def weekly_report_text(brand: str, parent_name: str, student_name: str, stats: Dict[str, Any],
-                       streak_days: int, new_badges: List[str], weak_topic: str = "") -> str:
+                       streak_days: int, new_badges: List[str], weak_topic: str = "",
+                       teacher_line: str = "") -> str:
     lines = [
         f"Sayın {parent_name},",
         "",
@@ -916,7 +1184,10 @@ def weekly_report_text(brand: str, parent_name: str, student_name: str, stats: D
         lines += ["", f"Pekiştirilmesi önerilen konu: {weak_topic}"]
     if int(stats.get("weekly_solved", 0)) == 0:
         lines += ["", "Bu hafta platformda çalışma kaydı görünmüyor. Kısa da olsa günlük bir rutin önerilir."]
-    lines += ["", "Ayrıntılar için Veli Takip Paneli'ne göz atabilirsiniz.", "", brand]
+    lines += ["", "Ayrıntılar için Veli Takip Paneli'ne göz atabilirsiniz.", ""]
+    if teacher_line:
+        lines.append(f"Öğretmen: {teacher_line}")
+    lines.append(brand)
     return "\n".join(lines)
 
 
@@ -1215,6 +1486,7 @@ PAGES = [
     "Sınıflarım",
     "Profilim & Rozetler",
     "Fotoğrafla Çöz",
+    "Soru Bankam",
 ]
 
 # Hangi rol hangi sayfaları görür
@@ -1225,7 +1497,7 @@ ROLE_PAGES: Dict[str, List[str]] = {
     ],
     "veli": ["Ana Sayfa", "Veli Takip Paneli", "Öğrenci Röntgeni", "Paketler & Abonelik Vitrini", "Profilim & Rozetler"],
     "ogretmen": [
-        "Ana Sayfa", "Soru & Redaksiyon Fabrikası", "Sınıflarım", "Öğrenci Röntgeni",
+        "Ana Sayfa", "Soru & Redaksiyon Fabrikası", "Soru Bankam", "Sınıflarım", "Öğrenci Röntgeni",
         "B2B Lisans & Kurum", "Paketler & Abonelik Vitrini", "Profilim & Rozetler",
     ],
 }
@@ -1273,6 +1545,10 @@ PAGE_DESCRIPTIONS: Dict[str, Tuple[str, str]] = {
     "Fotoğrafla Çöz": (
         "Fotoğrafla Çöz",
         "Kitaptaki ya da defterdeki sorunun fotoğrafını yükle; Dijimentor önce ipucu versin ya da adım adım çözsün.",
+    ),
+    "Soru Bankam": (
+        "Soru Bankam: Taslak → Onay → Ödev",
+        "Yapay zekânın ürettiği sorular önce taslak olarak gelir. Siz düzeltip onaylarsınız; öğrenciye yalnızca onaylı soru gider.",
     ),
     "Sınıflarım": (
         "Sınıflarım, Ödevler & Sınıf Analizi",
@@ -1357,6 +1633,7 @@ NAV_GROUPS: List[Tuple[Optional[str], List[Tuple[str, str, str]]]] = [
     (None, [("Ana Sayfa", "Ana Sayfa", ":material/home:")]),
     ("Modüller", [
         ("Soru & Redaksiyon Fabrikası", "Soru & Redaksiyon", ":material/edit_note:"),
+        ("Soru Bankam", "Soru Bankam", ":material/inventory_2:"),
         ("Öğrenci Portalı & Çözüm", "Öğrenci Portalı", ":material/quiz:"),
         ("Fotoğrafla Çöz", "Fotoğrafla Çöz", ":material/photo_camera:"),
         ("Dijimentor", "Dijimentor", ":material/event_note:"),
@@ -4981,6 +5258,8 @@ def _login_form() -> None:
 
 
 def _register_form() -> None:
+    if st.session_state.get("reg_role_pending"):
+        st.session_state["reg_role"] = st.session_state.pop("reg_role_pending")
     role_label = st.radio(
         "Hesap türü", list(db.ROLE_LABELS.values()), horizontal=True, key="reg_role"
     )
@@ -5141,6 +5420,33 @@ def render_landing() -> None:
             f'<div class="kp-mod-desc" style="min-height:0;">{s_desc}</div></div>',
             unsafe_allow_html=True,
         )
+
+    st.markdown('<div class="kp-gap"></div>', unsafe_allow_html=True)
+    with st.container(border=True, key="card_teacher_landing"):
+        tl, tr_ = st.columns([1.4, 1], gap="large", vertical_alignment="center")
+        with tl:
+            st.markdown(
+                '<span class="kp-eyebrow">Öğretmenler ve etüt merkezleri için</span>'
+                '<h2 class="kp-section-title" style="margin-top:0.5rem;">Sınıfınız için soru hazırlayın, ödev verin, '
+                'veliye rapor gönderin.</h2>'
+                '<p class="kp-section-sub">Yapay zekâ taslağı hazırlar, siz kontrol edip onaylarsınız. '
+                'Öğrencilerinize yalnızca onayladığınız sorular gider.</p>',
+                unsafe_allow_html=True,
+            )
+            if st.button("Öğretmen olarak ücretsiz başla", key="landing_teacher", type="primary"):
+                st.session_state["reg_role_pending"] = db.ROLE_LABELS["ogretmen"]
+                st.session_state["post_login_page"] = ["Soru Bankam"]
+                st.session_state["post_login_title"] = "Öğretmen paneli"
+                st.rerun()
+        with tr_:
+            st.markdown(
+                '<div class="kp-preview-row"><span>Soru bankası</span><span>Taslak → onay → ödev</span></div>'
+                '<div class="kp-preview-row"><span>Öğrenci ekleme</span><span>Sınıf kodu ya da Excel listesi</span></div>'
+                '<div class="kp-preview-row"><span>Sınıf raporu</span><span>Kazanım bazlı başarı</span></div>'
+                '<div class="kp-preview-row"><span>Veli raporu</span><span>Sizin imzanızla</span></div>'
+                '<div class="kp-preview-row"><span>Basılı çıktı</span><span>Optik formlu kitapçık</span></div>',
+                unsafe_allow_html=True,
+            )
 
     st.markdown('<div class="kp-gap"></div>', unsafe_allow_html=True)
     st.markdown(
@@ -5583,10 +5889,59 @@ def greeting(sub: str) -> None:
     )
 
 
-def render_assign_popover(content: str, grade: str, branch: str, outcome: str, key: str) -> None:
-    """Öğretmen için: bu testi seçilen sınıfa ödev olarak ata."""
+def extract_explanation(full_text: str) -> str:
+    """Soru bloğundaki [Çözüm ...] kısmını ayıklar (redaksiyon notu hariç)."""
+    m = re.search(r"[\*\[]*\s*Çözüm[^\n\]:]*\]?\**\s*:?\s*(.*?)(?=\n\s*[\*\[]*\s*Redaksiyon|\Z)",
+                  full_text, flags=re.IGNORECASE | re.DOTALL)
+    return m.group(1).strip().strip("*").strip() if m else ""
+
+
+def _strip_q_header(stem: str) -> str:
+    """'Soru 3' / '**3.**' gibi numara başlığını kökten ayıklar."""
+    out = re.sub(r"^\s*(?:#{1,6}\s*)?(?:\*\*)?\s*(?:Soru\s*\d+|\d+\s*(?:\.\s*Soru|[\.\)]))\s*[\.:\-–]?\s*(?:\*\*)?\s*",
+                 "", stem, count=1, flags=re.IGNORECASE)
+    return out.strip() or stem.strip()
+
+
+def add_text_to_bank(content: str, grade: str, branch: str, outcome: str, difficulty: str = "") -> Tuple[int, int]:
+    """Üretilen test metnini sorulara bölüp öğretmenin bankasına TASLAK olarak ekler. (eklenen, cevapsız)"""
+    parsed = parse_quiz_questions(content)
+    items = [
+        {"stem": _strip_q_header(q["stem"]), "options": q["options"], "correct": q.get("correct"),
+         "explanation": extract_explanation(q.get("full_text", ""))}
+        for q in parsed
+    ]
+    ids = db.add_bank_questions(USER["id"], items, grade, branch, outcome, difficulty, status="taslak")
+    missing = sum(1 for it in items if not it.get("correct"))
+    return len(ids), missing
+
+
+def teacher_brand() -> Tuple[str, str]:
+    """(kurum adı, imza) — öğretmen profilinden, boşsa varsayılanlar."""
+    prof = db.get_teacher_profile(USER["id"]) if ROLE == "ogretmen" else {}
+    return (prof.get("org_name") or BRAND_NAME, prof.get("signature") or USER["name"])
+
+
+def render_assign_popover(content: str, grade: str, branch: str, outcome: str, key: str, difficulty: str = "") -> None:
+    """Öğretmen için: test önce Soru Bankası'na taslak olarak gider; ödev yalnızca onaylı sorulardan atanır."""
     if ROLE != "ogretmen":
         return
+    if st.button("Soru Bankama taslak ekle", key=f"to_bank_{key}", type="primary",
+                 use_container_width=True, icon=":material/inventory_2:"):
+        added, missing = add_text_to_bank(content, grade, branch, outcome, difficulty)
+        if not added:
+            st.error("Bu metinde soru bulunamadı (Soru 1 ... A) B) C) D) biçimi gerekli).")
+        else:
+            msg = f"{added} soru taslak olarak eklendi. Soru Bankam'da kontrol edip onaylayın."
+            if missing:
+                msg += f" {missing} sorunun cevabı okunamadı; onaydan önce işaretleyin."
+            record_activity("Soru Bankam", f"{added} taslak soru eklendi")
+            st.session_state["bank_flash"] = msg
+            navigate_to("Soru Bankam")
+
+
+def render_class_assign_form(content: str, grade: str, branch: str, outcome: str, key: str) -> None:
+    """Onaylı sorulardan oluşan metni sınıfa ödev olarak atar."""
     classes = db.teacher_classes(USER["id"])
     with st.popover("Sınıfa ödev ata", use_container_width=True):
         if not classes:
@@ -5603,6 +5958,92 @@ def render_assign_popover(content: str, grade: str, branch: str, outcome: str, k
             db.create_assignment(cls_map[cls_label], title, content, grade, branch, outcome, due.isoformat())
             record_activity("Ödev", f"{title} → {cls_label}")
             st.success("Ödev atandı. Öğrenciler portaldaki Ödevlerim sekmesinde görecek.")
+
+
+def parse_student_list(text: str, upload: Any = None) -> List[Dict[str, str]]:
+    """Serbest metin ya da CSV/XLSX'ten [{"name", "email"}] listesi."""
+    raw_rows: List[List[str]] = []
+    if upload is not None:
+        import pandas as pd
+
+        try:
+            if upload.name.lower().endswith(".xlsx"):
+                df = pd.read_excel(upload, header=None, dtype=str)
+            else:
+                data = upload.getvalue().decode("utf-8-sig", errors="replace")
+                sep = ";" if data.count(";") > data.count(",") else ","
+                df = pd.read_csv(io.StringIO(data), header=None, dtype=str, sep=sep)
+            raw_rows += [[str(v) if str(v) != "nan" else "" for v in row] for row in df.fillna("").values.tolist()]
+        except Exception as exc:
+            st.error(f"Dosya okunamadı: {exc}")
+    for line in (text or "").splitlines():
+        if line.strip():
+            raw_rows.append(re.split(r"[;,\t]", line))
+    out: List[Dict[str, str]] = []
+    seen: set = set()
+    for cells in raw_rows:
+        cells = [c.strip() for c in cells if c is not None]
+        if not cells or not cells[0]:
+            continue
+        name = cells[0]
+        if name.lower() in ("ad soyad", "ad", "isim", "öğrenci", "ogrenci", "name"):
+            continue  # başlık satırı
+        email = next((c for c in cells[1:] if "@" in c), "")
+        k = (name.lower(), email.lower())
+        if k in seen:
+            continue
+        seen.add(k)
+        out.append({"name": name, "email": email})
+    return out
+
+
+def render_bank_editor(q: Dict[str, Any]) -> None:
+    """Taslak sorunun düzenleme kartı: düzelt, cevabı işaretle, onayla ya da sil."""
+    qid = q["id"]
+    letters = sorted(set(["A", "B", "C", "D"]) | set(q["options"].keys()))
+    with st.container(border=True, key=f"card_bq_{qid}"):
+        st.caption(" · ".join(x for x in [f"#{qid}", q.get("grade"), q.get("branch"), q.get("difficulty")] if x))
+        with st.form(f"bq_form_{qid}", border=False):
+            outcome = st.text_input("Kazanım", value=q.get("outcome") or "", key=f"bq_out_{qid}")
+            stem = st.text_area("Soru kökü", value=q["stem"], height=120, key=f"bq_stem_{qid}")
+            opt_cols = st.columns(2)
+            opts: Dict[str, str] = {}
+            for i, letter in enumerate(letters):
+                with opt_cols[i % 2]:
+                    opts[letter] = st.text_input(f"{letter})", value=q["options"].get(letter, ""), key=f"bq_{qid}_{letter}")
+            cur = q.get("correct")
+            correct = st.radio("Doğru cevap", letters, index=letters.index(cur) if cur in letters else None,
+                               horizontal=True, key=f"bq_ok_{qid}")
+            if cur not in letters:
+                st.warning("Cevap anahtarı okunamadı. Doğru şıkkı işaretleyin.")
+            expl = st.text_area("Çözüm / açıklama (öğrenciye gösterilmez, sizin notunuz)",
+                                value=q.get("explanation") or "", height=80, key=f"bq_ex_{qid}")
+            b1, b2, b3 = st.columns(3)
+            approve = b1.form_submit_button("Kaydet ve onayla", type="primary", use_container_width=True)
+            save = b2.form_submit_button("Sadece kaydet", use_container_width=True)
+            remove = b3.form_submit_button("Sil", use_container_width=True)
+        if approve or save:
+            try:
+                db.update_bank_question(USER["id"], qid, stem, opts, correct, expl, outcome)
+                if approve:
+                    db.set_bank_status(USER["id"], [qid], "onayli")
+                    st.toast(f"#{qid} onaylandı.")
+                st.rerun()
+            except ValueError as exc:
+                st.error(str(exc))
+        if remove:
+            db.delete_bank_questions(USER["id"], [qid])
+            st.rerun()
+
+
+def _bank_meta(chosen: List[Dict[str, Any]]) -> Tuple[str, str, str]:
+    grades = list(dict.fromkeys(q.get("grade") or "" for q in chosen))
+    branches = list(dict.fromkeys(q.get("branch") or "" for q in chosen))
+    outcomes = list(dict.fromkeys(q.get("outcome") or "" for q in chosen if q.get("outcome")))
+    grade = grades[0] if len(grades) == 1 else "Karma"
+    branch = branches[0] if len(branches) == 1 else "Karma"
+    outcome = outcomes[0] if len(outcomes) == 1 else "; ".join(outcomes)[:120]
+    return grade, branch, outcome
 
 
 def booklet_download(content: str, title: str, meta: str, key: str) -> None:
@@ -5854,6 +6295,18 @@ if current_page == "Ana Sayfa":
     else:
         classes = db.teacher_classes(USER["id"])
         greeting("Sınıflarınız ve ödevleriniz tek ekranda.")
+        _bc = db.bank_counts(USER["id"])
+        if _bc["taslak"]:
+            hb1, hb2 = st.columns([4, 1], vertical_alignment="center")
+            with hb1:
+                st.markdown(
+                    f'<div class="kp-banner kp-banner-hw"><b>{_bc["taslak"]} soru</b> onayınızı bekliyor. '
+                    f'Onaylı soru sayınız: <b>{_bc["onayli"]}</b>.</div>',
+                    unsafe_allow_html=True,
+                )
+            with hb2:
+                if st.button("İncele", key="home_bank", type="primary", use_container_width=True):
+                    navigate_to("Soru Bankam")
         if not classes:
             with st.container(border=True, key="card_first_class"):
                 st.markdown(
@@ -6099,7 +6552,8 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
                     "gen",
                 )
             with act_c6:
-                render_assign_popover(st.session_state.generated_test_text, grade, branch, outcome, "gen")
+                render_assign_popover(st.session_state.generated_test_text, grade, branch, outcome, "gen",
+                                      str(st.session_state.get("last_fab_meta", {}).get("difficulty", "")))
 
     with tab_bank:
         bank_items: List[Dict[str, str]] = st.session_state.get("question_bank_2028", [])
@@ -6135,7 +6589,8 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
                     with bc2:
                         booklet_download(b_item["content"], "Deneme", f"{b_item['grade']} · {b_item['branch']}", b_item["id"])
                     with bc3:
-                        render_assign_popover(b_item["content"], b_item["grade"], b_item["branch"], b_item["outcome"], b_item["id"])
+                        render_assign_popover(b_item["content"], b_item["grade"], b_item["branch"], b_item["outcome"], b_item["id"],
+                                          b_item.get("difficulty", ""))
 
 # ==============================================================================
 # 3. ÖĞRENCİ PORTALI & ÇÖZÜM (+ SÜRE TAKİBİ + HATA DEFTERİ)
@@ -6819,9 +7274,12 @@ elif current_page == "Veli Takip Paneli":
         smtp_cfg = dict(st.secrets.get("smtp", {}))
     except Exception:
         smtp_cfg = {}
+    _teachers = db.student_teachers(LIVE_STUDENT_ID)
     report_body = reports.weekly_report_text(
-        BRAND_NAME, USER["name"], stats_now["student_name"], this_week, child_prog["streak"], [],
+        (_teachers[0].get("org_name") if _teachers else None) or BRAND_NAME,
+        USER["name"], stats_now["student_name"], this_week, child_prog["streak"], [],
         str(stats_now.get("weak_topic", "")),
+        teacher_line=", ".join(f"{t.get('signature') or t['name']} ({t['class_name']})" for t in _teachers),
     )
     with st.expander("Raporu önizle"):
         st.text(report_body)
@@ -7171,7 +7629,7 @@ elif current_page == "Sınıflarım":
         unsafe_allow_html=True,
     )
 
-    t_over, t_assign, t_members = st.tabs(["Sınıf analizi", "Ödevler", "Öğrenciler"])
+    t_over, t_assign, t_members, t_parents = st.tabs(["Sınıf analizi", "Ödevler", "Öğrenciler", "Veli raporları"])
 
     with t_over:
         ov = db.class_overview(sel_id)
@@ -7226,12 +7684,17 @@ elif current_page == "Sınıflarım":
         )
 
     with t_assign:
-        st.caption("Yeni ödev atamak için Soru & Redaksiyon Fabrikası'nda test üretip **Sınıfa ödev ata** butonunu kullanın.")
-        if st.button("Soru Fabrikasına git", key="cls_to_factory", icon=":material/edit_note:"):
-            if cls.get("grade"):
-                st.session_state["factory_grade"] = cls["grade"]
-                st.session_state["factory_grade_sync"] = True
-            navigate_to("Soru & Redaksiyon Fabrikası")
+        st.caption("Ödevler yalnızca onayladığınız sorulardan oluşur: **Soru Bankam → Onaylı sorular** sekmesinden seçip atayın.")
+        ac1, ac2, _ = st.columns([1, 1, 2])
+        with ac1:
+            if st.button("Soru Bankam'a git", key="cls_to_bank", icon=":material/inventory_2:", use_container_width=True):
+                navigate_to("Soru Bankam")
+        with ac2:
+            if st.button("Yeni soru üret", key="cls_to_factory", icon=":material/edit_note:", use_container_width=True):
+                if cls.get("grade"):
+                    st.session_state["factory_grade"] = cls["grade"]
+                    st.session_state["factory_grade_sync"] = True
+                navigate_to("Soru & Redaksiyon Fabrikası")
         assignments = db.class_assignments(sel_id)
         if not assignments:
             st.info("Bu sınıfa henüz ödev atanmadı.")
@@ -7257,13 +7720,66 @@ elif current_page == "Sınıflarım":
 
     with t_members:
         members = db.class_members(sel_id)
+        with st.expander("Toplu öğrenci ekle (liste ya da Excel/CSV)", icon=":material/group_add:",
+                         expanded=not members):
+            st.caption(
+                "Her satıra bir öğrenci yazın: **Ad Soyad** ya da **Ad Soyad, e-posta**. E-postası olmayan öğrenciye "
+                "giriş adresi ve geçici şifre üretilir; listeyi indirip öğrencilere dağıtın."
+            )
+            bulk_txt = st.text_area("Öğrenci listesi", height=140, key=f"bulk_txt_{sel_id}",
+                                    placeholder="Elif Öztürk\nEmir Demir, emir@ornek.com")
+            bulk_file = st.file_uploader("ya da dosya yükleyin (1. sütun ad soyad, 2. sütun e-posta)",
+                                         type=["csv", "xlsx"], key=f"bulk_file_{sel_id}")
+            bulk_ok = st.checkbox(
+                "Bu öğrencilerin (ve 18 yaş altıysa velilerinin) KVKK kapsamında bilgilendirildiğini, hesapları "
+                "kurumum adına açtığımı beyan ederim.",
+                key=f"bulk_ok_{sel_id}",
+            )
+            if st.button("Hesapları oluştur ve sınıfa ekle", key=f"bulk_btn_{sel_id}", type="primary",
+                         disabled=not bulk_ok):
+                rows = parse_student_list(bulk_txt, bulk_file)
+                if not rows:
+                    st.error("Listede öğrenci bulunamadı.")
+                elif len(rows) > 200:
+                    st.error("Tek seferde en fazla 200 öğrenci eklenebilir.")
+                else:
+                    with st.spinner(f"{len(rows)} hesap hazırlanıyor..."):
+                        st.session_state[f"bulk_result_{sel_id}"] = db.bulk_create_students(
+                            USER["id"], sel_id, rows, cls.get("grade"))
+                    record_activity("Sınıflarım", f"{cls['name']}: {len(rows)} öğrenci toplu eklendi")
+                    st.rerun()
+            bulk_res = st.session_state.get(f"bulk_result_{sel_id}")
+            if bulk_res:
+                made = [r for r in bulk_res if r["password"]]
+                st.success(f"{len(made)} yeni hesap açıldı, {len(bulk_res) - len(made)} satır ayrıca işlendi.")
+                st.dataframe(
+                    [{"Öğrenci": r["name"], "Giriş e-postası": r["email"], "Geçici şifre": r["password"] or "—",
+                      "Durum": r["status"]} for r in bulk_res],
+                    use_container_width=True, hide_index=True,
+                )
+                csv_buf = io.StringIO()
+                csv_buf.write("Ad Soyad;Giriş e-postası;Geçici şifre;Durum\n")
+                for r in bulk_res:
+                    csv_buf.write(f"{r['name']};{r['email']};{r['password']};{r['status']}\n")
+                st.download_button(
+                    "Giriş bilgilerini indir (Excel'de açılır)",
+                    data=csv_buf.getvalue().encode("utf-8-sig"),
+                    file_name=f"{cls['name']}_giris_bilgileri.csv".replace(" ", "_"),
+                    mime="text/csv", key=f"bulk_dl_{sel_id}", icon=":material/download:",
+                )
+                st.caption("Şifreler yalnızca şimdi görünür; güvenli biçimde dağıttıktan sonra bu listeyi silin.")
+                if st.button("Listeyi kapat", key=f"bulk_close_{sel_id}"):
+                    st.session_state.pop(f"bulk_result_{sel_id}", None)
+                    st.rerun()
+
         if not members:
-            st.info(f"Henüz öğrenci katılmadı. Sınıf kodunu paylaşın: {cls['code']}")
+            st.info(f"Henüz öğrenci yok. Sınıf kodunu paylaşın: {cls['code']} ya da yukarıdan toplu ekleyin.")
         else:
             st.dataframe(
                 [
                     {
                         "Öğrenci": m["name"],
+                        "Giriş": m["email"],
                         "Sınıf": m.get("grade") or "—",
                         "Seri (gün)": user_progress(m["id"])["streak"],
                         "Bu hafta soru": db.weekly_stats(m["id"])["weekly_solved"],
@@ -7273,6 +7789,201 @@ elif current_page == "Sınıflarım":
                 use_container_width=True,
                 hide_index=True,
             )
+            with st.popover("Öğrenciyi sınıftan çıkar"):
+                rm_map = {f"{m['name']} ({m['email']})": m["id"] for m in members}
+                rm_sel = st.selectbox("Öğrenci", list(rm_map.keys()), key=f"rm_sel_{sel_id}")
+                if st.button("Çıkar", key=f"rm_btn_{sel_id}", type="primary"):
+                    db.remove_member(USER["id"], sel_id, rm_map[rm_sel])
+                    st.rerun()
+
+    with t_parents:
+        parents = db.class_parents(sel_id)
+        org_name, signature = teacher_brand()
+        st.caption(
+            f"Raporlar **{signature} · {org_name}** imzasıyla gider. İmza ve kurum adını **Profilim** sayfasından "
+            "değiştirebilirsiniz. Veli, çocuğunun Profil sayfasındaki bağlantı koduyla hesabını bağlamalıdır."
+        )
+        if not parents:
+            st.info("Bu sınıfta hesabını bağlamış veli yok henüz.")
+        else:
+            try:
+                smtp_cfg_t = dict(st.secrets.get("smtp", {}))
+            except Exception:
+                smtp_cfg_t = {}
+            reports_by_parent = []
+            for pr in parents:
+                wk = db.weekly_stats(pr["student_id"])
+                body = reports.weekly_report_text(
+                    org_name, pr["parent_name"], pr["student_name"], wk,
+                    user_progress(pr["student_id"])["streak"], [], "",
+                    teacher_line=f"{signature} ({cls['name']})",
+                )
+                reports_by_parent.append((pr, wk, body))
+            st.dataframe(
+                [{"Öğrenci": pr["student_name"], "Veli": pr["parent_name"], "Bu hafta soru": wk["weekly_solved"],
+                  "Doğruluk (%)": wk["accuracy"], "Rapor bu hafta": "Gönderildi" if db.report_already_sent(pr["parent_id"], db.week_key()) else "—"}
+                 for pr, wk, _ in reports_by_parent],
+                use_container_width=True, hide_index=True,
+            )
+            if st.button(f"Tüm velilere e-posta gönder ({len(parents)})", key=f"mail_all_{sel_id}", type="primary",
+                         disabled=not reports.smtp_ready(smtp_cfg_t)):
+                sent, failed = 0, 0
+                for pr, _, body in reports_by_parent:
+                    if db.report_already_sent(pr["parent_id"], db.week_key()):
+                        continue
+                    try:
+                        reports.send_email(smtp_cfg_t, pr["parent_email"],
+                                           f"{org_name} • {pr['student_name']} haftalık özet", body)
+                        db.log_report_sent(pr["parent_id"], db.week_key())
+                        sent += 1
+                    except Exception:
+                        failed += 1
+                st.success(f"{sent} rapor gönderildi." + (f" {failed} gönderim başarısız." if failed else ""))
+            if not reports.smtp_ready(smtp_cfg_t):
+                st.caption("Toplu e-posta için Secrets'a [smtp] bölümü eklenmeli. O zamana kadar WhatsApp ile tek tek gönderebilirsiniz.")
+            for pr, _, body in reports_by_parent:
+                with st.expander(f"{pr['student_name']} → {pr['parent_name']}"):
+                    st.text(body)
+                    st.link_button("WhatsApp ile gönder", "https://wa.me/?text=" + urllib.parse.quote(body))
+
+# ==============================================================================
+# 11. SORU BANKAM (ÖĞRETMEN: TASLAK → ONAY → ÖDEV)
+# ==============================================================================
+elif current_page == "Soru Bankam":
+    if st.session_state.get("bank_flash"):
+        st.success(st.session_state.pop("bank_flash"))
+    counts = db.bank_counts(USER["id"])
+    flt = db.bank_filters(USER["id"])
+    m1, m2, m3 = st.columns(3)
+    m1.metric("Onay bekleyen", counts["taslak"])
+    m2.metric("Onaylı soru", counts["onayli"])
+    with m3:
+        if st.button("Yeni soru üret", key="bank_to_factory", icon=":material/edit_note:", use_container_width=True):
+            navigate_to("Soru & Redaksiyon Fabrikası")
+    f1, f2, f3 = st.columns([1, 1, 2])
+    with f1:
+        f_grade = st.selectbox("Sınıf düzeyi", ["Tümü"] + flt["grades"], key="bk_f_grade")
+    with f2:
+        f_branch = st.selectbox("Branş", ["Tümü"] + flt["branches"], key="bk_f_branch")
+    with f3:
+        f_search = st.text_input("Ara (soru kökü ya da kazanım)", key="bk_f_search")
+    fg = None if f_grade == "Tümü" else f_grade
+    fb = None if f_branch == "Tümü" else f_branch
+
+    t_draft, t_ok, t_new = st.tabs(
+        [f"Onay bekleyen ({counts['taslak']})", f"Onaylı sorular ({counts['onayli']})", "Elle soru yaz"]
+    )
+
+    with t_draft:
+        drafts = db.list_bank_questions(USER["id"], "taslak", fg, fb, f_search)
+        if not drafts:
+            st.info("Onay bekleyen soru yok. Soru & Redaksiyon'da test üretip **Soru Bankama taslak ekle** deyin.")
+        else:
+            st.caption(
+                "Yapay zekâ bazen yanlış cevap anahtarı ya da hatalı şık üretebilir. Her soruyu okuyup "
+                "düzeltin; öğrencilere yalnızca onayladığınız sorular gider."
+            )
+            ready = [q["id"] for q in drafts if q.get("correct")]
+            if ready:
+                with st.popover(f"Cevabı işaretli {len(ready)} soruyu toplu onayla"):
+                    st.markdown("Bu soruları **okuduğunuzu ve kontrol ettiğinizi** onaylıyor musunuz?")
+                    if st.button("Evet, hepsini onayla", key="bank_bulk_ok", type="primary"):
+                        db.set_bank_status(USER["id"], ready, "onayli")
+                        st.rerun()
+            for q in drafts[:25]:
+                render_bank_editor(q)
+            if len(drafts) > 25:
+                st.caption(f"İlk 25 taslak gösteriliyor ({len(drafts)} toplam). Onayladıkça sıradakiler gelir.")
+
+    with t_ok:
+        approved = db.list_bank_questions(USER["id"], "onayli", fg, fb, f_search)
+        if not approved:
+            st.info("Henüz onaylı soru yok. Taslakları kontrol edip onaylayın ya da **Elle soru yaz** sekmesini kullanın.")
+        else:
+            shown = approved[:100]
+            sa1, sa2, _ = st.columns([1, 1, 2])
+            with sa1:
+                if st.button("Görünenlerin tümünü seç", key="bank_sel_all", use_container_width=True):
+                    for q in shown:
+                        st.session_state[f"bsel_{q['id']}"] = True
+            with sa2:
+                if st.button("Seçimi temizle", key="bank_sel_none", use_container_width=True):
+                    for q in shown:
+                        st.session_state[f"bsel_{q['id']}"] = False
+            for q in shown:
+                ck, body = st.columns([0.05, 0.95], vertical_alignment="top")
+                with ck:
+                    st.checkbox("Seç", key=f"bsel_{q['id']}", label_visibility="collapsed")
+                with body:
+                    with st.expander(f"#{q['id']} · {(q.get('branch') or '')} · {q['stem'][:90]}"):
+                        if q.get("outcome"):
+                            st.caption(f"Kazanım: {q['outcome']}")
+                        st.markdown(q["stem"])
+                        st.markdown("\n".join(
+                            f"- **{k})** {v}" + ("  ✓" if k == q.get("correct") else "") for k, v in q["options"].items()
+                        ))
+                        if q.get("explanation"):
+                            st.caption(f"Çözüm notu: {q['explanation']}")
+                        if st.button("Düzenlemek için taslağa al", key=f"bq_back_{q['id']}"):
+                            db.set_bank_status(USER["id"], [q["id"]], "taslak")
+                            st.rerun()
+            if len(approved) > 100:
+                st.caption(f"İlk 100 soru gösteriliyor ({len(approved)} toplam). Filtreleri kullanın.")
+
+            chosen = [q for q in shown if st.session_state.get(f"bsel_{q['id']}")]
+            st.markdown("---")
+            if not chosen:
+                st.caption("Ödev ya da kitapçık için yukarıdan soru seçin.")
+            else:
+                st.markdown(f"**Seçili {len(chosen)} soru**")
+                sel_text = db.questions_to_text(chosen)
+                c_grade, c_branch, c_outcome = _bank_meta(chosen)
+                org_name, _sig = teacher_brand()
+                x1, x2, x3 = st.columns(3)
+                with x1:
+                    render_class_assign_form(sel_text, c_grade, c_branch, c_outcome, "bank")
+                with x2:
+                    booklet_download(sel_text, f"{org_name} Deneme", f"{c_grade} · {c_branch}", "bank")
+                with x3:
+                    with st.popover("Seçilenleri sil", use_container_width=True):
+                        st.markdown(f"{len(chosen)} soru kalıcı olarak silinecek.")
+                        if st.button("Sil", key="bank_del_sel", type="primary"):
+                            db.delete_bank_questions(USER["id"], [q["id"] for q in chosen])
+                            for q in chosen:
+                                st.session_state.pop(f"bsel_{q['id']}", None)
+                            st.rerun()
+
+    with t_new:
+        st.caption("Kendi yazdığınız sorular doğrudan onaylı olarak bankaya eklenir.")
+        with st.form("bank_manual", clear_on_submit=True):
+            n1, n2 = st.columns(2)
+            with n1:
+                mn_grade = st.selectbox("Sınıf düzeyi", GRADE_LEVELS_2027, index=3, key="mn_grade")
+            with n2:
+                mn_branch = st.text_input("Branş", placeholder="Örn: Matematik", key="mn_branch")
+            mn_outcome = st.text_input("Kazanım", key="mn_outcome")
+            mn_stem = st.text_area("Soru kökü", height=120, key="mn_stem")
+            mo_cols = st.columns(2)
+            mn_opts: Dict[str, str] = {}
+            for i, letter in enumerate(["A", "B", "C", "D"]):
+                with mo_cols[i % 2]:
+                    mn_opts[letter] = st.text_input(f"{letter})", key=f"mn_{letter}")
+            mn_correct = st.radio("Doğru cevap", ["A", "B", "C", "D"], index=None, horizontal=True, key="mn_correct")
+            mn_expl = st.text_area("Çözüm notu (isteğe bağlı)", height=70, key="mn_expl")
+            if st.form_submit_button("Bankaya ekle", type="primary"):
+                filled = {k: v for k, v in mn_opts.items() if v.strip()}
+                if not mn_stem.strip() or len(filled) < 2:
+                    st.error("Soru kökü ve en az iki şık gerekli.")
+                elif not mn_correct or mn_correct not in filled:
+                    st.error("Doğru cevabı (dolu bir şık) işaretleyin.")
+                else:
+                    db.add_bank_questions(
+                        USER["id"],
+                        [{"stem": mn_stem, "options": filled, "correct": mn_correct, "explanation": mn_expl}],
+                        mn_grade, mn_branch.strip(), mn_outcome.strip(), "", status="onayli",
+                    )
+                    record_activity("Soru Bankam", "Elle soru eklendi")
+                    st.success("Soru onaylı olarak eklendi.")
 
 # ==============================================================================
 # 10. PROFİLİM & ROZETLER
@@ -7311,6 +8022,16 @@ elif current_page == "Profilim & Rozetler":
                         st.rerun()
                     except ValueError as exc:
                         st.error(str(exc))
+            elif ROLE == "ogretmen":
+                tprof = db.get_teacher_profile(USER["id"])
+                t_org = st.text_input("Kurum / okul adı", value=tprof.get("org_name") or "",
+                                      placeholder="Örn: Başarı Etüt Merkezi", key="pf_org")
+                t_sig = st.text_input("Rapor imzası", value=tprof.get("signature") or USER["name"],
+                                      placeholder="Örn: Ayşe Yılmaz – Matematik Öğretmeni", key="pf_sig")
+                st.caption("Veli raporlarında ve basılı kitapçıklarda bu bilgiler kullanılır.")
+                if st.button("Kaydet", key="pf_t_save", type="primary"):
+                    db.save_teacher_profile(USER["id"], t_org, t_sig)
+                    st.success("Kurum ve imza bilgileri kaydedildi.")
             plan_now = get_active_plan()
             exp = plan_now.get("expires_at")
             st.caption(
