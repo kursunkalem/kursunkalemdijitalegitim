@@ -151,6 +151,15 @@ CREATE TABLE IF NOT EXISTS bank_questions (
     updated_at TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_bank_teacher ON bank_questions (teacher_id, status);
+CREATE TABLE IF NOT EXISTS password_resets (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    code_hash TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    expires_at TEXT NOT NULL,
+    attempts INTEGER NOT NULL DEFAULT 0,
+    used_at TEXT
+);
 CREATE TABLE IF NOT EXISTS teacher_profiles (
     user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
     org_name TEXT,
@@ -172,7 +181,10 @@ def _now() -> str:
 
 _TABLES = ["users", "user_state", "activity_days", "exam_results", "badges", "classes",
            "class_members", "assignments", "submissions", "payments", "report_log",
-           "bank_questions", "teacher_profiles"]
+           "bank_questions", "teacher_profiles", "password_resets"]
+
+# Var olan veritabanlarına sonradan eklenen sütunlar: (tablo, sütun, tür)
+_MIGRATIONS = [("assignments", "video_url", "TEXT")]
 
 # Postgres şeması SQLite şemasından türetilir (tek kaynak, iki lehçe)
 _SCHEMA_PG = (
@@ -266,10 +278,17 @@ def init_db() -> None:
         if PG_URL:
             with _pg().cursor() as cur:
                 cur.execute(_SCHEMA_PG)
+                for table, col, typ in _MIGRATIONS:
+                    cur.execute(f"ALTER TABLE {table} ADD COLUMN IF NOT EXISTS {col} {typ}")
             return
         conn = _sqlite()
         try:
             conn.executescript(_SCHEMA_SQLITE)
+            for table, col, typ in _MIGRATIONS:
+                cols = {r[1] for r in conn.execute(f"PRAGMA table_info({table})").fetchall()}
+                if col not in cols:
+                    conn.execute(f"ALTER TABLE {table} ADD COLUMN {col} {typ}")
+            conn.commit()
         finally:
             conn.close()
 
@@ -342,6 +361,79 @@ def authenticate(email: str, password: str) -> Optional[Dict[str, Any]]:
     if row and verify_password(password, row["pw_hash"]):
         return _public(row)
     return None
+
+
+def _set_password(user_id: int, new_password: str) -> None:
+    if len(new_password) < 8:
+        raise ValueError("Şifre en az 8 karakter olmalı.")
+    _x("UPDATE users SET pw_hash = ? WHERE id = ?", (hash_password(new_password), user_id))
+
+
+def change_password(user_id: int, old_password: str, new_password: str) -> None:
+    row = _q("SELECT pw_hash FROM users WHERE id = ?", (user_id,), one=True)
+    if not row or not verify_password(old_password, row["pw_hash"]):
+        raise ValueError("Mevcut şifre hatalı.")
+    _set_password(user_id, new_password)
+
+
+def _code_hash(code: str) -> str:
+    return hashlib.sha256(code.strip().upper().encode("utf-8")).hexdigest()
+
+
+RESET_TTL_MIN = 30
+RESET_MAX_ATTEMPTS = 5
+GENERATED_EMAIL_DOMAIN = "@ogrenci.kursunkalem"
+
+
+def create_reset_code(email: str) -> Optional[Tuple[Dict[str, Any], str]]:
+    """Kayıtlı e-posta için 8 haneli kod üretir; kayıt yoksa None (ekranda bunu belli etme)."""
+    user = get_user_by_email(email)
+    if not user or user["email"].endswith(GENERATED_EMAIL_DOMAIN):
+        return None
+    last = _q("SELECT created_at FROM password_resets WHERE user_id = ? ORDER BY id DESC LIMIT 1",
+              (user["id"],), one=True)
+    if last and last["created_at"] > (datetime.now() - timedelta(seconds=60)).isoformat(timespec="seconds"):
+        raise ValueError("Yeni kod istemek için bir dakika bekleyin.")
+    _x("UPDATE password_resets SET used_at = ? WHERE user_id = ? AND used_at IS NULL", (_now(), user["id"]))
+    code = _new_code(8)
+    _insert_id(
+        "INSERT INTO password_resets (user_id, code_hash, created_at, expires_at) VALUES (?,?,?,?)",
+        (user["id"], _code_hash(code), _now(),
+         (datetime.now() + timedelta(minutes=RESET_TTL_MIN)).isoformat(timespec="seconds")),
+    )
+    return user, code
+
+
+def reset_password_with_code(email: str, code: str, new_password: str) -> None:
+    generic = "Kod hatalı ya da süresi dolmuş. Yeni kod isteyin."
+    user = get_user_by_email(email)
+    if not user:
+        raise ValueError(generic)
+    row = _q("SELECT * FROM password_resets WHERE user_id = ? AND used_at IS NULL ORDER BY id DESC LIMIT 1",
+             (user["id"],), one=True)
+    if not row or row["expires_at"] < _now() or int(row["attempts"]) >= RESET_MAX_ATTEMPTS:
+        raise ValueError(generic)
+    if not hmac.compare_digest(row["code_hash"], _code_hash(code)):
+        _x("UPDATE password_resets SET attempts = attempts + 1 WHERE id = ?", (row["id"],))
+        raise ValueError(generic)
+    _set_password(user["id"], new_password)
+    _x("UPDATE password_resets SET used_at = ? WHERE id = ?", (_now(), row["id"]))
+
+
+def teacher_reset_student_password(teacher_id: int, student_id: int) -> str:
+    """Öğretmen, kendi sınıfındaki ve e-postası olmayan (toplu açılmış) öğrencinin şifresini sıfırlar."""
+    row = _q(
+        "SELECT u.id, u.email FROM users u JOIN class_members m ON m.user_id = u.id "
+        "JOIN classes c ON c.id = m.class_id WHERE u.id = ? AND u.role = 'ogrenci' AND c.teacher_id = ?",
+        (student_id, teacher_id), one=True,
+    )
+    if not row:
+        raise ValueError("Bu öğrenci sınıflarınızda değil.")
+    if not row["email"].endswith(GENERATED_EMAIL_DOMAIN):
+        raise ValueError("Bu öğrencinin kendi e-postası var; girişte 'Şifremi unuttum' ile sıfırlamalı.")
+    password = "".join(secrets.choice("abcdefghjkmnpqrstuvwxyz23456789") for _ in range(8))
+    _set_password(student_id, password)
+    return password
 
 
 def _public(row: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
@@ -536,14 +628,25 @@ def class_members(class_id: int) -> List[Dict[str, Any]]:
     )
 
 
+def clean_video_url(url: str) -> str:
+    """Yalnızca http(s) bağlantılarını kabul eder; boşsa boş döner."""
+    url = (url or "").strip()
+    if not url:
+        return ""
+    if not re.match(r"^https?://[^\s<>\"']+$", url, flags=re.IGNORECASE):
+        raise ValueError("Video bağlantısı https:// ile başlayan geçerli bir adres olmalı.")
+    return url
+
+
 def create_assignment(class_id: int, title: str, content: str, grade: str = "", branch: str = "",
-                      outcome: str = "", due_date: Optional[str] = None) -> int:
+                      outcome: str = "", due_date: Optional[str] = None, video_url: str = "") -> int:
     if not content.strip():
         raise ValueError("Ödev içeriği boş olamaz.")
     return _insert_id(
-        "INSERT INTO assignments (class_id, title, grade, branch, outcome, content, due_date, created_at) "
-        "VALUES (?,?,?,?,?,?,?,?)",
-        (class_id, title.strip() or "Ödev", grade, branch, outcome, content, due_date, _now()),
+        "INSERT INTO assignments (class_id, title, grade, branch, outcome, content, due_date, created_at, video_url) "
+        "VALUES (?,?,?,?,?,?,?,?,?)",
+        (class_id, title.strip() or "Ödev", grade, branch, outcome, content, due_date, _now(),
+         clean_video_url(video_url) or None),
     )
 
 
@@ -633,7 +736,7 @@ def bulk_create_students(teacher_id: int, class_id: int, rows: List[Dict[str, st
             continue
         if not email:
             for _ in range(20):
-                email = f"{_slug(name)}.{secrets.randbelow(9000) + 1000}@ogrenci.kursunkalem"
+                email = f"{_slug(name)}.{secrets.randbelow(9000) + 1000}{GENERATED_EMAIL_DOMAIN}"
                 if not get_user_by_email(email):
                     break
         password = "".join(secrets.choice(pw_alphabet) for _ in range(8))
@@ -897,7 +1000,10 @@ def log_report_sent(user_id: int, week: str) -> None:
 db = SimpleNamespace(
     BANK_STATUSES=BANK_STATUSES,
     DB_PATH=DB_PATH,
+    GENERATED_EMAIL_DOMAIN=GENERATED_EMAIL_DOMAIN,
     PG_URL=PG_URL,
+    RESET_MAX_ATTEMPTS=RESET_MAX_ATTEMPTS,
+    RESET_TTL_MIN=RESET_TTL_MIN,
     ROLES=ROLES,
     ROLE_LABELS=ROLE_LABELS,
     activity_days=activity_days,
@@ -910,14 +1016,17 @@ db = SimpleNamespace(
     bank_counts=bank_counts,
     bank_filters=bank_filters,
     bulk_create_students=bulk_create_students,
+    change_password=change_password,
     class_assignments=class_assignments,
     class_members=class_members,
     class_overview=class_overview,
     class_parents=class_parents,
+    clean_video_url=clean_video_url,
     configure=configure,
     create_assignment=create_assignment,
     create_class=create_class,
     create_payment=create_payment,
+    create_reset_code=create_reset_code,
     create_user=create_user,
     delete_bank_questions=delete_bank_questions,
     delete_state=delete_state,
@@ -943,6 +1052,7 @@ db = SimpleNamespace(
     record_practice=record_practice,
     remove_member=remove_member,
     report_already_sent=report_already_sent,
+    reset_password_with_code=reset_password_with_code,
     save_state=save_state,
     save_teacher_profile=save_teacher_profile,
     set_bank_status=set_bank_status,
@@ -952,6 +1062,7 @@ db = SimpleNamespace(
     student_teachers=student_teachers,
     submit_assignment=submit_assignment,
     teacher_classes=teacher_classes,
+    teacher_reset_student_password=teacher_reset_student_password,
     update_bank_question=update_bank_question,
     update_grade=update_grade,
     user_badges=user_badges,
@@ -5274,6 +5385,59 @@ def _login_form() -> None:
                 st.rerun()
             else:
                 st.error("E-posta ya da şifre hatalı.")
+    _forgot_password()
+
+
+def _smtp_cfg() -> Dict[str, Any]:
+    try:
+        return dict(st.secrets.get("smtp", {}))
+    except Exception:
+        return {}
+
+
+def _forgot_password() -> None:
+    with st.expander("Şifremi unuttum"):
+        cfg = _smtp_cfg()
+        if not reports.smtp_ready(cfg):
+            st.caption(
+                "E-postayla şifre sıfırlama şu an kapalı. Hesabınızı öğretmeniniz açtıysa şifrenizi o sıfırlayabilir; "
+                + (f"diğer durumlarda {SUPPORT_EMAIL} adresine yazın." if SUPPORT_EMAIL else "diğer durumlarda bize ulaşın.")
+            )
+            return
+        st.caption("Hesabınızı öğretmeniniz açtıysa (e-postanız yoksa) şifrenizi öğretmeniniz sıfırlar.")
+        fp_email = st.text_input("Kayıtlı e-postanız", key="fp_email")
+        if st.button("Sıfırlama kodu gönder", key="fp_send", use_container_width=True):
+            try:
+                made = db.create_reset_code(fp_email)
+                if made:
+                    user_fp, code = made
+                    reports.send_email(
+                        cfg, user_fp["email"], "Kurşun Kalem Dijital Ofis • Şifre sıfırlama kodu",
+                        f"Merhaba {user_fp['name']},\n\nŞifre sıfırlama kodunuz: {code}\n\n"
+                        f"Kod {db.RESET_TTL_MIN} dakika geçerlidir. Bu isteği siz yapmadıysanız bu e-postayı yok sayın; "
+                        "şifreniz değişmez.\n\nKurşun Kalem Dijital Ofis",
+                    )
+                st.session_state["fp_sent"] = True
+                st.success("Bu e-posta kayıtlıysa kod gönderildi. Gelen kutunuzu (ve gereksiz klasörünü) kontrol edin.")
+            except ValueError as exc:
+                st.warning(str(exc))
+            except Exception:
+                st.error("E-posta gönderilemedi. Biraz sonra tekrar deneyin.")
+        if st.session_state.get("fp_sent"):
+            with st.form("fp_form", border=False):
+                fp_code = st.text_input("E-postadaki 8 haneli kod", max_chars=8)
+                fp_pw = st.text_input("Yeni şifre (en az 8 karakter)", type="password")
+                fp_pw2 = st.text_input("Yeni şifre (tekrar)", type="password")
+                if st.form_submit_button("Şifreyi değiştir", type="primary", use_container_width=True):
+                    if fp_pw != fp_pw2:
+                        st.error("Şifreler aynı değil.")
+                    else:
+                        try:
+                            db.reset_password_with_code(fp_email, fp_code, fp_pw)
+                            st.session_state.pop("fp_sent", None)
+                            st.success("Şifreniz değişti. Yeni şifrenizle giriş yapabilirsiniz.")
+                        except ValueError as exc:
+                            st.error(str(exc))
 
 
 def _register_form() -> None:
@@ -5790,9 +5954,24 @@ def start_review_exam(items: List[Dict[str, Any]]) -> None:
     navigate_to("Öğrenci Portalı & Çözüm")
 
 
+def render_lesson_video(url: str) -> None:
+    """YouTube/Vimeo/mp4 bağlantısını oynatır; desteklenmeyen adreste bağlantı butonu gösterir."""
+    if not url:
+        return
+    low = url.lower()
+    if any(h in low for h in ("youtube.com/", "youtu.be/", "vimeo.com/")) or low.split("?")[0].endswith((".mp4", ".webm")):
+        try:
+            st.video(url)
+            return
+        except Exception:
+            pass
+    st.link_button("Konu anlatım videosunu aç", url, use_container_width=True)
+
+
 def start_assignment(assignment: Dict[str, Any]) -> None:
     st.session_state["portal_exam_source"] = assignment["content"]
-    st.session_state["active_assignment"] = {"id": assignment["id"], "title": assignment["title"]}
+    st.session_state["active_assignment"] = {"id": assignment["id"], "title": assignment["title"],
+                                             "video_url": assignment.get("video_url") or ""}
     st.session_state["review_map"] = {}
     st.session_state.pop("last_exam_report", None)
     navigate_to("Öğrenci Portalı & Çözüm")
@@ -5970,11 +6149,20 @@ def render_class_assign_form(content: str, grade: str, branch: str, outcome: str
         cls_label = st.selectbox("Sınıf", list(cls_map.keys()), key=f"as_cls_{key}")
         title = st.text_input("Ödev başlığı", value=f"{branch} · {outcome[:60]}", key=f"as_title_{key}")
         due = st.date_input("Son teslim", value=date.today() + timedelta(days=7), key=f"as_due_{key}")
+        video = st.text_input(
+            "Konu anlatım videosu (isteğe bağlı)", key=f"as_vid_{key}",
+            placeholder="https://www.youtube.com/watch?v=...",
+            help="Öğrenci soruları çözmeden önce bu videoyu görür. Kendi videonuz ya da YouTube bağlantısı olabilir.",
+        )
         if st.button("Ata", key=f"as_btn_{key}", type="primary", use_container_width=True):
             if not parse_quiz_questions(content):
                 st.error("Bu metinde çözülebilir soru bulunamadı (Soru 1 ... A) B) C) D) biçimi gerekli).")
                 return
-            db.create_assignment(cls_map[cls_label], title, content, grade, branch, outcome, due.isoformat())
+            try:
+                db.create_assignment(cls_map[cls_label], title, content, grade, branch, outcome, due.isoformat(), video)
+            except ValueError as exc:
+                st.error(str(exc))
+                return
             record_activity("Ödev", f"{title} → {cls_label}")
             st.success("Ödev atandı. Öğrenciler portaldaki Ödevlerim sekmesinde görecek.")
 
@@ -6636,6 +6824,9 @@ elif current_page == "Öğrenci Portalı & Çözüm":
                 unsafe_allow_html=True,
             )
             exam_source = st.session_state.get("portal_exam_source", "")
+            if active_hw.get("video_url"):
+                with st.expander("Önce konu anlatımını izle", expanded=True, icon=":material/play_circle:"):
+                    render_lesson_video(active_hw["video_url"])
             if st.button("Ödevden çık", key="leave_hw"):
                 st.session_state["active_assignment"] = None
                 st.session_state["portal_exam_source"] = ""
@@ -6859,7 +7050,7 @@ elif current_page == "Öğrenci Portalı & Çözüm":
                         if hw.get("submitted_at") else "Bekliyor"
                     )
                     st.markdown(f"**{hw['title']}** · {hw['class_name']}{due_txt}")
-                    st.caption(status)
+                    st.caption(status + (" · Konu anlatım videosu var" if hw.get("video_url") else ""))
                 with h2:
                     label = "Tekrar çöz" if hw.get("submitted_at") else "Çöz"
                     if st.button(label, key=f"hw_start_{hw['id']}", type="secondary" if hw.get("submitted_at") else "primary",
@@ -7735,6 +7926,8 @@ elif current_page == "Sınıflarım":
                     use_container_width=True,
                     hide_index=True,
                 )
+                if a.get("video_url"):
+                    st.caption(f"Konu anlatım videosu: {a['video_url']}")
                 booklet_download(a["content"], a["title"], f"{cls['name']} · {a.get('branch') or ''}", f"as_{a['id']}")
 
     with t_members:
@@ -7808,6 +8001,19 @@ elif current_page == "Sınıflarım":
                 use_container_width=True,
                 hide_index=True,
             )
+            gen_members = [m for m in members if m["email"].endswith(db.GENERATED_EMAIL_DOMAIN)]
+            if gen_members:
+                with st.popover("Öğrenci şifresini sıfırla"):
+                    st.caption("Yalnızca sizin açtığınız (kendi e-postası olmayan) hesaplar. "
+                               "Kendi e-postası olan öğrenci girişteki 'Şifremi unuttum' bölümünü kullanır.")
+                    rs_map = {f"{m['name']} ({m['email']})": m["id"] for m in gen_members}
+                    rs_sel = st.selectbox("Öğrenci", list(rs_map.keys()), key=f"rs_sel_{sel_id}")
+                    if st.button("Yeni geçici şifre üret", key=f"rs_btn_{sel_id}", type="primary"):
+                        try:
+                            new_pw = db.teacher_reset_student_password(USER["id"], rs_map[rs_sel])
+                            st.success(f"Yeni şifre: **{new_pw}** — öğrenciye iletin; Profilim'den değiştirebilir.")
+                        except ValueError as exc:
+                            st.error(str(exc))
             with st.popover("Öğrenciyi sınıftan çıkar"):
                 rm_map = {f"{m['name']} ({m['email']})": m["id"] for m in members}
                 rm_sel = st.selectbox("Öğrenci", list(rm_map.keys()), key=f"rm_sel_{sel_id}")
@@ -8074,6 +8280,20 @@ elif current_page == "Profilim & Rozetler":
                 """,
                 unsafe_allow_html=True,
             )
+    with st.expander("Şifremi değiştir", icon=":material/lock:"):
+        with st.form("pw_change", border=False, clear_on_submit=True):
+            pw_old = st.text_input("Mevcut şifre", type="password")
+            pw_new = st.text_input("Yeni şifre (en az 8 karakter)", type="password")
+            pw_new2 = st.text_input("Yeni şifre (tekrar)", type="password")
+            if st.form_submit_button("Değiştir", type="primary"):
+                if pw_new != pw_new2:
+                    st.error("Yeni şifreler aynı değil.")
+                else:
+                    try:
+                        db.change_password(USER["id"], pw_old, pw_new)
+                        st.success("Şifreniz değişti.")
+                    except ValueError as exc:
+                        st.error(str(exc))
     with st.expander("KVKK Aydınlatma Metni", icon=":material/policy:"):
         render_kvkk_text()
     if ROLE != "ogretmen":
