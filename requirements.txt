@@ -1,5 +1,9 @@
-streamlit
+streamlit>=1.43
 google-genai
 iyzipay
 python-docx
+pandas
 psycopg2-binary
+# İsteğe bağlı: DOCX'te logonun daha net görünmesi için
+cairosvg
+openpyxl
