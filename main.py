@@ -2563,7 +2563,10 @@ h1, h2, h3, .kp-kd-hero-title, .kp-page-strip-title, .kp-pkg-title, .kp-mod-titl
     /* Streamlit'in üstteki sabit şeridi (~60px) içeriği örtmesin */
     padding-top: 4.5rem;
     padding-bottom: 4.5rem;
-    max-width: 1280px;
+    padding-left: clamp(1rem, 3vw, 3rem);
+    padding-right: clamp(1rem, 3vw, 3rem);
+    /* Geniş ekranlarda kenarlar boş kalmasın */
+    max-width: min(1600px, 96vw);
     animation: kpSoftEnter 0.24s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
@@ -2700,7 +2703,7 @@ section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
     padding: 0;
 }
 .kp-hero-title em { font-style: normal; color: #1D4ED8; }
-.kp-hero-lead { font-size: 1.1rem; line-height: 1.6; color: #475569; margin: 0 0 1.4rem 0; max-width: 34rem; }
+.kp-hero-lead { font-size: 1.1rem; line-height: 1.6; color: #475569; margin: 0 0 1.4rem 0; max-width: 42rem; }
 .kp-stats { display: flex; gap: 2.2rem; flex-wrap: wrap; margin-top: 1.4rem; }
 .kp-stat-num { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 1.7rem; font-weight: 800; color: #0F172A; line-height: 1.2; }
 .kp-stat-lbl { font-size: 0.82rem; color: #64748B; }
