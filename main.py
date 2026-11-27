@@ -1036,7 +1036,7 @@ except Exception:
 
 st.set_page_config(
     page_title="KURŞUN KALEM DİJİTAL OFİS • 2028",
-    page_icon="🏛️",
+    page_icon="✏️",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -1061,33 +1061,17 @@ GRADE_LEVELS_2028: List[str] = [
     "12. Sınıf (YKS)",
 ]
 
-EMBEDDED_LOGO_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <defs>
-    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#f6d365"/>
-      <stop offset="50%" stop-color="#d4af37"/>
-      <stop offset="100%" stop-color="#9a6b14"/>
-    </linearGradient>
-    <linearGradient id="navyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#172c56"/>
-      <stop offset="100%" stop-color="#091328"/>
-    </linearGradient>
-    <linearGradient id="pencilBody" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ffd23f"/>
-      <stop offset="100%" stop-color="#e09f1f"/>
-    </linearGradient>
-  </defs>
-  <circle cx="256" cy="256" r="244" fill="#ffffff"/>
-  <path d="M 432 108 A 232 232 0 1 0 468 332 L 444 326 A 208 208 0 1 1 412 124 Z" fill="url(#navyGrad)"/>
-  <path d="M 456 138 A 232 232 0 0 1 474 295 L 452 292 A 210 210 0 0 0 436 152 Z" fill="url(#goldGrad)"/>
-  <polygon points="256,82 362,130 256,178 150,130" fill="url(#navyGrad)" stroke="url(#goldGrad)" stroke-width="5"/>
-  <polygon points="190,148 256,178 322,148 322,188 256,216 190,188" fill="url(#navyGrad)"/>
-  <text x="256" y="314" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="44" font-weight="800" fill="#0b1836">DİJİTAL OFİS</text>
-  <text x="256" y="351" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="22" font-weight="700" fill="#0f172a" letter-spacing="4">KURŞUN KALEM</text>
-  <g transform="translate(432, 342) rotate(24)">
-    <rect x="-12" y="-110" width="24" height="96" rx="3" fill="url(#pencilBody)" stroke="#1e293b" stroke-width="2"/>
-    <polygon points="-12,-14 12,-14 0,24" fill="#fde68a" stroke="#1e293b" stroke-width="2"/>
-    <polygon points="-3.5,12 3.5,12 0,24" fill="#0f172a"/>
+# Logo: mavi rozet üzerine onay işareti çizen sarı kurşun kalem
+EMBEDDED_LOGO_SVG = """<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="512" height="512">
+  <rect x="3" y="3" width="58" height="58" rx="16" fill="#1D4ED8" stroke="#0F172A" stroke-width="3"/>
+  <path d="M14 34 L23 43 L37 27" fill="none" stroke="#FDE047" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  <g transform="translate(37.5 26.5) rotate(45) scale(0.64)">
+    <polygon points="0,0 -6,-11 6,-11" fill="#FDE7B0" stroke="#0F172A" stroke-width="2.6" stroke-linejoin="round"/>
+    <polygon points="0,0 -2.6,-4.8 2.6,-4.8" fill="#0F172A"/>
+    <rect x="-6" y="-33" width="12" height="22" fill="#FACC15" stroke="#0F172A" stroke-width="2.6"/>
+    <line x1="0" y1="-33" x2="0" y2="-11" stroke="#EAB308" stroke-width="2"/>
+    <rect x="-6" y="-38" width="12" height="5" fill="#CBD5E1" stroke="#0F172A" stroke-width="2.6"/>
+    <rect x="-6" y="-45" width="12" height="7" rx="3" fill="#F472B6" stroke="#0F172A" stroke-width="2.6"/>
   </g>
 </svg>"""
 
@@ -1194,10 +1178,11 @@ def get_embedded_logo_png_bytes() -> Optional[bytes]:
         from PIL import Image, ImageDraw  # type: ignore
 
         size = 320
-        img = Image.new("RGBA", (size, size), (255, 255, 255, 255))
+        img = Image.new("RGBA", (size, size), (255, 255, 255, 0))
         draw = ImageDraw.Draw(img)
-        draw.ellipse([14, 14, size - 14, size - 14], outline=(15, 23, 42, 255), width=10)
-        draw.text((160, 182), "DİJİTAL OFİS", fill=(11, 24, 54, 255), anchor="mm")
+        draw.rounded_rectangle([15, 15, size - 15, size - 15], radius=80, fill=(29, 78, 216, 255),
+                               outline=(15, 23, 42, 255), width=15)
+        draw.line([(70, 170), (115, 215), (185, 135)], fill=(253, 224, 71, 255), width=30, joint="curve")
         out = io.BytesIO()
         img.save(out, format="PNG")
         return out.getvalue()
@@ -2298,10 +2283,6 @@ section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
     width: 42px;
     height: 42px;
     object-fit: contain;
-    border-radius: 10px;
-    border: 1px solid #CBD5E1;
-    padding: 2px;
-    background: #FFFFFF;
 }
 .kp-sidebar-brand-title {
     font-size: 0.98rem;
@@ -2494,6 +2475,9 @@ section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
 .kp-step { padding: 0.5rem 0; }
 .kp-streak-hero { display: flex; align-items: center; gap: 1.2rem; background: #FFF7ED; border: 1px solid #FED7AA; border-radius: 16px; padding: 1.2rem 1.4rem; }
 .kp-streak-num { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 3.4rem; font-weight: 800; color: #EA580C; line-height: 1; }
+
+.kp-empty-chart { display: flex; align-items: center; justify-content: center; text-align: center; border: 2px dashed #CBD5E1; border-radius: 14px; color: #64748B; font-size: 0.92rem; line-height: 1.6; background: rgba(255,255,255,0.6); }
+.kp-empty-chart b { color: #0F172A; }
 
 /* Rozetler */
 .kp-badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 0.7rem; }
@@ -3105,6 +3089,109 @@ if EXTERNAL_CSS_PATH.exists():
         pass
 
 st.markdown(f"<style>{css_to_inject}</style>", unsafe_allow_html=True)
+
+# ==============================================================================
+# AÇILIŞ ANİMASYONU (oturum başına bir kez)
+# ==============================================================================
+SPLASH_ENABLED = True
+SPLASH_TITLE = "Kurşun Kalem"
+SPLASH_SUBTITLE = "Dijital Ofis"
+
+SPLASH_HTML = """
+<style>
+/* Açılışta sayfa kapsayıcısının dönüşümü kapatılır; yoksa tam ekran perde onun içine hapsolur */
+.block-container {{ animation: none !important; transform: none !important; }}
+.kp-splash {{
+    position: fixed; inset: 0; z-index: 1000001;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem;
+    background-color: #FFFDF6;
+    background-image:
+        linear-gradient(rgba(29, 78, 216, 0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(29, 78, 216, 0.07) 1px, transparent 1px);
+    background-size: 26px 26px;
+    animation: kpSplashOut 0.55s cubic-bezier(0.7, 0, 0.84, 0) 2.45s forwards;
+    pointer-events: none;
+}}
+.kp-splash-logo {{
+    width: 92px; height: 92px; filter: drop-shadow(4px 4px 0 #0F172A);
+    animation: kpSplashPop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}}
+.kp-splash-word {{ position: relative; display: inline-block; margin-top: 0.4rem; }}
+.kp-splash-title {{
+    font-family: 'Baloo 2', 'Plus Jakarta Sans', sans-serif; font-weight: 800; color: #0F172A;
+    font-size: clamp(2.6rem, 8vw, 4.6rem); line-height: 1; white-space: nowrap;
+    clip-path: inset(-10% 100% -10% 0);
+    animation: kpSplashWrite 1.05s cubic-bezier(0.45, 0, 0.25, 1) 0.45s forwards;
+}}
+.kp-splash-pencil {{
+    position: absolute; top: -0.35em; left: 0; width: 0.9em; height: 0.9em;
+    font-size: clamp(2.6rem, 8vw, 4.6rem); transform: translateX(-30%);
+    opacity: 0;
+    animation: kpSplashPencil 1.05s cubic-bezier(0.45, 0, 0.25, 1) 0.45s forwards;
+}}
+.kp-splash-mark {{
+    height: 0.32em; font-size: clamp(2.6rem, 8vw, 4.6rem); margin-top: -0.38em;
+    background: #FDE047; border-radius: 6px; transform-origin: left center; transform: scaleX(0); opacity: 0;
+    position: relative; z-index: -1;
+    animation: kpSplashMark 0.45s ease-out 1.4s forwards;
+}}
+.kp-splash-sub {{
+    font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 700; letter-spacing: 0.32em;
+    text-transform: uppercase; color: #1D4ED8; font-size: clamp(0.85rem, 2vw, 1.05rem); margin-top: 0.35rem;
+    opacity: 0; transform: translateY(8px);
+    animation: kpSplashSub 0.45s ease-out 1.65s forwards;
+}}
+@keyframes kpSplashPop {{ from {{ transform: scale(0.3) rotate(-18deg); opacity: 0; }} to {{ transform: scale(1) rotate(0); opacity: 1; }} }}
+@keyframes kpSplashWrite {{ to {{ clip-path: inset(-10% 0 -10% 0); }} }}
+@keyframes kpSplashPencil {{
+    0% {{ left: 0; opacity: 1; }}
+    92% {{ left: 100%; opacity: 1; }}
+    100% {{ left: 100%; opacity: 0; }}
+}}
+@keyframes kpSplashMark {{ from {{ opacity: 1; }} to {{ transform: scaleX(1); opacity: 1; }} }}
+@keyframes kpSplashSub {{ to {{ opacity: 1; transform: translateY(0); }} }}
+@keyframes kpSplashOut {{ to {{ opacity: 0; transform: translateY(-4%); visibility: hidden; }} }}
+@media (prefers-reduced-motion: reduce) {{
+    .kp-splash {{ animation: kpSplashOut 0.3s ease 0.6s forwards; }}
+    .kp-splash-logo, .kp-splash-title, .kp-splash-mark, .kp-splash-sub {{ animation: none; clip-path: none; transform: none; opacity: 1; }}
+    .kp-splash-pencil {{ display: none; }}
+}}
+</style>
+<div class="kp-splash" aria-hidden="true">
+    <img class="kp-splash-logo" src="{logo}" alt=""/>
+    <div class="kp-splash-word">
+        <div class="kp-splash-title">{title}</div>
+        <svg class="kp-splash-pencil" viewBox="0 0 24 24" aria-hidden="true">
+            <g transform="translate(4 20) rotate(45) scale(0.42)">
+                <polygon points="0,0 -6,-11 6,-11" fill="#FDE7B0" stroke="#0F172A" stroke-width="2.6" stroke-linejoin="round"/>
+                <polygon points="0,0 -2.6,-4.8 2.6,-4.8" fill="#0F172A"/>
+                <rect x="-6" y="-33" width="12" height="22" fill="#FACC15" stroke="#0F172A" stroke-width="2.6"/>
+                <rect x="-6" y="-38" width="12" height="5" fill="#CBD5E1" stroke="#0F172A" stroke-width="2.6"/>
+                <rect x="-6" y="-45" width="12" height="7" rx="3" fill="#F472B6" stroke="#0F172A" stroke-width="2.6"/>
+            </g>
+        </svg>
+        <div class="kp-splash-mark"></div>
+    </div>
+    <div class="kp-splash-sub">{subtitle}</div>
+</div>
+"""
+
+
+def render_splash_once() -> None:
+    """Oturumun ilk açılışında logolu, kalemle yazılan giriş animasyonunu gösterir."""
+    if not SPLASH_ENABLED or st.session_state.get("_splash_done"):
+        return
+    st.session_state["_splash_done"] = True
+    st.markdown(
+        SPLASH_HTML.format(
+            logo=LOGO_DATA_URI, title=html.escape(SPLASH_TITLE), subtitle=html.escape(SPLASH_SUBTITLE)
+        ),
+        unsafe_allow_html=True,
+    )
+
+
+render_splash_once()
+
 
 
 def trigger_loader_bar() -> None:
@@ -5375,10 +5462,19 @@ def render_week_chart(user_id: int, height: int = 200) -> None:
     by_day = db.weekly_stats(user_id)["by_day"]
     today = date.today()
     days = [today - timedelta(days=i) for i in range(6, -1, -1)]
+    counts = [int(by_day.get(d.isoformat(), 0)) for d in days]
+    if sum(counts) == 0:
+        st.markdown(
+            f'<div class="kp-empty-chart" style="height:{height}px;">'
+            '<div><b>Bu hafta henüz soru çözülmedi.</b><br>'
+            'İlk mini denemeyi çözünce çubuklar burada belirecek.</div></div>',
+            unsafe_allow_html=True,
+        )
+        return
     df = pd.DataFrame(
         {
-            "Gün": [f"{d.day:02d}.{d.month:02d} {TR_DAYS[d.weekday()]}" for d in days],
-            "Çözülen soru": [int(by_day.get(d.isoformat(), 0)) for d in days],
+            "Gün": ["Bugün" if d == today else TR_DAYS[d.weekday()] for d in days],
+            "Çözülen soru": counts,
         }
     )
     df["Gün"] = pd.Categorical(df["Gün"], categories=list(df["Gün"]), ordered=True)
