@@ -5,9 +5,8 @@ import json
 import os
 import re
 import time
-import urllib.parse
 import uuid
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -18,906 +17,6 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.shared import Inches, Pt, RGBColor
 from google import genai
 from google.genai import types
-
-import hashlib
-import hmac
-import secrets
-import smtplib
-import sqlite3
-import ssl
-import string
-import threading
-from email.message import EmailMessage
-from types import SimpleNamespace
-from typing import Iterable, Sequence
-from docx.enum.table import WD_TABLE_ALIGNMENT
-from docx.enum.text import WD_BREAK
-
-
-# ==============================================================================
-# VERİ KATMANI: kullanıcılar, sınıflar, ödevler, sonuçlar, ödemeler (SQLite)
-# ==============================================================================
-DB_PATH = Path(os.environ.get("KK_DB_PATH", "kursun_kalem.db"))
-ROLES = ("ogrenci", "veli", "ogretmen")
-ROLE_LABELS = {"ogrenci": "Öğrenci", "veli": "Veli", "ogretmen": "Öğretmen"}
-
-_lock = threading.Lock()
-
-SCHEMA = """
-CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    email TEXT NOT NULL UNIQUE,
-    name TEXT NOT NULL,
-    role TEXT NOT NULL,
-    pw_hash TEXT NOT NULL,
-    grade TEXT,
-    link_code TEXT UNIQUE,
-    parent_of INTEGER REFERENCES users(id),
-    daily_goal INTEGER NOT NULL DEFAULT 20,
-    created_at TEXT NOT NULL
-);
-CREATE TABLE IF NOT EXISTS user_state (
-    user_id INTEGER PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
-    payload TEXT NOT NULL,
-    updated_at TEXT NOT NULL
-);
-CREATE TABLE IF NOT EXISTS activity_days (
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    day TEXT NOT NULL,
-    solved INTEGER NOT NULL DEFAULT 0,
-    correct INTEGER NOT NULL DEFAULT 0,
-    wrong INTEGER NOT NULL DEFAULT 0,
-    blank INTEGER NOT NULL DEFAULT 0,
-    PRIMARY KEY (user_id, day)
-);
-CREATE TABLE IF NOT EXISTS exam_results (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    created_at TEXT NOT NULL,
-    source TEXT NOT NULL,
-    correct INTEGER NOT NULL,
-    wrong INTEGER NOT NULL,
-    blank INTEGER NOT NULL,
-    accuracy REAL NOT NULL,
-    assignment_id INTEGER
-);
-CREATE TABLE IF NOT EXISTS badges (
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    code TEXT NOT NULL,
-    earned_at TEXT NOT NULL,
-    PRIMARY KEY (user_id, code)
-);
-CREATE TABLE IF NOT EXISTS classes (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    code TEXT NOT NULL UNIQUE,
-    teacher_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    grade TEXT,
-    created_at TEXT NOT NULL
-);
-CREATE TABLE IF NOT EXISTS class_members (
-    class_id INTEGER NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    joined_at TEXT NOT NULL,
-    PRIMARY KEY (class_id, user_id)
-);
-CREATE TABLE IF NOT EXISTS assignments (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    class_id INTEGER NOT NULL REFERENCES classes(id) ON DELETE CASCADE,
-    title TEXT NOT NULL,
-    grade TEXT,
-    branch TEXT,
-    outcome TEXT,
-    content TEXT NOT NULL,
-    due_date TEXT,
-    created_at TEXT NOT NULL
-);
-CREATE TABLE IF NOT EXISTS submissions (
-    assignment_id INTEGER NOT NULL REFERENCES assignments(id) ON DELETE CASCADE,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    correct INTEGER NOT NULL,
-    wrong INTEGER NOT NULL,
-    blank INTEGER NOT NULL,
-    net REAL NOT NULL,
-    accuracy REAL NOT NULL,
-    submitted_at TEXT NOT NULL,
-    PRIMARY KEY (assignment_id, user_id)
-);
-CREATE TABLE IF NOT EXISTS payments (
-    token TEXT PRIMARY KEY,
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    amount INTEGER NOT NULL,
-    billing_cycle TEXT NOT NULL,
-    plan_json TEXT NOT NULL,
-    status TEXT NOT NULL,
-    created_at TEXT NOT NULL,
-    verified_at TEXT
-);
-CREATE TABLE IF NOT EXISTS report_log (
-    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    week TEXT NOT NULL,
-    sent_at TEXT NOT NULL,
-    PRIMARY KEY (user_id, week)
-);
-"""
-
-
-def _now() -> str:
-    return datetime.now().isoformat(timespec="seconds")
-
-
-def connect() -> sqlite3.Connection:
-    conn = sqlite3.connect(DB_PATH, check_same_thread=False)
-    conn.row_factory = sqlite3.Row
-    conn.execute("PRAGMA foreign_keys = ON")
-    return conn
-
-
-def init_db() -> None:
-    with _lock, connect() as conn:
-        conn.executescript(SCHEMA)
-
-
-def _q(sql: str, params: tuple = (), one: bool = False) -> Any:
-    with _lock, connect() as conn:
-        cur = conn.execute(sql, params)
-        rows = cur.fetchall()
-    if one:
-        return dict(rows[0]) if rows else None
-    return [dict(r) for r in rows]
-
-
-def _x(sql: str, params: tuple = ()) -> int:
-    with _lock, connect() as conn:
-        cur = conn.execute(sql, params)
-        conn.commit()
-        return cur.lastrowid
-
-
-# ------------------------------------------------------------------------------
-# Şifreleme ve giriş
-# ------------------------------------------------------------------------------
-_PBKDF2_ITER = 200_000
-
-
-def hash_password(password: str) -> str:
-    salt = secrets.token_hex(16)
-    digest = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), bytes.fromhex(salt), _PBKDF2_ITER).hex()
-    return f"pbkdf2${_PBKDF2_ITER}${salt}${digest}"
-
-
-def verify_password(password: str, stored: str) -> bool:
-    try:
-        _algo, iters, salt, digest = stored.split("$")
-        calc = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), bytes.fromhex(salt), int(iters)).hex()
-        return hmac.compare_digest(calc, digest)
-    except Exception:
-        return False
-
-
-def _new_code(length: int = 6) -> str:
-    alphabet = string.ascii_uppercase.replace("O", "").replace("I", "") + "23456789"
-    return "".join(secrets.choice(alphabet) for _ in range(length))
-
-
-def create_user(email: str, name: str, password: str, role: str, grade: Optional[str] = None) -> Dict[str, Any]:
-    email = email.strip().lower()
-    if role not in ROLES:
-        raise ValueError("Geçersiz rol.")
-    if "@" not in email or "." not in email.split("@")[-1]:
-        raise ValueError("Geçerli bir e-posta adresi girin.")
-    if len(password) < 8:
-        raise ValueError("Şifre en az 8 karakter olmalı.")
-    if not name.strip():
-        raise ValueError("Ad soyad boş olamaz.")
-    if get_user_by_email(email):
-        raise ValueError("Bu e-posta ile kayıtlı bir hesap zaten var.")
-    link_code = _new_code() if role == "ogrenci" else None
-    uid = _x(
-        "INSERT INTO users (email, name, role, pw_hash, grade, link_code, created_at) VALUES (?,?,?,?,?,?,?)",
-        (email, name.strip(), role, hash_password(password), grade, link_code, _now()),
-    )
-    return get_user(uid)
-
-
-def authenticate(email: str, password: str) -> Optional[Dict[str, Any]]:
-    row = _q("SELECT * FROM users WHERE email = ?", (email.strip().lower(),), one=True)
-    if row and verify_password(password, row["pw_hash"]):
-        return _public(row)
-    return None
-
-
-def _public(row: Optional[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
-    if not row:
-        return None
-    row = dict(row)
-    row.pop("pw_hash", None)
-    return row
-
-
-def get_user(user_id: int) -> Optional[Dict[str, Any]]:
-    return _public(_q("SELECT * FROM users WHERE id = ?", (user_id,), one=True))
-
-
-def get_user_by_email(email: str) -> Optional[Dict[str, Any]]:
-    return _public(_q("SELECT * FROM users WHERE email = ?", (email.strip().lower(),), one=True))
-
-
-def link_parent(parent_id: int, link_code: str) -> Dict[str, Any]:
-    student = _q("SELECT * FROM users WHERE link_code = ? AND role = 'ogrenci'", (link_code.strip().upper(),), one=True)
-    if not student:
-        raise ValueError("Bu koda ait bir öğrenci bulunamadı.")
-    _x("UPDATE users SET parent_of = ? WHERE id = ?", (student["id"], parent_id))
-    return _public(student)
-
-
-def set_daily_goal(user_id: int, goal: int) -> None:
-    _x("UPDATE users SET daily_goal = ? WHERE id = ?", (max(5, min(200, int(goal))), user_id))
-
-
-def update_grade(user_id: int, grade: str) -> None:
-    _x("UPDATE users SET grade = ? WHERE id = ?", (grade, user_id))
-
-
-def list_parents_with_students() -> List[Dict[str, Any]]:
-    return _q(
-        "SELECT p.id AS parent_id, p.name AS parent_name, p.email AS parent_email, "
-        "s.id AS student_id, s.name AS student_name, s.grade AS student_grade "
-        "FROM users p JOIN users s ON s.id = p.parent_of WHERE p.role = 'veli'"
-    )
-
-
-# ------------------------------------------------------------------------------
-# Kişiye özel uygulama durumu (eski ortak JSON dosyasının yerini alır)
-# ------------------------------------------------------------------------------
-def load_state(user_id: int) -> Dict[str, Any]:
-    row = _q("SELECT payload FROM user_state WHERE user_id = ?", (user_id,), one=True)
-    if not row:
-        return {}
-    try:
-        data = json.loads(row["payload"])
-        return data if isinstance(data, dict) else {}
-    except Exception:
-        return {}
-
-
-def save_state(user_id: int, payload: Dict[str, Any]) -> None:
-    _x(
-        "INSERT INTO user_state (user_id, payload, updated_at) VALUES (?,?,?) "
-        "ON CONFLICT(user_id) DO UPDATE SET payload = excluded.payload, updated_at = excluded.updated_at",
-        (user_id, json.dumps(payload, ensure_ascii=False), _now()),
-    )
-
-
-def delete_state(user_id: int) -> None:
-    _x("DELETE FROM user_state WHERE user_id = ?", (user_id,))
-
-
-# ------------------------------------------------------------------------------
-# Aktivite, deneme sonuçları, rozetler
-# ------------------------------------------------------------------------------
-def record_practice(user_id: int, correct: int, wrong: int, blank: int, day: Optional[date] = None) -> None:
-    d = (day or date.today()).isoformat()
-    solved = correct + wrong + blank
-    _x(
-        "INSERT INTO activity_days (user_id, day, solved, correct, wrong, blank) VALUES (?,?,?,?,?,?) "
-        "ON CONFLICT(user_id, day) DO UPDATE SET solved = solved + excluded.solved, "
-        "correct = correct + excluded.correct, wrong = wrong + excluded.wrong, blank = blank + excluded.blank",
-        (user_id, d, solved, correct, wrong, blank),
-    )
-
-
-def activity_days(user_id: int, since: Optional[date] = None) -> List[Dict[str, Any]]:
-    if since:
-        return _q("SELECT * FROM activity_days WHERE user_id = ? AND day >= ? ORDER BY day", (user_id, since.isoformat()))
-    return _q("SELECT * FROM activity_days WHERE user_id = ? ORDER BY day", (user_id,))
-
-
-def add_exam_result(user_id: int, source: str, correct: int, wrong: int, blank: int,
-                    assignment_id: Optional[int] = None) -> None:
-    graded = correct + wrong
-    acc = round(100.0 * correct / graded, 1) if graded else 0.0
-    _x(
-        "INSERT INTO exam_results (user_id, created_at, source, correct, wrong, blank, accuracy, assignment_id) "
-        "VALUES (?,?,?,?,?,?,?,?)",
-        (user_id, _now(), source, correct, wrong, blank, acc, assignment_id),
-    )
-
-
-def recent_exam_results(user_id: int, limit: int = 10) -> List[Dict[str, Any]]:
-    return _q("SELECT * FROM exam_results WHERE user_id = ? ORDER BY id DESC LIMIT ?", (user_id, limit))
-
-
-def exam_count(user_id: int) -> int:
-    row = _q("SELECT COUNT(*) AS n FROM exam_results WHERE user_id = ?", (user_id,), one=True)
-    return int(row["n"]) if row else 0
-
-
-def award_badge(user_id: int, code: str) -> bool:
-    """Rozeti verir. Yeni kazanıldıysa True döner."""
-    with _lock, connect() as conn:
-        cur = conn.execute("INSERT OR IGNORE INTO badges (user_id, code, earned_at) VALUES (?,?,?)", (user_id, code, _now()))
-        conn.commit()
-        return cur.rowcount > 0
-
-
-def user_badges(user_id: int) -> Dict[str, str]:
-    return {r["code"]: r["earned_at"] for r in _q("SELECT code, earned_at FROM badges WHERE user_id = ?", (user_id,))}
-
-
-def weekly_stats(user_id: int, today: Optional[date] = None) -> Dict[str, Any]:
-    today = today or date.today()
-    since = today - timedelta(days=6)
-    rows = activity_days(user_id, since)
-    solved = sum(r["solved"] for r in rows)
-    correct = sum(r["correct"] for r in rows)
-    wrong = sum(r["wrong"] for r in rows)
-    blank = sum(r["blank"] for r in rows)
-    graded = correct + wrong
-    return {
-        "weekly_solved": solved,
-        "correct": correct,
-        "wrong": wrong,
-        "blank": blank,
-        "accuracy": round(100.0 * correct / graded, 1) if graded else 0.0,
-        "active_days": len([r for r in rows if r["solved"] > 0]),
-        "by_day": {r["day"]: r["solved"] for r in rows},
-    }
-
-
-# ------------------------------------------------------------------------------
-# Sınıflar, ödevler, teslimler
-# ------------------------------------------------------------------------------
-def create_class(teacher_id: int, name: str, grade: Optional[str]) -> Dict[str, Any]:
-    if not name.strip():
-        raise ValueError("Sınıf adı boş olamaz.")
-    for _ in range(10):
-        code = _new_code()
-        if not _q("SELECT 1 FROM classes WHERE code = ?", (code,), one=True):
-            break
-    cid = _x(
-        "INSERT INTO classes (name, code, teacher_id, grade, created_at) VALUES (?,?,?,?,?)",
-        (name.strip(), code, teacher_id, grade, _now()),
-    )
-    return _q("SELECT * FROM classes WHERE id = ?", (cid,), one=True)
-
-
-def teacher_classes(teacher_id: int) -> List[Dict[str, Any]]:
-    return _q(
-        "SELECT c.*, (SELECT COUNT(*) FROM class_members m WHERE m.class_id = c.id) AS member_count "
-        "FROM classes c WHERE teacher_id = ? ORDER BY c.id DESC",
-        (teacher_id,),
-    )
-
-
-def join_class(user_id: int, code: str) -> Dict[str, Any]:
-    cls = _q("SELECT * FROM classes WHERE code = ?", (code.strip().upper(),), one=True)
-    if not cls:
-        raise ValueError("Bu koda ait bir sınıf bulunamadı.")
-    _x("INSERT OR IGNORE INTO class_members (class_id, user_id, joined_at) VALUES (?,?,?)", (cls["id"], user_id, _now()))
-    return cls
-
-
-def student_classes(user_id: int) -> List[Dict[str, Any]]:
-    return _q(
-        "SELECT c.*, u.name AS teacher_name FROM classes c JOIN class_members m ON m.class_id = c.id "
-        "JOIN users u ON u.id = c.teacher_id WHERE m.user_id = ? ORDER BY c.name",
-        (user_id,),
-    )
-
-
-def class_members(class_id: int) -> List[Dict[str, Any]]:
-    return _q(
-        "SELECT u.id, u.name, u.email, u.grade FROM users u JOIN class_members m ON m.user_id = u.id "
-        "WHERE m.class_id = ? ORDER BY u.name",
-        (class_id,),
-    )
-
-
-def create_assignment(class_id: int, title: str, content: str, grade: str = "", branch: str = "",
-                      outcome: str = "", due_date: Optional[str] = None) -> int:
-    if not content.strip():
-        raise ValueError("Ödev içeriği boş olamaz.")
-    return _x(
-        "INSERT INTO assignments (class_id, title, grade, branch, outcome, content, due_date, created_at) "
-        "VALUES (?,?,?,?,?,?,?,?)",
-        (class_id, title.strip() or "Ödev", grade, branch, outcome, content, due_date, _now()),
-    )
-
-
-def class_assignments(class_id: int) -> List[Dict[str, Any]]:
-    return _q(
-        "SELECT a.*, (SELECT COUNT(*) FROM submissions s WHERE s.assignment_id = a.id) AS submission_count "
-        "FROM assignments a WHERE class_id = ? ORDER BY a.id DESC",
-        (class_id,),
-    )
-
-
-def student_assignments(user_id: int) -> List[Dict[str, Any]]:
-    return _q(
-        "SELECT a.*, c.name AS class_name, s.accuracy AS my_accuracy, s.net AS my_net, s.submitted_at "
-        "FROM assignments a JOIN class_members m ON m.class_id = a.class_id "
-        "JOIN classes c ON c.id = a.class_id "
-        "LEFT JOIN submissions s ON s.assignment_id = a.id AND s.user_id = m.user_id "
-        "WHERE m.user_id = ? ORDER BY (s.submitted_at IS NOT NULL), a.id DESC",
-        (user_id,),
-    )
-
-
-def get_assignment(assignment_id: int) -> Optional[Dict[str, Any]]:
-    return _q("SELECT * FROM assignments WHERE id = ?", (assignment_id,), one=True)
-
-
-def submit_assignment(assignment_id: int, user_id: int, correct: int, wrong: int, blank: int) -> None:
-    graded = correct + wrong
-    acc = round(100.0 * correct / graded, 1) if graded else 0.0
-    net = round(max(0.0, correct - wrong / 3.0), 2)
-    _x(
-        "INSERT INTO submissions (assignment_id, user_id, correct, wrong, blank, net, accuracy, submitted_at) "
-        "VALUES (?,?,?,?,?,?,?,?) ON CONFLICT(assignment_id, user_id) DO UPDATE SET "
-        "correct = excluded.correct, wrong = excluded.wrong, blank = excluded.blank, net = excluded.net, "
-        "accuracy = excluded.accuracy, submitted_at = excluded.submitted_at",
-        (assignment_id, user_id, correct, wrong, blank, net, acc, _now()),
-    )
-
-
-def assignment_results(assignment_id: int) -> List[Dict[str, Any]]:
-    """Sınıftaki her öğrenci için teslim durumu (teslim etmeyenler de listelenir)."""
-    return _q(
-        "SELECT u.id AS user_id, u.name, s.correct, s.wrong, s.blank, s.net, s.accuracy, s.submitted_at "
-        "FROM assignments a JOIN class_members m ON m.class_id = a.class_id JOIN users u ON u.id = m.user_id "
-        "LEFT JOIN submissions s ON s.assignment_id = a.id AND s.user_id = u.id "
-        "WHERE a.id = ? ORDER BY u.name",
-        (assignment_id,),
-    )
-
-
-def class_overview(class_id: int) -> Dict[str, Any]:
-    """Sınıf karşılaştırma paneli için kazanım ve öğrenci bazlı özet."""
-    by_outcome = _q(
-        "SELECT COALESCE(NULLIF(a.outcome, ''), a.title) AS outcome, a.branch, "
-        "ROUND(AVG(s.accuracy), 1) AS avg_accuracy, COUNT(s.user_id) AS submissions "
-        "FROM assignments a JOIN submissions s ON s.assignment_id = a.id "
-        "WHERE a.class_id = ? GROUP BY 1, 2 ORDER BY avg_accuracy ASC",
-        (class_id,),
-    )
-    by_student = _q(
-        "SELECT u.name, COUNT(s.assignment_id) AS done, ROUND(AVG(s.accuracy), 1) AS avg_accuracy, "
-        "ROUND(AVG(s.net), 2) AS avg_net "
-        "FROM class_members m JOIN users u ON u.id = m.user_id "
-        "LEFT JOIN submissions s ON s.user_id = u.id AND s.assignment_id IN "
-        "(SELECT id FROM assignments WHERE class_id = ?) "
-        "WHERE m.class_id = ? GROUP BY u.id ORDER BY avg_accuracy DESC",
-        (class_id, class_id),
-    )
-    total_assignments = _q("SELECT COUNT(*) AS n FROM assignments WHERE class_id = ?", (class_id,), one=True)["n"]
-    return {"by_outcome": by_outcome, "by_student": by_student, "total_assignments": total_assignments}
-
-
-# ------------------------------------------------------------------------------
-# Ödemeler
-# ------------------------------------------------------------------------------
-def create_payment(token: str, user_id: int, amount: int, billing_cycle: str, plan: Dict[str, Any]) -> None:
-    _x(
-        "INSERT OR REPLACE INTO payments (token, user_id, amount, billing_cycle, plan_json, status, created_at) "
-        "VALUES (?,?,?,?,?,?,?)",
-        (token, user_id, int(amount), billing_cycle, json.dumps(plan, ensure_ascii=False), "pending", _now()),
-    )
-
-
-def get_payment(token: str) -> Optional[Dict[str, Any]]:
-    row = _q("SELECT * FROM payments WHERE token = ?", (token,), one=True)
-    if row:
-        row["plan"] = json.loads(row.pop("plan_json"))
-    return row
-
-
-def latest_pending_payment(user_id: int) -> Optional[Dict[str, Any]]:
-    row = _q(
-        "SELECT * FROM payments WHERE user_id = ? AND status = 'pending' ORDER BY created_at DESC LIMIT 1",
-        (user_id,), one=True,
-    )
-    if row:
-        row["plan"] = json.loads(row.pop("plan_json"))
-    return row
-
-
-def mark_payment(token: str, status: str) -> None:
-    _x("UPDATE payments SET status = ?, verified_at = ? WHERE token = ?", (status, _now(), token))
-
-
-# ------------------------------------------------------------------------------
-# Haftalık rapor kaydı
-# ------------------------------------------------------------------------------
-def week_key(d: Optional[date] = None) -> str:
-    y, w, _ = (d or date.today()).isocalendar()
-    return f"{y}-W{w:02d}"
-
-
-def report_already_sent(user_id: int, week: str) -> bool:
-    return _q("SELECT 1 FROM report_log WHERE user_id = ? AND week = ?", (user_id, week), one=True) is not None
-
-
-def log_report_sent(user_id: int, week: str) -> None:
-    _x("INSERT OR IGNORE INTO report_log (user_id, week, sent_at) VALUES (?,?,?)", (user_id, week, _now()))
-
-
-db = SimpleNamespace(
-    DB_PATH=DB_PATH,
-    ROLES=ROLES,
-    ROLE_LABELS=ROLE_LABELS,
-    SCHEMA=SCHEMA,
-    activity_days=activity_days,
-    add_exam_result=add_exam_result,
-    assignment_results=assignment_results,
-    authenticate=authenticate,
-    award_badge=award_badge,
-    class_assignments=class_assignments,
-    class_members=class_members,
-    class_overview=class_overview,
-    connect=connect,
-    create_assignment=create_assignment,
-    create_class=create_class,
-    create_payment=create_payment,
-    create_user=create_user,
-    delete_state=delete_state,
-    exam_count=exam_count,
-    get_assignment=get_assignment,
-    get_payment=get_payment,
-    get_user=get_user,
-    get_user_by_email=get_user_by_email,
-    hash_password=hash_password,
-    init_db=init_db,
-    join_class=join_class,
-    latest_pending_payment=latest_pending_payment,
-    link_parent=link_parent,
-    list_parents_with_students=list_parents_with_students,
-    load_state=load_state,
-    log_report_sent=log_report_sent,
-    mark_payment=mark_payment,
-    recent_exam_results=recent_exam_results,
-    record_practice=record_practice,
-    report_already_sent=report_already_sent,
-    save_state=save_state,
-    set_daily_goal=set_daily_goal,
-    student_assignments=student_assignments,
-    student_classes=student_classes,
-    submit_assignment=submit_assignment,
-    teacher_classes=teacher_classes,
-    update_grade=update_grade,
-    user_badges=user_badges,
-    verify_password=verify_password,
-    week_key=week_key,
-    weekly_stats=weekly_stats,
-)
-
-
-# ==============================================================================
-# OYUNLAŞTIRMA: seri, rozetler, aralıklı tekrar, zorluk önerisi
-# ==============================================================================
-DIFFICULTY_LEVELS = ["Kolay", "Orta", "Orta-Zor", "Zor (2028 LGS/ÖSYM)"]
-
-# ------------------------------------------------------------------------------
-# Seri
-# ------------------------------------------------------------------------------
-def streak(active_days: Iterable[str], today: Optional[date] = None) -> int:
-    """Üst üste çalışılan gün sayısı. Bugün henüz çalışılmadıysa dünden geriye sayar
-    (böylece seri gün içinde 'kopmuş' görünmez)."""
-    today = today or date.today()
-    days = {date.fromisoformat(d) for d in active_days}
-    cursor = today if today in days else today - timedelta(days=1)
-    count = 0
-    while cursor in days:
-        count += 1
-        cursor -= timedelta(days=1)
-    return count
-
-
-# ------------------------------------------------------------------------------
-# Rozetler
-# ------------------------------------------------------------------------------
-# kod: (ad, nasıl kazanılır, renk)
-BADGES: Dict[str, Tuple[str, str, str]] = {
-    "ilk_deneme": ("İlk Adım", "İlk mini denemeni bitir", "#1D4ED8"),
-    "seri_3": ("Isınıyoruz", "3 gün üst üste çalış", "#F97316"),
-    "seri_7": ("Haftanın Yıldızı", "7 gün üst üste çalış", "#DC2626"),
-    "seri_30": ("Durdurulamaz", "30 gün üst üste çalış", "#7C3AED"),
-    "soru_100": ("Yüzlük", "Toplam 100 soru çöz", "#059669"),
-    "soru_500": ("Soru Canavarı", "Toplam 500 soru çöz", "#0D9488"),
-    "isabet_90": ("Keskin Nişancı", "En az 5 soruluk denemede %90 doğruluk", "#DB2777"),
-    "tekrar_10": ("Hata Avcısı", "Hata defterinden 10 soruyu tekrarla tamamla", "#CA8A04"),
-    "foto_cozum": ("Fotoğrafçı", "Fotoğrafla ilk sorunu çözdür", "#2563EB"),
-    "odev_5": ("Ödev Kahramanı", "5 ödev teslim et", "#9333EA"),
-}
-
-
-def earned_badges(ctx: Dict[str, Any]) -> List[str]:
-    """ctx: streak, total_solved, exams, last_exam_size, last_exam_accuracy,
-    reviews_completed, photo_solves, assignments_done"""
-    out: List[str] = []
-    s = int(ctx.get("streak", 0))
-    total = int(ctx.get("total_solved", 0))
-    if int(ctx.get("exams", 0)) >= 1:
-        out.append("ilk_deneme")
-    for need, code in ((3, "seri_3"), (7, "seri_7"), (30, "seri_30")):
-        if s >= need:
-            out.append(code)
-    if total >= 100:
-        out.append("soru_100")
-    if total >= 500:
-        out.append("soru_500")
-    if int(ctx.get("last_exam_size", 0)) >= 5 and float(ctx.get("last_exam_accuracy", 0)) >= 90:
-        out.append("isabet_90")
-    if int(ctx.get("reviews_completed", 0)) >= 10:
-        out.append("tekrar_10")
-    if int(ctx.get("photo_solves", 0)) >= 1:
-        out.append("foto_cozum")
-    if int(ctx.get("assignments_done", 0)) >= 5:
-        out.append("odev_5")
-    return out
-
-
-# ------------------------------------------------------------------------------
-# Aralıklı tekrar (1. gün -> 3. gün -> 7. gün)
-# ------------------------------------------------------------------------------
-REVIEW_GAPS = [1, 3, 7]
-
-
-def _parse_tr_date(s: str) -> Optional[date]:
-    try:
-        return datetime.strptime(s, "%d.%m.%Y").date()
-    except Exception:
-        return None
-
-
-def next_review_date(item: Dict[str, Any]) -> Optional[date]:
-    stage = int(item.get("stage", 0))
-    if stage >= len(REVIEW_GAPS):
-        return None
-    key = f"review_{REVIEW_GAPS[stage]}d"
-    return _parse_tr_date(str(item.get(key, "")))
-
-
-def due_reviews(notebook: List[Dict[str, Any]], today: Optional[date] = None) -> List[Dict[str, Any]]:
-    today = today or date.today()
-    out = []
-    for item in notebook:
-        if item.get("done"):
-            continue
-        d = next_review_date(item)
-        if d is not None and d <= today:
-            out.append(item)
-    return out
-
-
-def advance_review(item: Dict[str, Any], answered_correctly: bool, today: Optional[date] = None) -> None:
-    """Doğru: bir sonraki aşamaya geçer, 3 aşama bitince 'done'.
-    Yanlış: takvim bugünden itibaren yeniden başlar."""
-    today = today or date.today()
-    if answered_correctly:
-        item["stage"] = int(item.get("stage", 0)) + 1
-        if item["stage"] >= len(REVIEW_GAPS):
-            item["done"] = True
-    else:
-        item["stage"] = 0
-        item["done"] = False
-        for g in REVIEW_GAPS:
-            item[f"review_{g}d"] = (today + timedelta(days=g)).strftime("%d.%m.%Y")
-
-
-_LEADING_NUM = re.compile(r"^\s*(?:#{1,6}\s*)?(?:\*\*)?\s*(?:Soru\s*)?\d+\s*[\.\)\:\-]?\s*(?:\*\*)?", re.IGNORECASE)
-
-
-def build_review_exam(items: List[Dict[str, Any]]) -> Tuple[str, Dict[int, str]]:
-    """Hata defteri kayıtlarından yeniden numaralandırılmış bir mini deneme metni üretir.
-    Dönen sözlük: yeni soru numarası -> hata defteri kayıt id'si."""
-    parts: List[str] = []
-    key_lines: List[str] = []
-    mapping: Dict[int, str] = {}
-    for i, item in enumerate(items, start=1):
-        body = _LEADING_NUM.sub("", str(item.get("question_text", "")).strip(), count=1).strip()
-        parts.append(f"Soru {i}\n{body}")
-        key_lines.append(f"{i}-{item.get('correct_ans', '')}")
-        mapping[i] = str(item.get("id"))
-    text = "\n\n".join(parts) + "\n\nCevap Anahtarı\n" + "\n".join(key_lines)
-    return text, mapping
-
-
-# ------------------------------------------------------------------------------
-# Uyarlanabilir zorluk
-# ------------------------------------------------------------------------------
-def suggest_difficulty(recent_accuracies: List[float], current: str = "Orta-Zor") -> Tuple[str, str]:
-    """Son (en fazla) 3 denemenin ortalamasına göre bir üst/alt seviyeyi önerir."""
-    if current not in DIFFICULTY_LEVELS:
-        current = "Orta-Zor"
-    vals = [float(a) for a in recent_accuracies[:3]]
-    if not vals:
-        return current, "Henüz deneme sonucun yok; varsayılan seviye kullanılıyor."
-    avg = sum(vals) / len(vals)
-    idx = DIFFICULTY_LEVELS.index(current)
-    if avg >= 85 and idx < len(DIFFICULTY_LEVELS) - 1:
-        return DIFFICULTY_LEVELS[idx + 1], f"Son denemelerinde ortalama %{avg:.0f} doğruluk: bir üst seviye önerilir."
-    if avg < 55 and idx > 0:
-        return DIFFICULTY_LEVELS[idx - 1], f"Son denemelerinde ortalama %{avg:.0f} doğruluk: bir alt seviyeyle pekiştir."
-    return current, f"Son denemelerinde ortalama %{avg:.0f} doğruluk: seviye sana uygun."
-
-
-gamify = SimpleNamespace(
-    BADGES=BADGES,
-    DIFFICULTY_LEVELS=DIFFICULTY_LEVELS,
-    REVIEW_GAPS=REVIEW_GAPS,
-    advance_review=advance_review,
-    build_review_exam=build_review_exam,
-    due_reviews=due_reviews,
-    earned_badges=earned_badges,
-    next_review_date=next_review_date,
-    streak=streak,
-    suggest_difficulty=suggest_difficulty,
-)
-
-
-# ==============================================================================
-# RAPORLAR: veli raporu, e-posta, optik formlu deneme kitapçığı
-# ==============================================================================
-INK = RGBColor(15, 23, 42)
-MUTED = RGBColor(100, 116, 139)
-
-
-# ------------------------------------------------------------------------------
-# E-posta
-# ------------------------------------------------------------------------------
-def smtp_ready(cfg: Optional[Dict[str, Any]]) -> bool:
-    return bool(cfg and cfg.get("host") and cfg.get("user") and cfg.get("password"))
-
-
-def send_email(cfg: Dict[str, Any], to: str, subject: str, body: str,
-               attachments: Sequence[Tuple[str, bytes, str]] = ()) -> None:
-    """cfg: host, port (587), user, password, sender (isteğe bağlı).
-    attachments: (dosya adı, içerik, 'ana/alt' mime türü)"""
-    msg = EmailMessage()
-    msg["From"] = cfg.get("sender") or cfg["user"]
-    msg["To"] = to
-    msg["Subject"] = subject
-    msg.set_content(body)
-    for filename, data, mime in attachments:
-        maintype, subtype = mime.split("/", 1)
-        msg.add_attachment(data, maintype=maintype, subtype=subtype, filename=filename)
-    port = int(cfg.get("port", 587))
-    ctx = ssl.create_default_context()
-    if port == 465:
-        with smtplib.SMTP_SSL(cfg["host"], port, context=ctx, timeout=20) as s:
-            s.login(cfg["user"], cfg["password"])
-            s.send_message(msg)
-    else:
-        with smtplib.SMTP(cfg["host"], port, timeout=20) as s:
-            s.starttls(context=ctx)
-            s.login(cfg["user"], cfg["password"])
-            s.send_message(msg)
-
-
-def weekly_report_text(brand: str, parent_name: str, student_name: str, stats: Dict[str, Any],
-                       streak_days: int, new_badges: List[str], weak_topic: str = "") -> str:
-    lines = [
-        f"Sayın {parent_name},",
-        "",
-        f"{student_name} için bu haftanın özeti:",
-        "",
-        f"• Çözülen soru: {stats.get('weekly_solved', 0)}",
-        f"• Doğru / Yanlış / Boş: {stats.get('correct', 0)} / {stats.get('wrong', 0)} / {stats.get('blank', 0)}",
-        f"• Doğruluk oranı: %{stats.get('accuracy', 0)}",
-        f"• Çalıştığı gün sayısı: {stats.get('active_days', 0)} / 7",
-        f"• Güncel çalışma serisi: {streak_days} gün",
-    ]
-    if new_badges:
-        lines.append(f"• Kazandığı rozetler: {', '.join(new_badges)}")
-    if weak_topic:
-        lines += ["", f"Pekiştirilmesi önerilen konu: {weak_topic}"]
-    if int(stats.get("weekly_solved", 0)) == 0:
-        lines += ["", "Bu hafta platformda çalışma kaydı görünmüyor. Kısa da olsa günlük bir rutin önerilir."]
-    lines += ["", "Ayrıntılar için Veli Takip Paneli'ne göz atabilirsiniz.", "", brand]
-    return "\n".join(lines)
-
-
-# ------------------------------------------------------------------------------
-# Basılabilir deneme kitapçığı + optik form
-# ------------------------------------------------------------------------------
-def _margins(doc: Document, inch: float = 0.7) -> None:
-    for s in doc.sections:
-        s.top_margin = s.bottom_margin = s.left_margin = s.right_margin = Inches(inch)
-
-
-def _p(doc: Document, text: str, size: float = 11, bold: bool = False, color: RGBColor = INK,
-       align: Optional[int] = None, space_after: float = 4) -> None:
-    p = doc.add_paragraph()
-    if align is not None:
-        p.alignment = align
-    p.paragraph_format.space_after = Pt(space_after)
-    r = p.add_run(text)
-    r.font.size = Pt(size)
-    r.bold = bold
-    r.font.color.rgb = color
-
-
-def build_exam_booklet_docx(questions: List[Dict[str, Any]], title: str, meta: str,
-                            logo_png: Optional[bytes] = None, include_key: bool = True) -> bytes:
-    """questions: app'teki parse_quiz_questions çıktısı (num, stem, options, correct)."""
-    doc = Document()
-    _margins(doc)
-    if logo_png:
-        try:
-            lp = doc.add_paragraph()
-            lp.alignment = WD_ALIGN_PARAGRAPH.CENTER
-            lp.add_run().add_picture(io.BytesIO(logo_png), width=Inches(0.9))
-        except Exception:
-            pass
-    _p(doc, title.upper(), 15, True, align=WD_ALIGN_PARAGRAPH.CENTER)
-    _p(doc, meta, 10, color=MUTED, align=WD_ALIGN_PARAGRAPH.CENTER, space_after=10)
-    _p(doc, "Ad Soyad: ______________________   Sınıf/No: __________   Tarih: ____________", 10.5, space_after=14)
-
-    letters = sorted({k for q in questions for k in q.get("options", {})}) or ["A", "B", "C", "D"]
-
-    for i, q in enumerate(questions, start=1):
-        _p(doc, f"{i}. {q.get('stem', '').strip()}", 11, bold=False, space_after=3)
-        for letter, text in q.get("options", {}).items():
-            p = doc.add_paragraph()
-            p.paragraph_format.left_indent = Inches(0.3)
-            p.paragraph_format.space_after = Pt(1)
-            r = p.add_run(f"{letter}) {text}")
-            r.font.size = Pt(10.5)
-        doc.add_paragraph().paragraph_format.space_after = Pt(4)
-
-    # Optik form
-    doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE)
-    _p(doc, "CEVAP KÂĞIDI (OPTİK FORM)", 14, True, align=WD_ALIGN_PARAGRAPH.CENTER)
-    _p(doc, "Doğru seçeneğin dairesini tamamen doldurun. Silinti bırakmayın.", 9.5, color=MUTED,
-       align=WD_ALIGN_PARAGRAPH.CENTER, space_after=10)
-    _p(doc, "Ad Soyad: ______________________   Sınıf/No: __________", 10.5, space_after=10)
-
-    n = len(questions)
-    half = (n + 1) // 2
-    cols_per_block = 1 + len(letters)
-    table = doc.add_table(rows=half + 1, cols=cols_per_block * 2 + 1)
-    table.alignment = WD_TABLE_ALIGNMENT.CENTER
-    table.style = "Table Grid"
-    header = ["No"] + letters
-    for block in range(2):
-        for j, h in enumerate(header):
-            cell = table.cell(0, block * (cols_per_block + 1) + j)
-            cell.text = h
-            cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-            cell.paragraphs[0].runs[0].bold = True
-    for i in range(n):
-        block, row = (0, i + 1) if i < half else (1, i - half + 1)
-        base = block * (cols_per_block + 1)
-        table.cell(row, base).text = str(i + 1)
-        for j in range(len(letters)):
-            c = table.cell(row, base + 1 + j)
-            c.text = "◯"
-            c.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
-    # ortadaki boşluk sütunu
-    for r in range(half + 1):
-        table.cell(r, cols_per_block).text = ""
-
-    if include_key and any(q.get("correct") for q in questions):
-        doc.add_paragraph().add_run().add_break(WD_BREAK.PAGE)
-        _p(doc, "CEVAP ANAHTARI (öğretmen nüshası)", 13, True, align=WD_ALIGN_PARAGRAPH.CENTER, space_after=8)
-        key = "   ".join(f"{i}-{q.get('correct') or '?'}" for i, q in enumerate(questions, start=1))
-        _p(doc, key, 11)
-
-    buf = io.BytesIO()
-    doc.save(buf)
-    return buf.getvalue()
-
-
-reports = SimpleNamespace(
-    INK=INK,
-    MUTED=MUTED,
-    build_exam_booklet_docx=build_exam_booklet_docx,
-    send_email=send_email,
-    smtp_ready=smtp_ready,
-    weekly_report_text=weekly_report_text,
-)
-
 
 # ==============================================================================
 # SAYFA YAPILANDIRMASI VE KURUMSAL SABİTLER (2028 KURGUSU)
@@ -1105,33 +204,7 @@ PAGES = [
     "Öğrenci Röntgeni",
     "B2B Lisans & Kurum",
     "Paketler & Abonelik Vitrini",
-    "Sınıflarım",
-    "Profilim & Rozetler",
 ]
-
-# Hangi rol hangi sayfaları görür
-ROLE_PAGES: Dict[str, List[str]] = {
-    "ogrenci": [
-        "Ana Sayfa", "Soru & Redaksiyon Fabrikası", "Öğrenci Portalı & Çözüm", "Dijimentor",
-        "Öğrenci Röntgeni", "Paketler & Abonelik Vitrini", "Profilim & Rozetler",
-    ],
-    "veli": ["Ana Sayfa", "Veli Takip Paneli", "Öğrenci Röntgeni", "Paketler & Abonelik Vitrini", "Profilim & Rozetler"],
-    "ogretmen": [
-        "Ana Sayfa", "Soru & Redaksiyon Fabrikası", "Sınıflarım", "Öğrenci Röntgeni",
-        "B2B Lisans & Kurum", "Paketler & Abonelik Vitrini", "Profilim & Rozetler",
-    ],
-}
-
-# Kayıt olmadan denemek isteyenler için ücretsiz başlangıç kotası (iş kararı: değiştirebilirsin)
-FREE_PLAN: Dict[str, Any] = {
-    "name": "Ücretsiz Başlangıç",
-    "segment": "Deneme",
-    "badge": "Ücretsiz",
-    "monthly_price": 0,
-    "monthly_quota": 50,
-    "coach_quota": 3,
-    "total_count": 0,
-}
 
 PAGE_DESCRIPTIONS: Dict[str, Tuple[str, str]] = {
     "Ana Sayfa": (
@@ -1161,14 +234,6 @@ PAGE_DESCRIPTIONS: Dict[str, Tuple[str, str]] = {
     "B2B Lisans & Kurum": (
         "Kurumsal Lisans, Zümre & Deneme Planlayıcı",
         "Koltuk/kota planlaması, zümre dağılımı, kurum içi deneme takvimi ve DOCX teklif çıktısı.",
-    ),
-    "Sınıflarım": (
-        "Sınıflarım, Ödevler & Sınıf Analizi",
-        "Sınıf oluşturun, öğrencileri kodla davet edin, test atayın ve kazanım bazlı sınıf karşılaştırmasını görün.",
-    ),
-    "Profilim & Rozetler": (
-        "Profilim, Seri & Rozetler",
-        "Günlük hedefini ayarla, serini ve rozetlerini gör, veli bağlantı kodunu paylaş.",
     ),
     "Paketler & Abonelik Vitrini": (
         "Abonelik Paketleri & Ofis Çantası",
@@ -1249,13 +314,11 @@ NAV_GROUPS: List[Tuple[Optional[str], List[Tuple[str, str, str]]]] = [
         ("Dijimentor", "Dijimentor", ":material/event_note:"),
         ("Öğrenci Röntgeni", "Öğrenci Röntgeni", ":material/monitor_heart:"),
     ]),
-    ("Okul & Veli", [
-        ("Sınıflarım", "Sınıflarım", ":material/groups:"),
+    ("Veli & Kurum", [
         ("Veli Takip Paneli", "Veli Takip Paneli", ":material/family_restroom:"),
         ("B2B Lisans & Kurum", "B2B Lisans & Kurum", ":material/apartment:"),
     ]),
     ("Hesap", [
-        ("Profilim & Rozetler", "Profilim & Rozetler", ":material/military_tech:"),
         ("Paketler & Abonelik Vitrini", "Paketler", ":material/shopping_bag:"),
     ]),
 ]
@@ -2344,32 +1407,6 @@ section[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
 .kp-prio-title { font-weight: 600; font-size: 0.95rem; color: #0F172A; line-height: 1.4; }
 .kp-prio-sub { font-size: 0.8rem; color: #64748B; margin-top: 0.15rem; }
 .kp-prio-divider { border-top: 1px solid #E2E8F0; margin: 0.35rem 0; }
-/* Kullanıcı kartı, seri, bugün kartları */
-.kp-user-card { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 0.7rem; margin: 0 0 0.6rem 0; border: 1px solid #E2E8F0; border-radius: 12px; background: #FFFFFF; }
-.kp-avatar { width: 34px; height: 34px; border-radius: 50%; background: #1D4ED8; color: #FFFFFF; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-.kp-user-name { font-weight: 700; font-size: 0.88rem; color: #0F172A; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.kp-user-role { font-size: 0.75rem; color: #64748B; }
-.kp-streak-pill { font-size: 0.72rem; font-weight: 800; color: #9A3412; background: #FFEDD5; border-radius: 999px; padding: 0.2rem 0.55rem; white-space: nowrap; }
-.kp-today-label { font-size: 0.78rem; font-weight: 700; color: #64748B; text-transform: uppercase; letter-spacing: 0.05em; }
-.kp-today-big { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 2.2rem; font-weight: 800; color: #0F172A; line-height: 1.15; margin-top: 0.2rem; }
-.kp-today-big span { font-size: 0.95rem; font-weight: 600; color: #64748B; }
-.kp-today-sub { font-size: 0.86rem; color: #475569; min-height: 2.6rem; margin-bottom: 0.6rem; }
-.kp-banner { border-radius: 12px; padding: 0.75rem 1rem; margin-bottom: 0.9rem; font-size: 0.92rem; color: #0F172A; }
-.kp-banner-hw { background: #EFF6FF; border: 1px solid #BFDBFE; }
-.kp-banner-review { background: #FEF9C3; border: 1px solid #FDE047; }
-.kp-code { font-family: ui-monospace, monospace; font-weight: 800; font-size: 1.05rem; letter-spacing: 0.12em; background: #FFFFFF; border: 1px dashed #1D4ED8; border-radius: 8px; padding: 0.1rem 0.5rem; }
-.kp-step { padding: 0.5rem 0; }
-.kp-streak-hero { display: flex; align-items: center; gap: 1.2rem; background: #FFF7ED; border: 1px solid #FED7AA; border-radius: 16px; padding: 1.2rem 1.4rem; }
-.kp-streak-num { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 3.4rem; font-weight: 800; color: #EA580C; line-height: 1; }
-
-/* Rozetler */
-.kp-badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 0.7rem; }
-.kp-badge { text-align: center; padding: 0.8rem 0.5rem; border-radius: 14px; border: 1px solid #E2E8F0; background: #FFFFFF; }
-.kp-badge-off { opacity: 0.75; }
-.kp-badge-off .kp-badge-name { color: #64748B; }
-.kp-badge-name { font-weight: 700; font-size: 0.85rem; color: #0F172A; margin-top: 0.3rem; }
-.kp-badge-sub { font-size: 0.72rem; color: #64748B; margin-top: 0.15rem; line-height: 1.3; }
-
 .kp-tag-warn { font-size: 0.75rem; font-weight: 600; color: #92400E; background: #FEF3C7; padding: 0.2rem 0.6rem; border-radius: 999px; }
 .kp-page-strip {
     display: flex;
@@ -2718,46 +1755,6 @@ div[data-testid="stFormSubmitButton"] > button[kind="primary"]:hover {
     border-color: #1D4ED8 !important;
 }
 
-/* ---------- Streamlit'in varsayılan kırmızısını marka mavisine çevir ---------- */
-button[kind="segmented_controlActive"], [data-testid="stBaseButton-segmented_controlActive"] {
-    background: #1D4ED8 !important; border-color: #1D4ED8 !important; color: #FFFFFF !important;
-}
-button[kind="segmented_control"]:hover, [data-testid="stBaseButton-segmented_control"]:hover {
-    border-color: #1D4ED8 !important; color: #1D4ED8 !important;
-}
-[data-baseweb="tab-highlight"] { background-color: #1D4ED8 !important; }
-button[data-baseweb="tab"][aria-selected="true"], button[data-baseweb="tab"][aria-selected="true"] p { color: #1D4ED8 !important; }
-[data-testid="stSlider"] [role="slider"] { background-color: #1D4ED8 !important; border-color: #1D4ED8 !important; }
-[data-testid="stSlider"] [data-testid="stThumbValue"] { color: #1D4ED8 !important; }
-[data-testid="stCheckbox"] label span[aria-checked], [data-baseweb="checkbox"] [data-checked="true"] { background-color: #1D4ED8 !important; border-color: #1D4ED8 !important; }
-a { color: #1D4ED8; }
-
-/* ---------- Sol menü: kartlar arası nefes payı ---------- */
-.kp-sidebar-meta { margin-bottom: 1.1rem; }
-[data-testid="stSidebar"] [data-testid="stExpander"] { margin-top: 0.4rem; }
-.kp-user-card { margin-bottom: 0.9rem; }
-
-/* ---------- Deneme sonrası kutlama ---------- */
-.kp-celebrate { display: flex; align-items: center; gap: 0.8rem; background: #DCFCE7; border: 1px solid #86EFAC; border-radius: 14px; padding: 0.8rem 1rem; margin: 0.6rem 0 1rem; font-size: 0.95rem; color: #14532D; }
-.kp-celebrate b { font-size: 1.1rem; }
-
-/* ---------- Telefon ---------- */
-@media (max-width: 640px) {
-    .block-container { padding-left: 1rem; padding-right: 1rem; }
-    .kp-hero-title { font-size: 2rem !important; }
-    .kp-hero-lead { font-size: 1rem; }
-    .kp-stats { gap: 1.2rem; }
-    .kp-stat-num { font-size: 1.5rem !important; }
-    .kp-preview { transform: none !important; }
-    .kp-sticker { right: 6px; top: -14px; font-size: 0.75rem; }
-    .kp-topbar { font-size: 0.78rem; }
-    .kp-today-big { font-size: 1.8rem; }
-    .kp-badge-grid { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
-    .kp-gap { height: 1.8rem; }
-    [data-testid="stHorizontalBlock"] { flex-wrap: wrap; gap: 0.75rem; }
-    [data-testid="stHorizontalBlock"] > [data-testid="stColumn"] { min-width: calc(50% - 0.5rem) !important; flex: 1 1 calc(50% - 0.5rem) !important; }
-}
-
 @media (prefers-reduced-motion: reduce) {
     .block-container,
     .kp-top-loader,
@@ -2938,21 +1935,8 @@ FUN_THEME_CSS = """
 /* Sol menü kota kutusu */
 .kp-sidebar-meta { border: 2px solid var(--fun-ink); box-shadow: 3px 3px 0 var(--fun-ink); background: #FFFFFF; }
 
-.kp-badge-on { border: 2px solid var(--fun-ink); box-shadow: 3px 3px 0 var(--fun-ink); transition: transform 0.15s ease; }
-.kp-badge-on:hover { transform: rotate(-3deg) scale(1.04); }
-.kp-user-card { border: 2px solid var(--fun-ink); box-shadow: 2px 2px 0 var(--fun-ink); }
-.kp-avatar { background: var(--fun-yellow); color: var(--fun-ink); border: 2px solid var(--fun-ink); }
-.kp-today-big, .kp-streak-num { font-family: 'Baloo 2', sans-serif !important; }
-.kp-streak-hero { border: 2px solid var(--fun-ink); box-shadow: 4px 4px 0 #FB923C, 4px 4px 0 2px var(--fun-ink); }
-.kp-banner { border: 2px solid var(--fun-ink) !important; }
-.st-key-card_today { background: #F0FDF4 !important; }
-.kp-celebrate { border: 2px solid var(--fun-ink); box-shadow: 4px 4px 0 #22C55E, 4px 4px 0 2px var(--fun-ink); transform: rotate(-0.6deg); }
-.kp-celebrate b { font-family: 'Baloo 2', sans-serif; font-size: 1.3rem; }
-.st-key-card_review { background: #FEFCE8 !important; }
-.st-key-card_homework { background: #EFF6FF !important; }
-
 @media (prefers-reduced-motion: reduce) {
-    .kp-preview, .kp-eyebrow, .kp-sticker, .kp-mod-icon, .kp-badge-on { transform: none !important; transition: none !important; }
+    .kp-preview, .kp-eyebrow, .kp-sticker, .kp-mod-icon { transform: none !important; transition: none !important; }
 }
 """
 
@@ -3014,26 +1998,39 @@ def _default_parent_stats() -> Dict[str, Any]:
 
 
 def _default_parent_announcements() -> List[Dict[str, str]]:
-    return []
+    now_str = datetime.now().strftime("%d.%m.%Y %H:%M")
+    return [
+        {
+            "category": "1. Akademik İlerleme ve Başarı Takibi",
+            "subtopic": "Haftalık Soru ve Net Özeti",
+            "body": "Bu hafta 340 soru çözüldü ve %81 ortalama doğruluk sağlandı.",
+            "date": now_str,
+        },
+        {
+            "category": "2. Çalışma Disiplini ve Dijimentor Takibi",
+            "subtopic": "Dijimentor Çalışma Planı Uyumu",
+            "body": "Dijimentor haftalık çalışma planına %88 oranında uyum sağlandı.",
+            "date": now_str,
+        },
+    ]
 
 
 def _default_activity_log() -> List[Dict[str, str]]:
-    return []
-
-
-def current_user() -> Optional[Dict[str, Any]]:
-    return st.session_state.get("user")
-
-
-def current_user_id() -> Optional[int]:
-    u = current_user()
-    return int(u["id"]) if u else None
+    return [
+        {"time": "09:15:00", "module": "Dijital Ofis 2028 • Fabrika", "summary": "8. Sınıf 2028 LGS Muhakeme seti hazır"},
+        {"time": "10:42:18", "module": "Dijital Ofis 2028 • Dijimentor", "summary": "Haftalık çeldirici & tempo analizi aktif"},
+    ]
 
 
 def load_persisted_state() -> Dict[str, Any]:
-    """Giriş yapan kullanıcının kayıtlı durumu (her kullanıcıya ayrı)."""
-    uid = current_user_id()
-    return db.load_state(uid) if uid else {}
+    if not STATE_FILE_PATH.exists():
+        return {}
+    try:
+        raw = STATE_FILE_PATH.read_text(encoding="utf-8")
+        data = json.loads(raw)
+        return data if isinstance(data, dict) else {}
+    except Exception:
+        return {}
 
 
 def save_persisted_state() -> None:
@@ -3051,15 +2048,9 @@ def save_persisted_state() -> None:
         "error_notebook_2028": st.session_state.get("error_notebook_2028", []),
         "b2b_org_cache": st.session_state.get("b2b_org_cache"),
         "last_b2b_summary": st.session_state.get("last_b2b_summary", ""),
-        "active_plan": st.session_state.get("active_plan"),
-        "reviews_completed": int(st.session_state.get("reviews_completed", 0)),
-        "photo_solves": int(st.session_state.get("photo_solves", 0)),
     }
-    uid = current_user_id()
-    if not uid:
-        return
     try:
-        db.save_state(uid, payload)
+        STATE_FILE_PATH.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
     except Exception:
         pass
 
@@ -3140,27 +2131,6 @@ def resolve_iyzico_config() -> Tuple[str, str, str]:
     return api_key, secret_key, base_url
 
 
-def _secret(path: str, default: str = "") -> str:
-    """secrets.toml'dan 'bolum.anahtar' biçiminde değer okur."""
-    try:
-        node: Any = st.secrets
-        for part in path.split("."):
-            node = node[part]
-        return str(node).strip()
-    except Exception:
-        return default
-
-
-def client_ip() -> str:
-    try:
-        fwd = st.context.headers.get("X-Forwarded-For", "")
-        if fwd:
-            return fwd.split(",")[0].strip()
-        return st.context.headers.get("X-Real-Ip", "") or "127.0.0.1"
-    except Exception:
-        return "127.0.0.1"
-
-
 def initialize_iyzico_checkout(
     buyer_name: str,
     buyer_surname: str,
@@ -3168,7 +2138,6 @@ def initialize_iyzico_checkout(
     buyer_phone: str,
     amount_try: float,
     basket_title: str,
-    identity_number: str = "",
 ) -> Dict[str, Any]:
     api_key, secret_key, base_url = resolve_iyzico_config()
     if not api_key or not secret_key:
@@ -3181,36 +2150,40 @@ def initialize_iyzico_checkout(
         }
     options = {"api_key": api_key, "secret_key": secret_key, "base_url": base_url}
     price_str = f"{max(1.0, float(amount_try)):.2f}"
-    user = current_user() or {}
-    full_name = f"{buyer_name.strip()} {buyer_surname.strip()}".strip() or user.get("name", "Müşteri")
-    # iyzico T.C. kimlik no ister; kullanıcı girmezse secrets'taki varsayılan kullanılır.
-    identity = identity_number.strip() or _secret("iyzico.identity_number", "11111111111")
-    address = _secret("iyzico.address", "Türkiye")
-    city = _secret("iyzico.city", "Istanbul")
     request = {
         "locale": "tr",
-        "conversationId": f"KP28-{uuid.uuid4().hex[:12]}",
+        "conversationId": f"KP28-{int(time.time())}",
         "price": price_str,
         "paidPrice": price_str,
         "currency": "TRY",
-        "basketId": f"B28-{uuid.uuid4().hex[:12]}",
+        "basketId": f"B28-{int(time.time())}",
         "paymentGroup": "PRODUCT",
-        "callbackUrl": _secret("app_url", "https://kursunkalemdijitalofis.com.tr"),
+        "callbackUrl": "https://kursunkalemdijitalofis.com.tr",
         "enabledInstallments": [1, 2, 3, 6, 9, 12],
         "buyer": {
-            "id": f"U{user.get('id', 0)}",
-            "name": buyer_name.strip() or full_name,
-            "surname": buyer_surname.strip() or "-",
-            "gsmNumber": buyer_phone.strip() or "+900000000000",
-            "email": buyer_email.strip() or user.get("email", ""),
-            "identityNumber": identity,
-            "registrationAddress": address,
-            "ip": client_ip(),
-            "city": city,
+            "id": "BY_KP28_01",
+            "name": buyer_name.strip() or "Sinan Gürbüz",
+            "surname": buyer_surname.strip() or "Kurşun",
+            "gsmNumber": buyer_phone.strip() or "+905350000000",
+            "email": buyer_email.strip() or "iletisim@kursunkalemdijitalofis.com.tr",
+            "identityNumber": "74300864791",
+            "registrationAddress": "İstanbul, Türkiye",
+            "ip": "85.34.78.112",
+            "city": "Istanbul",
             "country": "Turkey",
         },
-        "shippingAddress": {"contactName": full_name, "city": city, "country": "Turkey", "address": address},
-        "billingAddress": {"contactName": full_name, "city": city, "country": "Turkey", "address": address},
+        "shippingAddress": {
+            "contactName": f"{buyer_name.strip() or 'Sinan Gürbüz'} {buyer_surname.strip() or 'Kurşun'}",
+            "city": "Istanbul",
+            "country": "Turkey",
+            "address": "İstanbul, Türkiye",
+        },
+        "billingAddress": {
+            "contactName": f"{buyer_name.strip() or 'Sinan Gürbüz'} {buyer_surname.strip() or 'Kurşun'}",
+            "city": "Istanbul",
+            "country": "Turkey",
+            "address": "İstanbul, Türkiye",
+        },
         "basketItems": [
             {
                 "id": "BI_KP28_101",
@@ -3224,14 +2197,6 @@ def initialize_iyzico_checkout(
     checkout_form_initialize = iyzipay.CheckoutFormInitialize().create(request, options)
     raw_res = checkout_form_initialize.read().decode("utf-8")
     return json.loads(raw_res)
-
-
-def retrieve_iyzico_checkout(token: str) -> Dict[str, Any]:
-    """Ödeme formunun sonucunu iyzico'dan sorgular. paymentStatus == 'SUCCESS' ise ödeme alınmıştır."""
-    api_key, secret_key, base_url = resolve_iyzico_config()
-    options = {"api_key": api_key, "secret_key": secret_key, "base_url": base_url}
-    res = iyzipay.CheckoutForm().retrieve({"locale": "tr", "token": token}, options)
-    return json.loads(res.read().decode("utf-8"))
 
 
 def get_gemini_client() -> genai.Client:
@@ -3290,112 +2255,6 @@ def call_gemini_text(
                 break
 
     raise RuntimeError(f"Model çağrısı başarısız oldu: {' | '.join(errors_by_model[-2:])}")
-
-
-def call_gemini_vision(image_bytes: bytes, mime_type: str, prompt: str, system_instruction: str) -> str:
-    """Fotoğraftaki soruyu Gemini'ye gönderir (çok kipli istek)."""
-    client = get_gemini_client()
-    errors: List[str] = []
-    for model_name in [DEFAULT_MODEL, FALLBACK_MODEL]:
-        try:
-            response = client.models.generate_content(
-                model=model_name,
-                contents=[types.Part.from_bytes(data=image_bytes, mime_type=mime_type), prompt],
-                config=types.GenerateContentConfig(system_instruction=system_instruction, temperature=0.4),
-            )
-            text = getattr(response, "text", None)
-            if text:
-                return text.strip()
-            errors.append(f"[{model_name}] boş yanıt")
-        except Exception as exc:
-            errors.append(f"[{model_name}] {exc}")
-    raise RuntimeError("Görsel çözüm başarısız: " + " | ".join(errors[-2:]))
-
-
-# ==============================================================================
-# ÖĞRENME KAYITLARI, SERİ & ROZETLER
-# ==============================================================================
-def user_progress(uid: int) -> Dict[str, Any]:
-    days = db.activity_days(uid)
-    active = [d["day"] for d in days if d["solved"] > 0]
-    today_row = next((d for d in days if d["day"] == date.today().isoformat()), None)
-    user = db.get_user(uid) or {}
-    return {
-        "streak": gamify.streak(active),
-        "solved_today": int(today_row["solved"]) if today_row else 0,
-        "goal": int(user.get("daily_goal", 20)),
-        "total_solved": sum(int(d["solved"]) for d in days),
-    }
-
-
-def check_and_award_badges() -> List[str]:
-    """Yeni kazanılan rozetleri verir, ekranda kutlar ve adlarını döner."""
-    uid = current_user_id()
-    if not uid:
-        return []
-    prog = user_progress(uid)
-    last = db.recent_exam_results(uid, 1)
-    ctx = {
-        "streak": prog["streak"],
-        "total_solved": prog["total_solved"],
-        "exams": db.exam_count(uid),
-        "last_exam_size": (last[0]["correct"] + last[0]["wrong"] + last[0]["blank"]) if last else 0,
-        "last_exam_accuracy": last[0]["accuracy"] if last else 0,
-        "reviews_completed": int(st.session_state.get("reviews_completed", 0)),
-        "photo_solves": int(st.session_state.get("photo_solves", 0)),
-        "assignments_done": len([a for a in db.student_assignments(uid) if a.get("submitted_at")]),
-    }
-    new_names: List[str] = []
-    for code in gamify.earned_badges(ctx):
-        if db.award_badge(uid, code):
-            name = gamify.BADGES[code][0]
-            new_names.append(name)
-            st.toast(f"Yeni rozet: {name}!", icon=":material/military_tech:")
-    if new_names:
-        st.balloons()
-    return new_names
-
-
-def record_exam(correct: int, wrong: int, blank: int, source: str, assignment_id: Optional[int] = None) -> None:
-    """Deneme sonucunu kalıcı kayıtlara işler: günlük aktivite, sonuç geçmişi, ödev teslimi, rozetler."""
-    uid = current_user_id()
-    if not uid:
-        return
-    db.record_practice(uid, correct, wrong, blank)
-    db.add_exam_result(uid, source, correct, wrong, blank, assignment_id)
-    graded = correct + wrong
-    acc = 100.0 * correct / graded if graded else 0.0
-    if graded >= 3 and acc >= 80:
-        st.session_state["celebrate"] = "Tam isabet!" if acc >= 100 else "Harika iş!"
-        st.balloons()
-    if assignment_id:
-        db.submit_assignment(assignment_id, uid, correct, wrong, blank)
-    check_and_award_badges()
-
-
-def badge_svg(color: str, earned: bool) -> str:
-    fill = color if earned else "#E2E8F0"
-    stroke = "#0F172A" if earned else "#94A3B8"
-    return (
-        f'<svg aria-hidden="true" width="44" height="44" viewBox="0 0 48 48">'
-        f'<path d="M16 4h16l-4 12h-8z" fill="{stroke}" opacity="0.25"/>'
-        f'<circle cx="24" cy="28" r="15" fill="{fill}" stroke="{stroke}" stroke-width="2.5"/>'
-        f'<path d="M24 20l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z" '
-        f'fill="#FFFFFF" stroke="{stroke}" stroke-width="1.2" stroke-linejoin="round"/></svg>'
-    )
-
-
-def render_badge_grid(earned: Dict[str, str]) -> None:
-    cells = []
-    for code, (name, how, color) in gamify.BADGES.items():
-        got = code in earned
-        when = datetime.fromisoformat(earned[code]).strftime("%d.%m.%Y") if got else how
-        cells.append(
-            f'<div class="kp-badge {"kp-badge-on" if got else "kp-badge-off"}">{badge_svg(color, got)}'
-            f'<div class="kp-badge-name">{html.escape(name)}</div>'
-            f'<div class="kp-badge-sub">{html.escape(when)}</div></div>'
-        )
-    st.markdown(f'<div class="kp-badge-grid">{"".join(cells)}</div>', unsafe_allow_html=True)
 
 
 def clear_page_ephemeral_state(target_page: str) -> None:
@@ -3502,67 +2361,6 @@ def get_bag_summary() -> Dict[str, Any]:
     }
 
 
-def is_dev_mode() -> bool:
-    """Geliştirme modu: ödeme olmadan kota açan simülasyon butonu sadece burada görünür.
-    Açmak için secrets.toml'a dev_mode = true ekle ya da KK_DEV_MODE=1 ortam değişkenini ver."""
-    if os.environ.get("KK_DEV_MODE", "").strip() == "1":
-        return True
-    try:
-        return bool(st.secrets.get("dev_mode", False))
-    except Exception:
-        return False
-
-
-BILLING_MONTHS = {"Aylık Abonelik": 1, "3 Aylık (%10 İndirim)": 3, "Yıllık (%20 İndirim)": 12}
-
-
-def get_active_plan() -> Dict[str, Any]:
-    """Kotayı belirleyen paket. Çantadaki paketler değil, ödemesi doğrulanmış paket geçerlidir.
-    Paket süresi bitince ücretsiz pakete dönülür; kullanım her 30 günde bir sıfırlanır."""
-    if is_dev_mode():
-        return get_bag_summary()
-    plan = st.session_state.get("active_plan")
-    if not isinstance(plan, dict):
-        return dict(FREE_PLAN)
-    now = datetime.now()
-    try:
-        if plan.get("expires_at") and now > datetime.fromisoformat(plan["expires_at"]):
-            st.session_state["active_plan"] = None
-            st.session_state["used_question_quota"] = 0
-            st.session_state["used_coach_quota"] = 0
-            return dict(FREE_PLAN)
-        period_start = datetime.fromisoformat(plan["period_start"])
-        if now >= period_start + timedelta(days=30):
-            while now >= period_start + timedelta(days=30):
-                period_start += timedelta(days=30)
-            plan["period_start"] = period_start.isoformat(timespec="seconds")
-            st.session_state["used_question_quota"] = 0
-            st.session_state["used_coach_quota"] = 0
-    except Exception:
-        pass
-    return plan
-
-
-def activate_plan(summary: Dict[str, Any], billing_cycle: str) -> None:
-    """Ödeme doğrulandıktan sonra çantadaki paketleri aktif paket yapar."""
-    now = datetime.now()
-    months = BILLING_MONTHS.get(billing_cycle, 1)
-    st.session_state["active_plan"] = {
-        "name": summary["name"],
-        "segment": summary.get("segment", ""),
-        "badge": summary.get("badge", ""),
-        "monthly_price": int(summary["monthly_price"]),
-        "monthly_quota": int(summary["monthly_quota"]),
-        "coach_quota": int(summary["coach_quota"]),
-        "total_count": int(summary.get("total_count", 1)),
-        "billing_cycle": billing_cycle,
-        "started_at": now.isoformat(timespec="seconds"),
-        "period_start": now.isoformat(timespec="seconds"),
-        "expires_at": (now + timedelta(days=30 * months)).isoformat(timespec="seconds"),
-    }
-    sync_plan_quotas(st.session_state["active_plan"], reset_usage=True)
-
-
 def sync_plan_quotas(summary: Dict[str, Any], reset_usage: bool = False) -> None:
     if reset_usage:
         st.session_state["used_question_quota"] = 0
@@ -3590,7 +2388,7 @@ def cb_add_tier_to_bag(tier_id: str, qty: int = 1) -> None:
     bag[tier_id] = bag.get(tier_id, 0) + max(1, int(qty))
     st.session_state["backpack_cart"] = bag
     st.session_state["selected_tier_id"] = tier_id
-    sync_plan_quotas(get_active_plan(), reset_usage=False)
+    sync_plan_quotas(get_bag_summary(), reset_usage=False)
     tier = get_tier_by_id(tier_id)
     record_activity("Ofis Çantası", f"{tier['name']} çantaya eklendi")
 
@@ -3610,24 +2408,24 @@ def cb_update_bag_qty(tier_id: str, delta: int) -> None:
     st.session_state["backpack_cart"] = bag
     if bag:
         st.session_state["selected_tier_id"] = next(iter(bag.keys()))
-    sync_plan_quotas(get_active_plan(), reset_usage=False)
+    sync_plan_quotas(get_bag_summary(), reset_usage=False)
 
 
 def cb_clear_bag() -> None:
     st.session_state["backpack_cart"] = {}
-    sync_plan_quotas(get_active_plan(), reset_usage=False)
+    sync_plan_quotas(get_bag_summary(), reset_usage=False)
     record_activity("Ofis Çantası", "Çantadaki tüm paketler silindi")
 
 
 def consume_quota(kind: str, amount: int = 1) -> Tuple[bool, str]:
-    summary = get_active_plan()
+    summary = get_bag_summary()
     sync_plan_quotas(summary, reset_usage=False)
 
     if kind == "question":
         rem = int(st.session_state.get("remaining_question_quota", 0))
         if rem < amount:
             return False, (
-                f"Aktif paketinizde ({summary['name']}) yeterli soru üretim kotası kalmadı "
+                f"Ofis çantanızda ({summary['name']}) yeterli soru üretim kotası kalmadı "
                 f"(Kalan: {rem}, İstenen: {amount}). Paketler vitrininden paket ekleyebilirsiniz."
             )
         st.session_state["used_question_quota"] = int(st.session_state.get("used_question_quota", 0)) + amount
@@ -3637,7 +2435,7 @@ def consume_quota(kind: str, amount: int = 1) -> Tuple[bool, str]:
     rem_c = int(st.session_state.get("remaining_coach_quota", 0))
     if rem_c < amount:
         return False, (
-            f"Aktif paketinizde ({summary['name']}) Dijimentor plan kotası doldu "
+            f"Ofis çantanızda ({summary['name']}) Dijimentor plan kotası doldu "
             f"(Kalan: {rem_c}). Paketler vitrininden paket ekleyebilirsiniz."
         )
     st.session_state["used_coach_quota"] = int(st.session_state.get("used_coach_quota", 0)) + amount
@@ -3654,7 +2452,7 @@ def refund_quota(kind: str, amount: int = 1) -> None:
         st.session_state["used_coach_quota"] = max(
             0, int(st.session_state.get("used_coach_quota", 0)) - amount
         )
-    sync_plan_quotas(get_active_plan(), reset_usage=False)
+    sync_plan_quotas(get_bag_summary(), reset_usage=False)
 
 
 def add_to_question_bank(
@@ -3705,8 +2503,6 @@ def add_to_error_notebook(
             "elapsed_sec": round(elapsed_sec, 1),
             "diagnosis": diag,
             "question_text": question_text,
-            "stage": 0,
-            "done": False,
         },
     )
     st.session_state["error_notebook_2028"] = nb[:50]
@@ -4160,19 +2956,17 @@ def render_school_backpack_panel() -> Dict[str, Any]:
             m2.metric("Aylık Soru Kotası", f"{summary['monthly_quota']:,}".replace(",", "."))
             m3.metric("Dijimentor Plan", f"{summary['coach_quota']} / Ay")
 
-            plan_now = get_active_plan()
-            rem_q = int(st.session_state.get("remaining_question_quota", plan_now["monthly_quota"]))
-            rem_c = int(st.session_state.get("remaining_coach_quota", plan_now["coach_quota"]))
-            q_pct = min(1.0, max(0.0, rem_q / max(1, int(plan_now["monthly_quota"]))))
-            c_pct = min(1.0, max(0.0, rem_c / max(1, int(plan_now["coach_quota"]))))
+            rem_q = int(st.session_state.get("remaining_question_quota", summary["monthly_quota"]))
+            rem_c = int(st.session_state.get("remaining_coach_quota", summary["coach_quota"]))
+            q_pct = min(1.0, max(0.0, rem_q / max(1, int(summary["monthly_quota"]))))
+            c_pct = min(1.0, max(0.0, rem_c / max(1, int(summary["coach_quota"]))))
 
             st.markdown("<div style='margin-top:0.55rem;'></div>", unsafe_allow_html=True)
-            st.caption(f"Aktif paketin: **{plan_now['name']}** (çantadaki paketler ödeme doğrulanınca aktif olur)")
             pb1, pb2 = st.columns(2)
             with pb1:
-                st.progress(q_pct, text=f"Kullanılabilir Soru Kotası: {rem_q:,} / {plan_now['monthly_quota']:,}".replace(",", "."))
+                st.progress(q_pct, text=f"Kullanılabilir Soru Kotası: {rem_q:,} / {summary['monthly_quota']:,}".replace(",", "."))
             with pb2:
-                st.progress(c_pct, text=f"Kullanılabilir Dijimentor: {rem_c} / {plan_now['coach_quota']} Plan")
+                st.progress(c_pct, text=f"Kullanılabilir Dijimentor: {rem_c} / {summary['coach_quota']} Plan")
 
     st.markdown("</div>", unsafe_allow_html=True)
     return summary
@@ -4215,18 +3009,13 @@ def render_iyzico_simulator(
     m3.metric("Ödeme Altyapısı", f"iyzico • {card_brand}")
 
     st.markdown("<div style='margin:0.65rem 0;'></div>", unsafe_allow_html=True)
-    _u = current_user() or {}
-    _name_parts = str(_u.get("name", "")).split()
-    b_col1, b_col2, b_col3, b_col4 = st.columns(4)
+    b_col1, b_col2, b_col3 = st.columns(3)
     with b_col1:
-        buyer_name = st.text_input("Ad", value=" ".join(_name_parts[:-1]) or (_name_parts[0] if _name_parts else ""), key=f"iyz_name_{display_label}")
+        buyer_name = st.text_input("Ad", value="Sinan Gürbüz", key=f"iyz_name_{display_label}")
     with b_col2:
-        buyer_surname = st.text_input("Soyad", value=_name_parts[-1] if len(_name_parts) > 1 else "", key=f"iyz_surname_{display_label}")
+        buyer_surname = st.text_input("Soyad", value="Kurşun", key=f"iyz_surname_{display_label}")
     with b_col3:
-        buyer_email = st.text_input("E-posta", value=_u.get("email", ""), key=f"iyz_email_{display_label}")
-    with b_col4:
-        buyer_tc = st.text_input("T.C. kimlik no", max_chars=11, key=f"iyz_tc_{display_label}",
-                                 help="iyzico fatura için ister. Bilgi sadece ödeme isteğine eklenir, saklanmaz.")
+        buyer_email = st.text_input("E-posta", value="iletisim@kursunkalemdijitalofis.com.tr", key=f"iyz_email_{display_label}")
 
     btn_c1, btn_c2, btn_c3 = st.columns([1.8, 1.8, 1.1])
     with btn_c1:
@@ -4236,59 +3025,31 @@ def render_iyzico_simulator(
             else:
                 load_slot = st.empty()
                 render_loading_skeleton(load_slot, lines=2)
-                try:
-                    res_dict = initialize_iyzico_checkout(
-                        buyer_name=buyer_name,
-                        buyer_surname=buyer_surname,
-                        buyer_email=buyer_email,
-                        buyer_phone="",
-                        amount_try=float(total_amount),
-                        basket_title=f"{BRAND_NAME} 2028 - {display_label} ({billing_cycle})",
-                        identity_number=buyer_tc,
-                    )
-                except Exception as exc:
-                    res_dict = {"status": "failure", "errorMessage": str(exc)}
+                res_dict = initialize_iyzico_checkout(
+                    buyer_name=buyer_name,
+                    buyer_surname=buyer_surname,
+                    buyer_email=buyer_email,
+                    buyer_phone="+905350000000",
+                    amount_try=float(total_amount),
+                    basket_title=f"{BRAND_NAME} 2028 - {display_label} ({billing_cycle})",
+                )
                 load_slot.empty()
-                if res_dict.get("status") == "success" and res_dict.get("token"):
-                    # Kota burada AÇILMAZ; ödeme iyzico'dan doğrulanınca açılır.
-                    db.create_payment(res_dict["token"], current_user_id(), int(total_amount), billing_cycle, bag_summary)
-                    record_activity("iyzico", f"{display_label} ({total_amount:,} ₺) ödeme formu açıldı".replace(",", "."))
+                if res_dict.get("status") == "success":
+                    sync_plan_quotas(bag_summary, reset_usage=True)
+                    record_activity("iyzico API", f"{display_label} ({total_amount:,} ₺) ödeme formu açıldı".replace(",", "."))
                     st.session_state["iyzico_last_response"] = res_dict
-                    st.success("Ödeme formu hazır. Ödemeyi tamamladıktan sonra aşağıdan doğrulayın.")
+                    st.success("iyzico ödeme formu başarıyla oluşturuldu ve kota yenilendi!")
                 else:
                     st.error(f"iyzico yanıtı: {res_dict.get('errorMessage', 'Bilinmeyen hata')}")
 
     with btn_c2:
-        if is_dev_mode():
-            if st.button("Simülasyon ile Kota Aktifleştir (geliştirici)", key=f"pay_btn_{display_label}", use_container_width=True):
-                activate_plan(bag_summary, billing_cycle)
-                record_activity("Simülasyon", f"{display_label} ({total_amount:,} ₺) aktiflendi".replace(",", "."))
-                st.success("Geliştirici modu: paket ödeme olmadan aktifleştirildi.")
-        else:
-            pending_pay = db.latest_pending_payment(current_user_id())
-            if st.button("Ödemeyi tamamladım, doğrula", key=f"verify_btn_{display_label}",
-                         use_container_width=True, disabled=pending_pay is None):
-                try:
-                    chk = retrieve_iyzico_checkout(pending_pay["token"])
-                except Exception as exc:
-                    chk = {"status": "failure", "errorMessage": str(exc)}
-                paid_ok = (
-                    chk.get("status") == "success"
-                    and chk.get("paymentStatus") == "SUCCESS"
-                    and float(chk.get("paidPrice") or 0) + 0.01 >= float(pending_pay["amount"])
-                )
-                if paid_ok:
-                    db.mark_payment(pending_pay["token"], "success")
-                    activate_plan(pending_pay["plan"], pending_pay["billing_cycle"])
-                    record_activity("iyzico", f"Ödeme doğrulandı: {pending_pay['plan'].get('name', '')}")
-                    st.session_state.pop("iyzico_last_response", None)
-                    st.success("Ödemen doğrulandı, paketin aktif!")
-                    st.balloons()
-                elif chk.get("paymentStatus") == "FAILURE":
-                    db.mark_payment(pending_pay["token"], "failed")
-                    st.error("Ödeme başarısız görünüyor. Kartınızdan çekim yapılmadıysa tekrar deneyebilirsiniz.")
-                else:
-                    st.info(f"Ödeme henüz tamamlanmamış görünüyor. {chk.get('errorMessage', '')}")
+        if st.button("Simülasyon ile Kota Aktifleştir", key=f"pay_btn_{display_label}", use_container_width=True):
+            sync_plan_quotas(bag_summary, reset_usage=True)
+            record_activity("iyzico Simülasyon", f"{display_label} ({total_amount:,} ₺) aktiflendi".replace(",", "."))
+            st.success(
+                f"**{display_label}** için **{total_amount:,} ₺** ({installment} taksit, "
+                f"{card_brand}) tutarında kota ({bag_summary['monthly_quota']:,} soru) aktifleşti.".replace(",", ".")
+            )
 
     with btn_c3:
         brief_docx = build_commercial_brief_docx(
@@ -4327,7 +3088,6 @@ def render_iyzico_simulator(
 
 
 def render_student_xray_panel() -> None:
-    st.caption("Not: Bu sayfa şimdilik örnek öğrenci profilleriyle çalışır; gerçek verine göre analiz için Hata Defteri ve Veli Paneli'ne bak.")
     st.markdown(
         """
         <div class="kp-studio-banner">
@@ -4480,11 +3240,9 @@ def render_parent_notification_center() -> None:
         with c_right:
             edited_msg = st.text_area("Hazır Veli Bilgilendirme Metni", value=msg_text, height=220, key="pm_body")
             clean_tel = re.sub(r"\D", "", stats["parent_phone"])
-            encoded = urllib.parse.quote(edited_msg)
+            encoded = edited_msg.replace("\n", "%0A").replace(" ", "%20")
             wa_url = f"https://wa.me/{clean_tel}?text={encoded}"
-            mail_url = (
-                f"mailto:{stats['parent_email']}?subject={urllib.parse.quote(f'{BRAND_NAME} - {sel_sub}')}&body={encoded}"
-            )
+            mail_url = f"mailto:{stats['parent_email']}?subject={BRAND_NAME}%202028%20-%20{sel_sub}&body={encoded}"
 
             l1, l2 = st.columns(2)
             l1.link_button("WhatsApp ile Gönder", wa_url, use_container_width=True)
@@ -4557,211 +3315,13 @@ def render_parent_notification_center() -> None:
 
 
 # ==============================================================================
-# GİRİŞ / KAYIT VE TANITIM SAYFASI (giriş yapmamış ziyaretçiler)
-# ==============================================================================
-@st.cache_resource
-def _init_database() -> bool:
-    db.init_db()
-    return True
-
-
-_init_database()
-
-
-def logout() -> None:
-    for k in list(st.session_state.keys()):
-        del st.session_state[k]
-    st.rerun()
-
-
-def _login_form() -> None:
-    with st.form("login_form", border=False):
-        email = st.text_input("E-posta", key="login_email")
-        password = st.text_input("Şifre", type="password", key="login_pw")
-        if st.form_submit_button("Giriş yap", type="primary", use_container_width=True):
-            user = db.authenticate(email, password)
-            if user:
-                st.session_state["user"] = user
-                st.rerun()
-            else:
-                st.error("E-posta ya da şifre hatalı.")
-
-
-def _register_form() -> None:
-    role_label = st.radio(
-        "Hesap türü", list(db.ROLE_LABELS.values()), horizontal=True, key="reg_role"
-    )
-    role = next(k for k, v in db.ROLE_LABELS.items() if v == role_label)
-    with st.form("register_form", border=False):
-        name = st.text_input("Ad soyad")
-        email = st.text_input("E-posta")
-        password = st.text_input("Şifre (en az 8 karakter)", type="password")
-        grade = None
-        link_code = ""
-        if role == "ogrenci":
-            grade = st.selectbox("Sınıfın", GRADE_LEVELS_2028, index=3)
-        elif role == "veli":
-            link_code = st.text_input("Öğrenci bağlantı kodu (isteğe bağlı)", help="Çocuğunuzun Profil sayfasında yazan 6 haneli kod.")
-        consent = st.checkbox(
-            "Kişisel verilerimin hizmetin sunulması amacıyla işlenmesini kabul ediyorum. "
-            "18 yaşından küçüksem velimin onayı var."
-        )
-        if st.form_submit_button("Hesap oluştur", type="primary", use_container_width=True):
-            if not consent:
-                st.error("Devam etmek için onay kutusunu işaretleyin.")
-                return
-            try:
-                user = db.create_user(email, name, password, role, grade)
-                if role == "veli" and link_code.strip():
-                    try:
-                        db.link_parent(user["id"], link_code)
-                        user = db.get_user(user["id"])
-                    except ValueError as exc:
-                        st.warning(f"Hesap açıldı ama öğrenci bağlanamadı: {exc}")
-                st.session_state["user"] = user
-                st.rerun()
-            except ValueError as exc:
-                st.error(str(exc))
-
-
-def render_landing() -> None:
-    st.markdown(
-        '<style>[data-testid="stSidebar"], [data-testid="stSidebarCollapsedControl"] {display:none;}</style>',
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        f"""
-        <div class="kp-topbar">
-            <span class="kp-topbar-brand"><img src="{LOGO_DATA_URI}" alt="" style="width:30px;height:30px;vertical-align:middle;margin-right:8px;border-radius:8px;"/>Kurşun Kalem Dijital Ofis</span>
-            <span>Destek: <a href="tel:08505321629">0850 532 16 29</a></span>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    hero_l, hero_r = st.columns([1.25, 1.0], gap="large", vertical_alignment="center")
-    with hero_l:
-        st.markdown(
-            f"""
-            <span class="kp-eyebrow">2028 müfredatına tam uyumlu</span>
-            <h1 class="kp-hero-title">Hayalindeki <em>2028 hedefi</em> için ihtiyacın olan her şey, tek platformda.</h1>
-            <p class="kp-hero-lead">
-                Yapay zekâ destekli soru bankası, haftalık dijital mentorluk, fotoğrafla soru çözümü,
-                mini denemeler ve kişisel eksik analizi. Öğrenci, veli ve öğretmen aynı ekranda.
-            </p>
-            <div class="kp-stats">
-                <div><div class="kp-stat-num">142.500+</div><div class="kp-stat-lbl">soru havuzu</div></div>
-                <div><div class="kp-stat-num">18.420</div><div class="kp-stat-lbl">ön kayıtlı öğrenci ve veli</div></div>
-                <div><div class="kp-stat-num">48</div><div class="kp-stat-lbl">anlaşmalı kurum</div></div>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
-    with hero_r:
-        with st.container(border=True, key="card_auth"):
-            st.markdown(
-                f'<h2 class="kp-section-title" style="font-size:1.4rem;">Ücretsiz başla</h2>'
-                f'<p class="kp-section-sub">İlk {FREE_PLAN["monthly_quota"]} soru ve {FREE_PLAN["coach_quota"]} '
-                f'Dijimentor planı bizden. Kart bilgisi gerekmez.</p>',
-                unsafe_allow_html=True,
-            )
-            t_login, t_reg = st.tabs(["Giriş yap", "Kayıt ol"])
-            with t_login:
-                _login_form()
-            with t_reg:
-                _register_form()
-
-    st.markdown('<div class="kp-gap"></div>', unsafe_allow_html=True)
-    st.markdown(
-        '<h2 class="kp-section-title">Neler yapabilirsin?</h2>'
-        '<p class="kp-section-sub">Her biri tek başına çalışır, birlikte daha güçlüdür.</p>',
-        unsafe_allow_html=True,
-    )
-    feats = list(MODULE_CARDS) + [
-        ("SR", "Fotoğrafla Çöz", "Kitaptaki sorunun fotoğrafını çek, adım adım çözümünü gör.", "", "#ECFEFF", "#0E7490"),
-        ("DM", "Seri & Rozetler", "Her gün çalış, serini büyüt, rozetleri topla.", "", "#FFF7ED", "#C2410C"),
-        ("VT", "Sınıf & Ödev", "Öğretmenin test atar, sonuçlar anında sınıf paneline düşer.", "", "#F0FDFA", "#0F766E"),
-    ]
-    for row_start in range(0, len(feats), 4):
-        cols = st.columns(4)
-        for j, (code, f_title, f_desc, _pg, f_bg, f_fg) in enumerate(feats[row_start:row_start + 4]):
-            idx = row_start + j
-            with cols[j]:
-                with st.container(border=True, key=f"card_feat_{idx}"):
-                    st.markdown(
-                        f"""
-                        <style>.st-key-card_feat_{idx} {{ background: {f_bg} !important; }}</style>
-                        <div class="kp-mod-icon" style="background:#FFFFFF;color:{f_fg};">{MODULE_ICONS.get(code, "")}</div>
-                        <div class="kp-mod-title">{html.escape(f_title)}</div>
-                        <div class="kp-mod-desc">{html.escape(f_desc)}</div>
-                        """,
-                        unsafe_allow_html=True,
-                    )
-
-    st.markdown('<div class="kp-gap"></div>', unsafe_allow_html=True)
-    st.markdown('<h2 class="kp-section-title">Nasıl çalışır?</h2>', unsafe_allow_html=True)
-    steps = [
-        ("1", "Kayıt ol", "Sınıfını seç; öğrenciysen velin seni koduyla takip edebilir."),
-        ("2", "Her gün biraz çöz", "Günlük hedefini tamamla, hata defterin kendiliğinden dolsun."),
-        ("3", "Eksiğini kapat", "Tekrar testleri ve Dijimentor planı zayıf konularına odaklanır."),
-    ]
-    s_cols = st.columns(3)
-    for col, (num, s_title, s_desc) in zip(s_cols, steps):
-        col.markdown(
-            f'<div class="kp-step"><div class="kp-prio-num">{num}</div>'
-            f'<div class="kp-mod-title" style="margin-top:0.6rem;">{s_title}</div>'
-            f'<div class="kp-mod-desc" style="min-height:0;">{s_desc}</div></div>',
-            unsafe_allow_html=True,
-        )
-
-    st.markdown('<div class="kp-gap"></div>', unsafe_allow_html=True)
-    st.markdown(
-        '<h2 class="kp-section-title">Paketler</h2>'
-        '<p class="kp-section-sub">Ücretsiz başla, ihtiyacın olunca yükselt. 12 taksite kadar iyzico güvencesi.</p>',
-        unsafe_allow_html=True,
-    )
-    showcase_ids = ["ogrenci_pro", "yks_sayisal", "veli_aile"]
-    p_cols = st.columns(3)
-    for col, tid in zip(p_cols, showcase_ids):
-        tier = get_tier_by_id(tid)
-        feats_li = "".join(f"<li>• {html.escape(f)}</li>" for f in tier["features"][:4])
-        col.markdown(
-            f"""
-            <div class="kp-pkg-card{' kp-pkg-featured' if tier['badge'] == 'En Çok Tercih Edilen' else ''}">
-                <div class="kp-pkg-top"><span class="kp-pkg-seg">{html.escape(tier['segment'])}</span>
-                <span class="kp-pkg-badge">{html.escape(tier['badge'])}</span></div>
-                <div class="kp-pkg-title">{html.escape(tier['name'])}</div>
-                <div class="kp-pkg-price">{tier['monthly_price']:,} ₺ <span>/ ay</span></div>
-                <ul class="kp-pkg-feats">{feats_li}</ul>
-            </div>
-            """.replace(",", "."),
-            unsafe_allow_html=True,
-        )
-    st.markdown(
-        '<div class="kp-gap"></div><p style="text-align:center;color:#64748B;font-size:0.85rem;">'
-        "Kurşun Kalem Dijital Ofis · destek@kursunkalemdijitalofis.com.tr · 0850 532 16 29</p>",
-        unsafe_allow_html=True,
-    )
-
-
-if not current_user():
-    render_landing()
-    st.stop()
-
-# Kullanıcı bilgisini her açılışta tazele (veli bağlantısı, hedef vb. değişmiş olabilir)
-_fresh_user = db.get_user(current_user_id())
-if not _fresh_user:
-    logout()
-st.session_state["user"] = _fresh_user
-USER: Dict[str, Any] = _fresh_user
-ROLE: str = USER["role"]
-ALLOWED_PAGES: List[str] = ROLE_PAGES.get(ROLE, PAGES)
-
-# ==============================================================================
 # SESSION STATE BAŞLATMA & KALICI VERİ YÜKLEME
 # ==============================================================================
 _persisted = load_persisted_state()
 
-if "active_page" not in st.session_state or st.session_state.active_page not in ALLOWED_PAGES:
+if "active_page" not in st.session_state:
+    st.session_state.active_page = PAGES[0]
+elif st.session_state.active_page == "Ana Sayfa & Geri Sayım":
     st.session_state.active_page = "Ana Sayfa"
 
 if "loader_nonce" not in st.session_state:
@@ -4779,12 +3339,7 @@ if "backpack_cart" not in st.session_state and isinstance(_persisted.get("backpa
     st.session_state["backpack_cart"] = dict(_persisted["backpack_cart"])
 
 ensure_bag_initialized()
-if "active_plan" not in st.session_state:
-    st.session_state["active_plan"] = _persisted.get("active_plan")
-for _k in ("reviews_completed", "photo_solves"):
-    if _k not in st.session_state:
-        st.session_state[_k] = int(_persisted.get(_k, 0) or 0)
-bag_summary_global = get_active_plan()
+bag_summary_global = get_bag_summary()
 
 if "used_question_quota" not in st.session_state:
     if _persisted.get("used_question_quota") is not None:
@@ -4835,38 +3390,6 @@ if "b2b_org_cache" not in st.session_state and isinstance(_persisted.get("b2b_or
 if "last_b2b_summary" not in st.session_state and _persisted.get("last_b2b_summary"):
     st.session_state["last_b2b_summary"] = _persisted["last_b2b_summary"]
 
-
-def refresh_live_stats() -> Optional[int]:
-    """Öğrenci kartlarındaki haftalık rakamları gerçek kayıtlardan doldurur.
-    Öğrenci kendi verisini, bağlı veli çocuğunun verisini görür. Hedef öğrencinin id'sini döner."""
-    target = USER["id"] if ROLE == "ogrenci" else USER.get("parent_of")
-    if not target:
-        return None
-    stu = db.get_user(int(target)) or {}
-    ws = db.weekly_stats(int(target))
-    stats = st.session_state.parent_student_stats
-    stats.update(
-        {
-            "student_name": stu.get("name", stats["student_name"]),
-            "grade": stu.get("grade") or stats["grade"],
-            "weekly_solved": ws["weekly_solved"],
-            "correct": ws["correct"],
-            "wrong": ws["wrong"],
-            "blank": ws["blank"],
-        }
-    )
-    if ROLE == "veli":
-        stats["parent_name"] = USER["name"]
-        stats["parent_email"] = USER["email"]
-        child_state = db.load_state(int(target)).get("parent_student_stats") or {}
-        for key in ("strong_topic", "weak_topic", "mentor_completion", "next_exam_date", "next_exam_name"):
-            if key in child_state:
-                stats[key] = child_state[key]
-    return int(target)
-
-
-LIVE_STUDENT_ID = refresh_live_stats()
-
 api_key_ready = resolve_gemini_api_key() is not None
 
 # ==============================================================================
@@ -4891,31 +3414,8 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
-    # Kullanıcı kartı + seri
-    _prog_side = user_progress(USER["id"]) if ROLE == "ogrenci" else None
-    _streak_html = (
-        f'<span class="kp-streak-pill" title="Üst üste çalışılan gün">{_prog_side["streak"]} gün seri</span>'
-        if _prog_side else ""
-    )
-    st.markdown(
-        f"""
-        <div class="kp-user-card">
-            <div class="kp-avatar">{html.escape(USER["name"][:1].upper())}</div>
-            <div style="min-width:0;flex:1;">
-                <div class="kp-user-name">{html.escape(USER["name"])}</div>
-                <div class="kp-user-role">{db.ROLE_LABELS.get(ROLE, ROLE)}{(" · " + html.escape(USER["grade"])) if USER.get("grade") else ""}</div>
-            </div>
-            {_streak_html}
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    # Gruplanmış, ikonlu menü (sadece bu rolün görebildiği sayfalar)
-    for group_title, all_items in NAV_GROUPS:
-        items = [it for it in all_items if it[0] in ALLOWED_PAGES]
-        if not items:
-            continue
+    # Gruplanmış, ikonlu menü
+    for group_title, items in NAV_GROUPS:
         if group_title:
             st.markdown(f'<div class="kp-nav-title">{html.escape(group_title)}</div>', unsafe_allow_html=True)
         for p_name, p_label, p_icon in items:
@@ -4961,30 +3461,25 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
-    if st.button("Çıkış yap", key="logout_btn", icon=":material/logout:", use_container_width=True):
-        logout()
-
     # Tehlikeli işlem: göz önünden kaldırıldı, "Ayarlar" altında
     with st.expander("Ayarlar", icon=":material/settings:"):
         if not st.session_state.get("confirm_reset_session", False):
-            if st.button("Verilerimi sıfırla", key="reset_session_btn", use_container_width=True):
+            if st.button("Oturumu sıfırla", key="reset_session_btn", use_container_width=True):
                 st.session_state["confirm_reset_session"] = True
                 st.rerun()
         else:
-            st.warning("Soru havuzun, hata defterin ve çantan silinsin mi? Paketin ve rozetlerin korunur.")
+            st.warning("Yerel durum sıfırlansın mı? (Yedek alınır)")
             rc1, rc2 = st.columns(2)
             with rc1:
                 if st.button("Evet", key="confirm_reset_yes", type="primary", use_container_width=True):
-                    keep_plan = st.session_state.get("active_plan")
-                    keep_user = st.session_state.get("user")
-                    db.save_state(USER["id"], {
-                        "active_plan": keep_plan,
-                        "used_question_quota": int(st.session_state.get("used_question_quota", 0)),
-                        "used_coach_quota": int(st.session_state.get("used_coach_quota", 0)),
-                    })
+                    try:
+                        if STATE_FILE_PATH.exists():
+                            STATE_BACKUP_PATH.write_text(STATE_FILE_PATH.read_text(encoding="utf-8"), encoding="utf-8")
+                            STATE_FILE_PATH.unlink()
+                    except Exception:
+                        pass
                     for k in list(st.session_state.keys()):
                         del st.session_state[k]
-                    st.session_state["user"] = keep_user
                     st.rerun()
             with rc2:
                 if st.button("İptal", key="confirm_reset_no", use_container_width=True):
@@ -5008,101 +3503,120 @@ current_page = st.session_state.active_page
 if current_page != "Ana Sayfa":
     render_page_strip(current_page)
 
-TR_DAYS = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"]
-
-
-def start_review_exam(items: List[Dict[str, Any]]) -> None:
-    """Hata defterindeki vadesi gelen sorularla bir tekrar denemesi başlatır."""
-    text, mapping = gamify.build_review_exam(items)
-    st.session_state["portal_exam_source"] = text
-    st.session_state["review_map"] = mapping
-    st.session_state["active_assignment"] = None
-    st.session_state.pop("last_exam_report", None)
-    record_activity("Aralıklı Tekrar", f"{len(items)} soruluk tekrar testi başlatıldı")
-    navigate_to("Öğrenci Portalı & Çözüm")
-
-
-def start_assignment(assignment: Dict[str, Any]) -> None:
-    st.session_state["portal_exam_source"] = assignment["content"]
-    st.session_state["active_assignment"] = {"id": assignment["id"], "title": assignment["title"]}
-    st.session_state["review_map"] = {}
-    st.session_state.pop("last_exam_report", None)
-    navigate_to("Öğrenci Portalı & Çözüm")
-
-
-def render_week_chart(user_id: int, height: int = 200) -> None:
-    import pandas as pd
-
-    by_day = db.weekly_stats(user_id)["by_day"]
-    today = date.today()
-    days = [today - timedelta(days=i) for i in range(6, -1, -1)]
-    df = pd.DataFrame(
-        {
-            "Gün": [f"{d.day:02d}.{d.month:02d} {TR_DAYS[d.weekday()]}" for d in days],
-            "Çözülen soru": [int(by_day.get(d.isoformat(), 0)) for d in days],
-        }
-    )
-    df["Gün"] = pd.Categorical(df["Gün"], categories=list(df["Gün"]), ordered=True)
-    st.bar_chart(df, x="Gün", y="Çözülen soru", color="#1D4ED8", height=height)
-
-
-def render_week_card(stats_now: Dict[str, Any], show_sticker: bool = True) -> None:
+# ==============================================================================
+# 1. ANA SAYFA
+# ==============================================================================
+if current_page == "Ana Sayfa":
+    stats_now = st.session_state["parent_student_stats"]
     solved_now = max(1, int(stats_now["weekly_solved"]))
-    graded_now = int(stats_now["correct"]) + int(stats_now["wrong"])
-    acc_now = round(int(stats_now["correct"]) / graded_now * 100) if graded_now else 0
-    lgs_days_left = format_countdown(LGS_2028_TARGET)[0]
-    sticker_html = (
-        f'<span class="kp-sticker">LGS\'ye {lgs_days_left} gün!</span>'
-        if FUN_THEME and show_sticker and lgs_days_left > 0 else ""
-    )
-    st.markdown(
-        f"""
-        <div class="kp-preview">
-            {sticker_html}
-            <div class="kp-preview-head">
-                <div><small>Son 7 gün</small><strong>{html.escape(str(stats_now['student_name']))}</strong></div>
-                <span class="kp-pill">{html.escape(str(stats_now['grade']))}</span>
+    acc_now = round(int(stats_now["correct"]) / solved_now * 100)
+
+    # ---------- HERO ----------
+    hero_l, hero_r = st.columns([1.2, 1.0], gap="large", vertical_alignment="center")
+
+    with hero_l:
+        st.markdown(
+            """
+            <span class="kp-eyebrow">2028 müfredatına tam uyumlu</span>
+            <h1 class="kp-hero-title">Hayalindeki <em>2028 hedefi</em> için ihtiyacın olan her şey, tek platformda.</h1>
+            <p class="kp-hero-lead">
+                Soru bankası, haftalık dijital mentorluk, mini denemeler ve kişisel eksik analizi.
+                Öğrenci, veli ve okul aynı ekranda.
+            </p>
+            """,
+            unsafe_allow_html=True,
+        )
+        cta1, cta2, _ = st.columns([1, 1.15, 0.6])
+        with cta1:
+            if st.button("Ücretsiz dene", key="hero_cta_primary", type="primary", use_container_width=True):
+                navigate_to("Paketler & Abonelik Vitrini")
+        with cta2:
+            if st.button("Kurumlar için demo", key="hero_cta_secondary", use_container_width=True):
+                navigate_to("B2B Lisans & Kurum")
+        st.markdown(
+            """
+            <div class="kp-stats">
+                <div><div class="kp-stat-num">142.500+</div><div class="kp-stat-lbl">soru havuzu</div></div>
+                <div><div class="kp-stat-num">18.420</div><div class="kp-stat-lbl">ön kayıtlı öğrenci ve veli</div></div>
+                <div><div class="kp-stat-num">48</div><div class="kp-stat-lbl">anlaşmalı kurum</div></div>
             </div>
-            <div class="kp-preview-stats">
-                <div class="kp-preview-stat"><b>{_fmt(int(stats_now['weekly_solved']))}</b><span>çözülen soru</span></div>
-                <div class="kp-preview-stat"><b>%{acc_now}</b><span>doğruluk</span></div>
-                <div class="kp-preview-stat"><b>%{int(stats_now['mentor_completion'])}</b><span>plan uyumu</span></div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    with hero_r:
+        # Eski SVG vitrin yerine öğrencinin gerçek haftalık özeti
+        lgs_days_left = format_countdown(LGS_2028_TARGET)[0]
+        sticker_html = (
+            f'<span class="kp-sticker">LGS\'ye {lgs_days_left} gün!</span>' if FUN_THEME and lgs_days_left > 0 else ""
+        )
+        st.markdown(
+            f"""
+            <div class="kp-preview">
+                {sticker_html}
+                <div class="kp-preview-head">
+                    <div><small>Bu hafta</small><strong>{html.escape(str(stats_now['student_name']))}</strong></div>
+                    <span class="kp-pill">{html.escape(str(stats_now['grade']))}</span>
+                </div>
+                <div class="kp-preview-stats">
+                    <div class="kp-preview-stat"><b>{_fmt(stats_now['weekly_solved'])}</b><span>çözülen soru</span></div>
+                    <div class="kp-preview-stat"><b>%{acc_now}</b><span>doğruluk</span></div>
+                    <div class="kp-preview-stat"><b>%{int(stats_now['mentor_completion'])}</b><span>plan uyumu</span></div>
+                </div>
+                <div class="kp-meter" style="margin-bottom:0.9rem;"><span style="width:{int(stats_now['mentor_completion'])}%"></span></div>
+                <div class="kp-preview-row"><span>Güçlü alan</span><span>{html.escape(str(stats_now['strong_topic']))}</span></div>
+                <div class="kp-preview-row"><span>Pekiştirilecek</span><span>{html.escape(str(stats_now['weak_topic']))}</span></div>
+                <div class="kp-preview-row"><span>Sıradaki deneme</span><span>{html.escape(str(stats_now['next_exam_date']))}</span></div>
             </div>
-            <div class="kp-meter" style="margin-bottom:0.9rem;"><span style="width:{int(stats_now['mentor_completion'])}%"></span></div>
-            <div class="kp-preview-row"><span>Güçlü alan</span><span>{html.escape(str(stats_now['strong_topic']))}</span></div>
-            <div class="kp-preview-row"><span>Pekiştirilecek</span><span>{html.escape(str(stats_now['weak_topic']))}</span></div>
-            <div class="kp-preview-row"><span>Sıradaki deneme</span><span>{html.escape(str(stats_now['next_exam_date']))}</span></div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+            """,
+            unsafe_allow_html=True,
+        )
 
+    st.markdown('<div class="kp-gap"></div>', unsafe_allow_html=True)
 
-def render_countdown_section() -> None:
-    head_col, toggle_col = st.columns([4, 1], vertical_alignment="center")
-    with head_col:
-        st.markdown('<h2 class="kp-section-title">2028 LGS\'ye kalan süre</h2>', unsafe_allow_html=True)
-    with toggle_col:
-        live_counter = st.toggle("Canlı sayaç", value=st.session_state.live_tick)
-        st.session_state.live_tick = live_counter
-    render_countdown_boxes(LGS_2028_TARGET)
-    yks_d, yks_h, _, _ = format_countdown(YKS_2028_TARGET)
-    st.caption(f"LGS: 11 Haziran 2028 · YKS (17 Haziran 2028) için kalan süre: {yks_d} gün {yks_h} saat")
+    # ---------- SINIF SEÇİCİ ----------
+    with st.container(border=True, key="card_grade"):
+        sel_l, sel_r = st.columns([1.3, 1.0], vertical_alignment="center")
+        with sel_l:
+            st.markdown(
+                '<h2 class="kp-section-title">Sınıfını ya da sınavını seç</h2>'
+                '<p class="kp-section-sub" style="margin-bottom:0;">Sana uygun modül otomatik açılır.</p>',
+                unsafe_allow_html=True,
+            )
+        with sel_r:
+            group_names = list(GRADE_GROUPS.keys())
+            selected_group = st.segmented_control(
+                "Kademe",
+                options=group_names,
+                default=group_names[0],
+                key="grade_group_sel",
+                label_visibility="collapsed",
+            ) or group_names[0]
 
+        group_items = GRADE_GROUPS[selected_group]
+        g_idx = group_names.index(selected_group)
+        chip_cols = st.columns(4)
+        for idx, chip_label in enumerate(group_items):
+            chip = CHIP_BY_LABEL[chip_label]
+            with chip_cols[idx % 4]:
+                if st.button(chip["label"], key=f"grade_chip_{g_idx}_{idx}", use_container_width=True):
+                    st.session_state["factory_grade"] = chip["grade"]
+                    st.session_state["factory_grade_sync"] = True
+                    st.session_state["dk_exam"] = chip["exam"]
+                    record_activity("Hızlı Kademe (2028)", f"{chip['label']} seçildi")
+                    navigate_to(chip["page"])
 
-def render_modules_section() -> None:
-    cards = [m for m in MODULE_CARDS if m[3] in ALLOWED_PAGES]
-    if not cards:
-        return
+    st.markdown('<div class="kp-gap"></div>', unsafe_allow_html=True)
+
+    # ---------- MODÜLLER ----------
     st.markdown(
         '<h2 class="kp-section-title">Modüller</h2>'
         '<p class="kp-section-sub">Her biri tek başına çalışır, birlikte daha güçlüdür.</p>',
         unsafe_allow_html=True,
     )
-    mod_cols = st.columns(len(cards))
-    for col, (code, m_title, m_desc, m_page, m_bg, m_fg) in zip(mod_cols, cards):
-        idx = MODULE_CARDS.index((code, m_title, m_desc, m_page, m_bg, m_fg))
-        with col:
+    mod_cols = st.columns(len(MODULE_CARDS))
+    for idx, (code, m_title, m_desc, m_page, m_bg, m_fg) in enumerate(MODULE_CARDS):
+        with mod_cols[idx]:
             with st.container(border=True, key=f"card_mod_{idx}"):
                 st.markdown(
                     f"""
@@ -5115,328 +3629,92 @@ def render_modules_section() -> None:
                 if st.button("Aç →", key=f"mod_open_{idx}"):
                     navigate_to(m_page)
 
-
-def gap() -> None:
     st.markdown('<div class="kp-gap"></div>', unsafe_allow_html=True)
 
+    # ---------- ÖNCELİKLİ EKSİKLER ----------
+    pr_l, pr_r = st.columns([4, 1], vertical_alignment="bottom")
+    with pr_l:
+        st.markdown(
+            '<h2 class="kp-section-title">Öncelikli eksiklerin</h2>'
+            '<p class="kp-section-sub">En çok puan kazandıracak konular, öncelik sırasıyla.</p>',
+            unsafe_allow_html=True,
+        )
+    with pr_r:
+        if st.button("Tüm analizi gör →", key="prio_all"):
+            navigate_to("Öğrenci Röntgeni")
 
-def greeting(sub: str) -> None:
-    first = USER["name"].split()[0]
-    hour = datetime.now().hour
-    hello = "Günaydın" if 5 <= hour < 12 else "İyi akşamlar" if hour >= 18 else "Merhaba"
-    st.markdown(
-        f'<h1 class="kp-hero-title" style="font-size:clamp(1.9rem,3vw,2.6rem);margin-bottom:0.3rem;">'
-        f'{hello}, <em>{html.escape(first)}</em>!</h1><p class="kp-hero-lead">{html.escape(sub)}</p>',
-        unsafe_allow_html=True,
-    )
-
-
-def render_assign_popover(content: str, grade: str, branch: str, outcome: str, key: str) -> None:
-    """Öğretmen için: bu testi seçilen sınıfa ödev olarak ata."""
-    if ROLE != "ogretmen":
-        return
-    classes = db.teacher_classes(USER["id"])
-    with st.popover("Sınıfa ödev ata", use_container_width=True):
-        if not classes:
-            st.info("Önce **Sınıflarım** sayfasından bir sınıf oluşturun.")
-            return
-        cls_map = {f"{c['name']} ({c['member_count']} öğrenci)": c["id"] for c in classes}
-        cls_label = st.selectbox("Sınıf", list(cls_map.keys()), key=f"as_cls_{key}")
-        title = st.text_input("Ödev başlığı", value=f"{branch} · {outcome[:60]}", key=f"as_title_{key}")
-        due = st.date_input("Son teslim", value=date.today() + timedelta(days=7), key=f"as_due_{key}")
-        if st.button("Ata", key=f"as_btn_{key}", type="primary", use_container_width=True):
-            if not parse_quiz_questions(content):
-                st.error("Bu metinde çözülebilir soru bulunamadı (Soru 1 ... A) B) C) D) biçimi gerekli).")
-                return
-            db.create_assignment(cls_map[cls_label], title, content, grade, branch, outcome, due.isoformat())
-            record_activity("Ödev", f"{title} → {cls_label}")
-            st.success("Ödev atandı. Öğrenciler portaldaki Ödevlerim sekmesinde görecek.")
-
-
-def booklet_download(content: str, title: str, meta: str, key: str) -> None:
-    questions = parse_quiz_questions(content)
-    if not questions:
-        st.button("Optik formlu kitapçık", key=f"bk_dis_{key}", disabled=True, use_container_width=True,
-                  help="Çözülebilir soru bulunamadı.")
-        return
-    st.download_button(
-        "Optik formlu kitapçık",
-        data=reports.build_exam_booklet_docx(questions, title, meta, LOGO_PNG_BYTES),
-        file_name="kursun_kalem_deneme_kitapcigi.docx",
-        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        key=f"bk_{key}",
-        icon=":material/print:",
-        use_container_width=True,
-    )
-
-
-def load_into_portal(content: str) -> None:
-    st.session_state["portal_exam_source"] = content
-    st.session_state["review_map"] = {}
-    st.session_state["active_assignment"] = None
-    st.session_state.pop("last_exam_report", None)
-    navigate_to("Öğrenci Portalı & Çözüm")
-
-
-# ==============================================================================
-# 1. ANA SAYFA (role göre)
-# ==============================================================================
-if current_page == "Ana Sayfa":
-    stats_now = st.session_state["parent_student_stats"]
-
-    # ---------------- ÖĞRENCİ ----------------
-    if ROLE == "ogrenci":
-        prog = user_progress(USER["id"])
-        due = gamify.due_reviews(st.session_state.get("error_notebook_2028", []))
-        pending = [a for a in db.student_assignments(USER["id"]) if not a.get("submitted_at")]
-        greeting("Bugün de biraz ilerleyelim. Küçük adımlar, büyük netler.")
-
-        t1, t2, t3 = st.columns(3, gap="medium")
-        with t1:
-            with st.container(border=True, key="card_today"):
-                goal_pct = min(100, round(100 * prog["solved_today"] / max(1, prog["goal"])))
-                done_txt = "Hedef tamam!" if goal_pct >= 100 else f"{prog['goal'] - prog['solved_today']} soru kaldı"
+    with st.container(border=True, key="card_prio"):
+        for idx, p_item in enumerate(ONCELIKLI_EKSIK_SIRASI):
+            if idx:
+                st.markdown('<div class="kp-prio-divider"></div>', unsafe_allow_html=True)
+            c_num, c_txt, c_meter, c_btn = st.columns([0.45, 5, 2.2, 1.2], vertical_alignment="center")
+            with c_num:
+                st.markdown(f'<div class="kp-prio-num">{idx + 1}</div>', unsafe_allow_html=True)
+            with c_txt:
                 st.markdown(
-                    f"""
-                    <div class="kp-today-label">Bugünkü hedefin</div>
-                    <div class="kp-today-big">{prog['solved_today']}<span> / {prog['goal']} soru</span></div>
-                    <div class="kp-meter" style="margin:0.6rem 0 0.4rem;"><span style="width:{goal_pct}%;background:#16A34A"></span></div>
-                    <div class="kp-today-sub">{done_txt} · <b>{prog['streak']} gün</b> seri</div>
-                    """,
+                    f'<div class="kp-prio-title">{html.escape(p_item["topic"])}</div>'
+                    f'<div class="kp-prio-sub">{html.escape(p_item["branch"])} · {html.escape(p_item["action"])}</div>',
                     unsafe_allow_html=True,
                 )
-                if st.button("Mini deneme çöz", key="home_go_exam", type="primary", use_container_width=True):
-                    navigate_to("Öğrenci Portalı & Çözüm")
-        with t2:
-            with st.container(border=True, key="card_review"):
-                st.markdown(
-                    f"""
-                    <div class="kp-today-label">Tekrar zamanı</div>
-                    <div class="kp-today-big">{len(due)}<span> soru</span></div>
-                    <div class="kp-today-sub" style="margin-top:0.55rem;">
-                    {"Hata defterinden bugün tekrar etmen gerekenler hazır." if due else "Bugün tekrar edilecek soru yok. Harika!"}
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-                if st.button("Tekrar testini başlat", key="home_review", use_container_width=True, disabled=not due):
-                    start_review_exam(due)
-        with t3:
-            with st.container(border=True, key="card_homework"):
-                st.markdown(
-                    f"""
-                    <div class="kp-today-label">Ödevlerin</div>
-                    <div class="kp-today-big">{len(pending)}<span> bekleyen</span></div>
-                    <div class="kp-today-sub" style="margin-top:0.55rem;">
-                    {html.escape(pending[0]["title"] + " · " + pending[0]["class_name"]) if pending else "Bekleyen ödevin yok."}
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-                if st.button("Ödevi çöz" if pending else "Sınıfa katıl", key="home_homework", use_container_width=True):
-                    if pending:
-                        start_assignment(pending[0])
-                    else:
-                        st.session_state["portal_tab_hint"] = "Ödevlerim"
-                        navigate_to("Öğrenci Portalı & Çözüm")
-
-        gap()
-        w_l, w_r = st.columns([1.2, 1.0], gap="large", vertical_alignment="center")
-        with w_l:
-            st.markdown('<h2 class="kp-section-title" style="font-size:1.3rem;">Son 7 gün</h2>', unsafe_allow_html=True)
-            render_week_chart(USER["id"], height=240)
-        with w_r:
-            render_week_card(stats_now)
-
-        gap()
-        # Sınıf seçici
-        with st.container(border=True, key="card_grade"):
-            sel_l, sel_r = st.columns([1.3, 1.0], vertical_alignment="center")
-            with sel_l:
-                st.markdown(
-                    '<h2 class="kp-section-title">Ne çalışmak istiyorsun?</h2>'
-                    '<p class="kp-section-sub" style="margin-bottom:0;">Sınıfını ya da sınavını seç, uygun modül açılsın.</p>',
-                    unsafe_allow_html=True,
-                )
-            with sel_r:
-                group_names = list(GRADE_GROUPS.keys())
-                selected_group = st.segmented_control(
-                    "Kademe", options=group_names, default=group_names[0],
-                    key="grade_group_sel", label_visibility="collapsed",
-                ) or group_names[0]
-            g_idx = group_names.index(selected_group)
-            chip_cols = st.columns(4)
-            for idx, chip_label in enumerate(GRADE_GROUPS[selected_group]):
-                chip = CHIP_BY_LABEL[chip_label]
-                if chip["page"] not in ALLOWED_PAGES:
-                    continue
-                with chip_cols[idx % 4]:
-                    if st.button(chip["label"], key=f"grade_chip_{g_idx}_{idx}", use_container_width=True):
-                        st.session_state["factory_grade"] = chip["grade"]
-                        st.session_state["factory_grade_sync"] = True
-                        st.session_state["dk_exam"] = chip["exam"]
-                        record_activity("Hızlı Kademe (2028)", f"{chip['label']} seçildi")
-                        navigate_to(chip["page"])
-
-        gap()
-        render_modules_section()
-
-        gap()
-        # Önerilen odak konuları
-        pr_l, pr_r = st.columns([4, 1], vertical_alignment="bottom")
-        with pr_l:
-            st.markdown(
-                '<h2 class="kp-section-title">Önerilen odak konuları</h2>'
-                '<p class="kp-section-sub">Çok puan kazandıran, sık zorlanılan kazanımlar.</p>',
-                unsafe_allow_html=True,
-            )
-        with pr_r:
-            if st.button("Tüm analizi gör →", key="prio_all"):
-                navigate_to("Öğrenci Röntgeni")
-        with st.container(border=True, key="card_prio"):
-            for idx, p_item in enumerate(ONCELIKLI_EKSIK_SIRASI):
-                if idx:
-                    st.markdown('<div class="kp-prio-divider"></div>', unsafe_allow_html=True)
-                c_num, c_txt, c_meter, c_btn = st.columns([0.45, 5, 2.2, 1.2], vertical_alignment="center")
-                with c_num:
-                    st.markdown(f'<div class="kp-prio-num">{idx + 1}</div>', unsafe_allow_html=True)
-                with c_txt:
+            with c_meter:
+                pct = p_item.get("pct")
+                if pct is not None:
+                    bar_color = "#DC2626" if pct < 50 else "#EA580C" if pct < 60 else "#CA8A04"
                     st.markdown(
-                        f'<div class="kp-prio-title">{html.escape(p_item["topic"])}</div>'
-                        f'<div class="kp-prio-sub">{html.escape(p_item["branch"])} · {html.escape(p_item["action"])}</div>',
+                        f'<div class="kp-meter-label"><span>Doğru oranı</span><b style="color:#0F172A">%{pct}</b></div>'
+                        f'<div class="kp-meter"><span style="width:{pct}%;background:{bar_color}"></span></div>',
                         unsafe_allow_html=True,
                     )
-                with c_meter:
-                    pct = p_item.get("pct")
-                    if pct is not None:
-                        bar_color = "#DC2626" if pct < 50 else "#EA580C" if pct < 60 else "#CA8A04"
-                        st.markdown(
-                            f'<div class="kp-meter-label"><span>Ortalama doğru</span><b style="color:#0F172A">%{pct}</b></div>'
-                            f'<div class="kp-meter"><span style="width:{pct}%;background:{bar_color}"></span></div>',
-                            unsafe_allow_html=True,
-                        )
-                    else:
-                        st.markdown('<span class="kp-tag-warn">Dikkat gerektiriyor</span>', unsafe_allow_html=True)
-                with c_btn:
-                    if st.button("Çalış", key=f"prio_btn_{idx}", use_container_width=True):
-                        st.session_state["factory_focus_topic"] = p_item["topic"]
-                        st.session_state["factory_branch"] = p_item["branch"]
-                        st.session_state["factory_grade"] = p_item["grade"]
-                        st.session_state["fab_theme_inp"] = p_item["topic"]
-                        st.session_state["factory_sync_pending"] = True
-                        st.session_state["factory_grade_sync"] = True
-                        record_activity("Öncelikli Akış (2028)", f"{p_item['topic']} seçildi")
-                        navigate_to("Soru & Redaksiyon Fabrikası")
+                else:
+                    st.markdown('<span class="kp-tag-warn">Dikkat gerektiriyor</span>', unsafe_allow_html=True)
+            with c_btn:
+                if st.button("Çalış", key=f"prio_btn_{idx}", use_container_width=True):
+                    st.session_state["factory_focus_topic"] = p_item["topic"]
+                    st.session_state["factory_branch"] = p_item["branch"]
+                    st.session_state["factory_grade"] = p_item["grade"]
+                    st.session_state["fab_theme_inp"] = p_item["topic"]
+                    st.session_state["factory_sync_pending"] = True
+                    st.session_state["factory_grade_sync"] = True
+                    record_activity("Öncelikli Akış (2028)", f"{p_item['topic']} seçildi")
+                    navigate_to("Soru & Redaksiyon Fabrikası")
 
-        gap()
-        b_l, b_r = st.columns([2, 1], gap="large")
-        with b_l:
-            earned = db.user_badges(USER["id"])
+    st.markdown('<div class="kp-gap"></div>', unsafe_allow_html=True)
+
+    # ---------- GERİ SAYIM ----------
+    head_col, toggle_col = st.columns([4, 1], vertical_alignment="center")
+    with head_col:
+        st.markdown('<h2 class="kp-section-title">2028 LGS\'ye kalan süre</h2>', unsafe_allow_html=True)
+    with toggle_col:
+        live_counter = st.toggle("Canlı sayaç", value=st.session_state.live_tick)
+        st.session_state.live_tick = live_counter
+
+    counter_placeholder = st.empty()
+    with counter_placeholder.container():
+        render_countdown_boxes(LGS_2028_TARGET)
+
+    yks_d, yks_h, _, _ = format_countdown(YKS_2028_TARGET)
+    st.caption(f"LGS: 11 Haziran 2028 · YKS (17 Haziran 2028) için kalan süre: {yks_d} gün {yks_h} saat")
+
+    st.markdown('<div class="kp-gap"></div>', unsafe_allow_html=True)
+
+    # ---------- TELEMETRİ & AKTİVİTE ----------
+    ana_l, ana_r = st.columns([2, 1], gap="large")
+    with ana_l:
+        st.markdown('<h2 class="kp-section-title" style="font-size:1.15rem;">Haftalık soru üretimi</h2>', unsafe_allow_html=True)
+        telemetry_data = {"Pzt": 16800, "Sal": 18200, "Çar": 19500, "Per": 21100, "Cum": 22400, "Cmt": 25900, "Paz": 24800}
+        st.area_chart(telemetry_data, color="#1D4ED8", height=210)
+    with ana_r:
+        st.markdown('<h2 class="kp-section-title" style="font-size:1.15rem;">Son aktiviteler</h2>', unsafe_allow_html=True)
+        for item in st.session_state.get("activity_log", [])[:5]:
             st.markdown(
-                f'<h2 class="kp-section-title" style="font-size:1.3rem;">Rozetlerin '
-                f'<span style="font-size:1rem;color:#64748B;">({len(earned)}/{len(gamify.BADGES)})</span></h2>',
+                f"""
+                <div style="padding:0.6rem 0;border-bottom:1px solid #E2E8F0;">
+                    <div style="font-size:0.78rem;color:#64748B;">{html.escape(item['time'])} · {html.escape(item['module'])}</div>
+                    <div style="font-size:0.9rem;color:#0F172A;margin-top:0.1rem;">{html.escape(item['summary'])}</div>
+                </div>
+                """,
                 unsafe_allow_html=True,
             )
-            render_badge_grid(earned)
-        with b_r:
-            st.markdown('<h2 class="kp-section-title" style="font-size:1.3rem;">Son aktiviteler</h2>', unsafe_allow_html=True)
-            logs = st.session_state.get("activity_log", [])[:5]
-            if not logs:
-                st.caption("Henüz bir hareket yok. İlk mini denemeni çözerek başla!")
-            for item in logs:
-                st.markdown(
-                    f"""
-                    <div style="padding:0.6rem 0;border-bottom:1px solid #E2E8F0;">
-                        <div style="font-size:0.78rem;color:#64748B;">{html.escape(item['time'])} · {html.escape(item['module'])}</div>
-                        <div style="font-size:0.9rem;color:#0F172A;margin-top:0.1rem;">{html.escape(item['summary'])}</div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-
-        gap()
-        render_countdown_section()
-
-    # ---------------- VELİ ----------------
-    elif ROLE == "veli":
-        if not LIVE_STUDENT_ID:
-            greeting("Çocuğunuzun hesabını bağlayın, ilerlemesini buradan takip edin.")
-            with st.container(border=True, key="card_link"):
-                st.markdown(
-                    '<h2 class="kp-section-title" style="font-size:1.3rem;">Öğrenci bağla</h2>'
-                    '<p class="kp-section-sub">Bağlantı kodu, çocuğunuzun <b>Profilim &amp; Rozetler</b> sayfasında yazar.</p>',
-                    unsafe_allow_html=True,
-                )
-                lc1, lc2 = st.columns([3, 1], vertical_alignment="bottom")
-                with lc1:
-                    code_in = st.text_input("Bağlantı kodu", max_chars=6, key="home_link_code")
-                with lc2:
-                    if st.button("Bağla", key="home_link_btn", type="primary", use_container_width=True):
-                        try:
-                            child = db.link_parent(USER["id"], code_in)
-                            st.success(f"{child['name']} hesabınıza bağlandı.")
-                            st.rerun()
-                        except ValueError as exc:
-                            st.error(str(exc))
-        else:
-            child = db.get_user(LIVE_STUDENT_ID) or {}
-            child_prog = user_progress(LIVE_STUDENT_ID)
-            greeting(f"{child.get('name', 'Öğrenciniz')} bu hafta nasıl gidiyor, birlikte bakalım.")
-            v1, v2, v3 = st.columns(3)
-            v1.metric("Çalışma serisi", f"{child_prog['streak']} gün")
-            v2.metric("Bugün çözülen", f"{child_prog['solved_today']} / {child_prog['goal']}")
-            v3.metric("Kazanılan rozet", f"{len(db.user_badges(LIVE_STUDENT_ID))} / {len(gamify.BADGES)}")
-            gap()
-            w_l, w_r = st.columns([1.2, 1.0], gap="large", vertical_alignment="center")
-            with w_l:
-                st.markdown('<h2 class="kp-section-title" style="font-size:1.3rem;">Son 7 gün</h2>', unsafe_allow_html=True)
-                render_week_chart(LIVE_STUDENT_ID, height=240)
-            with w_r:
-                render_week_card(stats_now, show_sticker=False)
-            if st.button("Veli Takip Paneline git →", key="home_parent_panel", type="primary"):
-                navigate_to("Veli Takip Paneli")
-        gap()
-        render_countdown_section()
-
-    # ---------------- ÖĞRETMEN ----------------
-    else:
-        classes = db.teacher_classes(USER["id"])
-        greeting("Sınıflarınız ve ödevleriniz tek ekranda.")
-        if not classes:
-            with st.container(border=True, key="card_first_class"):
-                st.markdown(
-                    '<h2 class="kp-section-title" style="font-size:1.3rem;">İlk sınıfınızı oluşturun</h2>'
-                    '<p class="kp-section-sub">Sınıf kodunu öğrencilerinizle paylaşın; ödev atayın, sonuçları anında görün.</p>',
-                    unsafe_allow_html=True,
-                )
-                if st.button("Sınıf oluştur", key="home_new_class", type="primary"):
-                    navigate_to("Sınıflarım")
-        else:
-            cls_cols = st.columns(min(4, len(classes)))
-            for i, cls in enumerate(classes[:4]):
-                ov = db.class_overview(cls["id"])
-                avgs = [r["avg_accuracy"] for r in ov["by_student"] if r["avg_accuracy"] is not None]
-                with cls_cols[i]:
-                    with st.container(border=True, key=f"card_cls_{cls['id']}"):
-                        st.markdown(
-                            f"""
-                            <div class="kp-today-label">{html.escape(cls.get('grade') or 'Sınıf')}</div>
-                            <div class="kp-today-big">{html.escape(cls['name'])}</div>
-                            <div class="kp-today-sub" style="margin-top:0.4rem;">
-                                {cls['member_count']} öğrenci · {ov['total_assignments']} ödev<br>
-                                Ortalama doğruluk: <b>{('%' + str(round(sum(avgs) / len(avgs)))) if avgs else '—'}</b><br>
-                                Sınıf kodu: <b>{cls['code']}</b>
-                            </div>
-                            """,
-                            unsafe_allow_html=True,
-                        )
-                        if st.button("Aç", key=f"home_cls_{cls['id']}", use_container_width=True):
-                            st.session_state["teacher_class_sel"] = cls["id"]
-                            navigate_to("Sınıflarım")
-        gap()
-        render_modules_section()
-        gap()
-        render_countdown_section()
 
     if st.session_state.live_tick:
         time.sleep(1)
@@ -5518,19 +3796,12 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
                     key="fab_prod_mode",
                 )
                 question_count = st.slider("Soru Adedi", 1, 10, 3, key="fab_q_cnt")
-                if "fab_diff_sld" not in st.session_state:
-                    # Uyarlanabilir zorluk: öğrencinin son denemelerine göre başlangıç seviyesi
-                    accs = [r["accuracy"] for r in db.recent_exam_results(USER["id"], 3)] if ROLE == "ogrenci" else []
-                    sug, why = gamify.suggest_difficulty(accs)
-                    st.session_state["fab_diff_sld"] = sug
-                    st.session_state["fab_diff_why"] = why if accs else ""
                 difficulty = st.select_slider(
                     "Temel Zorluk Düzeyi",
-                    options=gamify.DIFFICULTY_LEVELS,
+                    options=["Kolay", "Orta", "Orta-Zor", "Zor (2028 LGS/ÖSYM)"],
+                    value="Orta-Zor",
                     key="fab_diff_sld",
                 )
-                if st.session_state.get("fab_diff_why"):
-                    st.caption(st.session_state["fab_diff_why"])
                 distractor_mode = st.selectbox(
                     "Çeldirici & Kök Stratejisi",
                     [
@@ -5629,8 +3900,9 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
                     st.rerun()
             with act_c3:
                 if st.button("Mini Deneme Olarak Çöz", use_container_width=True):
+                    st.session_state["portal_exam_source"] = st.session_state.generated_test_text
                     record_activity("Köprü", "Test Öğrenci Portalı mini denemesine aktarıldı")
-                    load_into_portal(st.session_state.generated_test_text)
+                    navigate_to("Öğrenci Portalı & Çözüm")
             with act_c4:
                 if st.button("İlk Soruyu Çözüm Rehberine Gönder", use_container_width=True):
                     parsed_q = parse_quiz_questions(st.session_state.generated_test_text)
@@ -5638,16 +3910,6 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
                         parsed_q[0]["full_text"] if parsed_q else st.session_state.generated_test_text[:1000]
                     )
                     navigate_to("Öğrenci Portalı & Çözüm")
-            act_c5, act_c6, _sp = st.columns([1, 1, 2])
-            with act_c5:
-                booklet_download(
-                    st.session_state.generated_test_text,
-                    f"{institution} Deneme",
-                    f"{grade} · {branch} · {outcome}",
-                    "gen",
-                )
-            with act_c6:
-                render_assign_popover(st.session_state.generated_test_text, grade, branch, outcome, "gen")
 
     with tab_bank:
         bank_items: List[Dict[str, str]] = st.session_state.get("question_bank_2028", [])
@@ -5676,67 +3938,29 @@ elif current_page == "Soru & Redaksiyon Fabrikası":
                 with st.expander(f"[{b_item['id']}] {b_item['grade']} • {b_item['branch']} ({b_item['difficulty']}) — {b_item['date']}"):
                     st.caption(f"Kazanım: {b_item['outcome']}")
                     st.markdown(b_item["content"])
-                    bc1, bc2, bc3 = st.columns(3)
-                    with bc1:
-                        if st.button("Bu Testi Portala Aktar", key=f"load_bank_{b_item['id']}", use_container_width=True):
-                            load_into_portal(b_item["content"])
-                    with bc2:
-                        booklet_download(b_item["content"], "Deneme", f"{b_item['grade']} · {b_item['branch']}", b_item["id"])
-                    with bc3:
-                        render_assign_popover(b_item["content"], b_item["grade"], b_item["branch"], b_item["outcome"], b_item["id"])
+                    if st.button("Bu Testi Portala Aktar", key=f"load_bank_{b_item['id']}"):
+                        st.session_state["portal_exam_source"] = b_item["content"]
+                        navigate_to("Öğrenci Portalı & Çözüm")
 
 # ==============================================================================
 # 3. ÖĞRENCİ PORTALI & ÇÖZÜM (+ SÜRE TAKİBİ + HATA DEFTERİ)
 # ==============================================================================
 elif current_page == "Öğrenci Portalı & Çözüm":
-    _due_now = gamify.due_reviews(st.session_state.get("error_notebook_2028", []))
-    _pending_hw = [a for a in db.student_assignments(USER["id"]) if not a.get("submitted_at")]
-    if st.session_state.pop("portal_tab_hint", None) == "Ödevlerim":
-        st.info("Ödevlerini ve sınıfa katılma alanını **Ödevlerim** sekmesinde bulabilirsin.")
-    tab_exam, tab_hw, tab_photo, tab_hint, tab_err = st.tabs([
-        "Mini Deneme",
-        f"Ödevlerim ({len(_pending_hw)})",
-        "Fotoğrafla Çöz",
+    tab_exam, tab_hint, tab_err = st.tabs([
+        "İnteraktif Mini Deneme & Süre Analizi",
         "Adımlı Çözüm Asistanı",
-        f"Hata Defteri & Tekrar ({len(_due_now)})",
+        f"Hata Defteri ({len(st.session_state['error_notebook_2028'])})",
     ])
 
     with tab_exam:
-        active_hw = st.session_state.get("active_assignment")
-        review_map: Dict[int, str] = st.session_state.get("review_map") or {}
-        if active_hw:
-            # Ödevde metin (ve cevap anahtarı) gizli kalır, öğrenci değiştiremez
-            st.markdown(
-                f'<div class="kp-banner kp-banner-hw"><b>Ödev:</b> {html.escape(active_hw["title"])}</div>',
-                unsafe_allow_html=True,
-            )
-            exam_source = st.session_state.get("portal_exam_source", "")
-            if st.button("Ödevden çık", key="leave_hw"):
-                st.session_state["active_assignment"] = None
-                st.session_state["portal_exam_source"] = ""
-                st.rerun()
-        else:
-            if review_map:
-                st.markdown(
-                    '<div class="kp-banner kp-banner-review"><b>Tekrar testi:</b> doğru yaptığın sorular '
-                    'bir sonraki tekrar aşamasına geçer, yanlışların takvimi baştan başlar.</div>',
-                    unsafe_allow_html=True,
-                )
-            with st.expander("Soru metni (Soru Fabrikasından gelir ya da buraya yapıştırabilirsin)",
-                             expanded=not st.session_state.get("portal_exam_source")):
-                exam_source = st.text_area(
-                    "Deneme Soru Metni",
-                    value=st.session_state.get("portal_exam_source") or st.session_state.get("generated_test_text", ""),
-                    height=140,
-                    placeholder="Soru 1) ... A) ... B) ... C) ... D) ... Cevap Anahtarı: 1-B",
-                    label_visibility="collapsed",
-                )
-            if exam_source != st.session_state.get("portal_exam_source"):
-                st.session_state["review_map"] = {}
-                review_map = {}
-            st.session_state["portal_exam_source"] = exam_source
+        exam_source = st.text_area(
+            "Deneme Soru Metni (Soru Fabrikasından otomatik gelir veya buraya yapıştır)",
+            value=st.session_state.get("portal_exam_source") or st.session_state.get("generated_test_text", ""),
+            height=120,
+            placeholder="Soru 1) ... A) ... B) ... C) ... D) ... Cevap Anahtarı: 1-B",
+        )
+        st.session_state["portal_exam_source"] = exam_source
         questions = parse_quiz_questions(exam_source)
-        exam_key = uuid.uuid5(uuid.NAMESPACE_OID, exam_source or "-").hex[:10]
 
         if not questions:
             st.info(
@@ -5764,7 +3988,7 @@ elif current_page == "Öğrenci Portalı & Çözüm":
                             index=None,
                             format_func=lambda k, o_map=q["options"]: "Boş Bırak" if k == "BOŞ" else f"{k}) {o_map[k]}",
                             horizontal=True,
-                            key=f"mini_q_{exam_key}_{idx}",
+                            key=f"mini_q_{q['num']}_{idx}",
                         )
                         user_answers[idx] = None if chosen in (None, "BOŞ") else chosen
                     with c_sec:
@@ -5775,13 +3999,11 @@ elif current_page == "Öğrenci Portalı & Çözüm":
                                 max_value=300,
                                 value=65,
                                 step=5,
-                                key=f"mini_dur_{exam_key}_{idx}",
+                                key=f"mini_dur_{q['num']}_{idx}",
                             )
                         )
 
             if st.button("Denemeyi Bitir ve Netimi Hesapla", type="primary"):
-                # Aynı deneme ikinci kez notlanırsa kalıcı kayıtlara (defter, tekrar, sonuç) tekrar yazma
-                already_graded = st.session_state.get("graded_exam_key") == exam_key
                 correct_cnt = 0
                 wrong_cnt = 0
                 blank_cnt = 0
@@ -5809,25 +4031,13 @@ elif current_page == "Öğrenci Portalı & Çözüm":
                         wrong_cnt += 1
                         wrong_questions.append(q)
                         status_txt = "Yanlış"
-                        if q["num"] not in review_map and not already_graded:
-                            add_to_error_notebook(
-                                question_num=q["num"],
-                                question_text=q["full_text"],
-                                user_ans=u_ans,
-                                correct_ans=c_ans,
-                                elapsed_sec=sec_val,
-                            )
-
-                    # Tekrar testindeyse hata defteri kaydını ilerlet / sıfırla
-                    if q["num"] in review_map and c_ans and u_ans is not None and not already_graded:
-                        nb_item = next(
-                            (it for it in st.session_state["error_notebook_2028"] if str(it.get("id")) == review_map[q["num"]]),
-                            None,
+                        add_to_error_notebook(
+                            question_num=q["num"],
+                            question_text=q["full_text"],
+                            user_ans=u_ans,
+                            correct_ans=c_ans,
+                            elapsed_sec=sec_val,
                         )
-                        if nb_item is not None:
-                            gamify.advance_review(nb_item, u_ans == c_ans)
-                            if nb_item.get("done"):
-                                st.session_state["reviews_completed"] = int(st.session_state.get("reviews_completed", 0)) + 1
 
                     result_rows.append(
                         {
@@ -5855,34 +4065,13 @@ elif current_page == "Öğrenci Portalı & Çözüm":
                     "first_wrong": wrong_questions[0]["full_text"] if wrong_questions else "",
                 }
                 record_activity(
-                    "Ödev" if active_hw else "Tekrar Testi" if review_map else "Mini Deneme",
+                    "Mini Deneme",
                     f"{correct_cnt}D {wrong_cnt}Y {blank_cnt}B • {net_score:.2f} Net • Ort {avg_sec:.0f} sn/soru",
                 )
-                # Aynı denemeyi iki kez kaydetme (buton tekrar tıklanırsa)
-                if not already_graded:
-                    st.session_state["graded_exam_key"] = exam_key
-                    record_exam(
-                        correct_cnt, wrong_cnt, blank_cnt,
-                        source="odev" if active_hw else "tekrar" if review_map else "mini",
-                        assignment_id=int(active_hw["id"]) if active_hw else None,
-                    )
-                    if active_hw:
-                        st.success("Ödevin teslim edildi, öğretmenin sonucunu görebilir.")
-                        st.session_state["active_assignment"] = None
-                if review_map:
-                    st.session_state["review_map"] = {}
-                save_persisted_state()
 
             report = st.session_state.get("last_exam_report")
             if report:
                 st.markdown("---")
-                cheer = st.session_state.pop("celebrate", None)
-                if cheer:
-                    st.markdown(
-                        f'<div class="kp-celebrate"><b>{html.escape(cheer)}</b>'
-                        f'<span>%{report["accuracy"]:.0f} doğrulukla bitirdin. Serin büyümeye devam ediyor!</span></div>',
-                        unsafe_allow_html=True,
-                    )
                 r1, r2, r3, r4 = st.columns(4)
                 r1.metric("Doğru / Boş", f"{report['correct']}D / {report['blank']}B")
                 r2.metric("Yanlış Sayısı", f"{report['wrong']} Soru")
@@ -5905,95 +4094,6 @@ elif current_page == "Öğrenci Portalı & Çözüm":
                             st.session_state["fab_theme_inp"] = f"Telafi: {snippet}"
                             record_activity("Telafi Akışı", "Yanlış sorudan benzer soru üretimine geçildi")
                             navigate_to("Soru & Redaksiyon Fabrikası")
-
-    with tab_hw:
-        my_classes = db.student_classes(USER["id"])
-        j1, j2 = st.columns([3, 1], vertical_alignment="bottom")
-        with j1:
-            join_code = st.text_input("Sınıf kodu ile katıl", max_chars=6, placeholder="Öğretmeninin verdiği 6 haneli kod", key="join_code_in")
-        with j2:
-            if st.button("Katıl", key="join_class_btn", use_container_width=True):
-                try:
-                    cls = db.join_class(USER["id"], join_code)
-                    st.success(f"{cls['name']} sınıfına katıldın.")
-                    st.rerun()
-                except ValueError as exc:
-                    st.error(str(exc))
-        if my_classes:
-            st.caption("Sınıfların: " + " · ".join(f"{c['name']} ({c['teacher_name']})" for c in my_classes))
-        hw_all = db.student_assignments(USER["id"])
-        if not hw_all:
-            st.info("Henüz ödevin yok. Bir sınıfa katıldığında öğretmeninin atadığı testler burada görünür.")
-        for hw in hw_all:
-            with st.container(border=True):
-                h1, h2 = st.columns([4, 1], vertical_alignment="center")
-                with h1:
-                    due_txt = f" · Son teslim: {datetime.fromisoformat(hw['due_date']).strftime('%d.%m.%Y')}" if hw.get("due_date") else ""
-                    status = (
-                        f"Teslim edildi · %{hw['my_accuracy']} doğruluk · {hw['my_net']} net"
-                        if hw.get("submitted_at") else "Bekliyor"
-                    )
-                    st.markdown(f"**{hw['title']}** · {hw['class_name']}{due_txt}")
-                    st.caption(status)
-                with h2:
-                    label = "Tekrar çöz" if hw.get("submitted_at") else "Çöz"
-                    if st.button(label, key=f"hw_start_{hw['id']}", type="secondary" if hw.get("submitted_at") else "primary",
-                                 use_container_width=True):
-                        start_assignment(hw)
-
-    with tab_photo:
-        st.markdown("Kitaptaki ya da defterdeki sorunun fotoğrafını çek veya yükle; Dijimentor adım adım açıklasın.")
-        ph1, ph2 = st.columns([1.2, 1])
-        with ph1:
-            src_mode = st.segmented_control("Kaynak", ["Dosya yükle", "Kamera"], default="Dosya yükle",
-                                            key="photo_src", label_visibility="collapsed")
-            img_file = (
-                st.camera_input("Soruyu çek", key="photo_cam")
-                if src_mode == "Kamera"
-                else st.file_uploader("Soru fotoğrafı", type=["png", "jpg", "jpeg", "webp"], key="photo_up")
-            )
-        with ph2:
-            photo_mode = st.radio("Yardım düzeyi", ["Önce ipucu ver", "Adım adım çöz"], key="photo_mode")
-            photo_note = st.text_input("Not (isteğe bağlı)", placeholder="Örn: C dedim ama yanlış çıktı", key="photo_note")
-        if img_file is not None:
-            st.image(img_file, width=360)
-        if st.button("Çözümü göster", type="primary", key="photo_solve_btn", disabled=img_file is None):
-            img_bytes = img_file.getvalue()
-            if len(img_bytes) > 8 * 1024 * 1024:
-                st.error("Fotoğraf 8 MB'tan büyük olamaz.")
-            else:
-                ok_q, q_msg = consume_quota("question", 1)
-                if not ok_q:
-                    st.error(q_msg)
-                else:
-                    slot = st.empty()
-                    render_loading_skeleton(slot, lines=3)
-                    try:
-                        answer = call_gemini_vision(
-                            img_bytes,
-                            getattr(img_file, "type", None) or "image/jpeg",
-                            (
-                                f"Fotoğraftaki soruyu oku. Öğrencinin sınıfı: {USER.get('grade') or 'belirtilmedi'}. "
-                                f"Yardım düzeyi: {photo_mode}. Öğrencinin notu: {photo_note or '-'}.\n"
-                                "Önce soruyu kısaca yeniden yaz, sonra yardım düzeyine uygun şekilde açıkla. "
-                                "Soru okunamıyorsa bunu söyle ve daha net bir fotoğraf iste."
-                            ),
-                            (
-                                "Sen sabırlı, teşvik edici bir Türk eğitim mentorusun. LGS/YKS müfredatına hâkimsin. "
-                                "'Önce ipucu ver' seçildiyse cevabı söyleme, sadece yol göster. Türkçe yanıt ver."
-                            ),
-                        )
-                        slot.empty()
-                        st.session_state["photo_solves"] = int(st.session_state.get("photo_solves", 0)) + 1
-                        save_persisted_state()
-                        record_activity("Fotoğrafla Çöz", f"{photo_mode} üretildi")
-                        st.markdown("#### Çözüm")
-                        st.markdown(answer)
-                        check_and_award_badges()
-                    except Exception as exc:
-                        slot.empty()
-                        refund_quota("question", 1)
-                        st.error(f"Çözüm üretilemedi: {exc}")
 
     with tab_hint:
         col_l, col_r = st.columns([2, 1])
@@ -6041,29 +4141,14 @@ elif current_page == "Öğrenci Portalı & Çözüm":
 
     with tab_err:
         err_list: List[Dict[str, Any]] = st.session_state.get("error_notebook_2028", [])
-        open_items = [it for it in err_list if not it.get("done")]
-        done_items = [it for it in err_list if it.get("done")]
         if not err_list:
             st.info("Hata defterinde henüz kayıt bulunmuyor. Mini denemede yanlış işaretlenen sorular otomatik buraya eklenir.")
         else:
-            rv1, rv2 = st.columns([3, 1], vertical_alignment="center")
-            with rv1:
-                st.markdown(
-                    f"**Bugün tekrar edilecek: {len(_due_now)} soru** · Açık: {len(open_items)} · "
-                    f"Tamamen öğrenilen: {len(done_items)}"
-                )
-                st.caption("Aralıklı tekrar: her soru 1., 3. ve 7. günde tekrar sorulur. Üçünü de doğru yaparsan defterden düşer.")
-            with rv2:
-                if st.button("Tekrar testini başlat", key="err_review_start", type="primary",
-                             use_container_width=True, disabled=not _due_now):
-                    start_review_exam(_due_now)
-            show_done = st.toggle("Öğrenilenleri de göster", value=False, key="err_show_done")
-            for item in (err_list if show_done else open_items):
+            st.caption("Aralıklı tekrar takvimi: 1. Gün • 3. Gün • 7. Gün")
+            for item in err_list:
                 with st.container(border=True):
-                    stage = int(item.get("stage", 0))
-                    stage_txt = "Öğrenildi" if item.get("done") else f"Tekrar aşaması {stage}/3"
                     st.markdown(
-                        f"**[{item['id']}] Soru {item['num']}** • {stage_txt} • Teşhis: **{item['diagnosis']}** • "
+                        f"**[{item['id']}] Soru {item['num']}** • Teşhis: **{item['diagnosis']}** • "
                         f"Senin: `{item['user_ans']}` / Doğru: `{item['correct_ans']}` • Süre: `{item['elapsed_sec']} sn`"
                     )
                     st.caption(
@@ -6333,34 +4418,10 @@ elif current_page == "Dijimentor":
 # ==============================================================================
 elif current_page == "Veli Takip Paneli":
     stats_now = st.session_state["parent_student_stats"]
-    if not LIVE_STUDENT_ID:
-        st.info("Önce çocuğunuzun hesabını bağlayın. Bağlantı kodu, öğrencinin Profilim & Rozetler sayfasında yazar.")
-        lk1, lk2 = st.columns([3, 1], vertical_alignment="bottom")
-        with lk1:
-            vp_code = st.text_input("Bağlantı kodu", max_chars=6, key="vp_link_code")
-        with lk2:
-            if st.button("Bağla", key="vp_link_btn", type="primary", use_container_width=True):
-                try:
-                    db.link_parent(USER["id"], vp_code)
-                    st.rerun()
-                except ValueError as exc:
-                    st.error(str(exc))
-        st.stop()
-
-    this_week = db.weekly_stats(LIVE_STUDENT_ID)
-    last_week = db.weekly_stats(LIVE_STUDENT_ID, date.today() - timedelta(days=7))
-    child_prog = user_progress(LIVE_STUDENT_ID)
-    v1, v2, v3, v4 = st.columns(4)
-    v1.metric("Çalışma serisi", f"{child_prog['streak']} gün")
-    v2.metric(
-        "Bu hafta çözülen", f"{this_week['weekly_solved']} soru",
-        f"{this_week['weekly_solved'] - last_week['weekly_solved']:+d} geçen haftaya göre",
-    )
-    v3.metric(
-        "Doğruluk", f"%{this_week['accuracy']}",
-        f"{this_week['accuracy'] - last_week['accuracy']:+.1f} puan" if last_week["weekly_solved"] else None,
-    )
-    v4.metric("Çalıştığı gün", f"{this_week['active_days']} / 7")
+    v1, v2, v3 = st.columns(3)
+    v1.metric("Haftalık Çalışma Süresi", f"{int(st.session_state.get('dk_hours', 16))} Saat", "Düzenli tempo")
+    v2.metric("Çözülen Soru Adedi", f"{int(stats_now['weekly_solved'])} Soru", "+18% geçen haftaya göre")
+    v3.metric("Kazanım İvmesi & Uyum", f"%{int(stats_now['mentor_completion'])}", "+4 puan doğruluk ivmesi")
 
     st.markdown("#### Bu Hafta Ne Değişti?")
     w_c1, w_c2, w_c3 = st.columns(3)
@@ -6395,57 +4456,18 @@ elif current_page == "Veli Takip Paneli":
         unsafe_allow_html=True,
     )
 
+    st.markdown("#### Kazanım Bazlı Görünüm")
+    st.progress(0.84, text="Okuma ve Anlama — %84")
+    st.progress(0.72, text="Sözel Mantık & Sayısal Muhakeme — %72")
+    st.progress(0.90, text="Düzenli Tekrar ve Ödev Tamamlama — %90")
+
     g_col1, g_col2 = st.columns(2)
     with g_col1:
-        st.markdown("#### Son 7 gün çözülen soru")
-        render_week_chart(LIVE_STUDENT_ID, height=210)
+        st.markdown("#### Haftalık Doğruluk İvmesi (%)")
+        st.area_chart({"1. Hafta": 71, "2. Hafta": 74, "3. Hafta": 77, "4. Hafta": 81}, color="#2563EB", height=190)
     with g_col2:
-        st.markdown("#### Son denemeler (doğruluk %)")
-        recent = list(reversed(db.recent_exam_results(LIVE_STUDENT_ID, 8)))
-        if recent:
-            import pandas as pd
-            df_r = pd.DataFrame(
-                {"Deneme": [f"{i + 1}. ({r['created_at'][5:10]})" for i, r in enumerate(recent)],
-                 "Doğruluk": [r["accuracy"] for r in recent]}
-            )
-            df_r["Deneme"] = pd.Categorical(df_r["Deneme"], categories=list(df_r["Deneme"]), ordered=True)
-            st.bar_chart(df_r, x="Deneme", y="Doğruluk", color="#1D4ED8", height=210)
-        else:
-            st.caption("Henüz tamamlanmış deneme yok.")
-
-    st.markdown("#### Rozetler")
-    render_badge_grid(db.user_badges(LIVE_STUDENT_ID))
-
-    # Haftalık raporu e-postayla gönder
-    st.markdown("#### Haftalık rapor")
-    try:
-        smtp_cfg = dict(st.secrets.get("smtp", {}))
-    except Exception:
-        smtp_cfg = {}
-    report_body = reports.weekly_report_text(
-        BRAND_NAME, USER["name"], stats_now["student_name"], this_week, child_prog["streak"], [],
-        str(stats_now.get("weak_topic", "")),
-    )
-    with st.expander("Raporu önizle"):
-        st.text(report_body)
-    rp1, rp2 = st.columns(2)
-    with rp1:
-        if st.button("Raporu e-postama gönder", key="send_weekly_report", type="primary",
-                     use_container_width=True, disabled=not reports.smtp_ready(smtp_cfg)):
-            try:
-                reports.send_email(smtp_cfg, USER["email"], f"{BRAND_NAME} • {stats_now['student_name']} haftalık özet", report_body)
-                db.log_report_sent(USER["id"], db.week_key())
-                st.success(f"Rapor {USER['email']} adresine gönderildi.")
-            except Exception as exc:
-                st.error(f"E-posta gönderilemedi: {exc}")
-    with rp2:
-        st.link_button(
-            "WhatsApp ile paylaş",
-            "https://wa.me/?text=" + urllib.parse.quote(report_body),
-            use_container_width=True,
-        )
-    if not reports.smtp_ready(smtp_cfg):
-        st.caption("E-posta gönderimi için secrets.toml'a [smtp] bölümü eklenmeli. Her pazar otomatik gönderim için weekly_report.py betiğini zamanlayın.")
+        st.markdown("#### Ders Bazlı Başarı Oranı (%)")
+        st.bar_chart({"Türkçe": 84, "Matematik": 72, "Fen": 82, "Sosyal": 86, "İngilizce": 79}, color="#2563EB", height=190)
 
     render_parent_notification_center()
 
@@ -6672,222 +4694,3 @@ elif current_page == "Paketler & Abonelik Vitrini":
         monthly_price=active_bag_summary["monthly_price"],
         summary=active_bag_summary,
     )
-
-# ==============================================================================
-# 9. SINIFLARIM (ÖĞRETMEN): sınıf oluşturma, ödevler, sınıf karşılaştırma paneli
-# ==============================================================================
-elif current_page == "Sınıflarım":
-    my_classes = db.teacher_classes(USER["id"])
-
-    with st.expander("Yeni sınıf oluştur", expanded=not my_classes, icon=":material/add:"):
-        nc1, nc2, nc3 = st.columns([2, 2, 1], vertical_alignment="bottom")
-        with nc1:
-            new_cls_name = st.text_input("Sınıf adı", placeholder="Örn: 8-A Türkçe", key="new_cls_name")
-        with nc2:
-            new_cls_grade = st.selectbox("Sınıf düzeyi", GRADE_LEVELS_2028, index=3, key="new_cls_grade")
-        with nc3:
-            if st.button("Oluştur", key="new_cls_btn", type="primary", use_container_width=True):
-                try:
-                    created = db.create_class(USER["id"], new_cls_name, new_cls_grade)
-                    st.session_state["teacher_class_sel"] = created["id"]
-                    record_activity("Sınıflarım", f"{created['name']} oluşturuldu")
-                    st.rerun()
-                except ValueError as exc:
-                    st.error(str(exc))
-
-    if not my_classes:
-        st.info("Henüz sınıfınız yok. Yukarıdan ilk sınıfınızı oluşturun.")
-        st.stop()
-
-    cls_by_id = {c["id"]: c for c in my_classes}
-    default_cls = st.session_state.get("teacher_class_sel")
-    cls_ids = list(cls_by_id.keys())
-    sel_id = st.selectbox(
-        "Sınıf",
-        cls_ids,
-        index=cls_ids.index(default_cls) if default_cls in cls_ids else 0,
-        format_func=lambda cid: f"{cls_by_id[cid]['name']} · {cls_by_id[cid]['member_count']} öğrenci",
-        key="teacher_class_pick",
-    )
-    st.session_state["teacher_class_sel"] = sel_id
-    cls = cls_by_id[sel_id]
-
-    st.markdown(
-        f'<div class="kp-banner kp-banner-hw">Öğrencileriniz <b>Öğrenci Portalı → Ödevlerim</b> sekmesinde '
-        f'bu kodla katılır: <span class="kp-code">{cls["code"]}</span></div>',
-        unsafe_allow_html=True,
-    )
-
-    t_over, t_assign, t_members = st.tabs(["Sınıf analizi", "Ödevler", "Öğrenciler"])
-
-    with t_over:
-        ov = db.class_overview(sel_id)
-        subs_rows = [r for r in ov["by_student"] if r["avg_accuracy"] is not None]
-        o1, o2, o3 = st.columns(3)
-        o1.metric("Öğrenci", cls["member_count"])
-        o2.metric("Ödev", ov["total_assignments"])
-        o3.metric(
-            "Sınıf ortalaması",
-            f"%{round(sum(r['avg_accuracy'] for r in subs_rows) / len(subs_rows))}" if subs_rows else "—",
-        )
-        if not ov["by_outcome"]:
-            st.caption("Ödev teslimleri geldikçe kazanım bazlı karşılaştırma burada oluşur.")
-        else:
-            import pandas as pd
-
-            st.markdown("#### Kazanım bazlı sınıf başarısı")
-            st.caption("En düşükten yükseğe: üstteki kazanımlar sınıfça tekrar edilmeli.")
-            df_o = pd.DataFrame(ov["by_outcome"])
-            df_o["Kazanım"] = df_o["outcome"].str.slice(0, 60)
-            df_o["Kazanım"] = pd.Categorical(df_o["Kazanım"], categories=list(dict.fromkeys(df_o["Kazanım"])), ordered=True)
-            st.bar_chart(df_o, x="Kazanım", y="avg_accuracy", color="#1D4ED8", height=260, horizontal=True)
-            weakest = ov["by_outcome"][0]
-            wc1, wc2 = st.columns([3, 1], vertical_alignment="center")
-            with wc1:
-                st.markdown(f"En zayıf kazanım: **{weakest['outcome']}** (%{weakest['avg_accuracy']})")
-            with wc2:
-                if st.button("Telafi testi üret", key="cls_remedial", type="primary", use_container_width=True):
-                    st.session_state["factory_focus_topic"] = weakest["outcome"]
-                    st.session_state["fab_theme_inp"] = weakest["outcome"]
-                    if weakest.get("branch"):
-                        st.session_state["factory_branch"] = weakest["branch"]
-                    if cls.get("grade"):
-                        st.session_state["factory_grade"] = cls["grade"]
-                        st.session_state["factory_grade_sync"] = True
-                    st.session_state["factory_sync_pending"] = True
-                    navigate_to("Soru & Redaksiyon Fabrikası")
-
-        st.markdown("#### Öğrenci bazlı durum")
-        st.dataframe(
-            [
-                {
-                    "Öğrenci": r["name"],
-                    "Teslim": f"{r['done']} / {ov['total_assignments']}",
-                    "Ort. doğruluk (%)": r["avg_accuracy"] if r["avg_accuracy"] is not None else "—",
-                    "Ort. net": r["avg_net"] if r["avg_net"] is not None else "—",
-                }
-                for r in ov["by_student"]
-            ],
-            use_container_width=True,
-            hide_index=True,
-        )
-
-    with t_assign:
-        st.caption("Yeni ödev atamak için Soru & Redaksiyon Fabrikası'nda test üretip **Sınıfa ödev ata** butonunu kullanın.")
-        if st.button("Soru Fabrikasına git", key="cls_to_factory", icon=":material/edit_note:"):
-            if cls.get("grade"):
-                st.session_state["factory_grade"] = cls["grade"]
-                st.session_state["factory_grade_sync"] = True
-            navigate_to("Soru & Redaksiyon Fabrikası")
-        assignments = db.class_assignments(sel_id)
-        if not assignments:
-            st.info("Bu sınıfa henüz ödev atanmadı.")
-        for a in assignments:
-            due_txt = datetime.fromisoformat(a["due_date"]).strftime("%d.%m.%Y") if a.get("due_date") else "—"
-            with st.expander(f"{a['title']} · {a['submission_count']}/{cls['member_count']} teslim · son gün {due_txt}"):
-                res = db.assignment_results(a["id"])
-                st.dataframe(
-                    [
-                        {
-                            "Öğrenci": r["name"],
-                            "Durum": "Teslim etti" if r["submitted_at"] else "Bekliyor",
-                            "D/Y/B": f"{r['correct']}/{r['wrong']}/{r['blank']}" if r["submitted_at"] else "—",
-                            "Net": r["net"] if r["submitted_at"] else "—",
-                            "Doğruluk (%)": r["accuracy"] if r["submitted_at"] else "—",
-                        }
-                        for r in res
-                    ],
-                    use_container_width=True,
-                    hide_index=True,
-                )
-                booklet_download(a["content"], a["title"], f"{cls['name']} · {a.get('branch') or ''}", f"as_{a['id']}")
-
-    with t_members:
-        members = db.class_members(sel_id)
-        if not members:
-            st.info(f"Henüz öğrenci katılmadı. Sınıf kodunu paylaşın: {cls['code']}")
-        else:
-            st.dataframe(
-                [
-                    {
-                        "Öğrenci": m["name"],
-                        "Sınıf": m.get("grade") or "—",
-                        "Seri (gün)": user_progress(m["id"])["streak"],
-                        "Bu hafta soru": db.weekly_stats(m["id"])["weekly_solved"],
-                    }
-                    for m in members
-                ],
-                use_container_width=True,
-                hide_index=True,
-            )
-
-# ==============================================================================
-# 10. PROFİLİM & ROZETLER
-# ==============================================================================
-elif current_page == "Profilim & Rozetler":
-    pf_l, pf_r = st.columns([1, 1], gap="large")
-    with pf_l:
-        with st.container(border=True, key="card_profile"):
-            st.markdown(
-                f'<h2 class="kp-section-title" style="font-size:1.3rem;">{html.escape(USER["name"])}</h2>'
-                f'<p class="kp-section-sub">{html.escape(USER["email"])} · {db.ROLE_LABELS.get(ROLE, ROLE)}</p>',
-                unsafe_allow_html=True,
-            )
-            if ROLE == "ogrenci":
-                cur_grade = USER.get("grade") if USER.get("grade") in GRADE_LEVELS_2028 else GRADE_LEVELS_2028[3]
-                new_grade = st.selectbox("Sınıfın", GRADE_LEVELS_2028, index=GRADE_LEVELS_2028.index(cur_grade), key="pf_grade")
-                new_goal = st.slider("Günlük soru hedefin", 5, 100, int(USER.get("daily_goal", 20)), step=5, key="pf_goal")
-                if st.button("Kaydet", key="pf_save", type="primary"):
-                    db.update_grade(USER["id"], new_grade)
-                    db.set_daily_goal(USER["id"], new_goal)
-                    st.success("Profilin güncellendi.")
-                    st.rerun()
-                st.markdown(
-                    f'<div class="kp-banner kp-banner-hw" style="margin-top:0.8rem;">Veli bağlantı kodun: '
-                    f'<span class="kp-code">{USER.get("link_code") or "—"}</span><br>'
-                    f'<span style="font-size:0.82rem;">Velin bu kodla kendi hesabından ilerlemeni takip edebilir.</span></div>',
-                    unsafe_allow_html=True,
-                )
-            elif ROLE == "veli":
-                child = db.get_user(int(USER["parent_of"])) if USER.get("parent_of") else None
-                st.markdown(f"Bağlı öğrenci: **{child['name'] if child else 'yok'}**")
-                pv_code = st.text_input("Yeni bağlantı kodu", max_chars=6, key="pf_link_code")
-                if st.button("Öğrenciyi bağla / değiştir", key="pf_link_btn"):
-                    try:
-                        db.link_parent(USER["id"], pv_code)
-                        st.rerun()
-                    except ValueError as exc:
-                        st.error(str(exc))
-            plan_now = get_active_plan()
-            exp = plan_now.get("expires_at")
-            st.caption(
-                f"Aktif paket: {plan_now['name']}"
-                + (f" · bitiş {datetime.fromisoformat(exp).strftime('%d.%m.%Y')}" if exp else "")
-            )
-    with pf_r:
-        target_id = USER["id"] if ROLE != "veli" else LIVE_STUDENT_ID
-        if target_id and ROLE != "ogretmen":
-            prog = user_progress(int(target_id))
-            st.markdown(
-                f"""
-                <div class="kp-streak-hero">
-                    <div class="kp-streak-num">{prog['streak']}</div>
-                    <div>
-                        <div class="kp-mod-title">günlük seri</div>
-                        <div class="kp-mod-desc" style="min-height:0;">Toplam {_fmt(prog['total_solved'])} soru çözüldü.
-                        Seriyi korumak için her gün en az bir deneme çöz.</div>
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
-    if ROLE != "ogretmen":
-        target_id = USER["id"] if ROLE != "veli" else LIVE_STUDENT_ID
-        if target_id:
-            earned_now = db.user_badges(int(target_id))
-            st.markdown(
-                f'<h2 class="kp-section-title" style="margin-top:1.5rem;">Rozetler '
-                f'<span style="font-size:1rem;color:#64748B;">({len(earned_now)}/{len(gamify.BADGES)})</span></h2>',
-                unsafe_allow_html=True,
-            )
-            render_badge_grid(earned_now)
