@@ -3465,7 +3465,27 @@ FUN_THEME_CSS += "".join(
     for i, (_c, _t, _d, _p, bg, _fg) in enumerate(MODULE_CARDS)
 )
 
-css_to_inject = REFINED_OFFICE_CSS + ("\n" + FUN_THEME_CSS if FUN_THEME else "")
+# Tema role göre: öğrenci renkli/eğlenceli ekranı, öğretmen ve veli sade/kurumsal ekranı görür.
+# FUN_ROLES'u değiştirerek kimin renkli tema göreceğini seçebilirsin, örn. {"ogrenci", "veli"}.
+FUN_ROLES = {"ogrenci"}
+_theme_user = st.session_state.get("user") or {}
+FUN_ACTIVE: bool = bool(FUN_THEME and _theme_user.get("role") in FUN_ROLES)
+
+PRO_INNER_CSS = """
+.stApp { background: #F8FAFC !important; background-image: none !important; }
+[data-testid="stHeader"] { background: rgba(248, 250, 252, 0.92) !important; }
+[data-testid="stSidebar"] { background: #FFFFFF !important; border-right: 1px solid #E2E8F0; }
+[class*="st-key-card_"] {
+    border: 1px solid #E2E8F0 !important; border-radius: 12px !important;
+    background: #FFFFFF !important; box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
+}
+.stButton > button, div[data-testid="stFormSubmitButton"] > button {
+    border-radius: 8px !important; box-shadow: none !important; transform: none !important; font-weight: 600 !important;
+}
+.kp-eyebrow { transform: none !important; box-shadow: none !important; }
+"""
+
+css_to_inject = REFINED_OFFICE_CSS + ("\n" + FUN_THEME_CSS if FUN_ACTIVE else ("\n" + PRO_INNER_CSS if _theme_user else ""))
 if EXTERNAL_CSS_PATH.exists():
     try:
         ext_css = EXTERNAL_CSS_PATH.read_text(encoding="utf-8").strip()
@@ -6402,7 +6422,7 @@ def render_week_card(stats_now: Dict[str, Any], show_sticker: bool = True) -> No
     lgs_days_left = format_countdown(LGS_TARGET)[0]
     sticker_html = (
         f'<span class="kp-sticker">LGS\'ye {lgs_days_left} gün!</span>'
-        if FUN_THEME and show_sticker and lgs_days_left > 0 else ""
+        if FUN_ACTIVE and show_sticker and lgs_days_left > 0 else ""
     )
     st.markdown(
         f"""
@@ -6455,7 +6475,7 @@ def render_modules_section() -> None:
             with st.container(border=True, key=f"card_mod_{idx}"):
                 st.markdown(
                     f"""
-                    <div class="kp-mod-icon" style="background:{'#FFFFFF' if FUN_THEME else m_bg};color:{m_fg};">{MODULE_ICONS.get(code, html.escape(code))}</div>
+                    <div class="kp-mod-icon" style="background:{'#FFFFFF' if FUN_ACTIVE else m_bg};color:{m_fg};">{MODULE_ICONS.get(code, html.escape(code))}</div>
                     <div class="kp-mod-title">{html.escape(m_title)}</div>
                     <div class="kp-mod-desc">{html.escape(m_desc)}</div>
                     """,
