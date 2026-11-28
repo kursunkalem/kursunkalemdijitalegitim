@@ -5940,7 +5940,7 @@ def render_landing() -> None:
         st.markdown(
             """
             <div class="lp">
-                <span class="lp-eyebrow">Öğretmenler ve Etüt Merkezleri İçin</span>
+                <span class="lp-eyebrow">Yapay Zekâ Destekli Eğitim Platformu</span>
                 <h1 class="lp-hero-title">Soru Hazırlayın, Ödev Verin, <span>Veliye Rapor Gönderin.</span></h1>
                 <p class="lp-lead">
                     Yapay zekâ kazanıma uygun soruları taslak olarak hazırlar; siz kontrol edip onaylarsınız.
