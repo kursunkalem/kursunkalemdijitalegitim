@@ -5551,7 +5551,7 @@ def landing_stats_html() -> str:
 LANDING_CSS = """
 .stApp { background: #FFFFFF !important; background-image: none !important; }
 [data-testid="stHeader"] { background: rgba(255,255,255,0.92) !important; }
-.block-container { max-width: min(1240px, 94vw) !important; }
+.block-container { max-width: min(1200px, 92vw) !important; padding-top: 2.2rem !important; }
 .lp, .lp * { font-family: 'Inter', system-ui, sans-serif; }
 .lp h1, .lp h2, .lp h3, .lp-h { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif !important; color: #0F172A; letter-spacing: -0.02em; }
 
@@ -5684,6 +5684,65 @@ LANDING_CSS = """
     .lp-nav-links { display: none; }
     .lp-shot-kpis { grid-template-columns: 1fr 1fr 1fr; }
 }
+
+/* ---- v2: daha kurumsal düzen ---- */
+.lp-nav { border-bottom: 0; margin-bottom: 0; padding: 0; }
+.st-key-lp_navbar { border-bottom: 1px solid #EEF2F7; padding-bottom: 0.9rem; margin-bottom: 3rem; }
+.st-key-lp_nav_login button { border: 0 !important; background: transparent !important; color: #334155 !important; }
+.st-key-lp_nav_login button:hover { color: #0F172A !important; background: #F1F5F9 !important; }
+.lp-hero-title { font-size: clamp(2.3rem, 4vw, 3.5rem); line-height: 1.08; letter-spacing: -0.03em !important; }
+.lp-hero-title span { color: #1D4ED8; }
+.lp-trustline { display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; color: #64748B; font-size: 0.86rem; margin-top: 0.9rem; }
+.lp-trustline span::before { content: "•"; color: #CBD5E1; margin-right: 0.5rem; }
+.lp-trustline span:first-child::before { content: ""; margin: 0; }
+
+/* Uygulama penceresi */
+.lp-app { display: grid; grid-template-columns: 150px 1fr; min-height: 360px; }
+.lp-app-side { background: #F8FAFC; border-right: 1px solid #EEF2F7; padding: 0.9rem 0.6rem; }
+.lp-app-side .lp-side-brand { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 0.76rem; color: #0F172A; margin: 0 0 0.9rem 0.3rem; }
+.lp-app-side .lp-side-brand img { width: 18px; height: 18px; border-radius: 5px; }
+.lp-side-item { font-size: 0.76rem; color: #475569; padding: 0.42rem 0.55rem; border-radius: 6px; margin-bottom: 2px; }
+.lp-side-item.on { background: #E0E7FF; color: #1E3A8A; font-weight: 600; }
+.lp-side-sep { font-size: 0.62rem; color: #94A3B8; letter-spacing: 0.06em; margin: 0.8rem 0 0.3rem 0.55rem; }
+.lp-app-main { padding: 1rem 1.1rem; }
+.lp-app-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.8rem; }
+.lp-app-head b { font-size: 0.95rem; color: #0F172A; }
+.lp-app-head small { color: #94A3B8; font-size: 0.72rem; }
+.lp-tbl { width: 100%; border-collapse: collapse; font-size: 0.76rem; margin-top: 0.4rem; }
+.lp-tbl th { text-align: left; color: #94A3B8; font-weight: 500; padding: 0.35rem 0.3rem; border-bottom: 1px solid #EEF2F7; }
+.lp-tbl td { padding: 0.42rem 0.3rem; border-bottom: 1px solid #F8FAFC; color: #334155; }
+.lp-pill { display: inline-block; padding: 0.08rem 0.45rem; border-radius: 999px; font-size: 0.68rem; font-weight: 600; }
+.lp-pill.r { background: #FEE2E2; color: #B91C1C; } .lp-pill.y { background: #FEF3C7; color: #92400E; } .lp-pill.g { background: #DCFCE7; color: #166534; }
+
+/* Soru onay kartı */
+.lp-q { border: 1px solid #E2E8F0; border-radius: 12px; padding: 1.1rem 1.2rem; background: #FFFFFF; }
+.lp-q-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.7rem; }
+.lp-q-tag { font-size: 0.72rem; font-weight: 600; color: #92400E; background: #FEF3C7; border-radius: 999px; padding: 0.15rem 0.55rem; }
+.lp-q-meta { font-size: 0.74rem; color: #94A3B8; }
+.lp-q-stem { font-size: 0.92rem; color: #0F172A; line-height: 1.55; margin-bottom: 0.7rem; }
+.lp-q-opt { display: flex; gap: 0.6rem; align-items: center; border: 1px solid #EEF2F7; border-radius: 8px; padding: 0.45rem 0.6rem; margin-bottom: 0.35rem; font-size: 0.85rem; color: #334155; }
+.lp-q-opt b { width: 22px; height: 22px; border-radius: 6px; background: #F1F5F9; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; }
+.lp-q-opt.ok { border-color: #86EFAC; background: #F0FDF4; } .lp-q-opt.ok b { background: #16A34A; color: #FFFFFF; }
+.lp-q-actions { display: flex; gap: 0.5rem; margin-top: 0.8rem; }
+.lp-q-actions span { font-size: 0.8rem; font-weight: 600; border-radius: 7px; padding: 0.4rem 0.8rem; border: 1px solid #CBD5E1; color: #334155; }
+.lp-q-actions span.p { background: #1D4ED8; border-color: #1D4ED8; color: #FFFFFF; }
+
+/* Kimler için */
+.lp-aud { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem; }
+.lp-aud h3 { font-size: 1.05rem; font-weight: 700; margin: 0 0 0.35rem 0; }
+.lp-aud p { color: #64748B; font-size: 0.92rem; line-height: 1.55; margin: 0; }
+.lp-aud > div { border-left: 2px solid #DBEAFE; padding-left: 1rem; }
+
+/* Gri bant */
+.st-key-lp_band_feat { background: #F8FAFC; border: 1px solid #EEF2F7; border-radius: 20px; padding: 2.6rem 2.2rem 2.2rem 2.2rem; margin-top: 4.5rem; }
+.st-key-lp_band_feat .lp-section { margin-top: 0; }
+.st-key-lp_band_feat [class*="st-key-card_feat_"] { background: #FFFFFF !important; }
+.lp-feat-desc { min-height: 0; }
+
+@media (max-width: 900px) {
+    .lp-app { grid-template-columns: 1fr; } .lp-app-side { display: none; }
+    .lp-aud { grid-template-columns: 1fr; }
+}
 """
 
 LP_ICONS = {
@@ -5746,11 +5805,68 @@ def _demo_mailto() -> str:
     return f"mailto:{SUPPORT_EMAIL}?subject={subject}&body={body}"
 
 
+@st.dialog("Kurşun Kalem Dijital Ofis")
+def auth_dialog(mode: str = "login") -> None:
+    """Giriş / kayıt penceresi. mode: 'login' ya da 'register'."""
+    intent_title = st.session_state.get("post_login_title")
+    if intent_title:
+        st.markdown(
+            f'<div class="kp-banner kp-banner-review"><b>{html.escape(intent_title)}</b> için önce ücretsiz '
+            f'hesabını aç ya da giriş yap; ardından doğrudan oraya götüreceğiz.</div>',
+            unsafe_allow_html=True,
+        )
+    if mode == "register":
+        t_reg, t_login = st.tabs(["Ücretsiz deneme", "Giriş yap"])
+    else:
+        t_login, t_reg = st.tabs(["Giriş yap", "Ücretsiz deneme"])
+    with t_login:
+        _login_form()
+    with t_reg:
+        _register_form()
+
+
 def _start_teacher_trial() -> None:
     st.session_state["reg_role_pending"] = db.ROLE_LABELS["ogretmen"]
     st.session_state["post_login_page"] = ["Soru Bankam"]
     st.session_state["post_login_title"] = "Öğretmen paneli"
-    st.rerun()
+    st.session_state["lp_auth_mode"] = "register"
+
+
+def _lp_app_window() -> str:
+    rows = [("Üslü ifadeler", 48, "r"), ("Kareköklü ifadeler", 61, "y"), ("Veri analizi", 74, "y"), ("Çarpanlar ve katlar", 86, "g")]
+    trs = "".join(
+        f'<tr><td>{n}</td><td style="width:42%"><div class="lp-bar"><span style="width:{v}%;background:'
+        f'{"#DC2626" if c == "r" else "#D97706" if c == "y" else "#16A34A"}"></span></div></td>'
+        f'<td><span class="lp-pill {c}">%{v}</span></td></tr>'
+        for n, v, c in rows
+    )
+    return f"""
+    <div class="lp lp-shot">
+        <div class="lp-shot-bar"><i></i><i></i><i></i><span>kursunkalem · Sınıflarım</span></div>
+        <div class="lp-app">
+            <div class="lp-app-side">
+                <div class="lp-side-brand"><img src="{LOGO_DATA_URI}" alt=""/>Dijital Ofis</div>
+                <div class="lp-side-item">Ana Sayfa</div>
+                <div class="lp-side-item">Soru Bankam</div>
+                <div class="lp-side-item on">Sınıflarım</div>
+                <div class="lp-side-item">Öğrenci Röntgeni</div>
+                <div class="lp-side-sep">HESAP</div>
+                <div class="lp-side-item">Profilim</div>
+            </div>
+            <div class="lp-app-main">
+                <div class="lp-app-head"><b>8-A Matematik · Sınıf analizi</b><small>Bu hafta</small></div>
+                <div class="lp-shot-kpis">
+                    <div class="lp-kpi"><b>28</b><small>öğrenci</small></div>
+                    <div class="lp-kpi"><b>%67</b><small>ortalama doğruluk</small></div>
+                    <div class="lp-kpi"><b>12</b><small>teslim edilen ödev</small></div>
+                </div>
+                <table class="lp-tbl"><tr><th>Kazanım</th><th>Sınıf başarısı</th><th></th></tr>{trs}</table>
+                <div class="lp-pending"><span><b>6 soru</b> onayınızı bekliyor</span><span>İncele →</span></div>
+                <div class="lp-note">Örnek ekran; rakamlar temsilidir.</div>
+            </div>
+        </div>
+    </div>
+    """
 
 
 def render_landing() -> None:
@@ -5760,23 +5876,34 @@ def render_landing() -> None:
         unsafe_allow_html=True,
     )
     demo_link = _demo_mailto()
-    st.markdown(
-        f"""
-        <div class="lp lp-nav">
-            <div class="lp-brand"><img src="{LOGO_DATA_URI}" alt=""/>Kurşun Kalem Dijital Ofis</div>
-            <div class="lp-nav-links">
-                <a href="#nasil-calisir">Nasıl Çalışır?</a>
-                <a href="#ozellikler">Özellikler</a>
-                <a href="#fiyatlar">Fiyatlar</a>
-                <a href="#sss">Sık Sorulanlar</a>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
+
+    # ---------- Üst menü ----------
+    with st.container(key="lp_navbar"):
+        nv_l, nv_r1, nv_r2 = st.columns([5, 0.9, 1.25], vertical_alignment="center")
+        with nv_l:
+            st.markdown(
+                f"""
+                <div class="lp lp-nav">
+                    <div class="lp-brand"><img src="{LOGO_DATA_URI}" alt=""/>Kurşun Kalem Dijital Ofis</div>
+                    <div class="lp-nav-links">
+                        <a href="#nasil-calisir">Nasıl Çalışır?</a>
+                        <a href="#ozellikler">Özellikler</a>
+                        <a href="#fiyatlar">Fiyatlar</a>
+                        <a href="#sss">Sık Sorulanlar</a>
+                    </div>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+        with nv_r1:
+            if st.button("Giriş yap", key="lp_nav_login", width="stretch"):
+                st.session_state["lp_auth_mode"] = "login"
+        with nv_r2:
+            if st.button("Ücretsiz dene", key="lp_nav_trial", type="primary", width="stretch"):
+                _start_teacher_trial()
 
     # ---------- Üst bölüm ----------
-    hero_l, hero_r = st.columns([1.3, 1.0], gap="large", vertical_alignment="center")
+    hero_l, hero_r = st.columns([1.0, 1.15], gap="large", vertical_alignment="center")
     with hero_l:
         st.markdown(
             """
@@ -5785,98 +5912,75 @@ def render_landing() -> None:
                 <h1 class="lp-hero-title">Soru Hazırlayın, Ödev Verin, <span>Veliye Rapor Gönderin.</span></h1>
                 <p class="lp-lead">
                     Yapay zekâ kazanıma uygun soruları taslak olarak hazırlar; siz kontrol edip onaylarsınız.
-                    Öğrencileriniz onaylı soruları çözer, sonuçlar kazanım bazında raporlanır, veliler haftalık
-                    özeti sizin imzanızla alır.
+                    Sonuçlar kazanım bazında raporlanır, veliler haftalık özeti sizin imzanızla alır.
                 </p>
-                <ul class="lp-checks">
-                    <li>Kurulum yok, tarayıcıdan ve telefondan çalışır</li>
-                    <li>5–12. sınıf, LGS ve YKS 2027 hazırlığı</li>
-                    <li>Pilot döneminde ücretsiz deneme, kart bilgisi gerekmez</li>
-                </ul>
             </div>
             """,
             unsafe_allow_html=True,
         )
         if LANDING_STATS:
             st.markdown(landing_stats_html(), unsafe_allow_html=True)
-        b1, b2, _sp = st.columns([1.25, 1.1, 0.6])
+        b1, b2, _sp = st.columns([1.2, 1.1, 0.4])
         with b1:
             if st.button("Öğretmen olarak ücretsiz dene", key="landing_teacher", type="primary", width="stretch"):
                 _start_teacher_trial()
         with b2:
             if demo_link:
                 st.link_button("Kurumum için demo iste", demo_link, width="stretch")
+        st.markdown(
+            '<div class="lp lp-trustline"><span>Kart bilgisi gerekmez</span><span>Kurulum yok</span>'
+            "<span>5–12. sınıf, LGS ve YKS</span><span>KVKK aydınlatma metni</span></div>",
+            unsafe_allow_html=True,
+        )
     with hero_r:
-        intent_title = st.session_state.get("post_login_title")
-        with st.container(border=True, key="card_auth"):
-            st.markdown(
-                '<div class="lp"><h3 class="lp-h" style="font-size:1.25rem;margin:0 0 0.2rem 0;">Hesabınıza Girin</h3>'
-                '<p style="color:#64748B;font-size:0.9rem;margin:0 0 0.4rem 0;">Öğretmen, öğrenci ve veli girişi. '
-                'Hesabınız yoksa ücretsiz deneme için kayıt olun.</p></div>',
-                unsafe_allow_html=True,
-            )
-            if intent_title:
-                st.markdown(
-                    f'<div class="kp-banner kp-banner-review"><b>{html.escape(intent_title)}</b> için önce ücretsiz '
-                    f'hesabını aç ya da giriş yap; ardından doğrudan oraya götüreceğiz.</div>',
-                    unsafe_allow_html=True,
-                )
-                embed_html(
-                    "<script>try{const d=window.parent.document;"
-                    "const m=d.querySelector('[data-testid=stMain]')||d.querySelector('section.main');"
-                    "if(m){m.scrollTo({top:0,behavior:'smooth'});}window.parent.scrollTo({top:0,behavior:'smooth'});}catch(e){}</script>",
-                    height=1,
-                )
-                t_reg, t_login = st.tabs(["Ücretsiz deneme", "Giriş yap"])
-            else:
-                t_login, t_reg = st.tabs(["Giriş yap", "Ücretsiz deneme"])
-            with t_login:
-                _login_form()
-            with t_reg:
-                _register_form()
+        st.markdown(_lp_app_window(), unsafe_allow_html=True)
 
-    # ---------- Ürün önizlemesi ----------
+    # ---------- Kimler için ----------
+    st.markdown(
+        """
+        <div class="lp lp-section">
+            <div class="lp-aud">
+                <div><h3>Öğretmenler</h3><p>Soru hazırlamaya harcadığınız saatleri azaltın; ödevi verin, sonucu kazanım bazında görün.</p></div>
+                <div><h3>Etüt Merkezleri ve Dershaneler</h3><p>Tüm şubelerde aynı ödev ve rapor düzeni; velilere kurumunuzun adıyla düzenli bilgi.</p></div>
+                <div><h3>Okullar</h3><p>Zümre öğretmenleri ortak soru bankası kurar; LGS ve YKS hazırlığı dönem boyunca izlenir.</p></div>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    # ---------- Soru onayı ----------
     st.markdown('<div class="lp-section"></div>', unsafe_allow_html=True)
-    pv_l, pv_r = st.columns([1.0, 1.25], gap="large", vertical_alignment="center")
-    with pv_l:
+    qa_l, qa_r = st.columns([1.1, 1.0], gap="large", vertical_alignment="center")
+    with qa_l:
         st.markdown(
             """
-            <div class="lp">
-                <div class="lp-kicker">Sınıf Raporu</div>
-                <h2 class="lp-h2">Hangi Öğrenci Hangi Kazanımda Zorlanıyor, Bir Bakışta Görün.</h2>
-                <p class="lp-sub">Teslim edilen her ödev, kazanım bazında sınıf raporuna işlenir. En zayıf kazanım
-                en üstte durur; tek tıkla o kazanım için yeni soru üretip ödev olarak atarsınız.</p>
-                <ul class="lp-checks">
-                    <li>Öğrenci bazında doğruluk ve sınıf ortalamasıyla fark</li>
-                    <li>Teslim edilmeyen ve geciken ödevler</li>
-                    <li>Telafi önerisi ve tek tıkla yeni test</li>
-                </ul>
+            <div class="lp lp-q">
+                <div class="lp-q-top"><span class="lp-q-tag">Taslak · onay bekliyor</span>
+                    <span class="lp-q-meta">8. Sınıf · Matematik · Üslü ifadeler</span></div>
+                <div class="lp-q-stem">2<sup>5</sup> · 2<sup>-3</sup> işleminin sonucu aşağıdakilerden hangisidir?</div>
+                <div class="lp-q-opt"><b>A</b>2</div>
+                <div class="lp-q-opt ok"><b>B</b>4</div>
+                <div class="lp-q-opt"><b>C</b>8</div>
+                <div class="lp-q-opt"><b>D</b>16</div>
+                <div class="lp-q-actions"><span class="p">Kaydet ve onayla</span><span>Düzenle</span><span>Sil</span></div>
             </div>
             """,
             unsafe_allow_html=True,
         )
-    with pv_r:
-        rows = [("Üslü ifadeler", 48, "#DC2626"), ("Kareköklü ifadeler", 61, "#EA580C"),
-                ("Veri analizi", 74, "#CA8A04"), ("Çarpanlar ve katlar", 86, "#16A34A")]
-        rows_html = "".join(
-            f'<div class="lp-row"><span>{name}</span><div class="lp-bar"><span style="width:{pct}%;background:{col}"></span></div>'
-            f"<em>%{pct}</em></div>"
-            for name, pct, col in rows
-        )
+    with qa_r:
         st.markdown(
-            f"""
-            <div class="lp lp-shot">
-                <div class="lp-shot-bar"><i></i><i></i><i></i><span>Sınıflarım · 8-A Matematik · Sınıf analizi</span></div>
-                <div class="lp-shot-body">
-                    <div class="lp-shot-kpis">
-                        <div class="lp-kpi"><b>28</b><small>öğrenci</small></div>
-                        <div class="lp-kpi"><b>%67</b><small>ortalama doğruluk</small></div>
-                        <div class="lp-kpi"><b>12</b><small>teslim edilen ödev</small></div>
-                    </div>
-                    {rows_html}
-                    <div class="lp-pending"><span><b>6 soru</b> onayınızı bekliyor</span><span>Soru Bankam →</span></div>
-                    <div class="lp-note">Örnek ekran; rakamlar temsilidir.</div>
-                </div>
+            """
+            <div class="lp">
+                <div class="lp-kicker">Öğretmen Onayı</div>
+                <h2 class="lp-h2">Yapay Zekâ Hazırlar, Son Söz Sizindir.</h2>
+                <p class="lp-sub">Üretilen her soru önce taslak olarak bankanıza düşer. Okursunuz, gerekirse kökü ya da
+                şıkları düzeltirsiniz, doğru cevabı işaretleyip onaylarsınız. Öğrencilere yalnızca onayladığınız sorular gider.</p>
+                <ul class="lp-checks">
+                    <li>Cevap anahtarı okunamayan soru onaylanamaz</li>
+                    <li>Kendi yazdığınız soruları da bankaya ekleyin</li>
+                    <li>Onaylı sorulardan ödev, kitapçık ve optik form</li>
+                </ul>
             </div>
             """,
             unsafe_allow_html=True,
@@ -5902,33 +6006,30 @@ def render_landing() -> None:
         unsafe_allow_html=True,
     )
 
-    # ---------- Özellikler ----------
-    st.markdown(
-        """
-        <div class="lp lp-section lp-center" id="ozellikler">
-            <div class="lp-kicker">Özellikler</div>
-            <h2 class="lp-h2">Öğretmenin İhtiyacı Olan Her Şey, Tek Yerde</h2>
-            <p class="lp-sub">Öğretmen, öğrenci ve veli aynı sistemi kullanır; herkes yalnızca kendi ekranını görür.</p>
-        </div>
-        """,
-        unsafe_allow_html=True,
-    )
-    for row_start in range(0, len(LANDING_FEATURES), 3):
-        cols = st.columns(3, gap="medium")
-        for j, (ico, f_title, f_desc, f_page) in enumerate(LANDING_FEATURES[row_start:row_start + 3]):
-            idx = row_start + j
-            with cols[j]:
-                with st.container(border=True, key=f"card_feat_{idx}"):
-                    st.markdown(
-                        f'<div class="lp"><div class="lp-feat-ico">{LP_ICONS[ico]}</div>'
-                        f'<div class="lp-feat-title">{html.escape(f_title)}</div>'
-                        f'<div class="lp-feat-desc">{html.escape(f_desc)}</div></div>',
-                        unsafe_allow_html=True,
-                    )
-                    if st.button("Ücretsiz dene →", key=f"landing_try_{idx}"):
-                        st.session_state["post_login_page"] = f_page.split("|")
-                        st.session_state["post_login_title"] = f_title
-                        st.rerun()
+    # ---------- Özellikler (gri bant) ----------
+    with st.container(key="lp_band_feat"):
+        st.markdown(
+            """
+            <div class="lp lp-section lp-center" id="ozellikler">
+                <div class="lp-kicker">Özellikler</div>
+                <h2 class="lp-h2">Öğretmenin İhtiyacı Olan Her Şey, Tek Yerde</h2>
+                <p class="lp-sub">Öğretmen, öğrenci ve veli aynı sistemi kullanır; herkes yalnızca kendi ekranını görür.</p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+        for row_start in range(0, len(LANDING_FEATURES), 3):
+            cols = st.columns(3, gap="medium")
+            for j, (ico, f_title, f_desc, _pg) in enumerate(LANDING_FEATURES[row_start:row_start + 3]):
+                idx = row_start + j
+                with cols[j]:
+                    with st.container(border=True, key=f"card_feat_{idx}"):
+                        st.markdown(
+                            f'<div class="lp"><div class="lp-feat-ico">{LP_ICONS[ico]}</div>'
+                            f'<div class="lp-feat-title">{html.escape(f_title)}</div>'
+                            f'<div class="lp-feat-desc">{html.escape(f_desc)}</div></div>',
+                            unsafe_allow_html=True,
+                        )
 
     # ---------- Fiyatlar ----------
     st.markdown(
@@ -5942,7 +6043,7 @@ def render_landing() -> None:
         unsafe_allow_html=True,
     )
     student_tiers = [t for t in SUBSCRIPTION_TIERS if t.get("segment") in ("Öğrenci", "YKS", "Bireysel", "Veli", "Aile")] or SUBSCRIPTION_TIERS
-    min_student = min(int(t["monthly_price"]) for t in student_tiers)
+    min_student = f"{min(int(t['monthly_price']) for t in student_tiers):,}".replace(",", ".")
     pc1, pc2, pc3 = st.columns(3, gap="medium")
     with pc1:
         with st.container(border=True, key="card_price_teacher"):
@@ -5993,7 +6094,7 @@ def render_landing() -> None:
                 <div class="lp">
                     <div class="lp-price-seg">Öğrenci ve Veli</div>
                     <div class="lp-price-name">Bireysel</div>
-                    <div class="lp-price-val">{min_student:,} ₺ <small>/ ay'dan başlayan</small></div>
+                    <div class="lp-price-val">{min_student} ₺ <small>/ ay'dan başlayan</small></div>
                     <div class="lp-price-desc">Öğretmeni sistemi kullanmayan öğrenciler için.</div>
                     <ul class="lp-price-list">
                         <li>İlk {FREE_PLAN["monthly_quota"]} soru ücretsiz</li>
@@ -6002,13 +6103,13 @@ def render_landing() -> None:
                         <li>Haftalık çalışma planı</li>
                     </ul>
                 </div>
-                """.replace(f"{min_student:,}", f"{min_student:,}".replace(",", ".")),
+                """,
                 unsafe_allow_html=True,
             )
             if st.button("Paketleri incele", key="lp_price_student", width="stretch"):
                 st.session_state["post_login_page"] = ["Paketler & Abonelik Vitrini"]
                 st.session_state["post_login_title"] = "Paketler"
-                st.rerun()
+                st.session_state["lp_auth_mode"] = "register"
 
     # ---------- Güven ----------
     st.markdown(
@@ -6027,7 +6128,7 @@ def render_landing() -> None:
     _k1, _k2 = st.columns([1, 5])
     with _k1:
         if st.button("KVKK Aydınlatma Metni →", key="lp_kvkk_trust"):
-            show_kvkk_dialog()
+            st.session_state["lp_kvkk_open"] = True
 
     # ---------- SSS ----------
     st.markdown(
@@ -6047,19 +6148,18 @@ def render_landing() -> None:
 
     # ---------- Son çağrı ----------
     st.markdown('<div class="lp-section"></div>', unsafe_allow_html=True)
-    with st.container(key="lp_cta_wrap"):
-        cta_l, cta_r = st.columns([2.2, 1], vertical_alignment="center")
-        with cta_l:
-            st.markdown(
-                '<div class="lp lp-cta"><h2>Bu Hafta İlk Ödevinizi Verin.</h2>'
-                '<p>Kayıt bir dakika sürer. Kart bilgisi gerekmez, istediğiniz zaman bırakabilirsiniz.</p></div>',
-                unsafe_allow_html=True,
-            )
-        with cta_r:
-            if st.button("Öğretmen olarak ücretsiz dene", key="lp_cta_teacher", type="primary", width="stretch"):
-                _start_teacher_trial()
-            if demo_link:
-                st.link_button("Kurumum için demo iste", demo_link, width="stretch")
+    cta_l, cta_r = st.columns([2.2, 1], vertical_alignment="center")
+    with cta_l:
+        st.markdown(
+            '<div class="lp lp-cta"><h2>Bu Hafta İlk Ödevinizi Verin.</h2>'
+            '<p>Kayıt bir dakika sürer. Kart bilgisi gerekmez, istediğiniz zaman bırakabilirsiniz.</p></div>',
+            unsafe_allow_html=True,
+        )
+    with cta_r:
+        if st.button("Öğretmen olarak ücretsiz dene", key="lp_cta_teacher", type="primary", width="stretch"):
+            _start_teacher_trial()
+        if demo_link:
+            st.link_button("Kurumum için demo iste", demo_link, width="stretch")
 
     contact = " · ".join(
         x for x in [
@@ -6074,8 +6174,14 @@ def render_landing() -> None:
     )
     _f1, _f2, _f3 = st.columns([2, 1, 2])
     with _f2:
-        if st.button("KVKK Aydınlatma Metni", key="landing_kvkk", width="stretch"):
-            show_kvkk_dialog()
+        kvkk_clicked = st.button("KVKK Aydınlatma Metni", key="landing_kvkk", width="stretch")
+
+    # Pencereler sayfanın sonunda, hiçbir sütunun içinde olmadan açılır (aynı anda yalnızca biri)
+    auth_mode = st.session_state.pop("lp_auth_mode", None)
+    if auth_mode:
+        auth_dialog(auth_mode)
+    elif kvkk_clicked or st.session_state.pop("lp_kvkk_open", False):
+        show_kvkk_dialog()
 
 
 if not current_user():
