@@ -5589,7 +5589,7 @@ LANDING_CSS = """
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2316A34A' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E") center/12px no-repeat; }
 
 .lp-section { margin-top: 4.5rem; }
-.lp-kicker { font-size: 0.8rem; font-weight: 700; color: #1D4ED8; text-transform: none; letter-spacing: 0.04em; margin-bottom: 0.5rem; }
+.lp-kicker { font-size: 0.95rem; font-weight: 700; color: #1D4ED8; text-transform: none; letter-spacing: 0; margin-bottom: 0.5rem; }
 .lp-h2 { font-size: clamp(1.6rem, 2.4vw, 2.1rem); font-weight: 800; line-height: 1.2; margin: 0 0 0.6rem 0; }
 .lp-sub { color: #64748B; font-size: 1rem; line-height: 1.6; max-width: 46rem; margin: 0 0 1.6rem 0; }
 .lp-center { text-align: center; }
@@ -5676,22 +5676,22 @@ LP_ICONS = {
 }
 
 LANDING_FEATURES: List[Tuple[str, str, str, str]] = [
-    ("bank", "Soru bankası ve öğretmen onayı",
+    ("bank", "Soru Bankası ve Öğretmen Onayı",
      "Yapay zekâ kazanıma uygun soruları taslak olarak hazırlar. Düzeltir, onaylarsınız; bankanız büyür.",
      "Soru Bankam|Soru & Redaksiyon Fabrikası"),
-    ("class", "Sınıf ve ödev yönetimi",
+    ("class", "Sınıf ve Ödev Yönetimi",
      "Öğrenciler sınıf koduyla katılır ya da Excel listesiyle toplu eklenir. Ödeve konu anlatım videosu eklenebilir.",
      "Sınıflarım|Öğrenci Portalı & Çözüm"),
-    ("chart", "Kazanım bazlı rapor",
+    ("chart", "Kazanım Bazlı Rapor",
      "Her öğrencinin hangi kazanımda ne kadar başarılı olduğunu sınıf ortalamasıyla birlikte görürsünüz.",
      "Öğrenci Röntgeni"),
-    ("mail", "Veli raporu",
+    ("mail", "Veli Raporu",
      "Haftalık özet velilere sizin ve kurumunuzun adıyla e-posta ya da WhatsApp ile gider.",
      "Sınıflarım|Veli Takip Paneli"),
-    ("print", "Basılı kitapçık ve optik form",
+    ("print", "Basılı Kitapçık ve Optik Form",
      "Onaylı sorulardan tek tıkla Word kitapçık ve optik form çıkarın; sınıfta kâğıtla uygulayın.",
      "Soru & Redaksiyon Fabrikası"),
-    ("student", "Öğrenci uygulaması",
+    ("student", "Öğrenci Uygulaması",
      "Fotoğrafla soru çözümü, mini deneme, hata defteri, tekrar testleri, seri ve rozetler.",
      "Fotoğrafla Çöz|Öğrenci Portalı & Çözüm"),
 ]
@@ -5745,10 +5745,10 @@ def render_landing() -> None:
         <div class="lp lp-nav">
             <div class="lp-brand"><img src="{LOGO_DATA_URI}" alt=""/>Kurşun Kalem Dijital Ofis</div>
             <div class="lp-nav-links">
-                <a href="#nasil-calisir">Nasıl çalışır</a>
+                <a href="#nasil-calisir">Nasıl Çalışır?</a>
                 <a href="#ozellikler">Özellikler</a>
                 <a href="#fiyatlar">Fiyatlar</a>
-                <a href="#sss">Sık sorulanlar</a>
+                <a href="#sss">Sık Sorulanlar</a>
             </div>
         </div>
         """,
@@ -5761,8 +5761,8 @@ def render_landing() -> None:
         st.markdown(
             """
             <div class="lp">
-                <span class="lp-eyebrow">Öğretmenler ve etüt merkezleri için</span>
-                <h1 class="lp-hero-title">Soru hazırlayın, ödev verin, <span>veliye rapor gönderin.</span></h1>
+                <span class="lp-eyebrow">Öğretmenler ve Etüt Merkezleri İçin</span>
+                <h1 class="lp-hero-title">Soru Hazırlayın, Ödev Verin, <span>Veliye Rapor Gönderin.</span></h1>
                 <p class="lp-lead">
                     Yapay zekâ kazanıma uygun soruları taslak olarak hazırlar; siz kontrol edip onaylarsınız.
                     Öğrencileriniz onaylı soruları çözer, sonuçlar kazanım bazında raporlanır, veliler haftalık
@@ -5790,7 +5790,7 @@ def render_landing() -> None:
         intent_title = st.session_state.get("post_login_title")
         with st.container(border=True, key="card_auth"):
             st.markdown(
-                '<div class="lp"><h3 class="lp-h" style="font-size:1.25rem;margin:0 0 0.2rem 0;">Hesabınıza girin</h3>'
+                '<div class="lp"><h3 class="lp-h" style="font-size:1.25rem;margin:0 0 0.2rem 0;">Hesabınıza Girin</h3>'
                 '<p style="color:#64748B;font-size:0.9rem;margin:0 0 0.4rem 0;">Öğretmen, öğrenci ve veli girişi. '
                 'Hesabınız yoksa ücretsiz deneme için kayıt olun.</p></div>',
                 unsafe_allow_html=True,
@@ -5822,8 +5822,8 @@ def render_landing() -> None:
         st.markdown(
             """
             <div class="lp">
-                <div class="lp-kicker">SINIF RAPORU</div>
-                <h2 class="lp-h2">Hangi öğrenci hangi kazanımda zorlanıyor, bir bakışta görün.</h2>
+                <div class="lp-kicker">Sınıf Raporu</div>
+                <h2 class="lp-h2">Hangi Öğrenci Hangi Kazanımda Zorlanıyor, Bir Bakışta Görün.</h2>
                 <p class="lp-sub">Teslim edilen her ödev, kazanım bazında sınıf raporuna işlenir. En zayıf kazanım
                 en üstte durur; tek tıkla o kazanım için yeni soru üretip ödev olarak atarsınız.</p>
                 <ul class="lp-checks">
@@ -5866,16 +5866,16 @@ def render_landing() -> None:
     st.markdown(
         """
         <div class="lp lp-section lp-center" id="nasil-calisir">
-            <div class="lp-kicker">NASIL ÇALIŞIR</div>
-            <h2 class="lp-h2">Üç adımda ilk ödeviniz hazır</h2>
+            <div class="lp-kicker">Nasıl Çalışır?</div>
+            <h2 class="lp-h2">Üç Adımda İlk Ödeviniz Hazır</h2>
             <p class="lp-sub">Hazırlık saatler değil dakikalar sürer; kontrol her zaman sizde kalır.</p>
         </div>
         <div class="lp lp-steps">
-            <div class="lp-step"><div class="lp-step-num">1</div><h3>Soruları üretin</h3>
+            <div class="lp-step"><div class="lp-step-num">1</div><h3>Soruları Üretin</h3>
                 <p>Sınıf düzeyi, branş ve kazanımı seçin. Yapay zekâ çeldiricileriyle birlikte taslak soruları hazırlar.</p></div>
-            <div class="lp-step"><div class="lp-step-num">2</div><h3>Kontrol edin, onaylayın</h3>
+            <div class="lp-step"><div class="lp-step-num">2</div><h3>Kontrol Edin, Onaylayın</h3>
                 <p>Her soruyu okuyun, gerekirse düzeltin, doğru cevabı işaretleyin. Onaylı sorular bankanızda birikir.</p></div>
-            <div class="lp-step"><div class="lp-step-num">3</div><h3>Ödev verin, raporu alın</h3>
+            <div class="lp-step"><div class="lp-step-num">3</div><h3>Ödev Verin, Raporu Alın</h3>
                 <p>Seçtiğiniz soruları sınıfa atayın ya da yazdırın. Sonuçlar kazanım bazında rapora, özeti velilere gider.</p></div>
         </div>
         """,
@@ -5886,8 +5886,8 @@ def render_landing() -> None:
     st.markdown(
         """
         <div class="lp lp-section lp-center" id="ozellikler">
-            <div class="lp-kicker">ÖZELLİKLER</div>
-            <h2 class="lp-h2">Öğretmenin ihtiyacı olan her şey, tek yerde</h2>
+            <div class="lp-kicker">Özellikler</div>
+            <h2 class="lp-h2">Öğretmenin İhtiyacı Olan Her Şey, Tek Yerde</h2>
             <p class="lp-sub">Öğretmen, öğrenci ve veli aynı sistemi kullanır; herkes yalnızca kendi ekranını görür.</p>
         </div>
         """,
@@ -5914,8 +5914,8 @@ def render_landing() -> None:
     st.markdown(
         """
         <div class="lp lp-section lp-center" id="fiyatlar">
-            <div class="lp-kicker">FİYATLAR</div>
-            <h2 class="lp-h2">Önce ücretsiz deneyin, sonra karar verin</h2>
+            <div class="lp-kicker">Fiyatlar</div>
+            <h2 class="lp-h2">Önce Ücretsiz Deneyin, Sonra Karar Verin</h2>
             <p class="lp-sub">Pilot döneminde öğretmen hesabı ücretsizdir. Kurumlar için öğrenci sayısına göre teklif hazırlıyoruz.</p>
         </div>
         """,
@@ -5950,7 +5950,7 @@ def render_landing() -> None:
             st.markdown(
                 """
                 <div class="lp">
-                    <div class="lp-price-seg">Etüt merkezi ve okul</div>
+                    <div class="lp-price-seg">Etüt Merkezi ve Okul</div>
                     <div class="lp-price-name">Kurum</div>
                     <div class="lp-price-val">Teklif <small>öğrenci sayısına göre</small></div>
                     <div class="lp-price-desc">Birden çok öğretmen ve şube için ortak kullanım.</div>
@@ -5971,7 +5971,7 @@ def render_landing() -> None:
             st.markdown(
                 f"""
                 <div class="lp">
-                    <div class="lp-price-seg">Öğrenci ve veli</div>
+                    <div class="lp-price-seg">Öğrenci ve Veli</div>
                     <div class="lp-price-name">Bireysel</div>
                     <div class="lp-price-val">{min_student:,} ₺ <small>/ ay'dan başlayan</small></div>
                     <div class="lp-price-desc">Öğretmeni sistemi kullanmayan öğrenciler için.</div>
@@ -5995,10 +5995,10 @@ def render_landing() -> None:
         """
         <div class="lp lp-section">
             <div class="lp-trust">
-                <div><b>Öğretmen onayı</b><span>Yapay zekânın ürettiği hiçbir soru, siz onaylamadan öğrenciye gitmez.</span></div>
-                <div><b>KVKK'ya uygun işleyiş</b><span>Hangi verinin neden işlendiği aydınlatma metninde açıkça yazar.</span></div>
-                <div><b>Güvenli saklama</b><span>Şifreli bağlantı; şifreler tek yönlü şifrelenerek saklanır.</span></div>
-                <div><b>Herkes kendi ekranında</b><span>Öğretmen yalnızca kendi sınıfını, veli yalnızca kendi çocuğunu görür.</span></div>
+                <div><b>Öğretmen Onayı</b><span>Yapay zekânın ürettiği hiçbir soru, siz onaylamadan öğrenciye gitmez.</span></div>
+                <div><b>KVKK'ya Uygun İşleyiş</b><span>Hangi verinin neden işlendiği aydınlatma metninde açıkça yazar.</span></div>
+                <div><b>Güvenli Saklama</b><span>Şifreli bağlantı; şifreler tek yönlü şifrelenerek saklanır.</span></div>
+                <div><b>Herkes Kendi Ekranında</b><span>Öğretmen yalnızca kendi sınıfını, veli yalnızca kendi çocuğunu görür.</span></div>
             </div>
         </div>
         """,
@@ -6013,8 +6013,8 @@ def render_landing() -> None:
     st.markdown(
         """
         <div class="lp lp-section lp-center" id="sss">
-            <div class="lp-kicker">SIK SORULANLAR</div>
-            <h2 class="lp-h2">Aklınıza takılanlar</h2>
+            <div class="lp-kicker">Sık Sorulanlar</div>
+            <h2 class="lp-h2">Aklınıza Takılanlar</h2>
         </div>
         """,
         unsafe_allow_html=True,
@@ -6031,7 +6031,7 @@ def render_landing() -> None:
         cta_l, cta_r = st.columns([2.2, 1], vertical_alignment="center")
         with cta_l:
             st.markdown(
-                '<div class="lp lp-cta"><h2>Bu hafta ilk ödevinizi verin.</h2>'
+                '<div class="lp lp-cta"><h2>Bu Hafta İlk Ödevinizi Verin.</h2>'
                 '<p>Kayıt bir dakika sürer. Kart bilgisi gerekmez, istediğiniz zaman bırakabilirsiniz.</p></div>',
                 unsafe_allow_html=True,
             )
