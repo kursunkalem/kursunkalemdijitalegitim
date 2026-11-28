@@ -3505,8 +3505,13 @@ SPLASH_SUBTITLE = "Dijital Ofis"
 
 SPLASH_HTML = """
 <style>
-/* Açılışta sayfa kapsayıcısının dönüşümü kapatılır; yoksa tam ekran perde onun içine hapsolur */
-.block-container {{ animation: none !important; transform: none !important; }}
+/* Açılışta sayfa kapsayıcılarının dönüşümü kapatılır; yoksa tam ekran perde onların içine hapsolur */
+.block-container, [data-testid="stMainBlockContainer"], [data-testid="stMain"], .stMain,
+[data-testid="stAppViewContainer"], [data-testid="stVerticalBlock"],
+[data-testid="stElementContainer"]:has(.kp-splash), [data-testid="stMarkdownContainer"]:has(.kp-splash),
+.element-container:has(.kp-splash), .stMarkdown:has(.kp-splash) {{
+    animation: none !important; transform: none !important; filter: none !important; contain: none !important;
+}}
 .kp-splash {{
     position: fixed; inset: 0; z-index: 1000001;
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem;
@@ -3588,6 +3593,8 @@ def render_splash_once() -> None:
     if not SPLASH_ENABLED or st.session_state.get("_splash_done"):
         return
     st.session_state["_splash_done"] = True
+    # Açılış sayfasındaki logo yazısı, perde kalktıktan sonra yazılmaya başlasın
+    st.session_state.setdefault("_lp_brand_delay", "2.9s")
     st.markdown(
         SPLASH_HTML.format(
             logo=LOGO_DATA_URI, title=html.escape(SPLASH_TITLE), subtitle=html.escape(SPLASH_SUBTITLE)
@@ -5743,7 +5750,30 @@ LANDING_CSS = """
     .lp-app { grid-template-columns: 1fr; } .lp-app-side { display: none; }
     .lp-aud { grid-template-columns: 1fr; }
 }
+
+/* Logo yazısı: kalemle yazılır */
+.lp-brand-word { position: relative; display: inline-block; }
+.lp-brand-text { display: inline-block; clip-path: inset(-20% 100% -20% 0);
+    animation: lpWrite 1.1s cubic-bezier(0.45, 0, 0.25, 1) var(--lp-d, 0.25s) forwards; }
+.lp-brand-pencil { position: absolute; top: -0.55em; left: 0; width: 1.25em; height: 1.25em; opacity: 0; pointer-events: none; transform: translateX(-40%);
+    animation: lpPencil 1.1s cubic-bezier(0.45, 0, 0.25, 1) var(--lp-d, 0.25s) forwards; }
+@keyframes lpWrite { to { clip-path: inset(-20% 0 -20% 0); } }
+@keyframes lpPencil { 0% { left: 0; opacity: 1; } 90% { left: 100%; opacity: 1; } 100% { left: 100%; opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+    .lp-brand-text { animation: none; clip-path: none; } .lp-brand-pencil { display: none; }
+}
 """
+
+LP_PENCIL_SVG = (
+    '<svg class="lp-brand-pencil" viewBox="0 0 24 24" aria-hidden="true">'
+    '<g transform="translate(4 20) rotate(45) scale(0.42)">'
+    '<polygon points="0,0 -6,-11 6,-11" fill="#FDE7B0" stroke="#0F172A" stroke-width="2.6" stroke-linejoin="round"/>'
+    '<polygon points="0,0 -2.6,-4.8 2.6,-4.8" fill="#0F172A"/>'
+    '<rect x="-6" y="-33" width="12" height="22" fill="#FACC15" stroke="#0F172A" stroke-width="2.6"/>'
+    '<rect x="-6" y="-38" width="12" height="5" fill="#CBD5E1" stroke="#0F172A" stroke-width="2.6"/>'
+    '<rect x="-6" y="-45" width="12" height="7" rx="3" fill="#F472B6" stroke="#0F172A" stroke-width="2.6"/>'
+    "</g></svg>"
+)
 
 LP_ICONS = {
     "bank": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>',
@@ -5876,6 +5906,7 @@ def render_landing() -> None:
         unsafe_allow_html=True,
     )
     demo_link = _demo_mailto()
+    brand_delay = st.session_state.setdefault("_lp_brand_delay", "0.25s")
 
     # ---------- Üst menü ----------
     with st.container(key="lp_navbar"):
@@ -5884,7 +5915,8 @@ def render_landing() -> None:
             st.markdown(
                 f"""
                 <div class="lp lp-nav">
-                    <div class="lp-brand"><img src="{LOGO_DATA_URI}" alt=""/>Kurşun Kalem Dijital Ofis</div>
+                    <div class="lp-brand" style="--lp-d:{brand_delay};"><img src="{LOGO_DATA_URI}" alt=""/>
+                        <span class="lp-brand-word"><span class="lp-brand-text">Kurşun Kalem Dijital Ofis</span>{LP_PENCIL_SVG}</span></div>
                     <div class="lp-nav-links">
                         <a href="#nasil-calisir">Nasıl Çalışır?</a>
                         <a href="#ozellikler">Özellikler</a>
